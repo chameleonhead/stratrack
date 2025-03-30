@@ -3,12 +3,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 export type CheckboxProps = {
   label: string;
   id?: string;
-  name: string;
+  name?: string;
   type?: string;
   placeholder?: string;
   value?: string;
   onChange?: (value: boolean) => void;
   checked?: boolean;
+  error?: string;
 };
 
 function Checkbox({
@@ -19,6 +20,7 @@ function Checkbox({
   value,
   onChange,
   checked,
+  error,
 }: CheckboxProps) {
   // Generate a unique ID if not provided
   const uniqueId = useMemo(
@@ -55,6 +57,7 @@ function Checkbox({
         />
         {label}
       </label>
+      {error ? <span style={{ color: "red" }}>{error}</span> : null}
     </div>
   );
 }

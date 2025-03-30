@@ -1,13 +1,13 @@
-import { useMemo } from "react";
+import { ChangeEvent, useMemo } from "react";
 
 export type SelectProps = {
-  label: string;
+  label?: string;
   id?: string;
-  name: string;
+  name?: string;
   type?: string;
   placeholder?: string;
   value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange?: (value: string) => void;
   options?: Array<{ value: string; label: string } | string>;
   required?: boolean;
 };
@@ -27,16 +27,23 @@ function Select({
     () => id || `input-${Math.random().toString(36)}`,
     [id]
   );
+  function handleChange(event: ChangeEvent<HTMLSelectElement>): void {
+    const selectedValue = event.target.value;
+    if (onChange) {
+      onChange(selectedValue);
+    }
+  }
+
   return (
     <div>
-      <label htmlFor={uniqueId}>{label}</label>
+      {label ? <label htmlFor={uniqueId}>{label}</label> : label}
       <div>
         <select
           id={uniqueId}
           name={name}
           value={value}
           required={required}
-          onChange={onChange}
+          onChange={handleChange}
         >
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((option) =>

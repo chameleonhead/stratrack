@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type InputProps = {
-  label: string;
+  label?: string;
   id?: string;
-  name: string;
+  name?: string;
   type?: string;
   placeholder?: string;
   defaultValue?: string;
   value?: string;
   onChange?: (value: string) => void;
   required?: boolean;
+  error?: string;
 };
 
 function Input({
@@ -22,6 +23,7 @@ function Input({
   value,
   onChange,
   required = false,
+  error,
 }: InputProps) {
   // Generate a unique ID if not provided
   const uniqueId = useMemo(
@@ -47,7 +49,7 @@ function Input({
   }, [value]);
   return (
     <div>
-      <label htmlFor={uniqueId}>{label}</label>
+      {label ? <label htmlFor={uniqueId}>{label}</label> : null}
       <input
         id={uniqueId}
         type={type}
@@ -57,6 +59,7 @@ function Input({
         onChange={handleChange}
         required={required}
       />
+      {error ? <span style={{ color: "red" }}>{error}</span> : null}
     </div>
   );
 }
