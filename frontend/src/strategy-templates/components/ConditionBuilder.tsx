@@ -7,10 +7,7 @@ export type ConditionBuilderProps = {
   onChange: (value: (Condition | undefined)[]) => void;
 };
 
-const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
-  value,
-  onChange,
-}) => {
+function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const updateCondition = (
     index: number,
     newCondition: Condition | undefined
@@ -49,6 +46,6 @@ const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       <Button onClick={addCondition}>条件を追加</Button>
     </div>
   );
-};
+}
 
 export default ConditionBuilder;

@@ -42,6 +42,15 @@ export const NumberOperand: Story = {
   } satisfies { value: Operand },
 };
 
+export const IndicatorOperand: Story = {
+  args: {
+    value: {
+      type: "indicator",
+      name: "",
+    },
+  } satisfies { value: Operand },
+};
+
 export const IndicatorOperand_SMA: Story = {
   args: {
     value: {

@@ -10,6 +10,7 @@ export type SelectProps = {
   onChange?: (value: string) => void;
   options?: Array<{ value: string; label: string } | string>;
   required?: boolean;
+  allowEmpty?: boolean;
   error?: string;
   className?: string;
 };
@@ -23,6 +24,7 @@ function Select({
   onChange,
   options = [],
   required = false,
+  allowEmpty = true,
   error,
   className,
 }: SelectProps) {
@@ -62,7 +64,9 @@ function Select({
           className
         )}
       >
-        {placeholder && <option value="">{placeholder}</option>}
+        {allowEmpty && (
+          <option value="">{placeholder || "選択してください"}</option>
+        )}
         {options.map((option) =>
           typeof option === "string" ? (
             <option key={option} value={option}>
