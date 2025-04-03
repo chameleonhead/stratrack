@@ -3,7 +3,6 @@ import NumberInput from "./NumberInput";
 import type { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta<typeof NumberInput> = {
-  title: "Components/NumberInput",
   component: NumberInput,
   args: {
     onChange: fn(),

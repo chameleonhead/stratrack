@@ -1,15 +1,17 @@
 import { ChangeEvent, useMemo } from "react";
+import { cn } from "../utils";
 
 export type SelectProps = {
   label?: string;
   id?: string;
   name?: string;
-  type?: string;
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
   options?: Array<{ value: string; label: string } | string>;
   required?: boolean;
+  error?: string;
+  className?: string;
 };
 
 function Select({
@@ -21,48 +23,59 @@ function Select({
   onChange,
   options = [],
   required = false,
+  error,
+  className,
 }: SelectProps) {
-  // Generate a unique ID if not provided
   const uniqueId = useMemo(
-    () => id || `input-${Math.random().toString(36)}`,
+    () => id || `select-${Math.random().toString(36).slice(2, 9)}`,
     [id]
   );
-  function handleChange(event: ChangeEvent<HTMLSelectElement>): void {
+
+  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     const selectedValue = event.target.value;
-    if (onChange) {
-      onChange(selectedValue);
-    }
+    onChange?.(selectedValue);
   }
 
   return (
-    <div>
-      {label ? <label htmlFor={uniqueId}>{label}</label> : label}
-      <div>
-        <select
-          id={uniqueId}
-          name={name}
-          value={value}
-          required={required}
-          onChange={handleChange}
+    <div className="w-full space-y-1">
+      {label && (
+        <label
+          htmlFor={uniqueId}
+          className="block text-sm font-semibold text-gray-800"
         >
-          {placeholder && <option value="">{placeholder}</option>}
-          {options.map((option) =>
-            typeof option === "string" ? (
-              <option key={option} value={option} selected={option === value}>
-                {option}
-              </option>
-            ) : (
-              <option
-                key={option.value}
-                value={option.value}
-                selected={option.value === value}
-              >
-                {option.label}
-              </option>
-            )
-          )}
-        </select>
-      </div>
+          {label}
+        </label>
+      )}
+      <select
+        id={uniqueId}
+        name={name}
+        value={value}
+        required={required}
+        onChange={handleChange}
+        className={cn(
+          "w-full px-4 py-2 rounded-lg border text-sm transition-all duration-150",
+          "bg-white text-gray-900 appearance-none",
+          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+          error
+            ? "border-red-500 ring-red-500 focus:ring-red-500"
+            : "border-gray-300",
+          className
+        )}
+      >
+        {placeholder && <option value="">{placeholder}</option>}
+        {options.map((option) =>
+          typeof option === "string" ? (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ) : (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          )
+        )}
+      </select>
+      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
     </div>
   );
 }

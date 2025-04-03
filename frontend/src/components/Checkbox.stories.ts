@@ -1,19 +1,34 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { fn } from "@storybook/test";
+import Checkbox from "./Checkbox";
+import type { Meta, StoryObj } from "@storybook/react";
 
-import Checkbox from './Checkbox';
-
-const meta = {
+const meta: Meta<typeof Checkbox> = {
   component: Checkbox,
-  args: { onChange: fn() },
-} satisfies Meta<typeof Checkbox>;
+  args: {
+    onChange: fn(),
+  },
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+type Story = StoryObj<typeof Checkbox>;
+
+export const Basic: Story = {
   args: {
-    label: 'Checkbox',
-    name: 'checkboxx-input-name',
+    label: "利用規約に同意する",
+  },
+};
+
+export const Controlled: Story = {
+  args: {
+    label: "メールマガジンを購読する",
+    checked: true,
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    label: "同意が必要です",
+    error: "この項目は必須です",
   },
 };

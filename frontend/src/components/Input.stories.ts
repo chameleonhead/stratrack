@@ -1,19 +1,38 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { fn } from "@storybook/test";
+import Input from "./Input";
+import type { Meta, StoryObj } from "@storybook/react";
 
-import Input from './Input';
-
-const meta = {
+const meta: Meta<typeof Input> = {
   component: Input,
-  args: { onChange: fn() },
-} satisfies Meta<typeof Input>;
+  args: {
+    onChange: fn(),
+  },
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+type Story = StoryObj<typeof Input>;
+
+export const Basic: Story = {
   args: {
-    label: 'Input',
-    name: 'input-name',
+    label: "入力",
+    placeholder: "値を入力",
+  },
+};
+
+export const Controlled: Story = {
+  args: {
+    label: "戦略名",
+    placeholder: "例: ドンチャンチャンネル",
+    value: "",
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    label: "戦略名",
+    placeholder: "例: ドンチャンチャンネル",
+    error: "このフィールドは必須です",
+    required: true,
   },
 };

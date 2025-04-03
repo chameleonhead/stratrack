@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Input from "./Input";
 
 export type NumberInputProps = {
   label?: string;
@@ -13,54 +13,32 @@ export type NumberInputProps = {
   error?: string;
 };
 
-function NumberInput({
-  label,
-  id,
-  name,
-  placeholder,
+export default function NumberInput({
   defaultValue,
   value,
   onChange,
-  required = false,
-  error,
+  ...props
 }: NumberInputProps) {
-  // Generate a unique ID if not provided
-  const uniqueId = useMemo(
-    () => id || `input-${Math.random().toString(36)}`,
-    [id]
-  );
-  const [localValue, setLocalValue] = useState(value || defaultValue || null);
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (onChange) {
-        onChange(event.target.value ? parseFloat(event.target.value) : null);
-      }
-      if (typeof value === "undefined") {
-        setLocalValue(parseFloat(event.target.value) || null);
-      }
-    },
-    [onChange, value]
-  );
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
   return (
-    <div>
-      {label ? <label htmlFor={uniqueId}>{label}</label> : null}
-      <input
-        id={uniqueId}
-        type="numebr"
-        name={name}
-        placeholder={placeholder}
-        value={(localValue && localValue.toString()) || ""}
-        required={required}
-        onChange={handleChange}
-      />
-      {error ? <span style={{ color: "red" }}>{error}</span> : null}
-    </div>
+    <Input
+      {...props}
+      type="number"
+      defaultValue={
+        typeof defaultValue === "undefined"
+          ? undefined
+          : defaultValue.toString()
+      }
+      value={
+        typeof value === "undefined"
+          ? undefined
+          : value === null
+          ? ""
+          : value.toString()
+      }
+      onChange={(newValue) => {
+        const parsedValue = newValue ? parseFloat(newValue) : null;
+        onChange?.(parsedValue);
+      }}
+    />
   );
 }
-
-export default NumberInput;
