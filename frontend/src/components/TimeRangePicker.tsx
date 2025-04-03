@@ -1,83 +1,64 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { cn } from "../utils";
+import TimePicker from "./TimePicker";
+
+export type TimeRange = {
+  start: string;
+  end: string;
+};
 
 export type TimeRangePickerProps = {
-  label: string
-  id?: string;
-  name: string;
-  startTime?: string;
-  endTime?: string;
-  onChange?: (start: string, end: string) => void;
+  label?: string;
+  value: TimeRange;
+  onChange?: (value: TimeRange) => void;
+  required?: boolean;
+  error?: {
+    start?: string;
+    end?: string;
+  };
+  className?: string;
 };
 
 function TimeRangePicker({
   label,
-  id,
-  name,
-  startTime = '',
-  endTime = '',
+  value,
   onChange,
+  required = false,
+  error,
+  className,
 }: TimeRangePickerProps) {
-  // Generate a unique ID if not provided
-  const uniqueId = useMemo(
-    () => id || `input-${Math.random().toString(36)}`,
-    [id]
-  );
-  const [localValueStartTime, setLocalValueStartTime] = useState(startTime);
-  const [localValueEndTime, setLocalValueEndTime] = useState(endTime);
-  const handleChangeStartTime = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (onChange) {
-        onChange(event.target.value, localValueEndTime);
-      }
-      if (typeof startTime === "undefined") {
-        setLocalValueStartTime(event.target.value);
-      }
-    },
-    [onChange, startTime]
-  );
-  const handleChangeEndTime = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (onChange) {
-        onChange(localValueStartTime, event.target.value);
-      }
-      if (typeof startTime === "undefined") {
-        setLocalValueEndTime(event.target.value);
-      }
-    },
-    [onChange, startTime]
-  );
-  useEffect(() => {
-    if (typeof startTime !== "undefined") {
-      setLocalValueStartTime(startTime);
-    }
-  }, [startTime]);
-  useEffect(() => {
-    if (typeof endTime !== "undefined") {
-      setLocalValueEndTime(endTime);
-    }
-  }, [endTime]);
+  const handleStartChange = (start: string) => {
+    onChange?.({ ...value, start });
+  };
+
+  const handleEndChange = (end: string) => {
+    onChange?.({ ...value, end });
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor={uniqueId}>{label}</label>
-      <input
-        type="time"
-        id={uniqueId}
-        name={name && `${name}-starttime`}
-        value={localValueStartTime}
-        onChange={handleChangeStartTime}
-        className="border rounded-xl px-3 py-1 text-sm"
-      />
-      <span className="text-sm">〜</span>
-      <input
-        type="time"
-        name={name && `${name}-endtime`}
-        value={localValueEndTime}
-        onChange={handleChangeEndTime}
-        className="border rounded-xl px-3 py-1 text-sm"
-      />
+    <div className={cn("w-full space-y-1", className)}>
+      {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
+      <div className="flex gap-3">
+        <div className="w-1/2">
+          <TimePicker
+            label="開始"
+            value={value.start}
+            onChange={handleStartChange}
+            required={required}
+            error={error?.start}
+          />
+        </div>
+        <div className="w-1/2">
+          <TimePicker
+            label="終了"
+            value={value.end}
+            onChange={handleEndChange}
+            required={required}
+            error={error?.end}
+          />
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default TimeRangePicker;

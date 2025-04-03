@@ -27,7 +27,7 @@ const sizeStyles: Record<string, string> = {
   lg: "px-5 py-2.5 text-base",
 };
 
-export default function Button({
+function Button({
   children,
   variant = "primary",
   size = "md",
@@ -73,3 +73,5 @@ export default function Button({
     </button>
   );
 }
+
+export default Button;

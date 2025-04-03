@@ -1,44 +1,42 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "../utils";
 
-export type TextareaProps = {
+export type DatePickerProps = {
   label?: string;
   id?: string;
   name?: string;
-  placeholder?: string;
-  defaultValue?: string;
   value?: string;
   onChange?: (value: string) => void;
+  placeholder?: string;
   required?: boolean;
   error?: string;
   className?: string;
-  rows?: number;
 };
 
-function Textarea({
+export default function DatePicker({
   label,
   id,
   name,
-  placeholder,
-  defaultValue,
   value,
   onChange,
+  placeholder,
   required = false,
   error,
   className,
-  rows = 4,
-}: TextareaProps) {
+}: DatePickerProps) {
   const uniqueId = useMemo(
-    () => id || `textarea-${Math.random().toString(36).slice(2, 9)}`,
+    () => id || `datepicker-${Math.random().toString(36).slice(2, 9)}`,
     [id]
   );
-  const [localValue, setLocalValue] = useState(value ?? defaultValue ?? "");
+
+  const [localValue, setLocalValue] = useState(value ?? "");
 
   const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      onChange?.(e.target.value);
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      onChange?.(newValue);
       if (typeof value === "undefined") {
-        setLocalValue(e.target.value);
+        setLocalValue(newValue);
       }
     },
     [onChange, value]
@@ -51,7 +49,7 @@ function Textarea({
   }, [value]);
 
   return (
-    <div className="w-full space-y-1">
+    <div className={cn("w-full space-y-1", className)}>
       {label && (
         <label
           htmlFor={uniqueId}
@@ -60,27 +58,24 @@ function Textarea({
           {label}
         </label>
       )}
-      <textarea
+      <input
+        type="date"
         id={uniqueId}
         name={name}
-        placeholder={placeholder}
-        rows={rows}
-        required={required}
         value={localValue}
         onChange={handleChange}
+        required={required}
+        placeholder={placeholder}
         className={cn(
-          "w-full px-2 py-2 rounded border text-sm transition-all duration-150 resize-y",
-          "bg-white text-gray-900 placeholder-gray-400",
+          "w-full px-4 py-2 rounded-lg border text-sm transition-all duration-150",
+          "bg-white text-gray-900",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error
             ? "border-red-500 ring-red-500 focus:ring-red-500"
-            : "border-gray-300",
-          className
+            : "border-gray-300"
         )}
       />
       {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
     </div>
   );
 }
-
-export default Textarea;

@@ -17,7 +17,7 @@ export type CheckboxGroupProps = {
   className?: string;
 };
 
-export default function CheckboxGroup({
+function CheckboxGroup({
   label,
   name,
   options,
@@ -40,8 +40,8 @@ export default function CheckboxGroup({
       {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
       <div
         className={cn(
-          "flex flex-wrap gap-2",
-          direction === "vertical" ? "flex-col" : "flex-row"
+          "flex flex-wrap",
+          direction === "vertical" ? "flex-col gap-2" : "flex-row gap-4"
         )}
       >
         {options.map((opt) => (
@@ -58,3 +58,5 @@ export default function CheckboxGroup({
     </div>
   );
 }
+
+export default CheckboxGroup;

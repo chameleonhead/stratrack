@@ -13,7 +13,7 @@ export type NumberInputProps = {
   error?: string;
 };
 
-export default function NumberInput({
+function NumberInput({
   defaultValue,
   value,
   onChange,
@@ -42,3 +42,5 @@ export default function NumberInput({
     />
   );
 }
+
+export default NumberInput;
