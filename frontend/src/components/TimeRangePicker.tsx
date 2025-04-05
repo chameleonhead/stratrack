@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "../utils";
 import TimePicker from "./TimePicker";
 
@@ -7,42 +8,67 @@ export type TimeRange = {
 };
 
 export type TimeRangePickerProps = {
-  label?: string;
-  value: TimeRange;
+  label: string;
+  id?: string;
+  name: string;
+  value?: TimeRange;
   onChange?: (value: TimeRange) => void;
   required?: boolean;
-  error?: {
-    start?: string;
-    end?: string;
-  };
+  error?: Record<keyof TimeRange, string>;
   className?: string;
 };
 
 function TimeRangePicker({
   label,
+  id,
+  name,
   value,
   onChange,
   required = false,
   error,
   className,
 }: TimeRangePickerProps) {
-  const handleStartChange = (start: string) => {
-    onChange?.({ ...value, start });
-  };
-
-  const handleEndChange = (end: string) => {
-    onChange?.({ ...value, end });
-  };
+  const [localValueStartTime, setLocalValueStartTime] = useState(value?.start);
+  const [localValueEndTime, setLocalValueEndTime] = useState(value?.end);
+  const handleChangeStartTime = useCallback(
+    (newValue: string) => {
+      if (onChange && localValueEndTime) {
+        onChange({ start: newValue, end: localValueEndTime });
+      }
+      if (typeof value === "undefined") {
+        setLocalValueStartTime(newValue);
+      }
+    },
+    [onChange, value, localValueEndTime]
+  );
+  const handleChangeEndTime = useCallback(
+    (newValue: string) => {
+      if (onChange && localValueStartTime) {
+        onChange({ start: localValueStartTime, end: newValue });
+      }
+      if (typeof value === "undefined") {
+        setLocalValueEndTime(newValue);
+      }
+    },
+    [onChange, value, localValueStartTime]
+  );
+  useEffect(() => {
+    if (typeof value !== "undefined") {
+      setLocalValueStartTime(value.start);
+      setLocalValueEndTime(value.end);
+    }
+  }, [value]);
 
   return (
-    <div className={cn("w-full space-y-1", className)}>
+    <div id={id} className={cn("w-full space-y-1", className)}>
       {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
       <div className="flex gap-3">
         <div className="w-1/2">
           <TimePicker
             label="開始"
-            value={value.start}
-            onChange={handleStartChange}
+            name={`${name}[start]`}
+            value={value?.start || ""}
+            onChange={handleChangeStartTime}
             required={required}
             error={error?.start}
           />
@@ -50,8 +76,9 @@ function TimeRangePicker({
         <div className="w-1/2">
           <TimePicker
             label="終了"
-            value={value.end}
-            onChange={handleEndChange}
+            name={`${name}[end]`}
+            value={value?.end || ""}
+            onChange={handleChangeEndTime}
             required={required}
             error={error?.end}
           />

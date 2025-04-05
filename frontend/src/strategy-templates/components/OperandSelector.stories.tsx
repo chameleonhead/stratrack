@@ -3,6 +3,7 @@ import { Operand } from "../types";
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
+import { VariableProvider } from "./VariableProvider";
 
 const meta: Meta<typeof OperandSelector> = {
   component: OperandSelector,
@@ -40,6 +41,50 @@ export const NumberOperand: Story = {
       value: 100,
     },
   } satisfies { value: Operand },
+};
+
+export const VariablesOperand: Story = {
+  args: {
+    value: {
+      type: "variable",
+      name: "value1",
+    },
+  } satisfies { value: Operand },
+  decorators: [
+    (story) => (
+      <VariableProvider
+        variables={[
+          { name: "value1", expression: { type: "number", value: 1000 } },
+        ]}
+      >
+        {story()}
+      </VariableProvider>
+    ),
+  ],
+};
+
+export const VariablesOperandWithDescription: Story = {
+  args: {
+    value: {
+      type: "variable",
+      name: "value1",
+    },
+  } satisfies { value: Operand },
+  decorators: [
+    (story) => (
+      <VariableProvider
+        variables={[
+          {
+            name: "value1",
+            expression: { type: "number", value: 1000 },
+            description: "テスト変数",
+          },
+        ]}
+      >
+        {story()}
+      </VariableProvider>
+    ),
+  ],
 };
 
 export const IndicatorOperand: Story = {

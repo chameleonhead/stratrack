@@ -1,5 +1,7 @@
 // 戦略テンプレートの型定義
 export type StrategyTemplate = {
+  /** 変数の宣言 */
+  variables?: VariableDefinition[];
   /** エントリー条件: エントリーのトリガーとなる条件 */
   entry: Condition;
   /** イグジット条件: 手仕舞い（決済）の条件 */
@@ -16,8 +18,15 @@ export type StrategyTemplate = {
   multiPositionControl?: MultiPositionControl;
 }
 
+// 変数定義: 変数名とその値を表す型定義
+export type VariableDefinition = {
+  name: string; // 変数名（例: rsi_avg）
+  expression: Operand; // RSIやMACDなどの指標オペランド（再帰可能）
+  description?: string;
+};
+
 // 条件式で使用するオペランドの型定義
-export type Operand = PriceOperand | IndicatorOperand | NumberOperand;
+export type Operand = PriceOperand | IndicatorOperand | NumberOperand | VariableOperand;
 
 /** 現在の価格や特定の足の価格を表すオペランド */
 export type PriceOperand = {
@@ -42,6 +51,12 @@ export type IndicatorOperand = {
 export type NumberOperand = {
   type: 'number';
   value: number;
+}
+
+/** 変数を表すオペランド */
+export type VariableOperand = {
+  type: 'variable';
+  name: string;
 }
 
 /** 比較条件: leftとrightを演算子operatorで比較 */

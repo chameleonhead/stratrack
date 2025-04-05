@@ -5,6 +5,7 @@ import { useIndicatorList, useIndicatorByName } from "./IndicatorProvider";
 import { Operand } from "../types";
 import NumberInput from "../../components/NumberInput";
 import Checkbox from "../../components/Checkbox";
+import { useVariables } from "./useVariables";
 
 export type OperandSelectorProps = {
   value?: Operand;
@@ -24,6 +25,7 @@ function OperandSelector({ value, onChange }: OperandSelectorProps) {
           { value: "price", label: "価格" },
           { value: "indicator", label: "インジケーター" },
           { value: "number", label: "数値" },
+          { value: "variable", label: "変数" },
         ]}
       />
 
@@ -42,6 +44,12 @@ function OperandSelector({ value, onChange }: OperandSelectorProps) {
       {type === "number" && (
         <NumberOperandSelector
           value={value?.type === "number" ? value : undefined}
+          onChange={onChange}
+        />
+      )}
+      {type === "variable" && (
+        <VariableOperandSelector
+          value={value?.type === "variable" ? value : undefined}
           onChange={onChange}
         />
       )}
@@ -220,6 +228,35 @@ function NumberOperandSelector({
           onChange(undefined);
         }
       }}
+    />
+  );
+}
+
+type VariableOperandSelectorProps = {
+  value?: Extract<Operand, { type: "variable" }>;
+  onChange: (value: Operand | undefined) => void;
+};
+
+// VariableOperandSelector の追加
+function VariableOperandSelector({
+  value,
+  onChange,
+}: VariableOperandSelectorProps) {
+  const variables = useVariables();
+  return (
+    <Select
+      value={value?.name}
+      onChange={(val) => {
+        if (val) {
+          onChange({ type: "variable", name: val });
+        } else {
+          onChange(undefined);
+        }
+      }}
+      options={variables.map((v) => ({
+        value: v.name,
+        label: `${v.name} ${v.description ? `(${v.description})` : ""}`,
+      }))}
     />
   );
 }
