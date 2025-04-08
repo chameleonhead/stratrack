@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Condition, GroupCondition } from "../types";
+import { GroupCondition } from "../types";
 import ConditionBuilder from "./ConditionBuilder";
 import Select from "../../components/Select";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type GroupConditionSelectorProps = {
-  value: GroupCondition | undefined;
-  onChange: (value: GroupCondition | undefined) => void;
+  name?: string;
+  value: Partial<GroupCondition>;
+  onChange: (value: Partial<GroupCondition>) => void;
 };
 
 const LOGIC_OPTIONS = [
@@ -13,40 +14,40 @@ const LOGIC_OPTIONS = [
   { value: "or", label: "いずれか満たす（OR）" },
 ];
 
-const GroupConditionSelector: React.FC<GroupConditionSelectorProps> = ({
+function GroupConditionSelector({
   value,
   onChange,
-}) => {
-  const [conditions, setConditions] = useState<(Condition | undefined)[]>(
-    value?.conditions || []
+}: GroupConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue(
+    { type: "group" },
+    value,
+    onChange
   );
-  const [operator, setOperator] = useState<GroupCondition["operator"]>(
-    value?.operator || "and"
-  );
-
-  useEffect(() => {
-    if (operator && conditions.every(Boolean)) {
-      onChange({
-        type: "group",
-        operator,
-        conditions: conditions as Condition[],
-      });
-    } else {
-      onChange(undefined);
-    }
-  }, [onChange, conditions, operator]);
 
   return (
     <div className="space-y-4">
       <Select
-        value={operator}
-        onChange={(val) => setOperator(val as GroupCondition["operator"])}
+        value={condition.operator || "and"}
+        onChange={(val) =>
+          setCondition({
+            ...condition,
+            operator: val as GroupCondition["operator"],
+          })
+        }
         options={LOGIC_OPTIONS}
       />
 
-      <ConditionBuilder value={conditions} onChange={setConditions} />
+      <ConditionBuilder
+        value={condition.conditions}
+        onChange={(val) =>
+          setCondition({
+            ...condition,
+            conditions: val as GroupCondition["conditions"],
+          })
+        }
+      />
     </div>
   );
-};
+}
 
 export default GroupConditionSelector;

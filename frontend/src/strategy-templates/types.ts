@@ -16,87 +16,132 @@ export type StrategyTemplate = {
   timingControl?: TimingControl;
   /** 複数ポジション制御: 同時保有ポジション数やヘッジ可否の設定 */
   multiPositionControl?: MultiPositionControl;
-}
+};
 
 // 変数定義: 変数名とその値を表す型定義
 export type VariableDefinition = {
   name: string; // 変数名（例: rsi_avg）
-  expression: Operand; // RSIやMACDなどの指標オペランド（再帰可能）
+  expression: VariableExpression; // RSIやMACDなどの指標オペランド（再帰可能）
   description?: string;
 };
 
-// 条件式で使用するオペランドの型定義
-export type Operand = PriceOperand | IndicatorOperand | NumberOperand | VariableOperand;
+// 変数式の型定義
+export type VariableExpression =
+  | PriceExpression
+  | IndicatorExpression
+  | ConstantExpression
+  | VariableReferenceExpression
+  | UnaryOperationExpression
+  | BinaryOperationExpression
+  | TernaryExpression;
 
-/** 現在の価格や特定の足の価格を表すオペランド */
-export type PriceOperand = {
-  type: 'price';
-  source?: 'bid' | 'ask' | 'close' | 'open' | 'high' | 'low';
+/** 現在の価格や特定の足の価格を表す式 */
+export type PriceExpression = {
+  type: "price";
+  source?: "bid" | "ask" | "close" | "open" | "high" | "low";
   /** オプション: 過去の価格にオフセットするバー数（0は現在のバー） */
   shiftBars?: number;
-}
+};
 
-/** テクニカル指標の値を表すオペランド */
-export type IndicatorOperand = {
-  type: 'indicator';
+/** テクニカル指標の値を表す式 */
+export type IndicatorExpression = {
+  type: "indicator";
   /** 指標の名称（例: 'SMA', 'RSI' 等） */
   name: string;
   /** 指標に渡すパラメータ（期間など）、キーと値の辞書 */
   params?: { [key: string]: string | number | boolean | null };
   /** オプション: 指標を計算する価格の種類（終値など） */
-  source?: 'close' | 'open' | 'high' | 'low';
-}
+  source?: VariableExpression;
+};
+
+/** 定数数値 */
+export type ConstantExpression = {
+  type: "constant";
+  value: number;
+};
+
+/** 他の変数の参照 */
+export type VariableReferenceExpression = {
+  type: "variable";
+  name: string;
+};
+
+/** 単項演算（マイナス、絶対値など） */
+export type UnaryOperationExpression = {
+  type: "unary_op";
+  operator: "-" | "abs";
+  operand: VariableExpression;
+};
+
+/** 二項演算（加算・減算・乗算・除算） */
+export type BinaryOperationExpression = {
+  type: "binary_op";
+  operator: "+" | "-" | "*" | "/";
+  left: VariableExpression;
+  right: VariableExpression;
+};
+
+/** 三項演算式: if (condition) then trueExpr else falseExpr */
+export type TernaryExpression = {
+  type: "ternary";
+  condition: Condition; // ここはCondition型をそのまま利用
+  trueExpr: VariableExpression;
+  falseExpr: VariableExpression;
+};
+
+// 条件式で使用するオペランドの型定義
+export type ConditionOperand = ConstantOperand | VariableOperand;
 
 /** 定数数値を表すオペランド */
-export type NumberOperand = {
-  type: 'number';
+export type ConstantOperand = {
+  type: "constant";
   value: number;
-}
+};
 
 /** 変数を表すオペランド */
 export type VariableOperand = {
-  type: 'variable';
+  type: "variable";
   name: string;
-}
+};
 
 /** 比較条件: leftとrightを演算子operatorで比較 */
 export type ComparisonCondition = {
-  type: 'comparison';
-  left: Operand;
-  operator: '>' | '<' | '>=' | '<=' | '==' | '!=';
-  right: Operand;
-}
+  type: "comparison";
+  left: ConditionOperand;
+  operator: ">" | "<" | ">=" | "<=" | "==" | "!=";
+  right: ConditionOperand;
+};
 
 /** クロス条件: leftがrightを上抜け(cross_over)または下抜け(cross_under)した */
 export type CrossCondition = {
-  type: 'cross';
-  direction: 'cross_over' | 'cross_under';
-  left: Operand;
-  right: Operand;
-}
+  type: "cross";
+  direction: "cross_over" | "cross_under";
+  left: ConditionOperand;
+  right: ConditionOperand;
+};
 
 /** 状態条件: operandが上昇傾向(rising)または下降傾向(falling)である */
 export type StateCondition = {
-  type: 'state';
-  operand: Operand;
-  state: 'rising' | 'falling';
+  type: "state";
+  operand: ConditionOperand;
+  state: "rising" | "falling";
   /** オプション: 直近で連続して上昇/下降している期間やバー数等 */
   length?: number;
-}
+};
 
 /** 変化条件: 指定したconditionが直前からtrue/falseの状態遷移をした */
 export type ChangeCondition = {
-  type: 'change';
+  type: "change";
   condition: Condition;
-  change: 'to_true' | 'to_false';
-}
+  change: "to_true" | "to_false";
+};
 
 /** グループ条件: 複数のconditionをand/orで組み合わせた複合条件 */
 export type GroupCondition = {
-  type: 'group';
-  operator: 'and' | 'or';
+  type: "group";
+  operator: "and" | "or";
   conditions: Condition[];
-}
+};
 
 /** Condition型: 上記5種類のいずれかの条件 */
 export type Condition =
@@ -134,12 +179,12 @@ export type PositionManagement = {
     /** ナンピンする価格間隔（例: 価格が何pips不利に動いたら追加するか） */
     addDistance: number;
   };
-}
+};
 
 /** リスク・ロット戦略: エントリー時のロットサイズ計算方法 */
 export type RiskLotStrategy =
-  | { type: 'fixed';    /** 固定ロット数 */ lotSize: number }
-  | { type: 'percentage'; /** 口座資金に対する割合(%) */ percent: number };
+  | { type: "fixed"; /** 固定ロット数 */ lotSize: number }
+  | { type: "percentage"; /** 口座資金に対する割合(%) */ percent: number };
 
 /** 環境フィルター: 市場環境による取引条件制限 */
 export type EnvironmentFilter = {
@@ -149,7 +194,7 @@ export type EnvironmentFilter = {
   volatilityCondition?: Condition;
   /** ニュース回避フラグ: 重要ニュース時の取引を避ける場合true */
   avoidNews?: boolean;
-}
+};
 
 /** タイミング制御: 売買を許可する曜日・時間帯の指定 */
 export type TimingControl = {
@@ -162,7 +207,7 @@ export type TimingControl = {
     /** 終了時刻 (例: "15:30") */
     to: string;
   }>;
-}
+};
 
 /** 複数ポジション制御: ポジション数やヘッジ許可設定 */
 export type MultiPositionControl = {
@@ -170,4 +215,4 @@ export type MultiPositionControl = {
   maxPositions?: number;
   /** 買いと売りのヘッジポジションを同時保有することを許可するか */
   allowHedging?: boolean;
-}
+};

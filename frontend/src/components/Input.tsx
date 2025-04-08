@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type InputProps = {
   label?: string;
@@ -33,25 +34,18 @@ function Input({
     [id]
   );
 
-  const [localValue, setLocalValue] = useState(value ?? defaultValue ?? "");
-
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || "",
+    value,
+    onChange
+  );
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
-      onChange?.(newValue);
-
-      if (typeof value === "undefined") {
-        setLocalValue(newValue);
-      }
+      setLocalValue(newValue);
     },
-    [onChange, value]
+    [setLocalValue]
   );
-
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
 
   return (
     <div className="w-full space-y-1">

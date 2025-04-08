@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { ChangeCondition, Condition } from "../types";
+import { ChangeCondition } from "../types";
 import ConditionRow from "./ConditionRow";
 import Select from "../../components/Select";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type ChangeConditionSelectorProps = {
-  value: ChangeCondition | undefined;
-  onChange: (value: ChangeCondition | undefined) => void;
+  name?: string;
+  value: Partial<ChangeCondition>;
+  onChange: (value: Partial<ChangeCondition>) => void;
 };
 
 const CHANGE_OPTIONS = [
@@ -13,36 +14,40 @@ const CHANGE_OPTIONS = [
   { value: "to_false", label: "true → false への変化" },
 ];
 
-const ChangeConditionSelector: React.FC<ChangeConditionSelectorProps> = ({
+function ChangeConditionSelector({
   value,
   onChange,
-}) => {
-  const [condition, setCondition] = useState<Condition | undefined>(
-    value?.condition
+}: ChangeConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue(
+    { type: "change" },
+    value,
+    onChange
   );
-  const [change, setChange] = useState<ChangeCondition["change"]>(
-    value?.change || "to_true"
-  );
-
-  useEffect(() => {
-    if (condition && change) {
-      onChange({ type: "change", condition, change });
-    } else {
-      onChange(undefined);
-    }
-  }, [onChange, condition, change]);
 
   return (
     <div className="space-y-4">
       <Select
-        value={change}
-        onChange={(val) => setChange(val as ChangeCondition["change"])}
+        value={condition.change}
+        onChange={(val) =>
+          setCondition({
+            ...condition,
+            change: val as ChangeCondition["change"],
+          })
+        }
         options={CHANGE_OPTIONS}
       />
 
-      <ConditionRow value={condition} onChange={setCondition} />
+      <ConditionRow
+        value={condition.condition}
+        onChange={(val) =>
+          setCondition({
+            ...condition,
+            condition: val as ChangeCondition["condition"],
+          })
+        }
+      />
     </div>
   );
-};
+}
 
 export default ChangeConditionSelector;

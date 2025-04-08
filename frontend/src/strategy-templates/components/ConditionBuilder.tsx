@@ -1,49 +1,49 @@
 import { Condition } from "../types";
 import ConditionRow from "./ConditionRow";
 import Button from "../../components/Button";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type ConditionBuilderProps = {
-  value: (Condition | undefined)[];
-  onChange: (value: (Condition | undefined)[]) => void;
+  name?: string;
+  value?: Partial<Condition>[];
+  onChange?: (value: Partial<Condition>[]) => void;
 };
 
-function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
-  const updateCondition = (
-    index: number,
-    newCondition: Condition | undefined
-  ) => {
-    const newConditions = [...value];
-    if (newCondition) {
-      newConditions[index] = newCondition;
-    } else {
-      newConditions.splice(index, 1);
-    }
-    onChange(newConditions);
+function ConditionBuilder({ name, value, onChange }: ConditionBuilderProps) {
+  const [localValue, setLocalValue] = useLocalValue([], value, onChange);
+
+  const updateCondition = (index: number, newCondition: Partial<Condition>) => {
+    const newConditions = [...localValue];
+    newConditions[index] = newCondition;
+    setLocalValue(newConditions);
   };
 
   const addCondition = () => {
-    onChange([
-      ...value,
+    setLocalValue([
+      ...localValue,
       {
         type: "comparison",
         operator: ">",
-        left: { type: "number", value: 0 },
-        right: { type: "number", value: 0 },
+        left: { type: "constant", value: 0 },
+        right: { type: "constant", value: 0 },
       },
     ]);
   };
 
   return (
     <div className="space-y-4">
-      {value.map((condition, index) => (
+      {localValue.map((condition, index) => (
         <ConditionRow
           key={index}
+          name={`${name}[${index}]`}
           value={condition}
           onChange={(updated) => updateCondition(index, updated)}
         />
       ))}
 
-      <Button onClick={addCondition}>条件を追加</Button>
+      <Button type="button" onClick={addCondition}>
+        条件を追加
+      </Button>
     </div>
   );
 }

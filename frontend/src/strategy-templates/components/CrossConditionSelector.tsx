@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { CrossCondition, Operand } from "../types";
-import OperandSelector from "./OperandSelector";
+import { CrossCondition } from "../types";
+import OperandSelector from "./ConditionOperandSelector";
 import Select from "../../components/Select";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type CrossConditionSelectorProps = {
-  value: CrossCondition | undefined;
-  onChange: (value: CrossCondition | undefined) => void;
+  name?: string;
+  value?: Partial<CrossCondition>;
+  onChange: (value: Partial<CrossCondition>) => void;
 };
 
 const CROSS_DIRECTIONS = [
@@ -14,34 +15,44 @@ const CROSS_DIRECTIONS = [
 ];
 
 function CrossConditionSelector({
+  name,
   value,
   onChange,
 }: CrossConditionSelectorProps) {
-  const [left, setLeft] = useState<Operand | undefined>(value?.left);
-  const [right, setRight] = useState<Operand | undefined>(value?.right);
-  const [direction, setDirection] = useState<CrossCondition["direction"]>(
-    value?.direction || "cross_over"
+  const [condtion, setCondition] = useLocalValue(
+    { type: "cross" },
+    value,
+    onChange
   );
-
-  useEffect(() => {
-    if (left && right && direction) {
-      onChange({ type: "cross", left, right, direction });
-    } else {
-      onChange(undefined);
-    }
-  }, [onChange, left, right, direction]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-      <OperandSelector value={left} onChange={setLeft} />
+      <OperandSelector
+        name={`${name}.left`}
+        value={condtion.left}
+        onChange={(left) =>
+          setCondition({ ...condtion, left: left as CrossCondition["left"] })
+        }
+      />
 
       <Select
-        value={direction}
-        onChange={(val) => setDirection(val as CrossCondition["direction"])}
+        name={`${name}.direction`}
+        value={condtion.direction}
+        onChange={(direction) =>
+          setCondition({
+            ...condtion,
+            direction: direction as CrossCondition["direction"],
+          })
+        }
         options={CROSS_DIRECTIONS}
       />
 
-      <OperandSelector value={right} onChange={setRight} />
+      <OperandSelector
+        value={condtion.right}
+        onChange={(right) =>
+          setCondition({ ...condtion, right: right as CrossCondition["right"] })
+        }
+      />
     </div>
   );
 }

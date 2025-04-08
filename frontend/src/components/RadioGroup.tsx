@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type RadioGroupOption = {
   label: string;
@@ -36,24 +37,11 @@ function RadioGroup({
     [id]
   );
 
-  const [localValue, setLocalValue] = useState(value ?? defaultValue ?? "");
-
-  const handleChange = useCallback(
-    (newValue: string) => {
-      onChange?.(newValue);
-
-      if (typeof value === "undefined") {
-        setLocalValue(newValue);
-      }
-    },
-    [onChange, value]
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || "",
+    value,
+    onChange
   );
-
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
 
   return (
     <div id={uniqueId} className={cn("w-full space-y-1", className)}>
@@ -81,7 +69,7 @@ function RadioGroup({
                 name={name}
                 value={opt.value}
                 checked={localValue === opt.value}
-                onChange={() => handleChange(opt.value)}
+                onChange={() => setLocalValue(opt.value)}
                 className={cn(
                   "h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500",
                   error ? "border-red-500 focus:ring-red-500" : ""

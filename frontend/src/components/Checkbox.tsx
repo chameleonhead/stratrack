@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type CheckboxProps = {
   label: string;
@@ -27,25 +28,15 @@ function Checkbox({
     [id]
   );
 
-  const [localChecked, setLocalChecked] = useState(checked ?? false);
+  const [localValue, setLocalValue] = useLocalValue(false, checked, onChange);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const isChecked = event.target.checked;
-      onChange?.(isChecked);
-
-      if (typeof checked === "undefined") {
-        setLocalChecked(isChecked);
-      }
+      setLocalValue(isChecked);
     },
-    [onChange, checked]
+    [setLocalValue]
   );
-
-  useEffect(() => {
-    if (typeof checked !== "undefined") {
-      setLocalChecked(checked);
-    }
-  }, [checked]);
 
   return (
     <div className={cn("flex items-center space-x-2", className)}>
@@ -54,7 +45,7 @@ function Checkbox({
         name={name}
         value={value}
         type="checkbox"
-        checked={localChecked}
+        checked={localValue}
         onChange={handleChange}
         className={cn(
           "h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition",

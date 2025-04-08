@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type DatePickerProps = {
   label?: string;
@@ -29,24 +30,15 @@ export default function DatePicker({
     [id]
   );
 
-  const [localValue, setLocalValue] = useState(value ?? "");
+  const [localValue, setLocalValue] = useLocalValue("", value, onChange);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
-      onChange?.(newValue);
-      if (typeof value === "undefined") {
-        setLocalValue(newValue);
-      }
+      setLocalValue(newValue);
     },
-    [onChange, value]
+    [setLocalValue]
   );
-
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
 
   return (
     <div className={cn("w-full space-y-1", className)}>

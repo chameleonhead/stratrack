@@ -5,39 +5,17 @@ import Select from "../components/Select";
 import Textarea from "../components/Textarea";
 import TimeRangePicker from "../components/TimeRangePicker";
 import WeekdaySelector from "../components/WeekdaySelector";
+import BasicInfo from "./sections/BasicInfo";
+import EntryLogic from "./sections/EntryLogic";
 
 function CreateStrategyTemplateForm() {
   return (
     <form>
       {/* ① 基本情報 */}
-      <section id="basic-info">
-        <h2>基本情報</h2>
-        <Input label="戦略名" name="name" required />
-        <Textarea label="説明" name="description" rows={3} />
-        <Select label="通貨ペア" name="symbol" options={["USDJPY", "EURUSD"]} />
-        <Select
-          label="時間足"
-          name="timeframe"
-          options={["1m", "5m", "15m", "1h", "4h", "1d"]}
-        />
-      </section>
+      <BasicInfo />
 
       {/* ② エントリー戦略 */}
-      <section id="entry-logic">
-        <h2>エントリー条件</h2>
-        <Select
-          label="インジケーター"
-          name="entry.indicator"
-          options={["Donchian Channel", "SMA", "RSI"]}
-        />
-        <NumberInput label="期間" name="entry.period" defaultValue={20} />
-        {/* <ConditionBuilder name="entry.condition" /> */}
-        <Select
-          label="エントリー方向"
-          name="entry.direction"
-          options={["buy", "sell", "both"]}
-        />
-      </section>
+      <EntryLogic />
 
       {/* ③ 保有中戦略 */}
       <section id="position-management">
@@ -77,8 +55,14 @@ function CreateStrategyTemplateForm() {
       <section id="filter-conditions">
         <h2>環境フィルター</h2>
         <Checkbox label="トレンド時のみ" name="filter.trend" />
-        <Checkbox label="ボラティリティが高いときのみ" name="filter.volatility" />
-        <Checkbox label="指標発表前はエントリーしない" name="filter.avoid_news" />
+        <Checkbox
+          label="ボラティリティが高いときのみ"
+          name="filter.volatility"
+        />
+        <Checkbox
+          label="指標発表前はエントリーしない"
+          name="filter.avoid_news"
+        />
       </section>
 
       {/* ⑦ タイミング制御 */}

@@ -41,8 +41,8 @@ export const WithError: Story = {
         onChange={setRange}
         required
         error={{
-          start: !range.start ? "開始時間を入力してください" : undefined,
-          end: !range.end ? "終了時間を入力してください" : undefined,
+          start: !range.start ? "開始時間を入力してください" : "",
+          end: !range.end ? "終了時間を入力してください" : "",
         }}
       />
     );

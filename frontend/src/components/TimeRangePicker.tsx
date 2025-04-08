@@ -10,7 +10,7 @@ export type TimeRange = {
 export type TimeRangePickerProps = {
   label: string;
   id?: string;
-  name: string;
+  name?: string;
   value?: TimeRange;
   onChange?: (value: TimeRange) => void;
   required?: boolean;

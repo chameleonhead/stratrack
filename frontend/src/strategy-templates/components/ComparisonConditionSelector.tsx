@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { ComparisonCondition, Operand } from "../types";
-import OperandSelector from "./OperandSelector";
+import { ComparisonCondition } from "../types";
+import OperandSelector from "./ConditionOperandSelector";
 import Select from "../../components/Select";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type ComparisonConditionSelectorProps = {
-  value: ComparisonCondition | undefined;
-  onChange: (value: ComparisonCondition | undefined) => void;
+  name?: string;
+  value: Partial<ComparisonCondition>;
+  onChange: (value: Partial<ComparisonCondition>) => void;
 };
 
 const COMPARISON_OPERATORS = [
@@ -17,36 +18,50 @@ const COMPARISON_OPERATORS = [
   { value: "!=", label: "!=" },
 ];
 
-const ComparisonConditionSelector: React.FC<
-  ComparisonConditionSelectorProps
-> = ({ value, onChange }) => {
-  const [left, setLeft] = useState<Operand | undefined>(value?.left);
-  const [right, setRight] = useState<Operand | undefined>(value?.right);
-  const [operator, setOperator] = useState<ComparisonCondition["operator"]>(
-    value?.operator || ">"
+function ComparisonConditionSelector({
+  value,
+  onChange,
+}: ComparisonConditionSelectorProps) {
+  const [condtion, setCondition] = useLocalValue(
+    { type: "comparison" },
+    value,
+    onChange
   );
-
-  useEffect(() => {
-    if (left && right && operator) {
-      onChange({ type: "comparison", left, right, operator });
-    } else {
-      onChange(undefined);
-    }
-  }, [onChange, left, right, operator]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-      <OperandSelector value={left} onChange={setLeft} />
+      <OperandSelector
+        value={condtion.left}
+        onChange={(left) =>
+          setCondition({
+            ...condtion,
+            left: left as ComparisonCondition["left"],
+          })
+        }
+      />
 
       <Select
-        value={operator}
-        onChange={(val) => setOperator(val as ComparisonCondition["operator"])}
+        value={condtion.operator}
+        onChange={(operator) =>
+          setCondition({
+            ...condtion,
+            operator: operator as ComparisonCondition["operator"],
+          })
+        }
         options={COMPARISON_OPERATORS}
       />
 
-      <OperandSelector value={right} onChange={setRight} />
+      <OperandSelector
+        value={condtion.right}
+        onChange={(right) =>
+          setCondition({
+            ...condtion,
+            right: right as ComparisonCondition["right"],
+          })
+        }
+      />
     </div>
   );
-};
+}
 
 export default ComparisonConditionSelector;

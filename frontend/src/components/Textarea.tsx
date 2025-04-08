@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type TextareaProps = {
   label?: string;
@@ -32,23 +33,18 @@ function Textarea({
     () => id || `textarea-${Math.random().toString(36).slice(2, 9)}`,
     [id]
   );
-  const [localValue, setLocalValue] = useState(value ?? defaultValue ?? "");
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue ?? "",
+    value,
+    onChange
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      onChange?.(e.target.value);
-      if (typeof value === "undefined") {
-        setLocalValue(e.target.value);
-      }
+      setLocalValue(e.target.value);
     },
-    [onChange, value]
+    [setLocalValue]
   );
-
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
 
   return (
     <div className="w-full space-y-1">

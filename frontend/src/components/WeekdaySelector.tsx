@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type Weekday = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 
@@ -41,12 +42,11 @@ export default function WeekdaySelector({
     () => id || `input-${Math.random().toString(36)}`,
     [id]
   );
-  const [localValue, setLocalValue] = useState(value || defaultValue || []);
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || [],
+    value,
+    onChange
+  );
 
   const toggleDay = useCallback(
     (day: Weekday) => {
@@ -56,12 +56,9 @@ export default function WeekdaySelector({
       } else {
         newSelected = [...localValue, day];
       }
-      if (typeof value === "undefined") {
-        setLocalValue(newSelected);
-      }
-      onChange?.(newSelected);
+      setLocalValue(newSelected);
     },
-    [value, localValue, onChange]
+    [localValue, setLocalValue]
   );
 
   return (

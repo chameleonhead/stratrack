@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import CreateStrategyTemplateForm from "./CreateStrategyTemplateForm";
+import BasicInfo from "./BasicInfo";
 
 const meta = {
-  component: CreateStrategyTemplateForm,
+  component: BasicInfo,
   args: { onClick: fn() },
-} satisfies Meta<typeof CreateStrategyTemplateForm>;
+} satisfies Meta<typeof BasicInfo>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

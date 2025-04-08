@@ -1,9 +1,12 @@
-import { useState } from "react";
 import WeekdaySelector from "./WeekdaySelector";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 
 const meta: Meta<typeof WeekdaySelector> = {
   component: WeekdaySelector,
+  args: {
+    onChange: fn(),
+  },
 };
 
 export default meta;
@@ -11,34 +14,28 @@ export default meta;
 type Story = StoryObj<typeof WeekdaySelector>;
 
 export const Basic: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState<string[]>([]);
-    return (
-      <WeekdaySelector label="定休日を選択" value={value} onChange={setValue} />
-    );
+  args: {
+    label: "曜日",
   },
 };
 
 export const DefaultSelected: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState<string[]>(["sat", "sun"]);
-    return <WeekdaySelector label="休業日" value={value} onChange={setValue} />;
+  args: {
+    label: "曜日",
+    defaultValue: ["mon", "tue", "wed", "thu", "fri"],
+  },
+};
+
+export const Controlled: Story = {
+  args: {
+    label: "曜日",
+    value: ["mon", "tue"],
   },
 };
 
 export const WithError: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState<string[]>([]);
-    return (
-      <WeekdaySelector
-        label="出勤日"
-        value={value}
-        onChange={setValue}
-        error={value.length === 0 ? "少なくとも1日選択してください" : undefined}
-      />
-    );
+  args: {
+    label: "曜日",
+    error: "少なくとも1日選択してください",
   },
 };

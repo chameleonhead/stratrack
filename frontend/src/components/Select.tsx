@@ -1,11 +1,13 @@
 import { ChangeEvent, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type SelectProps = {
   label?: string;
   id?: string;
   name?: string;
   placeholder?: string;
+  defaultValue?: string;
   value?: string;
   onChange?: (value: string) => void;
   options?: Array<{ value: string; label: string } | string>;
@@ -20,6 +22,7 @@ function Select({
   id,
   name,
   placeholder,
+  defaultValue,
   value,
   onChange,
   options = [],
@@ -33,9 +36,15 @@ function Select({
     [id]
   );
 
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || "",
+    value,
+    onChange
+  );
+
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     const selectedValue = event.target.value;
-    onChange?.(selectedValue);
+    setLocalValue(selectedValue);
   }
 
   return (
@@ -51,7 +60,7 @@ function Select({
       <select
         id={uniqueId}
         name={name}
-        value={value}
+        value={localValue}
         required={required}
         onChange={handleChange}
         className={cn(
