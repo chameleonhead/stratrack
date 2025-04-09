@@ -10,7 +10,6 @@ function BasicInfo() {
         <Textarea label="説明" name="description" rows={3} />
         <TagInput label="タグ" name="tags" />
       </section>
-
   );
 }
 

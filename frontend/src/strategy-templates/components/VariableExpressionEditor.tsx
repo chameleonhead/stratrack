@@ -3,6 +3,7 @@ import { VariableExpression } from "../types";
 import Select from "../../components/Select";
 
 export type VariableExpressionEditorProps = {
+  name?: string;
   value?: VariableExpression;
   onChange: (value: VariableExpression | undefined) => void;
 };
@@ -18,6 +19,7 @@ const EXPRESSION_TYPES = [
 ];
 
 const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
+  name,
   value,
   onChange,
 }) => {
@@ -75,6 +77,8 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
   return (
     <div className="space-y-2">
       <Select
+        label="式の種類"
+        name={`${name}.type`}
         value={type}
         onChange={(val) => handleTypeChange(val as VariableExpression["type"])}
         options={EXPRESSION_TYPES}
