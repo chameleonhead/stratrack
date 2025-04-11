@@ -1,19 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import BasicInfo from "./BasicInfo";
+import RiskManagement from "./RiskManagement";
 
 const meta = {
-  component: BasicInfo,
+  component: RiskManagement,
   args: {
-    value: {},
     onChange: fn()
   },
-} satisfies Meta<typeof BasicInfo>;
+} satisfies Meta<typeof RiskManagement>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
 };

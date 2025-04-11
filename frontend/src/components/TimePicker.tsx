@@ -11,8 +11,8 @@ export type TimePickerProps = {
   placeholder?: string;
   required?: boolean;
   error?: string;
-  className?: string;
   step?: number; // 秒単位 (例: 60 → 分単位, 1 → 秒単位)
+  fullWidth?: boolean;
 };
 
 export default function TimePicker({
@@ -24,8 +24,8 @@ export default function TimePicker({
   placeholder,
   required = false,
   error,
-  className,
   step = 60,
+  fullWidth,
 }: TimePickerProps) {
   const uniqueId = useMemo(
     () => id || `timepicker-${Math.random().toString(36).slice(2, 9)}`,
@@ -42,7 +42,7 @@ export default function TimePicker({
   );
 
   return (
-    <div className={cn("w-full space-y-1", className)}>
+    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
         <label
           htmlFor={uniqueId}
@@ -61,7 +61,8 @@ export default function TimePicker({
         step={step}
         placeholder={placeholder}
         className={cn(
-          "w-full px-4 py-2 rounded-lg border text-sm transition-all duration-150",
+          fullWidth ? "w-full" : null,
+          "px-4 py-2 rounded-lg border text-sm transition-all duration-150",
           "bg-white text-gray-900",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error

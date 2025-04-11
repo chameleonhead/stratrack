@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
 import { useLocalValue } from "../hooks/useLocalValue";
-
-export type Weekday = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+import { Weekday } from "../strategy-templates/types";
 
 export type WeekdaySelectorProps = {
   label?: string;
@@ -64,7 +63,7 @@ export default function WeekdaySelector({
   return (
     <div id={uniqueId} className={cn("w-full space-y-1", className)}>
       {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="flex gap-4">
         {weekdays.map((day) => (
           <button
             key={day.value}
@@ -72,7 +71,7 @@ export default function WeekdaySelector({
             name={name}
             onClick={() => toggleDay(day.value)}
             className={cn(
-              "py-1 px-2 rounded text-sm font-medium border transition select-none",
+              "flex-grow py-2 px-2 rounded text-sm font-medium border transition select-none",
               localValue.includes(day.value)
                 ? "bg-blue-600 text-white border-blue-600"
                 : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"

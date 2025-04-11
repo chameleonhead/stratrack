@@ -36,3 +36,12 @@ export const WithError: Story = {
     required: true,
   },
 };
+
+export const FullWidth: Story = {
+  args: {
+    label: "戦略名",
+    placeholder: "例: ドンチャンチャンネル",
+    fullWidth: true,
+  },
+};
+

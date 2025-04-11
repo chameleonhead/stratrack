@@ -2,34 +2,57 @@ import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
-import { VariableDefinition, VariableExpression } from "../types";
+import {
+  StrategyTemplate,
+  VariableDefinition,
+  VariableExpression,
+} from "../types";
 
-function Variables() {
-  const [localValue, setLocalValue] = useLocalValue<VariableDefinition[]>(
-    [],
-    undefined,
-    undefined
+export type VariablesProps = {
+  value?: Partial<StrategyTemplate>;
+  onChange?: (value: Partial<StrategyTemplate>) => void;
+};
+
+function Variables({ value, onChange }: VariablesProps) {
+  const [localValue, setLocalValue] = useLocalValue<Partial<StrategyTemplate>>(
+    { variables: [] },
+    value,
+    onChange
   );
 
   const handleAdd = () => {
-    setLocalValue([
+    setLocalValue({
       ...localValue,
-      { name: "", expression: { type: "constant", value: 0 } },
-    ]);
+      variables: [
+        ...(localValue.variables || []),
+        { name: "", expression: { type: "constant", value: 0 } },
+      ],
+    });
   };
 
   const handleUpdate = (index: number, value: VariableDefinition) => {
-    const newVariables = [...localValue];
-    newVariables[index] = value;
-    setLocalValue(newVariables);
+    const updatedVariables = [...(localValue.variables || [])];
+    updatedVariables[index] = value;
+    setLocalValue({ ...localValue, variables: updatedVariables });
   };
 
   return (
     <section id="basic-info" className="space-y-4">
       <h2>変数定義</h2>
-      {localValue.map((variable, index) => (
+      {localValue?.variables?.map((variable, index) => (
         <div key={index} className="space-y-4 border p-4 rounded">
-          <Input label="変数名" name={`variables[${index}].name`} required />
+          <Input
+            fullWidth
+            label="変数名"
+            value={variable.name || ""}
+            onChange={(value) =>
+              handleUpdate(index, {
+                ...variable,
+                name: value,
+              })
+            }
+            required
+          />
           <VariableExpressionEditor
             value={variable.expression}
             onChange={(value) =>
@@ -39,7 +62,17 @@ function Variables() {
               })
             }
           />
-          <Input label="説明" name={`variables[${index}].description`} />
+          <Input
+            fullWidth
+            label="説明"
+            value={variable.description || ""}
+            onChange={(value) =>
+              handleUpdate(index, {
+                ...variable,
+                description: value,
+              })
+            }
+          />
         </div>
       ))}
       <Button type="button" onClick={handleAdd}>

@@ -11,7 +11,7 @@ export type DatePickerProps = {
   placeholder?: string;
   required?: boolean;
   error?: string;
-  className?: string;
+  fullWidth?: boolean;
 };
 
 export default function DatePicker({
@@ -23,7 +23,7 @@ export default function DatePicker({
   placeholder,
   required = false,
   error,
-  className,
+  fullWidth,
 }: DatePickerProps) {
   const uniqueId = useMemo(
     () => id || `datepicker-${Math.random().toString(36).slice(2, 9)}`,
@@ -41,7 +41,7 @@ export default function DatePicker({
   );
 
   return (
-    <div className={cn("w-full space-y-1", className)}>
+    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
         <label
           htmlFor={uniqueId}
@@ -59,7 +59,8 @@ export default function DatePicker({
         required={required}
         placeholder={placeholder}
         className={cn(
-          "w-full px-4 py-2 rounded-lg border text-sm transition-all duration-150",
+          fullWidth ? "w-full" : null,
+          "px-4 py-2 rounded-lg border text-sm transition-all duration-150",
           "bg-white text-gray-900",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error

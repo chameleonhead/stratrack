@@ -1,8 +1,12 @@
 import Button from "./Button";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 
 const meta: Meta<typeof Button> = {
   component: Button,
+  args: {
+    onClick: fn(),
+  },
 };
 
 export default meta;
@@ -62,5 +66,12 @@ export const Disabled: Story = {
   args: {
     children: "無効ボタン",
     disabled: true,
+  },
+};
+
+export const FullWidth: Story = {
+  args: {
+    children: "送信",
+    fullWidth: true,
   },
 };

@@ -25,38 +25,46 @@ function StateConditionSelector({
     onChange
   );
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-      <OperandSelector
-        value={condition.operand}
-        onChange={(val) =>
-          setCondition({
-            ...condition,
-            operand: val as StateCondition["operand"],
-          })
-        }
-      />
-
-      <Select
-        value={condition.state}
-        onChange={(val) =>
-          setCondition({
-            ...condition,
-            state: val as StateCondition["state"],
-          })
-        }
-        options={STATE_OPTIONS}
-      />
-
-      <NumberInput
-        value={condition.length}
-        onChange={(val) =>
-          setCondition({
-            ...condition,
-            length: val as StateCondition["length"],
-          })
-        }
-        placeholder="期間（任意）"
-      />
+    <div className="grid gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+        <div className="col-span-1">
+          <Select
+            fullWidth
+            value={condition.state}
+            onChange={(val) =>
+              setCondition({
+                ...condition,
+                state: val as StateCondition["state"],
+              })
+            }
+            options={STATE_OPTIONS}
+          />
+        </div>
+        <div className="col-span-1">
+          <NumberInput
+            fullWidth
+            value={condition.length}
+            onChange={(val) =>
+              setCondition({
+                ...condition,
+                length: val as StateCondition["length"],
+              })
+            }
+            placeholder="期間（任意）"
+          />
+        </div>
+      </div>
+      <div>
+        <OperandSelector
+          value={condition.operand}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              operand: val as StateCondition["operand"],
+            })
+          }
+        />
+      </div>
     </div>
   );
 }

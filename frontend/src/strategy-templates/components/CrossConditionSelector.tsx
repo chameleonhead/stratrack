@@ -26,33 +26,41 @@ function CrossConditionSelector({
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-      <OperandSelector
-        name={`${name}.left`}
-        value={condtion.left}
-        onChange={(left) =>
-          setCondition({ ...condtion, left: left as CrossCondition["left"] })
-        }
-      />
-
-      <Select
-        name={`${name}.direction`}
-        value={condtion.direction}
-        onChange={(direction) =>
-          setCondition({
-            ...condtion,
-            direction: direction as CrossCondition["direction"],
-          })
-        }
-        options={CROSS_DIRECTIONS}
-      />
-
-      <OperandSelector
-        value={condtion.right}
-        onChange={(right) =>
-          setCondition({ ...condtion, right: right as CrossCondition["right"] })
-        }
-      />
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+      <div className="col-span-1 md:col-span-2">
+        <OperandSelector
+          name={`${name}.left`}
+          value={condtion.left}
+          onChange={(left) =>
+            setCondition({ ...condtion, left: left as CrossCondition["left"] })
+          }
+        />
+      </div>
+      <div className="col-span-1">
+        <Select
+          fullWidth
+          name={`${name}.direction`}
+          value={condtion.direction}
+          onChange={(direction) =>
+            setCondition({
+              ...condtion,
+              direction: direction as CrossCondition["direction"],
+            })
+          }
+          options={CROSS_DIRECTIONS}
+        />
+      </div>
+      <div className="col-span-1 md:col-span-2">
+        <OperandSelector
+          value={condtion.right}
+          onChange={(right) =>
+            setCondition({
+              ...condtion,
+              right: right as CrossCondition["right"],
+            })
+          }
+        />
+      </div>
     </div>
   );
 }

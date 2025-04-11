@@ -5,12 +5,13 @@ import PositionManagement from "./PositionManagement";
 
 const meta = {
   component: PositionManagement,
-  args: { onClick: fn() },
+  args: {
+    onChange: fn()
+  },
 } satisfies Meta<typeof PositionManagement>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
 };

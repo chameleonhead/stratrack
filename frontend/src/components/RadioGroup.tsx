@@ -17,7 +17,7 @@ export type RadioGroupProps = {
   options: RadioGroupOption[];
   direction?: "vertical" | "horizontal";
   error?: string;
-  className?: string;
+  fullWidth?: boolean;
 };
 
 function RadioGroup({
@@ -30,7 +30,7 @@ function RadioGroup({
   options,
   direction = "vertical",
   error,
-  className,
+  fullWidth = false,
 }: RadioGroupProps) {
   const uniqueId = useMemo(
     () => id || `radio-${Math.random().toString(36).slice(2, 9)}`,
@@ -44,7 +44,7 @@ function RadioGroup({
   );
 
   return (
-    <div id={uniqueId} className={cn("w-full space-y-1", className)}>
+    <div id={uniqueId} className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
         <p
           className="text-sm font-semibold text-gray-800"

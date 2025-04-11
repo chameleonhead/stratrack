@@ -4,12 +4,11 @@ import Button from "../../components/Button";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type ConditionBuilderProps = {
-  name?: string;
   value?: Partial<Condition>[];
   onChange?: (value: Partial<Condition>[]) => void;
 };
 
-function ConditionBuilder({ name, value, onChange }: ConditionBuilderProps) {
+function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const [localValue, setLocalValue] = useLocalValue([], value, onChange);
 
   const updateCondition = (index: number, newCondition: Partial<Condition>) => {
@@ -35,7 +34,6 @@ function ConditionBuilder({ name, value, onChange }: ConditionBuilderProps) {
       {localValue.map((condition, index) => (
         <ConditionRow
           key={index}
-          name={`${name}[${index}]`}
           value={condition}
           onChange={(updated) => updateCondition(index, updated)}
         />

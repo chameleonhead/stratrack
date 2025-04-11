@@ -5,12 +5,13 @@ import EntryLogic from "./EntryLogic";
 
 const meta = {
   component: EntryLogic,
-  args: { onClick: fn() },
+  args: {
+    onChange: fn()
+  },
 } satisfies Meta<typeof EntryLogic>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
 };

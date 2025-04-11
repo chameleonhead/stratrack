@@ -45,3 +45,11 @@ export const WithError: Story = {
     error: "プランを選択してください",
   },
 };
+
+export const FullWidth: Story = {
+  args: {
+    label: "通貨",
+    placeholder: "通貨を選択してください",
+    fullWidth: true,
+  },
+};

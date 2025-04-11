@@ -1,15 +1,36 @@
+export type Strategy = {
+  /** 戦略ID */
+  id: string;
+  /** 戦略名 */
+  name: string;
+  /** 戦略の説明 */
+  description?: string;
+  /** タグ */
+  tags?: string[];
+  /** 戦略のバージョン */
+  version?: string;
+  /** 戦略の作成日時 */
+  createdAt?: string;
+  /** 戦略の更新日時 */
+  updatedAt?: string;
+  /** 戦略の作成者 */
+  author?: string;
+  /** 戦略テンプレートの内容 */
+  template: StrategyTemplate;
+}
+
 // 戦略テンプレートの型定義
 export type StrategyTemplate = {
   /** 変数の宣言 */
   variables?: VariableDefinition[];
   /** エントリー条件: エントリーのトリガーとなる条件 */
-  entry: Condition;
+  entry: EntryCondition[];
   /** イグジット条件: 手仕舞い（決済）の条件 */
-  exit: Condition;
+  exit: ExitCondition[]
+  /** リスク・ロット戦略: ロットサイズ計算方法（固定値 or 口座割合） */
+  riskManagement: RiskManagement;
   /** 保有中戦略: トレールストップ、利確、損切り、ナンピン等の設定 */
   positionManagement?: PositionManagement;
-  /** リスク・ロット戦略: ロットサイズ計算方法（固定値 or 口座割合） */
-  riskLotStrategy?: RiskLotStrategy;
   /** 環境フィルター: 相場の環境条件（トレンド/ボラ判断、ニュース回避） */
   environmentFilter?: EnvironmentFilter;
   /** タイミング制御: 売買を行う曜日や時間帯の制限 */
@@ -151,62 +172,72 @@ export type Condition =
   | ChangeCondition
   | GroupCondition;
 
+// エントリー条件: エントリーのトリガーとなる条件
+export type EntryCondition = {
+  /** エントリー条件のタイプ */
+  type: "long" | "short";
+  /** エントリー条件のトリガーとなる条件 */
+  condition: Condition;
+}
+
+// イグジット条件: 手仕舞い（決済）の条件
+export type ExitCondition = {
+  /** イグジット条件のタイプ */
+  type: "long" | "short";
+  /** イグジット条件のトリガーとなる条件 */
+  condition: Condition;
+};
+
 /** 保有中戦略: トレールストップ・利確・損切り・ナンピン等の設定 */
 export type PositionManagement = {
   /** トレールストップ設定: 一定の利益幅が出たらストップ位置を引き上げる */
   trailingStop?: {
     enabled: boolean;
     /** トレール幅（例: 何pips離れた位置にストップを置くか） */
-    distance: number;
+    distance: number | null;
   };
   /** 利益確定設定: 利益ターゲットに達したら決済する */
   takeProfit?: {
     enabled: boolean;
     /** 利確ポイント（例: 目標とする利益幅pips、または価格レベル） */
-    target: number;
+    target: number | null;
   };
   /** 損切り設定: 損失許容幅に達したら決済する */
   stopLoss?: {
     enabled: boolean;
     /** 損切り幅（例: 許容する損失pips、または価格差） */
-    limit: number;
-  };
-  /** ナンピン（平均建玉）設定: 含み損時にポジションを追加する条件 */
-  averagingDown?: {
-    enabled: boolean;
-    /** 最大で何回ナンピンするか（追加ポジション数） */
-    maxAdds: number;
-    /** ナンピンする価格間隔（例: 価格が何pips不利に動いたら追加するか） */
-    addDistance: number;
+    limit: number | null;
   };
 };
 
 /** リスク・ロット戦略: エントリー時のロットサイズ計算方法 */
-export type RiskLotStrategy =
+export type RiskManagement =
   | { type: "fixed"; /** 固定ロット数 */ lotSize: number }
   | { type: "percentage"; /** 口座資金に対する割合(%) */ percent: number };
 
 /** 環境フィルター: 市場環境による取引条件制限 */
 export type EnvironmentFilter = {
   /** トレンドフィルター条件: トレンド方向を判定するCondition */
-  trendCondition?: Condition;
+  trendCondition?: boolean;
   /** ボラティリティフィルター条件: ボラが一定水準以上/以下か判定するCondition */
-  volatilityCondition?: Condition;
+  volatilityCondition?: boolean;
   /** ニュース回避フラグ: 重要ニュース時の取引を避ける場合true */
   avoidNews?: boolean;
 };
 
+export type Weekday = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+
 /** タイミング制御: 売買を許可する曜日・時間帯の指定 */
 export type TimingControl = {
   /** 許可する曜日（0=日曜, 1=月曜,... 6=土曜 の配列） */
-  allowedDays?: number[];
+  allowedDays?: Weekday[];
   /** 許可する時間帯レンジ（24時間表記）。複数指定可 */
-  allowedTimeRanges?: Array<{
+  allowedTimeRange?: {
     /** 開始時刻 (例: "09:30") */
     from: string;
     /** 終了時刻 (例: "15:30") */
     to: string;
-  }>;
+  };
 };
 
 /** 複数ポジション制御: ポジション数やヘッジ許可設定 */

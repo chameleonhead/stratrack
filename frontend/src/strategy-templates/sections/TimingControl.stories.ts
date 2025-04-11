@@ -1,19 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import BasicInfo from "./BasicInfo";
+import TimingControl from "./TimingControl";
 
 const meta = {
-  component: BasicInfo,
+  component: TimingControl,
   args: {
-    value: {},
     onChange: fn()
   },
-} satisfies Meta<typeof BasicInfo>;
+} satisfies Meta<typeof TimingControl>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
 };

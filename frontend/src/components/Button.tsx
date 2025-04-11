@@ -1,14 +1,16 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ReactNode } from "react";
 import { cn } from "../utils";
 
 export type ButtonProps = {
   children: ReactNode;
+  type: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "outline" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   disabled?: boolean;
-  className?: string;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+  fullWidth?: boolean;
+  onClick: () => void;
+};
 
 const baseStyles =
   "inline-flex items-center justify-center font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
@@ -29,11 +31,12 @@ const sizeStyles: Record<string, string> = {
 
 function Button({
   children,
+  type = "button",
   variant = "primary",
   size = "md",
   isLoading = false,
   disabled,
-  className,
+  fullWidth = false,
   ...props
 }: ButtonProps) {
   return (
@@ -42,8 +45,9 @@ function Button({
         baseStyles,
         variantStyles[variant],
         sizeStyles[size],
-        className
+        fullWidth ? "w-full" : null
       )}
+      type={type}
       disabled={disabled || isLoading}
       {...props}
     >

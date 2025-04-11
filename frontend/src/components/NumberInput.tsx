@@ -1,4 +1,5 @@
 import Input from "./Input";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type NumberInputProps = {
   label?: string;
@@ -11,6 +12,7 @@ export type NumberInputProps = {
   onChange?: (value: number | null) => void;
   required?: boolean;
   error?: string;
+  fullWidth?: boolean;
 };
 
 function NumberInput({
@@ -19,26 +21,25 @@ function NumberInput({
   onChange,
   ...props
 }: NumberInputProps) {
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue?.toString() || "",
+    typeof value === "undefined" ? undefined : value?.toString() || "",
+    (value) => {
+      if (onChange) {
+        if (value === "") {
+          onChange(null);
+        } else if (!isNaN(parseFloat(value))) {
+          onChange(parseFloat(value));
+        }
+      }
+    }
+  );
   return (
     <Input
       {...props}
       type="number"
-      defaultValue={
-        typeof defaultValue === "undefined"
-          ? undefined
-          : defaultValue.toString()
-      }
-      value={
-        typeof value === "undefined"
-          ? undefined
-          : value === null
-          ? ""
-          : value.toString()
-      }
-      onChange={(newValue) => {
-        const parsedValue = newValue ? parseFloat(newValue) : null;
-        onChange?.(parsedValue);
-      }}
+      value={localValue}
+      onChange={setLocalValue}
     />
   );
 }

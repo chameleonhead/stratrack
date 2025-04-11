@@ -1,9 +1,12 @@
-import { useState } from "react";
 import TimePicker from "./TimePicker";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 
 const meta: Meta<typeof TimePicker> = {
   component: TimePicker,
+  args: {
+    onChange: fn(),
+  },
 };
 
 export default meta;
@@ -11,33 +14,31 @@ export default meta;
 type Story = StoryObj<typeof TimePicker>;
 
 export const Basic: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("");
-    return <TimePicker label="開始時間" value={value} onChange={setValue} />;
+  args: {
+    label: "開始時間",
+    placeholder: "HH:mm",
   },
 };
 
-export const WithDefaultValue: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("13:30");
-    return <TimePicker label="昼食の時間" value={value} onChange={setValue} />;
+export const Controlled: Story = {
+  args: {
+    label: "開始時間",
+    placeholder: "HH:mm",
+    value: "13:30",
   },
 };
 
 export const WithError: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("");
-    return (
-      <TimePicker
-        label="予約時間"
-        value={value}
-        onChange={setValue}
-        required
-        error={value ? undefined : "時間を入力してください"}
-      />
-    );
+  args: {
+    label: "開始時間",
+    required: true,
+    error: "時間を入力してください",
+  },
+};
+
+export const FullWidth: Story = {
+  args: {
+    label: "開始時間",
+    fullWidth: true,
   },
 };

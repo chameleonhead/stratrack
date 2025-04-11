@@ -1,5 +1,6 @@
 import Checkbox from "./Checkbox";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type CheckboxGroupOption = {
   label: string;
@@ -10,33 +11,40 @@ export type CheckboxGroupProps = {
   label?: string;
   name?: string;
   options: CheckboxGroupOption[];
+  defaultValue?: string[];
   value?: string[];
   onChange?: (value: string[]) => void;
   direction?: "vertical" | "horizontal";
   error?: string;
-  className?: string;
+  fullWidth?: boolean;
 };
 
 function CheckboxGroup({
   label,
   name,
   options,
+  defaultValue,
   value = [],
   onChange,
   direction = "vertical",
   error,
-  className,
+  fullWidth = false,
 }: CheckboxGroupProps) {
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || [],
+    value,
+    onChange
+  );
   const handleToggle = (optionValue: string) => {
-    const newValue = value.includes(optionValue)
-      ? value.filter((v) => v !== optionValue)
-      : [...value, optionValue];
+    const newValue = localValue.includes(optionValue)
+      ? localValue.filter((v) => v !== optionValue)
+      : [...localValue, optionValue];
 
-    onChange?.(newValue);
+    setLocalValue(newValue);
   };
 
   return (
-    <div className={cn("w-full space-y-1", className)}>
+    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
       <div
         className={cn(
@@ -49,7 +57,7 @@ function CheckboxGroup({
             key={opt.value}
             name={name}
             label={opt.label}
-            checked={value.includes(opt.value)}
+            checked={localValue.includes(opt.value)}
             onChange={() => handleToggle(opt.value)}
           />
         ))}

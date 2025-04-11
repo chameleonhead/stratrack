@@ -12,8 +12,8 @@ export type TextareaProps = {
   onChange?: (value: string) => void;
   required?: boolean;
   error?: string;
-  className?: string;
   rows?: number;
+  fullWidth?: boolean;
 };
 
 function Textarea({
@@ -26,8 +26,8 @@ function Textarea({
   onChange,
   required = false,
   error,
-  className,
   rows = 4,
+  fullWidth = false,
 }: TextareaProps) {
   const uniqueId = useMemo(
     () => id || `textarea-${Math.random().toString(36).slice(2, 9)}`,
@@ -47,7 +47,7 @@ function Textarea({
   );
 
   return (
-    <div className="w-full space-y-1">
+    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
         <label
           htmlFor={uniqueId}
@@ -65,13 +65,13 @@ function Textarea({
         value={localValue}
         onChange={handleChange}
         className={cn(
-          "w-full px-2 py-2 rounded border text-sm transition-all duration-150 resize-y",
+          fullWidth ? "w-full" : null,
+          "px-2 py-2 rounded border text-sm transition-all duration-150 resize-y",
           "bg-white text-gray-900 placeholder-gray-400",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error
             ? "border-red-500 ring-red-500 focus:ring-red-500"
-            : "border-gray-300",
-          className
+            : "border-gray-300"
         )}
       />
       {error && <p className="text-sm text-red-600 font-medium">{error}</p>}

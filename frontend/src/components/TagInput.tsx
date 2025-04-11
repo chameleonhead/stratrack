@@ -1,5 +1,6 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useMemo } from "react";
 import { cn } from "../utils";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type TagInputProps = {
   label: string;
@@ -11,6 +12,7 @@ export type TagInputProps = {
   value?: string[];
   onChange?: (value: string[]) => void;
   error?: string;
+  fullWidth?: boolean;
 };
 
 function TagInput({
@@ -23,13 +25,18 @@ function TagInput({
   value,
   onChange,
   error,
+  fullWidth = false,
 }: TagInputProps) {
   const uniqueId = useMemo(
     () => id || `tag-${Math.random().toString(36).slice(2, 9)}`,
     [id]
   );
 
-  const [localValue, setLocalValue] = useState(value ?? defaultValue ?? []);
+  const [localValue, setLocalValue] = useLocalValue(
+    defaultValue || [],
+    value,
+    onChange
+  );
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -37,23 +44,13 @@ function TagInput({
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean);
-      onChange?.(newValue);
-
-      if (typeof value === "undefined") {
-        setLocalValue(newValue);
-      }
+      setLocalValue(newValue);
     },
-    [onChange, value]
+    [setLocalValue]
   );
 
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValue(value);
-    }
-  }, [value]);
-
   return (
-    <div className="mb-4">
+    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       <label
         htmlFor={uniqueId}
         className="block text-sm font-medium text-gray-700"
@@ -66,7 +63,8 @@ function TagInput({
         name={name}
         id={uniqueId}
         className={cn(
-          "w-full px-2 py-2 rounded border text-sm transition-all duration-150",
+          fullWidth ? "w-full" : null,
+          "px-2 py-2 rounded border text-sm transition-all duration-150",
           "bg-white text-gray-900 placeholder-gray-400",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
           error

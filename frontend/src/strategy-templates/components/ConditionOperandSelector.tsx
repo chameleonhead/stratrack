@@ -1,13 +1,13 @@
-import { useState } from "react";
 import Select from "../../components/Select";
 import { ConditionOperand } from "../types";
 import NumberInput from "../../components/NumberInput";
 import { useVariables } from "./useVariables";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type ConditionOperandSelectorProps = {
   name?: string;
-  value?: ConditionOperand;
-  onChange: (value: ConditionOperand | undefined) => void;
+  value?: Partial<ConditionOperand>;
+  onChange: (value: Partial<ConditionOperand>) => void;
 };
 
 function ConditionOperandSelector({
@@ -15,40 +15,55 @@ function ConditionOperandSelector({
   value,
   onChange,
 }: ConditionOperandSelectorProps) {
-  const [type, setType] = useState(value?.type);
+  const [localValue, setLocalValue] = useLocalValue(
+    { type: "constant", value: 0 } as ConditionOperand,
+    value,
+    onChange
+  );
 
   return (
-    <div className="space-y-2">
+    <div className="flex space-x-2">
       {/* Operand Type 選択 */}
-      <Select
-        name={`${name}.type`}
-        value={type}
-        onChange={(val) => setType(val as ConditionOperand["type"])}
-        options={[
-          { value: "constant", label: "数値" },
-          { value: "variable", label: "変数" },
-        ]}
-      />
-
-      {type === "constant" && (
-        <NumberConditionOperandSelector
-          value={value?.type === "constant" ? value : undefined}
-          onChange={onChange}
+      <div className="w-1/4">
+        <Select
+          fullWidth
+          name={`${name}.type`}
+          value={localValue.type}
+          onChange={(val) => {
+            const type = val as ConditionOperand["type"];
+            if (type === "constant") {
+              setLocalValue({ type, value: 0 });
+            } else {
+              setLocalValue({ type, name: "" });
+            }
+          }}
+          options={[
+            { value: "constant", label: "数値" },
+            { value: "variable", label: "変数" },
+          ]}
         />
-      )}
-      {type === "variable" && (
-        <VariableConditionOperandSelector
-          value={value?.type === "variable" ? value : undefined}
-          onChange={onChange}
-        />
-      )}
+      </div>
+      <div className="flex-grow">
+        {localValue.type === "constant" && (
+          <NumberConditionOperandSelector
+            value={localValue}
+            onChange={(v) => setLocalValue(v)}
+          />
+        )}
+        {localValue.type === "variable" && (
+          <VariableConditionOperandSelector
+            value={localValue}
+            onChange={(v) => setLocalValue(v)}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
 type NumberConditionOperandSelectorProps = {
-  value?: Extract<ConditionOperand, { type: "constant" }>;
-  onChange: (value: ConditionOperand | undefined) => void;
+  value?: Partial<Extract<ConditionOperand, { type: "constant" }>>;
+  onChange: (value: Partial<ConditionOperand>) => void;
 };
 
 function NumberConditionOperandSelector({
@@ -57,16 +72,22 @@ function NumberConditionOperandSelector({
 }: NumberConditionOperandSelectorProps) {
   return (
     <NumberInput
+      fullWidth
       placeholder="定数（数値）"
       value={value?.value ?? null}
       onChange={(val) => {
         if (val !== null) {
           onChange({
             type: "constant",
-            value: val as Extract<ConditionOperand, { type: "constant" }>["value"],
+            value: val as Extract<
+              ConditionOperand,
+              { type: "constant" }
+            >["value"],
           });
         } else {
-          onChange(undefined);
+          onChange({
+            type: "constant",
+          });
         }
       }}
     />
@@ -74,8 +95,8 @@ function NumberConditionOperandSelector({
 }
 
 type VariableConditionOperandSelectorProps = {
-  value?: Extract<ConditionOperand, { type: "variable" }>;
-  onChange: (value: ConditionOperand | undefined) => void;
+  value?: Partial<Extract<ConditionOperand, { type: "variable" }>>;
+  onChange: (value: Partial<ConditionOperand>) => void;
 };
 
 // VariableConditionOperandSelector の追加
@@ -86,14 +107,9 @@ function VariableConditionOperandSelector({
   const variables = useVariables();
   return (
     <Select
+      fullWidth
       value={value?.name}
-      onChange={(val) => {
-        if (val) {
-          onChange({ type: "variable", name: val });
-        } else {
-          onChange(undefined);
-        }
-      }}
+      onChange={(val) => onChange({ type: "variable", name: val })}
       options={variables.map((v) => ({
         value: v.name,
         label: `${v.name} ${v.description ? `(${v.description})` : ""}`,

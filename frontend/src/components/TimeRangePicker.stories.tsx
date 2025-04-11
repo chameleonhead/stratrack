@@ -1,9 +1,12 @@
-import { useState } from "react";
 import TimeRangePicker from "./TimeRangePicker";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 
 const meta: Meta<typeof TimeRangePicker> = {
   component: TimeRangePicker,
+  args: {
+    onChange: fn(),
+  },
 };
 
 export default meta;
@@ -11,40 +14,31 @@ export default meta;
 type Story = StoryObj<typeof TimeRangePicker>;
 
 export const Basic: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [range, setRange] = useState({ start: "", end: "" });
-    return (
-      <TimeRangePicker label="営業時間" value={range} onChange={setRange} />
-    );
+  args: {
+    label: "営業時間",
   },
 };
 
-export const WithDefaultValue: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [range, setRange] = useState({ start: "09:00", end: "17:00" });
-    return (
-      <TimeRangePicker label="勤務時間" value={range} onChange={setRange} />
-    );
+export const Controlled: Story = {
+  args: {
+    label: "営業時間",
+    value: { from: "09:00", to: "17:00" },
   },
 };
 
 export const WithError: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [range, setRange] = useState({ start: "", end: "" });
-    return (
-      <TimeRangePicker
-        label="予約枠"
-        value={range}
-        onChange={setRange}
-        required
-        error={{
-          start: !range.start ? "開始時間を入力してください" : "",
-          end: !range.end ? "終了時間を入力してください" : "",
-        }}
-      />
-    );
+  args: {
+    label: "営業時間",
+    error: {
+      from: "開始時間を入力してください。",
+      to: "終了時間を入力してください。",
+    },
+  },
+};
+
+export const FullWidth: Story = {
+  args: {
+    label: "営業時間",
+    fullWidth: true,
   },
 };

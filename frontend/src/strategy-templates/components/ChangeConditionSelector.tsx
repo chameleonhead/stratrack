@@ -25,27 +25,31 @@ function ChangeConditionSelector({
   );
 
   return (
-    <div className="space-y-4">
-      <Select
-        value={condition.change}
-        onChange={(val) =>
-          setCondition({
-            ...condition,
-            change: val as ChangeCondition["change"],
-          })
-        }
-        options={CHANGE_OPTIONS}
-      />
-
-      <ConditionRow
-        value={condition.condition}
-        onChange={(val) =>
-          setCondition({
-            ...condition,
-            condition: val as ChangeCondition["condition"],
-          })
-        }
-      />
+    <div className="grid gap-4 items-center">
+      <div>
+        <Select
+          fullWidth
+          value={condition.change}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              change: val as ChangeCondition["change"],
+            })
+          }
+          options={CHANGE_OPTIONS}
+        />
+      </div>
+      <div>
+        <ConditionRow
+          value={condition.condition}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              condition: val as ChangeCondition["condition"],
+            })
+          }
+        />
+      </div>
     </div>
   );
 }

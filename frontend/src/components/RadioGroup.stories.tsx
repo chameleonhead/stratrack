@@ -1,64 +1,56 @@
-import { useState } from "react";
 import RadioGroup from "./RadioGroup";
 import type { Meta, StoryObj } from "@storybook/react";
+import { fn } from "@storybook/test";
 
 const meta: Meta<typeof RadioGroup> = {
   component: RadioGroup,
+  args: {
+    onChange: fn(),
+    options: [
+      { label: "男", value: "male" },
+      { label: "女", value: "female" },
+      { label: "その他", value: "other" },
+    ],
+  },
 };
 
 export default meta;
 
 type Story = StoryObj<typeof RadioGroup>;
 
-const options = [
-  { label: "男", value: "male" },
-  { label: "女", value: "female" },
-  { label: "その他", value: "other" },
-];
-
 export const Vertical: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("male");
-    return (
-      <RadioGroup
-        label="性別"
-        options={options}
-        value={value}
-        onChange={setValue}
-      />
-    );
+  args: {
+    label: "性別",
+  },
+};
+
+export const VerticalWithError: Story = {
+  args: {
+    label: "性別",
+    error: "性別を選択してください",
   },
 };
 
 export const Horizontal: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("");
-    return (
-      <RadioGroup
-        label="性別"
-        options={options}
-        value={value}
-        onChange={setValue}
-        direction="horizontal"
-      />
-    );
+  args: {
+    label: "性別",
+    direction: "horizontal",
+    value: "male",
   },
 };
 
-export const WithError: Story = {
-  render: () => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = useState("");
-    return (
-      <RadioGroup
-        label="性別"
-        options={options}
-        value={value}
-        onChange={setValue}
-        error="性別を選択してください"
-      />
-    );
+export const HorizontalWithError: Story = {
+  args: {
+    label: "性別",
+    error: "性別を選択してください",
+    direction: "horizontal",
+    value: "male",
+  },
+};
+
+export const FullWidth: Story = {
+  args: {
+    label: "性別",
+    fullWidth: true,
   },
 };

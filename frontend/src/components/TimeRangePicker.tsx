@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
 import { cn } from "../utils";
 import TimePicker from "./TimePicker";
+import { useLocalValue } from "../hooks/useLocalValue";
 
 export type TimeRange = {
-  start: string;
-  end: string;
+  from?: string;
+  to?: string;
 };
 
 export type TimeRangePickerProps = {
@@ -15,7 +15,7 @@ export type TimeRangePickerProps = {
   onChange?: (value: TimeRange) => void;
   required?: boolean;
   error?: Record<keyof TimeRange, string>;
-  className?: string;
+  fullWidth?: boolean;
 };
 
 function TimeRangePicker({
@@ -26,64 +26,54 @@ function TimeRangePicker({
   onChange,
   required = false,
   error,
-  className,
+  fullWidth = false,
 }: TimeRangePickerProps) {
-  const [localValueStartTime, setLocalValueStartTime] = useState(value?.start);
-  const [localValueEndTime, setLocalValueEndTime] = useState(value?.end);
-  const handleChangeStartTime = useCallback(
+  const [localValueFromTime, setLocalValueFromTime] = useLocalValue(
+    "",
+    value?.from,
     (newValue: string) => {
-      if (onChange && localValueEndTime) {
-        onChange({ start: newValue, end: localValueEndTime });
+      if (onChange) {
+        onChange({ from: newValue, to: localValueToTime });
       }
-      if (typeof value === "undefined") {
-        setLocalValueStartTime(newValue);
-      }
-    },
-    [onChange, value, localValueEndTime]
-  );
-  const handleChangeEndTime = useCallback(
-    (newValue: string) => {
-      if (onChange && localValueStartTime) {
-        onChange({ start: localValueStartTime, end: newValue });
-      }
-      if (typeof value === "undefined") {
-        setLocalValueEndTime(newValue);
-      }
-    },
-    [onChange, value, localValueStartTime]
-  );
-  useEffect(() => {
-    if (typeof value !== "undefined") {
-      setLocalValueStartTime(value.start);
-      setLocalValueEndTime(value.end);
     }
-  }, [value]);
+  );
+  const [localValueToTime, setLocalValueToTime] = useLocalValue(
+    "",
+    value?.to,
+    (newValue: string) => {
+      if (onChange) {
+        onChange({ from: localValueFromTime, to: newValue });
+      }
+    }
+  );
 
   return (
-    <div id={id} className={cn("w-full space-y-1", className)}>
+    <div id={id} className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
-      <div className="flex gap-3">
-        <div className="w-1/2">
-          <TimePicker
-            label="開始"
-            name={`${name}[start]`}
-            value={value?.start || ""}
-            onChange={handleChangeStartTime}
-            required={required}
-            error={error?.start}
-          />
-        </div>
-        <div className="w-1/2">
-          <TimePicker
-            label="終了"
-            name={`${name}[end]`}
-            value={value?.end || ""}
-            onChange={handleChangeEndTime}
-            required={required}
-            error={error?.end}
-          />
-        </div>
+      <div className={cn(fullWidth ? "flex" : "inline-flex", "gap-3")}>
+        <TimePicker
+          label="開始"
+          name={`${name}[from]`}
+          value={localValueFromTime}
+          onChange={setLocalValueFromTime}
+          required={required}
+          fullWidth={fullWidth}
+        />
+        <TimePicker
+          label="終了"
+          name={`${name}[to]`}
+          value={localValueToTime}
+          onChange={setLocalValueToTime}
+          required={required}
+          fullWidth={fullWidth}
+        />
       </div>
+      {(error?.from || error?.to) && (
+        <p className="text-sm text-red-600 font-medium">
+          {error?.from}
+          {error?.to}
+        </p>
+      )}
     </div>
   );
 }

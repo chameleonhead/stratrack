@@ -39,3 +39,10 @@ export const WithError: Story = {
     error: "タグを追加してください",
   },
 };
+
+export const FullWidth: Story = {
+  args: {
+    label: "タグ",
+    fullWidth: true,
+  },
+};

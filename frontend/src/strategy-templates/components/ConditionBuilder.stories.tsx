@@ -23,13 +23,8 @@ export const Comparison: Story = {
       {
         type: "comparison",
         operator: ">",
-        left: {
-          type: "indicator",
-          name: "sma",
-          params: { period: 14 },
-          source: "close",
-        },
-        right: { type: "number", value: 0 },
+        left: { type: "constant", value: 100 },
+        right: { type: "constant", value: 300 },
       },
     ],
   },
@@ -41,8 +36,8 @@ export const CrossOver: Story = {
       {
         type: "cross",
         direction: "cross_over",
-        left: { type: "number", value: 0 },
-        right: { type: "number", value: 0 },
+        left: { type: "constant", value: 100 },
+        right: { type: "constant", value: 300 },
       },
     ],
   },
@@ -54,8 +49,38 @@ export const CrossUnder: Story = {
       {
         type: "cross",
         direction: "cross_under",
-        left: { type: "number", value: 0 },
-        right: { type: "number", value: 0 },
+        left: { type: "constant", value: 100 },
+        right: { type: "constant", value: 300 },
+      },
+    ],
+  },
+};
+
+export const Change: Story = {
+  args: {
+    value: [
+      {
+        type: "change",
+        change: "to_false",
+        condition: {
+          type: "comparison",
+          operator: ">",
+          left: { type: "constant", value: 100 },
+          right: { type: "constant", value: 300 },
+        },
+      },
+    ],
+  },
+};
+
+export const State: Story = {
+  args: {
+    value: [
+      {
+        type: "state",
+        state: "rising",
+        length: 12,
+        operand: { type: "variable", name: "" },
       },
     ],
   },

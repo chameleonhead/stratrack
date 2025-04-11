@@ -26,6 +26,19 @@ export const DefaultSelected: Story = {
   },
 };
 
+export const Weekdays: Story = {
+  args: {
+    label: "曜日",
+    weekdays: [
+      { label: "月", value: "mon" },
+      { label: "火", value: "tue" },
+      { label: "水", value: "wed" },
+      { label: "木", value: "thu" },
+      { label: "金", value: "fri" },
+    ],
+  },
+};
+
 export const Controlled: Story = {
   args: {
     label: "曜日",

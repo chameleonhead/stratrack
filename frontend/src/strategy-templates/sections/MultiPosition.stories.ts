@@ -1,16 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import CreateStrategyTemplateForm from "./CreateStrategyTemplateForm";
+import MultiPosition from "./MultiPosition";
 
 const meta = {
-  component: CreateStrategyTemplateForm,
-  args: { onClick: fn() },
-} satisfies Meta<typeof CreateStrategyTemplateForm>;
+  component: MultiPosition,
+  args: {
+    onChange: fn()
+  },
+} satisfies Meta<typeof MultiPosition>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
 };
