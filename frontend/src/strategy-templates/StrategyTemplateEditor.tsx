@@ -9,6 +9,7 @@ import TimingControl from "./sections/TimingControl";
 import MultiPosition from "./sections/MultiPosition";
 import VariableProvider from "./components/VariableProvider";
 import { StrategyTemplate } from "./types";
+import Tab from "../components/Tab";
 
 export type StrategyTemplateEditorProps = {
   value: Partial<StrategyTemplate>;
@@ -23,36 +24,54 @@ function StrategyTemplateEditor() {
   });
   return (
     <VariableProvider variables={template.variables || []}>
-      {/* 変数設定 */}
-      <Variables value={template} onChange={setTemplate} />
-
-      {/* エントリー戦略 */}
-      <EntryLogic value={template} onChange={setTemplate} />
-
-      {/* イグジット戦略 */}
-      <ExitLogic value={template} onChange={setTemplate} />
-
-      {/* 保有中戦略 */}
-      <PositionManagement value={template} onChange={setTemplate} />
-
-      {/* リスク・ロット戦略 */}
-      <RiskManagement value={template} onChange={setTemplate} />
-
-      {/* フィルター条件 */}
-      <FilterConditions value={template} onChange={setTemplate} />
-
-      {/* タイミング制御 */}
-      <TimingControl value={template} onChange={setTemplate} />
-
-      {/* ⑧ 複数ポジション戦略 */}
-      <MultiPosition value={template} onChange={setTemplate} />
-
-      {/* ⑨ 保存・コード確認 */}
-      <section id="save-and-preview">
-        <h2>コードと保存</h2>
-        {/* <CodePreview name="generated_code" />
-      <Button type="submit">保存</Button> */}
-      </section>
+      <Tab
+        tabs={[
+          {
+            id: "variables",
+            label: "変数設定",
+            content: <Variables value={template} onChange={setTemplate} />,
+          },
+          {
+            id: "entry",
+            label: "エントリー戦略",
+            content: <EntryLogic value={template} onChange={setTemplate} />,
+          },
+          {
+            id: "exit",
+            label: "イグジット戦略",
+            content: <ExitLogic value={template} onChange={setTemplate} />,
+          },
+          {
+            id: "positionManagement",
+            label: "保有中戦略",
+            content: (
+              <PositionManagement value={template} onChange={setTemplate} />
+            ),
+          },
+          {
+            id: "riskManagement",
+            label: "リスク・ロット戦略",
+            content: <RiskManagement value={template} onChange={setTemplate} />,
+          },
+          {
+            id: "filterConditions",
+            label: "フィルター条件",
+            content: (
+              <FilterConditions value={template} onChange={setTemplate} />
+            ),
+          },
+          {
+            id: "timingControl",
+            label: "タイミング制御",
+            content: <TimingControl value={template} onChange={setTemplate} />,
+          },
+          {
+            id: "multiPosition",
+            label: "複数ポジション戦略",
+            content: <MultiPosition value={template} onChange={setTemplate} />,
+          },
+        ]}
+      />
     </VariableProvider>
   );
 }
