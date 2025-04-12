@@ -1,27 +1,43 @@
-import { useState } from "react";
-import EntryLogic from "./sections/EntryLogic";
-import PositionManagement from "./sections/PositionManagement";
-import Variables from "./sections/Variables";
-import ExitLogic from "./sections/ExitLogic";
-import RiskManagement from "./sections/RiskManagement";
-import FilterConditions from "./sections/FilterConditions";
-import TimingControl from "./sections/TimingControl";
-import MultiPosition from "./sections/MultiPosition";
-import VariableProvider from "./components/VariableProvider";
-import { StrategyTemplate } from "./types";
-import Tab from "../components/Tab";
+import { useCallback, useMemo } from "react";
+import EntryLogic from "../sections/EntryLogic";
+import PositionManagement from "../sections/PositionManagement";
+import Variables from "../sections/Variables";
+import ExitLogic from "../sections/ExitLogic";
+import RiskManagement from "../sections/RiskManagement";
+import FilterConditions from "../sections/FilterConditions";
+import TimingControl from "../sections/TimingControl";
+import MultiPosition from "../sections/MultiPosition";
+import VariableProvider from "./VariableProvider";
+import { Strategy, StrategyTemplate } from "../types";
+import Tab from "../../components/Tab";
+import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type StrategyTemplateEditorProps = {
-  value: Partial<StrategyTemplate>;
-  onChange: (value: Partial<StrategyTemplate>) => void;
+  value?: Partial<Strategy>;
+  onChange: (value: Partial<Strategy>) => void;
 };
 
-function StrategyTemplateEditor() {
-  const [template, setTemplate] = useState<Partial<StrategyTemplate>>({
-    variables: [],
-    entry: [],
-    exit: [],
-  });
+function StrategyTemplateEditor({ value, onChange }: StrategyTemplateEditorProps) {
+  const [localValue, setLocalValue] = useLocalValue<Partial<Strategy>>({}, value, onChange);
+  const template = useMemo(() => {
+    return (
+      localValue.template ||
+      ({
+        variables: [],
+        entry: [],
+        exit: [],
+      } as Partial<StrategyTemplate>)
+    );
+  }, [localValue]);
+  const setTemplate = useCallback(
+    (newvalue: Partial<StrategyTemplate>) => {
+      setLocalValue({
+        ...localValue,
+        template: { ...localValue.template, ...newvalue } as StrategyTemplate,
+      });
+    },
+    [setLocalValue, localValue]
+  );
   return (
     <VariableProvider variables={template.variables || []}>
       <Tab

@@ -27,6 +27,20 @@ function BasicInfo({ value, onChange }: BasicInfoProps) {
         required
         fullWidth
       />
+      <Input
+        label="戦略名（英語名）"
+        value={value.nameEn || ""}
+        onChange={useCallback(
+          (newvalue: string) => {
+            if (onChange) {
+              onChange({ ...value, nameEn: newvalue });
+            }
+          },
+          [onChange, value]
+        )}
+        required
+        fullWidth
+      />
       <Textarea
         label="説明"
         value={value.description || ""}

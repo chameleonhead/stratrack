@@ -3,6 +3,8 @@ export type Strategy = {
   id: string;
   /** 戦略名 */
   name: string;
+  /** 戦略名（英語） */
+  nameEn: string;
   /** 戦略の説明 */
   description?: string;
   /** タグ */
