@@ -11,9 +11,7 @@ function VariableProvider({
   children: React.ReactNode;
 }) {
   return (
-    <VariableContext.Provider
-      value={useMemo(() => variables.filter((e) => !!e.name), [variables])}
-    >
+    <VariableContext.Provider value={useMemo(() => variables.filter((e) => !!e.name), [variables])}>
       {children}
     </VariableContext.Provider>
   );

@@ -8,11 +8,7 @@ export type FilterConditionsProps = {
 };
 
 function FilterConditions({ value, onChange }: FilterConditionsProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { environmentFilter: {} },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ environmentFilter: {} }, value, onChange);
   return (
     <section id="filter-conditions" className="space-y-4">
       <h2>環境フィルター</h2>

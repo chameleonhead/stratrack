@@ -18,15 +18,8 @@ const COMPARISON_OPERATORS = [
   { value: "!=", label: "!=" },
 ];
 
-function ComparisonConditionSelector({
-  value,
-  onChange,
-}: ComparisonConditionSelectorProps) {
-  const [condtion, setCondition] = useLocalValue(
-    { type: "comparison" },
-    value,
-    onChange
-  );
+function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSelectorProps) {
+  const [condtion, setCondition] = useLocalValue({ type: "comparison" }, value, onChange);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">

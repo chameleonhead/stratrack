@@ -9,11 +9,7 @@ export type MultiPositionProps = {
 };
 
 function MultiPosition({ value, onChange }: MultiPositionProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { multiPositionControl: {} },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ multiPositionControl: {} }, value, onChange);
   return (
     <section id="multi-position" className="space-y-4">
       <h2>複数ポジションの制御</h2>

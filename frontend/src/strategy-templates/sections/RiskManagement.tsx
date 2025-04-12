@@ -9,11 +9,7 @@ export type RiskManagementProps = {
 };
 
 function RiskManagement({ value, onChange }: RiskManagementProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { exit: [] },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ exit: [] }, value, onChange);
   return (
     <section id="risk-management" className="space-y-4">
       <h2>リスク・ロット管理</h2>
@@ -38,9 +34,7 @@ function RiskManagement({ value, onChange }: RiskManagementProps) {
       />
       <NumberInput
         fullWidth
-        label={
-          localValue.riskManagement?.type === "fixed" ? "ロット値" : "割合"
-        }
+        label={localValue.riskManagement?.type === "fixed" ? "ロット値" : "割合"}
         value={
           (localValue.riskManagement?.type === "fixed"
             ? localValue.riskManagement?.lotSize

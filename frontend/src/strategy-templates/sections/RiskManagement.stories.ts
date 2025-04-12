@@ -6,12 +6,11 @@ import RiskManagement from "./RiskManagement";
 const meta = {
   component: RiskManagement,
   args: {
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof RiskManagement>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-};
+export const Default: Story = {};

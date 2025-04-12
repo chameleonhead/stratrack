@@ -23,9 +23,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
   value,
   onChange,
 }) => {
-  const [type, setType] = useState<VariableExpression["type"]>(
-    value?.type ?? "constant"
-  );
+  const [type, setType] = useState<VariableExpression["type"]>(value?.type ?? "constant");
 
   const handleTypeChange = (t: VariableExpression["type"]) => {
     setType(t);
@@ -85,9 +83,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
       />
 
       {/* TODO: 各種入力フィールドを条件ごとに分けて表示 */}
-      <pre className="text-xs bg-gray-100 p-2 rounded">
-        {JSON.stringify(value, null, 2)}
-      </pre>
+      <pre className="text-xs bg-gray-100 p-2 rounded">{JSON.stringify(value, null, 2)}</pre>
     </div>
   );
 };

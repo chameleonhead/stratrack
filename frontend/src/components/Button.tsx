@@ -18,8 +18,7 @@ const baseStyles =
 const variantStyles: Record<string, string> = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
   secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-400",
-  outline:
-    "border border-gray-300 text-gray-800 hover:bg-gray-50 focus:ring-gray-400",
+  outline: "border border-gray-300 text-gray-800 hover:bg-gray-50 focus:ring-gray-400",
   danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
 };
 
@@ -66,11 +65,7 @@ function Button({
             stroke="currentColor"
             strokeWidth="4"
           />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v8H4z"
-          />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
         </svg>
       ) : null}
       {children}

@@ -37,15 +37,8 @@ export default function WeekdaySelector({
   className,
 }: WeekdaySelectorProps) {
   // Generate a unique ID if not provided
-  const uniqueId = useMemo(
-    () => id || `input-${Math.random().toString(36)}`,
-    [id]
-  );
-  const [localValue, setLocalValue] = useLocalValue(
-    defaultValue || [],
-    value,
-    onChange
-  );
+  const uniqueId = useMemo(() => id || `input-${Math.random().toString(36)}`, [id]);
+  const [localValue, setLocalValue] = useLocalValue(defaultValue || [], value, onChange);
 
   const toggleDay = useCallback(
     (day: Weekday) => {

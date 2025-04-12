@@ -14,16 +14,8 @@ const CROSS_DIRECTIONS = [
   { value: "cross_under", label: "下抜け (Cross Under)" },
 ];
 
-function CrossConditionSelector({
-  name,
-  value,
-  onChange,
-}: CrossConditionSelectorProps) {
-  const [condtion, setCondition] = useLocalValue(
-    { type: "cross" },
-    value,
-    onChange
-  );
+function CrossConditionSelector({ name, value, onChange }: CrossConditionSelectorProps) {
+  const [condtion, setCondition] = useLocalValue({ type: "cross" }, value, onChange);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
@@ -31,9 +23,7 @@ function CrossConditionSelector({
         <OperandSelector
           name={`${name}.left`}
           value={condtion.left}
-          onChange={(left) =>
-            setCondition({ ...condtion, left: left as CrossCondition["left"] })
-          }
+          onChange={(left) => setCondition({ ...condtion, left: left as CrossCondition["left"] })}
         />
       </div>
       <div className="col-span-1">

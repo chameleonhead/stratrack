@@ -44,9 +44,7 @@ function StrategyTemplateEditor() {
           {
             id: "positionManagement",
             label: "保有中戦略",
-            content: (
-              <PositionManagement value={template} onChange={setTemplate} />
-            ),
+            content: <PositionManagement value={template} onChange={setTemplate} />,
           },
           {
             id: "riskManagement",
@@ -56,9 +54,7 @@ function StrategyTemplateEditor() {
           {
             id: "filterConditions",
             label: "フィルター条件",
-            content: (
-              <FilterConditions value={template} onChange={setTemplate} />
-            ),
+            content: <FilterConditions value={template} onChange={setTemplate} />,
           },
           {
             id: "timingControl",

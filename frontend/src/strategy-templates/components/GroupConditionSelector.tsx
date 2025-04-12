@@ -14,15 +14,8 @@ const LOGIC_OPTIONS = [
   { value: "or", label: "いずれか満たす（OR）" },
 ];
 
-function GroupConditionSelector({
-  value,
-  onChange,
-}: GroupConditionSelectorProps) {
-  const [condition, setCondition] = useLocalValue(
-    { type: "group" },
-    value,
-    onChange
-  );
+function GroupConditionSelector({ value, onChange }: GroupConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue({ type: "group" }, value, onChange);
 
   return (
     <div className="space-y-4">

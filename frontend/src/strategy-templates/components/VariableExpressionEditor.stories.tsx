@@ -3,7 +3,7 @@ import { ConditionOperand } from "../types";
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
-import { VariableProvider } from "./VariableProvider";
+import VariableProvider from "./VariableProvider";
 
 const meta: Meta<typeof VariableExpressionEditor> = {
   component: VariableExpressionEditor,
@@ -35,9 +35,7 @@ export const VariablesOperand: Story = {
   decorators: [
     (story) => (
       <VariableProvider
-        variables={[
-          { name: "value1", expression: { type: "price", source: "open" } },
-        ]}
+        variables={[{ name: "value1", expression: { type: "price", source: "open" } }]}
       >
         {story()}
       </VariableProvider>

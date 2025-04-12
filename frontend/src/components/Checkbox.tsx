@@ -13,20 +13,8 @@ export type CheckboxProps = {
   className?: string;
 };
 
-function Checkbox({
-  label,
-  id,
-  name,
-  value,
-  onChange,
-  checked,
-  error,
-  className,
-}: CheckboxProps) {
-  const uniqueId = useMemo(
-    () => id || `checkbox-${Math.random().toString(36).slice(2, 9)}`,
-    [id]
-  );
+function Checkbox({ label, id, name, value, onChange, checked, error, className }: CheckboxProps) {
+  const uniqueId = useMemo(() => id || `checkbox-${Math.random().toString(36).slice(2, 9)}`, [id]);
 
   const [localValue, setLocalValue] = useLocalValue(false, checked, onChange);
 
@@ -52,15 +40,10 @@ function Checkbox({
           error ? "border-red-500 ring-red-500 focus:ring-red-500" : ""
         )}
       />
-      <label
-        htmlFor={uniqueId}
-        className="text-sm text-gray-800 select-none cursor-pointer"
-      >
+      <label htmlFor={uniqueId} className="text-sm text-gray-800 select-none cursor-pointer">
         {label}
       </label>
-      {error && (
-        <p className="text-sm text-red-600 font-medium ml-2">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 font-medium ml-2">{error}</p>}
     </div>
   );
 }

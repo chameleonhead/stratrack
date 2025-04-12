@@ -91,39 +91,19 @@ function ConditionRow({ name, value, onChange }: ConditionRowProps) {
       />
 
       {condition.type === "comparison" && (
-        <ComparisonConditionSelector
-          name={name}
-          value={condition}
-          onChange={onChange}
-        />
+        <ComparisonConditionSelector name={name} value={condition} onChange={onChange} />
       )}
       {condition.type === "cross" && (
-        <CrossConditionSelector
-          name={name}
-          value={condition}
-          onChange={onChange}
-        />
+        <CrossConditionSelector name={name} value={condition} onChange={onChange} />
       )}
       {condition.type === "state" && (
-        <StateConditionSelector
-          name={name}
-          value={condition}
-          onChange={onChange}
-        />
+        <StateConditionSelector name={name} value={condition} onChange={onChange} />
       )}
       {condition.type === "change" && (
-        <ChangeConditionSelector
-          name={name}
-          value={condition}
-          onChange={onChange}
-        />
+        <ChangeConditionSelector name={name} value={condition} onChange={onChange} />
       )}
       {condition.type === "group" && (
-        <GroupConditionSelector
-          name={name}
-          value={condition}
-          onChange={onChange}
-        />
+        <GroupConditionSelector name={name} value={condition} onChange={onChange} />
       )}
     </div>
   );

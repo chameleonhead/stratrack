@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
@@ -13,7 +14,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.1",
+    "ace-builds": "^1.39.1",
     "react": "^19.0.0",
+    "react-ace": "^14.0.1",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.1.1"
   },
@@ -36,6 +39,7 @@
     "eslint-plugin-storybook": "^0.12.0",
     "globals": "^15.15.0",
     "playwright": "^1.51.1",
+    "prettier": "^3.5.3",
     "storybook": "^8.6.11",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",

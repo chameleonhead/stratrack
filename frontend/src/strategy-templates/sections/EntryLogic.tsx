@@ -9,11 +9,7 @@ export type EntryLogicProps = {
 };
 
 function EntryLogic({ value, onChange }: EntryLogicProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { entry: [] },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ entry: [] }, value, onChange);
   const longEntries = useMemo(
     () => localValue.entry?.filter((e) => e.type === "long") || [],
     [localValue.entry]

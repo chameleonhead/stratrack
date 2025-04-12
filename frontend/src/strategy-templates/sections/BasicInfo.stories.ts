@@ -7,7 +7,7 @@ const meta = {
   component: BasicInfo,
   args: {
     value: {},
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof BasicInfo>;
 

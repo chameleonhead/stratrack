@@ -32,33 +32,18 @@ function RadioGroup({
   error,
   fullWidth = false,
 }: RadioGroupProps) {
-  const uniqueId = useMemo(
-    () => id || `radio-${Math.random().toString(36).slice(2, 9)}`,
-    [id]
-  );
+  const uniqueId = useMemo(() => id || `radio-${Math.random().toString(36).slice(2, 9)}`, [id]);
 
-  const [localValue, setLocalValue] = useLocalValue(
-    defaultValue || "",
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue(defaultValue || "", value, onChange);
 
   return (
     <div id={uniqueId} className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
-        <p
-          className="text-sm font-semibold text-gray-800"
-          aria-labelledby={uniqueId}
-        >
+        <p className="text-sm font-semibold text-gray-800" aria-labelledby={uniqueId}>
           {label}
         </p>
       )}
-      <div
-        className={cn(
-          "flex",
-          direction === "vertical" ? "flex-col gap-2" : "flex-row gap-4"
-        )}
-      >
+      <div className={cn("flex", direction === "vertical" ? "flex-col gap-2" : "flex-row gap-4")}>
         {options.map((opt) => {
           const id = `${name}-${opt.value}`;
           return (
@@ -75,10 +60,7 @@ function RadioGroup({
                   error ? "border-red-500 focus:ring-red-500" : ""
                 )}
               />
-              <label
-                htmlFor={id}
-                className="text-sm text-gray-800 cursor-pointer"
-              >
+              <label htmlFor={id} className="text-sm text-gray-800 cursor-pointer">
                 {opt.label}
               </label>
             </div>

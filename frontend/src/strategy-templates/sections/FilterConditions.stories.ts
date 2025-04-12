@@ -6,12 +6,11 @@ import FilterConditions from "./FilterConditions";
 const meta = {
   component: FilterConditions,
   args: {
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof FilterConditions>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-};
+export const Default: Story = {};

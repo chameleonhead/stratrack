@@ -6,12 +6,11 @@ import ExitLogic from "./ExitLogic";
 const meta = {
   component: ExitLogic,
   args: {
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof ExitLogic>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-};
+export const Default: Story = {};

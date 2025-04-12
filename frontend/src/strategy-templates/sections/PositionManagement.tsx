@@ -8,11 +8,7 @@ export type PositionManagementProps = {
 };
 
 function PositionManagement({ value, onChange }: PositionManagementProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { positionManagement: {} },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ positionManagement: {} }, value, onChange);
   return (
     <section id="position-management" className="space-y-4">
       <h2>保有中戦略</h2>

@@ -74,8 +74,6 @@ export const useIndicatorList = (): IndicatorDefinition[] => {
   return useMemo(() => indicatorList, []);
 };
 
-export const useIndicatorByName = (
-  name: string | undefined
-): IndicatorDefinition | undefined => {
+export const useIndicatorByName = (name: string | undefined): IndicatorDefinition | undefined => {
   return useMemo(() => indicatorList.find((ind) => ind.name === name), [name]);
 };

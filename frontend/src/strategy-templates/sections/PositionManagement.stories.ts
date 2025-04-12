@@ -6,12 +6,11 @@ import PositionManagement from "./PositionManagement";
 const meta = {
   component: PositionManagement,
   args: {
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof PositionManagement>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-};
+export const Default: Story = {};

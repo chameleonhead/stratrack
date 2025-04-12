@@ -31,16 +31,9 @@ function Select({
   error,
   fullWidth = false,
 }: SelectProps) {
-  const uniqueId = useMemo(
-    () => id || `select-${Math.random().toString(36).slice(2, 9)}`,
-    [id]
-  );
+  const uniqueId = useMemo(() => id || `select-${Math.random().toString(36).slice(2, 9)}`, [id]);
 
-  const [localValue, setLocalValue] = useLocalValue(
-    defaultValue || "",
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue(defaultValue || "", value, onChange);
 
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     const selectedValue = event.target.value;
@@ -50,10 +43,7 @@ function Select({
   return (
     <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
       {label && (
-        <label
-          htmlFor={uniqueId}
-          className="block text-sm font-semibold text-gray-800"
-        >
+        <label htmlFor={uniqueId} className="block text-sm font-semibold text-gray-800">
           {label}
         </label>
       )}
@@ -68,14 +58,10 @@ function Select({
           "px-4 py-2 rounded-lg border text-sm transition-all duration-150",
           "bg-white text-gray-900 appearance-none",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          error
-            ? "border-red-500 ring-red-500 focus:ring-red-500"
-            : "border-gray-300"
+          error ? "border-red-500 ring-red-500 focus:ring-red-500" : "border-gray-300"
         )}
       >
-        {allowEmpty && (
-          <option value="">{placeholder || "選択してください"}</option>
-        )}
+        {allowEmpty && <option value="">{placeholder || "選択してください"}</option>}
         {options.map((option) =>
           typeof option === "string" ? (
             <option key={option} value={option}>

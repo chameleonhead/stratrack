@@ -10,11 +10,7 @@ export type ConditionOperandSelectorProps = {
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
-function ConditionOperandSelector({
-  name,
-  value,
-  onChange,
-}: ConditionOperandSelectorProps) {
+function ConditionOperandSelector({ name, value, onChange }: ConditionOperandSelectorProps) {
   const [localValue, setLocalValue] = useLocalValue(
     { type: "constant", value: 0 } as ConditionOperand,
     value,
@@ -45,16 +41,10 @@ function ConditionOperandSelector({
       </div>
       <div className="flex-grow">
         {localValue.type === "constant" && (
-          <NumberConditionOperandSelector
-            value={localValue}
-            onChange={(v) => setLocalValue(v)}
-          />
+          <NumberConditionOperandSelector value={localValue} onChange={(v) => setLocalValue(v)} />
         )}
         {localValue.type === "variable" && (
-          <VariableConditionOperandSelector
-            value={localValue}
-            onChange={(v) => setLocalValue(v)}
-          />
+          <VariableConditionOperandSelector value={localValue} onChange={(v) => setLocalValue(v)} />
         )}
       </div>
     </div>
@@ -66,10 +56,7 @@ type NumberConditionOperandSelectorProps = {
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
-function NumberConditionOperandSelector({
-  value,
-  onChange,
-}: NumberConditionOperandSelectorProps) {
+function NumberConditionOperandSelector({ value, onChange }: NumberConditionOperandSelectorProps) {
   return (
     <NumberInput
       fullWidth
@@ -79,10 +66,7 @@ function NumberConditionOperandSelector({
         if (val !== null) {
           onChange({
             type: "constant",
-            value: val as Extract<
-              ConditionOperand,
-              { type: "constant" }
-            >["value"],
+            value: val as Extract<ConditionOperand, { type: "constant" }>["value"],
           });
         } else {
           onChange({

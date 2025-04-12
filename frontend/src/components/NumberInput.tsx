@@ -15,12 +15,7 @@ export type NumberInputProps = {
   fullWidth?: boolean;
 };
 
-function NumberInput({
-  defaultValue,
-  value,
-  onChange,
-  ...props
-}: NumberInputProps) {
+function NumberInput({ defaultValue, value, onChange, ...props }: NumberInputProps) {
   const [localValue, setLocalValue] = useLocalValue(
     defaultValue?.toString() || "",
     typeof value === "undefined" ? undefined : value?.toString() || "",
@@ -34,14 +29,7 @@ function NumberInput({
       }
     }
   );
-  return (
-    <Input
-      {...props}
-      type="number"
-      value={localValue}
-      onChange={setLocalValue}
-    />
-  );
+  return <Input {...props} type="number" value={localValue} onChange={setLocalValue} />;
 }
 
 export default NumberInput;

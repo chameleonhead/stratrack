@@ -15,15 +15,8 @@ const STATE_OPTIONS = [
   { value: "falling", label: "下降傾向 (Falling)" },
 ];
 
-function StateConditionSelector({
-  value,
-  onChange,
-}: StateConditionSelectorProps) {
-  const [condition, setCondition] = useLocalValue(
-    { type: "state" },
-    value,
-    onChange
-  );
+function StateConditionSelector({ value, onChange }: StateConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue({ type: "state" }, value, onChange);
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">

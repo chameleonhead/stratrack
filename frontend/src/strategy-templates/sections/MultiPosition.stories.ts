@@ -6,12 +6,11 @@ import MultiPosition from "./MultiPosition";
 const meta = {
   component: MultiPosition,
   args: {
-    onChange: fn()
+    onChange: fn(),
   },
 } satisfies Meta<typeof MultiPosition>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-};
+export const Default: Story = {};

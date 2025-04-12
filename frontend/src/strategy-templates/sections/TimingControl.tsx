@@ -17,11 +17,7 @@ const WEEKDAYS = [
 ];
 
 function TimingControl({ value, onChange }: TimingControlProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { timingControl: {} },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ timingControl: {} }, value, onChange);
   return (
     <section id="timing-control" className="space-y-4">
       <h2>時間帯・曜日制限</h2>

@@ -14,15 +14,8 @@ const CHANGE_OPTIONS = [
   { value: "to_false", label: "true → false への変化" },
 ];
 
-function ChangeConditionSelector({
-  value,
-  onChange,
-}: ChangeConditionSelectorProps) {
-  const [condition, setCondition] = useLocalValue(
-    { type: "change" },
-    value,
-    onChange
-  );
+function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue({ type: "change" }, value, onChange);
 
   return (
     <div className="grid gap-4 items-center">

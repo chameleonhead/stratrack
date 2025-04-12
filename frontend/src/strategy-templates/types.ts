@@ -17,7 +17,7 @@ export type Strategy = {
   author?: string;
   /** 戦略テンプレートの内容 */
   template: StrategyTemplate;
-}
+};
 
 // 戦略テンプレートの型定義
 export type StrategyTemplate = {
@@ -26,7 +26,7 @@ export type StrategyTemplate = {
   /** エントリー条件: エントリーのトリガーとなる条件 */
   entry: EntryCondition[];
   /** イグジット条件: 手仕舞い（決済）の条件 */
-  exit: ExitCondition[]
+  exit: ExitCondition[];
   /** リスク・ロット戦略: ロットサイズ計算方法（固定値 or 口座割合） */
   riskManagement: RiskManagement;
   /** 保有中戦略: トレールストップ、利確、損切り、ナンピン等の設定 */
@@ -178,7 +178,7 @@ export type EntryCondition = {
   type: "long" | "short";
   /** エントリー条件のトリガーとなる条件 */
   condition: Condition;
-}
+};
 
 // イグジット条件: 手仕舞い（決済）の条件
 export type ExitCondition = {

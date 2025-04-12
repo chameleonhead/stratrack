@@ -37,7 +37,6 @@ export const WithError: Story = {
   },
 };
 
-
 export const FullWidth: Story = {
   args: {
     label: "説明",

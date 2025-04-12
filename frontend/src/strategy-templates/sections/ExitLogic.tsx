@@ -9,11 +9,7 @@ export type ExitLogicProps = {
 };
 
 function ExitLogic({ value, onChange }: ExitLogicProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    { exit: [] },
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue({ exit: [] }, value, onChange);
   const longEntries = useMemo(
     () => localValue.exit?.filter((e) => e.type === "long") || [],
     [localValue.exit]
@@ -41,7 +37,7 @@ function ExitLogic({ value, onChange }: ExitLogicProps) {
       <div>
         <h2>イグジット条件</h2>
         <p className="text-gray-500 text-sm">
-        イグジット条件は、ポジションをイグジットするための条件を定義します。複数の条件を組み合わせて設定できます。
+          イグジット条件は、ポジションをイグジットするための条件を定義します。複数の条件を組み合わせて設定できます。
         </p>
       </div>
       <div>

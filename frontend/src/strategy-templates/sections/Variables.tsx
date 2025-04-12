@@ -2,11 +2,7 @@ import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
-import {
-  StrategyTemplate,
-  VariableDefinition,
-  VariableExpression,
-} from "../types";
+import { StrategyTemplate, VariableDefinition, VariableExpression } from "../types";
 
 export type VariablesProps = {
   value?: Partial<StrategyTemplate>;

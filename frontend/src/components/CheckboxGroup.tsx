@@ -30,11 +30,7 @@ function CheckboxGroup({
   error,
   fullWidth = false,
 }: CheckboxGroupProps) {
-  const [localValue, setLocalValue] = useLocalValue(
-    defaultValue || [],
-    value,
-    onChange
-  );
+  const [localValue, setLocalValue] = useLocalValue(defaultValue || [], value, onChange);
   const handleToggle = (optionValue: string) => {
     const newValue = localValue.includes(optionValue)
       ? localValue.filter((v) => v !== optionValue)
