@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 import { renderStrategyCode } from "./strategyCodeRenderer";
 import { StrategyTemplate } from "../types";
 
@@ -47,7 +47,7 @@ describe("renderStrategyCode", () => {
   };
 
   it("generates Python class with correct structure", () => {
-    const code = renderStrategyCode(template);
+    const code = renderStrategyCode("python", template);
 
     expect(code).toContain("class GeneratedStrategy(bt.Strategy):");
     expect(code).toContain("  def __init__(self):");

@@ -6,11 +6,13 @@ import StateConditionSelector from "./StateConditionSelector";
 import ChangeConditionSelector from "./ChangeConditionSelector";
 import GroupConditionSelector from "./GroupConditionSelector";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import Button from "../../components/Button";
 
 export type ConditionRowProps = {
   name?: string;
   value?: Partial<Condition>;
   onChange: (value: Partial<Condition>) => void;
+  onDelete: () => void;
 };
 
 const CONDITION_OPTIONS = [
@@ -21,7 +23,7 @@ const CONDITION_OPTIONS = [
   { value: "group", label: "グループ条件" },
 ];
 
-function ConditionRow({ name, value, onChange }: ConditionRowProps) {
+function ConditionRow({ name, value, onChange, onDelete }: ConditionRowProps) {
   const [condition, setCondition] = useLocalValue(
     {
       type: "comparison",
@@ -83,12 +85,17 @@ function ConditionRow({ name, value, onChange }: ConditionRowProps) {
 
   return (
     <div className="space-y-2 border p-4 rounded">
-      <Select
-        name={`${name}.type`}
-        value={condition.type}
-        onChange={(val) => handleTypeChange(val as Condition["type"])}
-        options={CONDITION_OPTIONS}
-      />
+      <div className="flex justify-between">
+        <Select
+          name={`${name}.type`}
+          value={condition.type}
+          onChange={(val) => handleTypeChange(val as Condition["type"])}
+          options={CONDITION_OPTIONS}
+        />
+        <Button onClick={onDelete} variant="danger">
+          ×
+        </Button>
+      </div>
 
       {condition.type === "comparison" && (
         <ComparisonConditionSelector name={name} value={condition} onChange={onChange} />

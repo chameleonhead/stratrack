@@ -50,18 +50,24 @@ export type VariableDefinition = {
 
 // 変数式の型定義
 export type VariableExpression =
+  | ConstantExpression
   | PriceExpression
   | IndicatorExpression
-  | ConstantExpression
   | VariableReferenceExpression
   | UnaryOperationExpression
   | BinaryOperationExpression
   | TernaryExpression;
 
+/** 定数数値 */
+export type ConstantExpression = {
+  type: "constant";
+  value: number;
+};
+
 /** 現在の価格や特定の足の価格を表す式 */
 export type PriceExpression = {
   type: "price";
-  source?: "bid" | "ask" | "close" | "open" | "high" | "low";
+  source: "bid" | "ask" | "open" | "high" | "close" | "low";
   /** オプション: 過去の価格にオフセットするバー数（0は現在のバー） */
   shiftBars?: number;
 };
@@ -75,12 +81,6 @@ export type IndicatorExpression = {
   params?: { [key: string]: string | number | boolean | null };
   /** オプション: 指標を計算する価格の種類（終値など） */
   source?: VariableExpression;
-};
-
-/** 定数数値 */
-export type ConstantExpression = {
-  type: "constant";
-  value: number;
 };
 
 /** 他の変数の参照 */

@@ -3,7 +3,7 @@ import { cn } from "../utils";
 
 export type ButtonProps = {
   children: ReactNode;
-  type: "button" | "submit" | "reset";
+  type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "outline" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;

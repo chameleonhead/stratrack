@@ -15,7 +15,6 @@ export const Default: Story = {
   args: {},
 };
 
-
 export const RSI14: Story = {
   args: {
     value: {
@@ -29,10 +28,10 @@ export const RSI14: Story = {
               params: { period: 14 },
               source: {
                 type: "price",
-                source: "close"
-              }
-            }
-          }
+                source: "close",
+              },
+            },
+          },
         ],
         entry: [
           {
@@ -41,9 +40,9 @@ export const RSI14: Story = {
               type: "comparison",
               left: { type: "variable", name: "rsi14" },
               operator: "<",
-              right: { type: "constant", value: 30 }
-            }
-          }
+              right: { type: "constant", value: 30 },
+            },
+          },
         ],
         exit: [
           {
@@ -52,18 +51,18 @@ export const RSI14: Story = {
               type: "comparison",
               left: { type: "variable", name: "rsi14" },
               operator: ">",
-              right: { type: "constant", value: 70 }
-            }
-          }
+              right: { type: "constant", value: 70 },
+            },
+          },
         ],
         riskManagement: {
           type: "fixed",
-          lotSize: 1
-        }
-      }
-    }
-  }
-}
+          lotSize: 1,
+        },
+      },
+    },
+  },
+};
 
 export const DonchianChannel: Story = {
   args: {
@@ -74,8 +73,8 @@ export const DonchianChannel: Story = {
             name: "close",
             expression: {
               type: "price",
-              source: "close"
-            }
+              source: "close",
+            },
           },
           {
             name: "donchian_high",
@@ -85,9 +84,9 @@ export const DonchianChannel: Story = {
               params: { period: 20 },
               source: {
                 type: "price",
-                source: "high"
-              }
-            }
+                source: "high",
+              },
+            },
           },
           {
             name: "donchian_low",
@@ -97,9 +96,9 @@ export const DonchianChannel: Story = {
               params: { period: 20 },
               source: {
                 type: "price",
-                source: "low"
-              }
-            }
+                source: "low",
+              },
+            },
           },
           {
             name: "donchian_mid",
@@ -111,19 +110,19 @@ export const DonchianChannel: Story = {
                 operator: "+",
                 left: {
                   type: "variable",
-                  name: "donchian_high"
+                  name: "donchian_high",
                 },
                 right: {
                   type: "variable",
-                  name: "donchian_low"
-                }
+                  name: "donchian_low",
+                },
               },
               right: {
                 type: "constant",
-                value: 2
-              }
-            }
-          }
+                value: 2,
+              },
+            },
+          },
         ],
         entry: [
           {
@@ -132,14 +131,14 @@ export const DonchianChannel: Story = {
               type: "comparison",
               left: {
                 type: "variable",
-                name: "close"
+                name: "close",
               },
               operator: ">",
               right: {
                 type: "variable",
-                name: "donchian_high"
-              }
-            }
+                name: "donchian_high",
+              },
+            },
           },
           {
             type: "short",
@@ -147,15 +146,15 @@ export const DonchianChannel: Story = {
               type: "comparison",
               left: {
                 type: "variable",
-                name: "close"
+                name: "close",
               },
               operator: "<",
               right: {
                 type: "variable",
-                name: "donchian_low"
-              }
-            }
-          }
+                name: "donchian_low",
+              },
+            },
+          },
         ],
         exit: [
           {
@@ -164,14 +163,14 @@ export const DonchianChannel: Story = {
               type: "comparison",
               left: {
                 type: "variable",
-                name: "close"
+                name: "close",
               },
               operator: "<",
               right: {
                 type: "variable",
-                name: "donchian_mid"
-              }
-            }
+                name: "donchian_mid",
+              },
+            },
           },
           {
             type: "short",
@@ -179,51 +178,51 @@ export const DonchianChannel: Story = {
               type: "comparison",
               left: {
                 type: "variable",
-                name: "close"
+                name: "close",
               },
               operator: ">",
               right: {
                 type: "variable",
-                name: "donchian_mid"
-              }
-            }
-          }
+                name: "donchian_mid",
+              },
+            },
+          },
         ],
         riskManagement: {
           type: "fixed",
-          lotSize: 1
+          lotSize: 1,
         },
         positionManagement: {
           trailingStop: {
             enabled: false,
-            distance: null
+            distance: null,
           },
           takeProfit: {
             enabled: false,
-            target: null
+            target: null,
           },
           stopLoss: {
             enabled: false,
-            limit: null
-          }
+            limit: null,
+          },
         },
         environmentFilter: {
           trendCondition: false,
           volatilityCondition: false,
-          avoidNews: false
+          avoidNews: false,
         },
         timingControl: {
           allowedDays: ["mon", "tue", "wed", "thu", "fri"],
           allowedTimeRange: {
             from: "00:00",
-            to: "23:59"
-          }
+            to: "23:59",
+          },
         },
         multiPositionControl: {
           maxPositions: 1,
-          allowHedging: false
-        }
-      }
-    }
-  }
-}
+          allowHedging: false,
+        },
+      },
+    },
+  },
+};

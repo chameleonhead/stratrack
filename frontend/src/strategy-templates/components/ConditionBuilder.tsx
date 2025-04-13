@@ -17,6 +17,12 @@ function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     setLocalValue(newConditions);
   };
 
+  const deleteCondition = (index: number) => {
+    const newConditions = [...localValue];
+    newConditions.splice(index, 1);
+    setLocalValue(newConditions);
+  };
+
   const addCondition = () => {
     setLocalValue([
       ...localValue,
@@ -36,6 +42,7 @@ function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           key={index}
           value={condition}
           onChange={(updated) => updateCondition(index, updated)}
+          onDelete={() => deleteCondition(index)}
         />
       ))}
 
