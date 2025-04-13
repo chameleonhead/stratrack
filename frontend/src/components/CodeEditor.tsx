@@ -5,13 +5,15 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-github";
 
 export type PythonEditorProps = {
+  language?: "python" | "mql4";
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
   className?: string;
 };
 
-export default function PythonEditor({
+export default function CodeEditor({
+  language = "python",
   value,
   onChange,
   readOnly = false,
@@ -20,9 +22,8 @@ export default function PythonEditor({
   return (
     <div className={cn("border rounded-lg overflow-hidden", className)}>
       <AceEditor
-        mode="python"
+        mode={language === "mql4" ? "c_cpp" : "python"}
         theme="github"
-        name="python-editor"
         fontSize={14}
         width="100%"
         height="300px"

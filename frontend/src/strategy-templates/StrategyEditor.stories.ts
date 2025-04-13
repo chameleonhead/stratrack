@@ -32,15 +32,67 @@ export const RSI14: Story = {
               },
             },
           },
+          {
+            name: "rsi_sma90",
+            expression: {
+              type: "indicator",
+              name: "SMA",
+              params: { period: 90 },
+              source: {
+                type: "variable",
+                name: "rsi14",
+              },
+            },
+          },
+          {
+            name: "rsi_sma90_sma90",
+            expression: {
+              type: "indicator",
+              name: "SMA",
+              params: { period: 90 },
+              source: {
+                type: "variable",
+                name: "rsi_sma90",
+              },
+            },
+          },
         ],
         entry: [
           {
             type: "long",
             condition: {
-              type: "comparison",
-              left: { type: "variable", name: "rsi14" },
-              operator: "<",
-              right: { type: "constant", value: 30 },
+              type: "group",
+              operator: "and",
+              conditions: [{
+                type: "state",
+                state: "rising",
+                operand: {
+                  type: "variable",
+                  name: "rsi_sma90",
+                }
+              }, {
+                type: "state",
+                state: "rising",
+                operand: {
+                  type: "variable",
+                  name: "rsi_sma90_sma90",
+                }
+              }, {
+                type: "continue",
+                length: 5,
+                continue: "true",
+                condition: {
+                  type: "comparison",
+                  left: { type: "variable", name: "rsi14", shiftBars: 2 },
+                  operator: ">",
+                  right: { type: "constant", value: 30 },
+                }
+              }, {
+                type: "cross",
+                direction: "cross_over",
+                left: { type: "variable", name: "rsi14" },
+                right: { type: "constant", value: 30 },
+              }]
             },
           },
         ],

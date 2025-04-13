@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import ConditionBuilder from "./ConditionBuilder";
+import ConditionsBuilder from "./ConditionsBuilder";
 
 const meta = {
-  component: ConditionBuilder,
+  component: ConditionsBuilder,
   args: { onChange: fn() },
-} satisfies Meta<typeof ConditionBuilder>;
+} satisfies Meta<typeof ConditionsBuilder>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -125,6 +125,7 @@ export type ConstantOperand = {
 export type VariableOperand = {
   type: "variable";
   name: string;
+  shiftBars?: number
 };
 
 /** 比較条件: leftとrightを演算子operatorで比較 */
@@ -146,10 +147,17 @@ export type CrossCondition = {
 /** 状態条件: operandが上昇傾向(rising)または下降傾向(falling)である */
 export type StateCondition = {
   type: "state";
-  operand: ConditionOperand;
   state: "rising" | "falling";
-  /** オプション: 直近で連続して上昇/下降している期間やバー数等 */
   length?: number;
+  operand: ConditionOperand;
+};
+
+/** 状態条件: conditiondが一定期間trueまたはfalseである */
+export type ContinueCondition = {
+  type: "continue";
+  length: number;
+  condition: Condition;
+  continue: "true" | "false";
 };
 
 /** 変化条件: 指定したconditionが直前からtrue/falseの状態遷移をした */
@@ -171,6 +179,7 @@ export type Condition =
   | ComparisonCondition
   | CrossCondition
   | StateCondition
+  | ContinueCondition
   | ChangeCondition
   | GroupCondition;
 

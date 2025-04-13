@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from "react";
-import PythonEditor from "../components/PythonEditor";
+import CodeEditor from "../components/CodeEditor";
 import { useLocalValue } from "../hooks/useLocalValue";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
 import { renderStrategyCode } from "./generators/strategyCodeRenderer";
@@ -29,7 +29,15 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
       <BasicInfo value={localValue} onChange={setLocalValue} />
       <StrategyTemplateEditor value={localValue} onChange={setLocalValue} />
       <Suspense fallback={<div className="text-red-500">エラーが発生しました。</div>}>
-        <PythonEditor
+        <CodeEditor
+          language="python"
+          value={useMemo(
+            () => renderStrategyCode("python", localValue.template as StrategyTemplate),
+            [localValue]
+          )}
+        />
+        <CodeEditor
+          language="mql4"
           value={useMemo(
             () => renderStrategyCode("mql4", localValue.template as StrategyTemplate),
             [localValue]

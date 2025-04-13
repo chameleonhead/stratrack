@@ -1,5 +1,5 @@
 import { GroupCondition } from "../types";
-import ConditionBuilder from "./ConditionBuilder";
+import ConditionBuilder from "./ConditionsBuilder";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
 

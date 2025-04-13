@@ -1,13 +1,13 @@
-import PythonEditor from "./PythonEditor";
+import CodeEditor from "./CodeEditor";
 import type { Meta, StoryObj } from "@storybook/react";
 
-const meta: Meta<typeof PythonEditor> = {
-  component: PythonEditor,
+const meta: Meta<typeof CodeEditor> = {
+  component: CodeEditor,
 };
 
 export default meta;
 
-type Story = StoryObj<typeof PythonEditor>;
+type Story = StoryObj<typeof CodeEditor>;
 
 export const Editable: Story = {
   args: {

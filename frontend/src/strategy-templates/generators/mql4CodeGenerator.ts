@@ -9,7 +9,7 @@ export class MqlFile {
     public functions: MqlFunction[],
     public properties: string[] = [],
     public buffers: MqlIndexBuffer[] = []
-  ) {}
+  ) { }
 
   toString(): string {
     const lines: string[] = [];
@@ -33,7 +33,7 @@ export class MqlGlobalVariable {
     public name: string,
     public type: string,
     public init?: string
-  ) {}
+  ) { }
 }
 
 export class MqlFunction {
@@ -42,7 +42,7 @@ export class MqlFunction {
     public returnType: string,
     public body: MqlStatement[],
     public args: MqlArgument[] = []
-  ) {}
+  ) { }
 
   toString(): string {
     const header = `${this.returnType} ${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
@@ -55,7 +55,7 @@ export class MqlArgument {
   constructor(
     public name: string,
     public type: string
-  ) {}
+  ) { }
 }
 
 export class MqlIndexBuffer {
@@ -64,7 +64,7 @@ export class MqlIndexBuffer {
     public name: string,
     public style?: string,
     public label?: string
-  ) {}
+  ) { }
 }
 export abstract class MqlExpression {
   abstract toString(): string;
@@ -366,6 +366,11 @@ export function convertStrategyToMql4Ast(template: StrategyTemplate): MqlFile {
     new MqlReturn("INIT_SUCCEEDED"),
   ];
 
+  const deinitBody: MqlStatement[] = [
+    ...(template.variables?.map((v) => new MqlExprStatement(`ArrayFree(${v.name})`)) ||
+      []),
+  ];
+
   const tickBody: MqlStatement[] = [new MqlIf("Bars < 100", [new MqlReturn()])];
 
   // 変数初期化
@@ -400,7 +405,7 @@ export function convertStrategyToMql4Ast(template: StrategyTemplate): MqlFile {
           new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("i"))),
           template.variables.map((v) => {
             return new MqlExprStatement(
-              new MqlBinaryExpr(`${v.name}[i]`, "=", emitVariableCalculation(v.expression))
+              new MqlBinaryExpr(`${v.name}[i]`, "=", emitVariableExpression(v.expression))
             );
           })
         ),
@@ -454,6 +459,7 @@ export function convertStrategyToMql4Ast(template: StrategyTemplate): MqlFile {
     [
       ...generateCommonFunctionDefinitions(),
       new MqlFunction("OnInit", "int", initBody),
+      new MqlFunction("OnDeinit", "void", deinitBody, [new MqlArgument("reason", "const int")]),
       new MqlFunction("OnTick", "void", tickBody),
     ],
     ["show_inputs"],
@@ -461,7 +467,7 @@ export function convertStrategyToMql4Ast(template: StrategyTemplate): MqlFile {
   );
 }
 
-function emitVariableCalculation(expr: VariableExpression): MqlExpression {
+function emitVariableExpression(expr: VariableExpression): MqlExpression {
   switch (expr.type) {
     case "constant":
       return [new MqlLiteral(expr.value.toString())];
@@ -508,40 +514,71 @@ function emitVariableCalculation(expr: VariableExpression): MqlExpression {
     case "variable":
       return [new MqlLiteral(`${expr.name}[0]`)];
     case "unary_op":
-      return [new MqlUnaryExpr(expr.operator, emitVariableCalculation(expr.operand))];
+      return [new MqlUnaryExpr(expr.operator, emitVariableExpression(expr.operand))];
     case "binary_op":
       return [
         new MqlBinaryExpr(
-          emitVariableCalculation(expr.left),
+          emitVariableExpression(expr.left),
           expr.operator,
-          emitVariableCalculation(expr.right)
+          emitVariableExpression(expr.right)
         ),
       ];
     case "ternary":
       return [
         new MqlTernaryExpr(
           emitCondition(expr.condition),
-          emitVariableCalculation(expr.trueExpr),
-          emitVariableCalculation(expr.falseExpr)
+          emitVariableExpression(expr.trueExpr),
+          emitVariableExpression(expr.falseExpr)
         ),
       ];
   }
   return [new MqlComment("Unsupported variable type")];
 }
 
-function emitCondition(cond: Condition): MqlExpression {
-  if (cond.type === "cross") {
-    const l_curr = emitOperand(cond.left, 0);
-    const l_prev = emitOperand(cond.left, 1);
-    const r_curr = emitOperand(cond.right, 0);
-    const r_prev = emitOperand(cond.right, 1);
-    return cond.direction === "cross_over"
-      ? `(${l_prev} < ${r_prev} && ${l_curr} > ${r_curr})`
-      : `(${l_prev} > ${r_prev} && ${l_curr} < ${r_curr})`;
-  } else if (cond.type === "comparison") {
-    return `(${emitOperand(cond.left, 0)} ${cond.operator} ${emitOperand(cond.right, 0)})`;
+function emitCondition(cond: Condition, shift: number = 0): MqlExpression {
+  switch (cond.type) {
+    case "comparison":
+      return `(${emitOperand(cond.left, 0)} ${cond.operator} ${emitOperand(cond.right, 0)})`;
+
+    case "cross": {
+      const l_curr = emitOperand(cond.left, shift);
+      const l_prev = emitOperand(cond.left, shift + 1);
+      const r_curr = emitOperand(cond.right, shift);
+      const r_prev = emitOperand(cond.right, shift + 1);
+      return cond.direction === "cross_over"
+        ? `(${l_prev} < ${r_prev} && ${l_curr} > ${r_curr})`
+        : `(${l_prev} > ${r_prev} && ${l_curr} < ${r_curr})`;
+    }
+    case "state": {
+      const conds = [];
+      const sign = cond.state === "rising" ? ">" : "<";
+      for (let i = 0; i < Math.abs(cond.length || 1); i++) {
+        const var_curr = emitOperand(cond.operand, shift + i);
+        const var_prev = emitOperand(cond.operand, shift + i + 1);
+        conds.push(`${var_curr} ${sign} ${var_prev}`);
+      }
+      return conds.join(" and ");
+    }
+    case "continue": {
+      const conds = [];
+      for (let i = 0; i < Math.abs(cond.length || 2); i++) {
+        const condition = emitCondition(cond.condition, shift + i);
+        conds.push(condition);
+      }
+      return `${cond.continue === 'true' ? '' : '!'}(${conds.join(" && ")})`;
+    }
+    case "change": {
+      const inner_curr = emitCondition(cond.condition, shift);
+      const inner_prev = emitCondition(cond.condition, shift);
+      return cond.change === "to_true"
+        ? `!(${inner_prev}) && (${inner_curr})`
+        : `(${inner_prev}) && !(${inner_curr})`;
+    }
+    case "group":
+      return "(" + cond.conditions.map(c => emitCondition(c, shift)).join(`) ${cond.operator === 'and' ? '&&' : '||'} (`) + ")";
+    default:
+      return "false";
   }
-  return "false";
 }
 
 function emitOperand(op: ConditionOperand, shift: number): string {

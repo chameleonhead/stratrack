@@ -1,0 +1,65 @@
+import { Condition, ContinueCondition } from "../types";
+import Select from "../../components/Select";
+import NumberInput from "../../components/NumberInput";
+import { useLocalValue } from "../../hooks/useLocalValue";
+import ConditionBuilder from "./ConditionBuilder";
+
+export type ContinueConditionSelectorProps = {
+  name?: string;
+  value: Partial<ContinueCondition>;
+  onChange: (value: Partial<ContinueCondition>) => void;
+};
+
+const STATE_OPTIONS = [
+  { value: "true", label: "真が継続" },
+  { value: "false", label: "偽が継続" },
+];
+
+function ContinueConditionSelector({ value, onChange }: ContinueConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue({ type: "continue" }, value, onChange);
+  return (
+    <div className="grid gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+        <div className="col-span-1">
+          <Select
+            fullWidth
+            value={condition.continue}
+            onChange={(val) =>
+              setCondition({
+                ...condition,
+                continue: val as ContinueCondition["continue"],
+              })
+            }
+            options={STATE_OPTIONS}
+          />
+        </div>
+        <div className="col-span-1">
+          <NumberInput
+            fullWidth
+            value={condition.length}
+            onChange={(val) =>
+              setCondition({
+                ...condition,
+                length: val as ContinueCondition["length"],
+              })
+            }
+            placeholder="期間（任意）"
+          />
+        </div>
+      </div>
+      <div>
+        <ConditionBuilder
+          value={condition.condition as Partial<Condition> | undefined}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              condition: val as ContinueCondition["condition"],
+            })
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+export default ContinueConditionSelector;

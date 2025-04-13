@@ -204,34 +204,53 @@ export class PyModule {
 }
 
 export function convertStrategyToPythonAst(template: StrategyTemplate) {
-  const module = new PyModule()
-    .addImport(new PyImport("backtrader", ["bt"]))
-    .addImport(new PyImport("datetime"));
+  const module = new PyModule().addImport(new PyImport("backtrader", ["bt"]));
 
   const cls = new PyClass("GeneratedStrategy", "bt.Strategy");
   const initFn = new PyFunction("__init__", ["self"]);
 
+  initFn.add(new PyAssignment("self.order_history", "[]"));
+  initFn.add(new PyAssignment("self.trade_history", "[]"));
   // Render variable definitions (indicators etc.)
   (template.variables || []).forEach((v) => {
-    const expr = renderExpression(v.expression);
-    initFn.add(new PyAssignment(`self.${v.name}`, expr));
+    const varname = ["close"].includes(v.name) ? "__data_{v.name}" : v.name;
+    const expr = emitVariableExpression(v.expression);
+    initFn.add(new PyAssignment(`self.${varname}`, expr));
   });
+  initFn.add(new PyAssignment("self.order", "None"));
+
+  // Render notify_order() method
+  const notifyOrderFn = new PyFunction("notify_order", ["self", "order"]);
+
+  const orderStatusIf = new PyIf(
+    "order.status in [order.Completed, order.Canceled, order.Rejected]"
+  );
+  orderStatusIf.add(new PyExpr("self.order_history.append(order)"));
+  orderStatusIf.add(new PyAssignment("self.order", "None"));
+  notifyOrderFn.add(orderStatusIf);
+
+  // Render notify_trade() method
+  const notifyTradeFn = new PyFunction("notify_trade", ["self", "trade"]);
+
+  const tradeStatusIf = new PyIf("trade.isclosed");
+  tradeStatusIf.add(new PyExpr("self.trade_history.append(trade)"));
+  notifyTradeFn.add(tradeStatusIf);
 
   // Render next() method
   const nextFn = new PyFunction("next", ["self"]);
 
-  const orderIf = new PyIf("not self.order");
+  const orderIf = new PyIf("self.order");
   orderIf.add(new PyReturn());
   nextFn.add(orderIf);
 
   const entryIf = new PyIf("not self.position");
   for (const entry of template.entry) {
-    const condStr = renderCondition(entry.condition);
+    const condStr = emitCondition(entry.condition);
     const entryBlock = new PyIf(condStr);
     if (entry.type === "long") {
-      entryBlock.add(new PyExpr("self.buy()"));
+      entryBlock.add(new PyExpr("self.order = self.buy()"));
     } else {
-      entryBlock.add(new PyExpr("self.sell()"));
+      entryBlock.add(new PyExpr("self.order = self.sell()"));
     }
     entryIf.add(entryBlock);
   }
@@ -240,54 +259,54 @@ export function convertStrategyToPythonAst(template: StrategyTemplate) {
 
   const exitIf = new PyIf("self.position and self.position.size > 0");
   for (const exit of template.exit) {
-    const condStr = renderCondition(exit.condition);
+    const condStr = emitCondition(exit.condition);
     const exitBlock = new PyIf(condStr);
-    exitBlock.add(new PyExpr("self.close()"));
+    exitBlock.add(new PyExpr("self.order = self.close()"));
     exitIf.add(exitBlock);
   }
 
   nextFn.add(exitIf);
 
-  nextFn.add(new PyReturn());
-
   cls.add(initFn);
+  cls.add(notifyOrderFn);
+  cls.add(notifyTradeFn);
   cls.add(nextFn);
   module.add(cls);
   return module;
 }
 
-function renderExpression(expr: VariableExpression): string {
+function emitVariableExpression(expr: VariableExpression): string {
   switch (expr.type) {
+    case "constant":
+      return expr.value.toString();
     case "price": {
       const source = expr.source || "close";
       const shift = expr.shiftBars || 0;
-      return shift === 0 ? `self.data.${source}` : `self.data.${source}[-${shift}]`;
+      return shift === 0 ? `self.data.${source}` : `self.data.${source}(-${shift})`;
     }
     case "indicator": {
-      const source = expr.source ? renderExpression(expr.source) : "self.data.close";
+      const source = expr.source ? emitVariableExpression(expr.source) : "self.data.close";
       const params = expr.params || {};
       const paramStr = Object.entries(params)
         .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
         .join(", ");
       return `bt.indicators.${expr.name}(${source}${paramStr ? ", " + paramStr : ""})`;
     }
-    case "constant":
-      return expr.value.toString();
     case "variable":
       return `self.${expr.name}`;
     case "unary_op": {
-      const inner = renderExpression(expr.operand);
+      const inner = emitVariableExpression(expr.operand);
       return expr.operator === "abs" ? `abs(${inner})` : `-${inner}`;
     }
     case "binary_op": {
-      const left = renderExpression(expr.left);
-      const right = renderExpression(expr.right);
+      const left = emitVariableExpression(expr.left);
+      const right = emitVariableExpression(expr.right);
       return `(${left} ${expr.operator} ${right})`;
     }
     case "ternary": {
-      const cond = renderCondition(expr.condition);
-      const t = renderExpression(expr.trueExpr);
-      const f = renderExpression(expr.falseExpr);
+      const cond = emitCondition(expr.condition);
+      const t = emitVariableExpression(expr.trueExpr);
+      const f = emitVariableExpression(expr.falseExpr);
       return `(${t} if ${cond} else ${f})`;
     }
     default:
@@ -295,39 +314,55 @@ function renderExpression(expr: VariableExpression): string {
   }
 }
 
-function renderCondition(cond: Condition): string {
+function emitCondition(cond: Condition, shift: number = 0): string {
   switch (cond.type) {
     case "comparison":
-      return `${renderOperand(cond.left)} ${cond.operator} ${renderOperand(cond.right)}`;
+      return `${emitOperand(cond.left, shift)} ${cond.operator} ${emitOperand(cond.right, shift)}`;
     case "cross": {
-      const left = renderOperand(cond.left);
-      const right = renderOperand(cond.right);
+      const l_curr = emitOperand(cond.left, shift);
+      const l_prev = emitOperand(cond.left, shift + 1);
+      const r_curr = emitOperand(cond.right, shift);
+      const r_prev = emitOperand(cond.right, shift + 1);
       if (cond.direction === "cross_over") {
-        return `${left}[-1] < ${right} and ${left}[0] > ${right}`;
+        return `${l_prev} < ${r_prev} and ${l_curr} > ${r_curr}`;
       } else {
-        return `${left}[-1] > ${right} and ${left}[0] < ${right}`;
+        return `${l_prev} > ${r_prev} and ${l_curr} < ${r_curr}`;
       }
     }
     case "state": {
-      const op = renderOperand(cond.operand);
+      const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
-      return `${op}[0] ${sign} ${op}[-1]`;
+      for (let i = 0; i < Math.abs(cond.length || 1); i++) {
+        const var_curr = emitOperand(cond.operand, shift + i);
+        const var_prev = emitOperand(cond.operand, shift + i + 1);
+        conds.push(`${var_curr} ${sign} ${var_prev}`);
+      }
+      return conds.join(" and ");
+    }
+    case "continue": {
+      const conds = [];
+      for (let i = 0; i < Math.abs(cond.length || 2); i++) {
+        const condition = emitCondition(cond.condition, shift + i);
+        conds.push(condition);
+      }
+      return `${cond.continue === 'true' ? '' : 'not '}(${conds.join(" and ")})`;
     }
     case "change": {
-      const inner = renderCondition(cond.condition);
+      const inner_curr = emitCondition(cond.condition, shift);
+      const inner_prev = emitCondition(cond.condition, shift);
       return cond.change === "to_true"
-        ? `not (${inner}[-1]) and (${inner})`
-        : `(${inner}[-1]) and not (${inner})`;
+        ? `not (${inner_prev}) and (${inner_curr})`
+        : `(${inner_prev}) and not (${inner_curr})`;
     }
     case "group":
-      return cond.conditions.map(renderCondition).join(` ${cond.operator} `);
+      return "(" + cond.conditions.map(c => emitCondition(c, shift)).join(`) ${cond.operator} (`) + ")";
     default:
       return "False";
   }
 }
 
-function renderOperand(op: ConditionOperand): string {
+function emitOperand(op: ConditionOperand, shift: number): string {
   if (op.type === "constant") return op.value?.toString() || "None";
-  if (op.type === "variable") return `self.${op.name}`;
+  if (op.type === "variable") return `self.${op.name}[${-(shift + (op.shiftBars ?? 0))}]`;
   return "0";
 }

@@ -1,5 +1,5 @@
 import { ChangeCondition } from "../types";
-import ConditionRow from "./ConditionRow";
+import ConditionRow from "./ConditionBuilder";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
