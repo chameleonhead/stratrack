@@ -15,7 +15,7 @@ export class MqlFile {
       lines.push(`double ${buf.name}[];`);
     }
     for (const v of this.globalVars) {
-      lines.push(`${v.type} ${v.name};`);
+      lines.push(v.toString());
     }
     for (const fn of this.functions) {
       lines.push("\n" + fn.toString());
@@ -30,6 +30,9 @@ export class MqlGlobalVariable {
     public type: string,
     public init?: string
   ) {}
+  toString() {
+    return `${this.type} ${this.name}${this.init ? ` = ${this.init.toString()}` : ""};`;
+  }
 }
 
 export class MqlFunction {
@@ -269,18 +272,99 @@ export class MqlFunctionCall extends MqlStatement {
   }
 }
 
-export class MqlStruct extends MqlStatement {
+// クラスフィールド（変数定義）
+export class MqlClassField {
   constructor(
     public name: string,
-    public fields: MqlGlobalVariable[]
+    public type: string,
+    public init?: MqlExpression,
+    public access: "public" | "private" = "private"
+  ) {}
+  toString(indent = "  ") {
+    return `${indent}${this.access}: ${this.type} ${this.name}${this.init ? ` = ${this.init.toString()}` : ""};`;
+  }
+}
+
+// クラスメソッド（関数定義）
+export class MqlClassMethod extends MqlFunction {
+  constructor(
+    name: string,
+    returnType: string,
+    body: MqlStatement[],
+    args: MqlArgument[] = [],
+    public access: "public" | "private" = "public"
+  ) {
+    super(name, returnType, body, args);
+  }
+
+  toString(indent = "  ") {
+    const header = `${indent}${this.access}: ${this.returnType} ${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
+    const bodyStr = this.body.map((stmt) => stmt.toString(indent + "  ")).join("\n");
+    return `${header} {\n${bodyStr}\n${indent}}`;
+  }
+}
+
+export class MqlConstructor extends MqlFunction {
+  constructor(className: string, body: MqlStatement[], args: MqlArgument[] = []) {
+    super(className, "void", body, args);
+  }
+
+  toString(indent = "  "): string {
+    const header = `${indent}${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
+    const bodyStr = this.body.map((stmt) => stmt.toString(indent + "  ")).join("\n");
+    return `${header} {\n${bodyStr}\n${indent}}`;
+  }
+}
+
+export class MqlDestructor extends MqlFunction {
+  constructor(className: string, body: MqlStatement[]) {
+    super("~" + className, "void", body, []);
+  }
+
+  toString(indent = "  "): string {
+    const header = `${indent}~${this.name.substring(1)}()`;
+    const bodyStr = this.body.map((stmt) => stmt.toString(indent + "  ")).join("\n");
+    return `${header} {\n${bodyStr}\n${indent}}`;
+  }
+}
+
+// クラス定義本体
+export class MqlClass extends MqlStatement {
+  constructor(
+    public name: string,
+    public fields: MqlClassField[],
+    public methods: (MqlClassMethod | MqlConstructor | MqlDestructor)[]
   ) {
     super();
   }
-  toString(indent = "  ") {
-    const lines = [`${indent}struct ${this.name} {`];
-    for (const f of this.fields) {
-      lines.push(`${indent}  ${f.type} ${f.name};`);
+
+  toString(indent = ""): string {
+    const lines: string[] = [];
+    lines.push(`${indent}class ${this.name} {`);
+
+    const sections: Record<"private" | "public", string[]> = { private: [], public: [] };
+
+    for (const field of this.fields) {
+      sections[field.access].push(
+        `  ${field.type} ${field.name}${field.init ? ` = ${field.init.toString()}` : ""};`
+      );
     }
+
+    for (const method of this.methods) {
+      const methodAccess =
+        method instanceof MqlConstructor || method instanceof MqlDestructor
+          ? "public"
+          : method.access;
+      sections[methodAccess].push(method.toString("  "));
+    }
+
+    for (const access of ["private", "public"] as const) {
+      if (sections[access].length > 0) {
+        lines.push(`  ${access}:`);
+        lines.push(...sections[access]);
+      }
+    }
+
     lines.push(`${indent}};`);
     return lines.join("\n");
   }

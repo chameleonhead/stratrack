@@ -1,5 +1,5 @@
 import { StrategyTemplate } from "../types";
-import { convertStrategyToMql4Ast } from "./mql4CodeGenerator";
+import { convertStrategyToMqlAst } from "./mqlCodeGenerator";
 import { convertStrategyToPythonAst } from "./pythonCodeGenerator";
 
 export function renderStrategyCode(language: string, template: StrategyTemplate): string {
@@ -8,7 +8,7 @@ export function renderStrategyCode(language: string, template: StrategyTemplate)
     return ast.toString();
   }
   if (language === "mql4") {
-    const ast = convertStrategyToMql4Ast(template);
+    const ast = convertStrategyToMqlAst(template);
     return ast.toString();
   }
   return "";
