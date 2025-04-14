@@ -26,10 +26,10 @@ export const RSI14: Story = {
               type: "indicator",
               name: "rsi",
               params: [
-                { name: 'period', type: 'number', value: 14 },
-                { name: 'source', type: "source", value: 'close' },
+                { name: "period", type: "number", value: 14 },
+                { name: "source", type: "source", value: "close" },
               ],
-              lineName: 'rsi',
+              lineName: "rsi",
             },
           },
           {
@@ -38,11 +38,11 @@ export const RSI14: Story = {
               type: "indicator",
               name: "moving_average",
               params: [
-                { name: 'method', type: 'aggregationType', value: 'sma' },
-                { name: 'period', type: 'number', value: 90 },
-                { name: 'source', type: "source", value: 'rsi14' },
+                { name: "method", type: "aggregationType", value: "sma" },
+                { name: "period", type: "number", value: 90 },
+                { name: "source", type: "source", value: "rsi14" },
               ],
-              lineName: 'ma'
+              lineName: "ma",
             },
           },
           {
@@ -51,11 +51,11 @@ export const RSI14: Story = {
               type: "indicator",
               name: "moving_average",
               params: [
-                { name: 'method', type: 'aggregationType', value: 'sma' },
-                { name: 'period', type: 'number', value: 90 },
-                { name: 'source', type: "source", value: 'rsi_sma90' },
+                { name: "method", type: "aggregationType", value: "sma" },
+                { name: "period", type: "number", value: 90 },
+                { name: "source", type: "source", value: "rsi_sma90" },
               ],
-              lineName: 'ma',
+              lineName: "ma",
             },
           },
         ],
@@ -141,8 +141,8 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "DonchianChannelHigh",
               params: [
-                { name: 'source', type: "source", value: 'high' },
-                { name: 'period', type: 'number', value: 20 },
+                { name: "source", type: "source", value: "high" },
+                { name: "period", type: "number", value: 20 },
               ],
             },
           },
@@ -152,8 +152,8 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "DonchianChannelLow",
               params: [
-                { name: 'period', type: 'number', value: 90 },
-                { name: 'source', type: "source", value: 'low' },
+                { name: "period", type: "number", value: 90 },
+                { name: "source", type: "source", value: "low" },
               ],
             },
           },
