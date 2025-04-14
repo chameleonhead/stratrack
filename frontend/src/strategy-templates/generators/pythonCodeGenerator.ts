@@ -1,4 +1,5 @@
-import { Condition, ConditionOperand, StrategyTemplate, VariableExpression } from "../types";
+import { Accelerator, AccumulationDistribution, ADX, Alligator, AwesomeOscillator, ATR, BearsPower, BollingerBands, BullsPower, CommodityChannelIndex, DeMarker, Envelopes, ForceIndex, Fractals, GatorOscillator, Ichimoku, MarketFacilitationIndex, Momentum, MoneyFlowIndex, MA, MACDHistogram, MACD, OnBalanceVolume, RSI, RelativeVigorIndex, StandardDeviation, Stochastic, WilliamsPercentRange } from "../../indicators/indicators";
+import { Condition, ConditionOperand, IndicatorExpression, StrategyTemplate, VariableExpression } from "../types";
 
 export abstract class PyBlock {
   indentLevel = 0;
@@ -285,12 +286,7 @@ function emitVariableExpression(expr: VariableExpression): string {
       return shift === 0 ? `self.data.${source}` : `self.data.${source}(-${shift})`;
     }
     case "indicator": {
-      const source = expr.source ? emitVariableExpression(expr.source) : "self.data.close";
-      const params = expr.params || {};
-      const paramStr = Object.entries(params)
-        .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
-        .join(", ");
-      return `bt.indicators.${expr.name}(${source}${paramStr ? ", " + paramStr : ""})`;
+      return mapIndicatorNameToBtFunction(expr);
     }
     case "variable":
       return `self.${expr.name}`;
@@ -345,7 +341,7 @@ function emitCondition(cond: Condition, shift: number = 0): string {
         const condition = emitCondition(cond.condition, shift + i);
         conds.push(condition);
       }
-      return `${cond.continue === 'true' ? '' : 'not '}(${conds.join(" and ")})`;
+      return `${cond.continue === "true" ? "" : "not "}(${conds.join(" and ")})`;
     }
     case "change": {
       const inner_curr = emitCondition(cond.condition, shift);
@@ -355,7 +351,9 @@ function emitCondition(cond: Condition, shift: number = 0): string {
         : `(${inner_prev}) and not (${inner_curr})`;
     }
     case "group":
-      return "(" + cond.conditions.map(c => emitCondition(c, shift)).join(`) ${cond.operator} (`) + ")";
+      return (
+        "(" + cond.conditions.map((c) => emitCondition(c, shift)).join(`) ${cond.operator} (`) + ")"
+      );
     default:
       return "False";
   }
@@ -366,3 +364,113 @@ function emitOperand(op: ConditionOperand, shift: number): string {
   if (op.type === "variable") return `self.${op.name}[${-(shift + (op.shiftBars ?? 0))}]`;
   return "0";
 }
+function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
+  const get = (name: string): string | number =>
+    expr.params.find((p) => p.name === name)?.value ?? "undefined";
+
+  const line = expr.lineName ?? "";
+
+  switch (expr.name) {
+    case Accelerator.name:
+      return `bt.indicators.AccDeOsc()`;
+
+    case AccumulationDistribution.name:
+      if (line === "ad") return `bt.indicators.AccDist(self.data).ad`;
+      break;
+
+    case ADX.name:
+      if (line === "adx") return `bt.indicators.ADX(self.data, period=${get("period")}).adx`;
+      if (line === "pdi") return `bt.indicators.PlusDI(self.data, period=${get("period")}).plusDI`;
+      if (line === "mdi") return `bt.indicators.MinusDI(self.data, period=${get("period")}).minusDI`;
+      break;
+
+    case Alligator.name:
+      throw new Error("failed")
+    case AwesomeOscillator.name:
+      throw new Error("failed")
+
+    case ATR.name:
+      if (line === "atr") return `bt.indicators.ATR(self.data, period=${get("period")}).atr`;
+      break;
+
+    case BearsPower.name:
+      throw new Error("failed")
+
+    case BollingerBands.name:
+      if (line === "upper") return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).top`;
+      if (line === "middle") return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).mid`;
+      if (line === "lower") return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).bot`;
+      break;
+
+    case BullsPower.name:
+      throw new Error("failed")
+    case CommodityChannelIndex.name:
+      if (line === "cci") return `bt.indicators.CCI(self.data, period=${get("period")}).cci`;
+      break;
+
+    case DeMarker.name:
+      throw new Error("failed")
+    case Envelopes.name:
+      throw new Error("failed")
+    case ForceIndex.name:
+      if (line === "force") return `bt.indicators.ForceIndex(self.data, period=${get("period")}).force`;
+      break;
+    case Fractals.name:
+      throw new Error("fail")
+
+    case GatorOscillator.name:
+      throw new Error("fail")
+    case Ichimoku.name:
+      throw new Error("fail")
+    case MarketFacilitationIndex.name:
+      throw new Error("fail")
+    case Momentum.name:
+      if (line === "momentum") return `bt.indicators.Momentum(self.data, period=${get("period")}).momentum`;
+      break;
+    case MoneyFlowIndex.name:
+      if (line === "mfi") return `bt.talib.MFI(self.data.high, self.data.low, self.data.close, self.data.volume, timeperiod=${get("period")})`;
+      break;
+    case MA.name:
+      if (line === "ma") {
+        const method = get("method");
+        if (method === "ema") return `bt.indicators.EMA(self.data, period=${get("period")}).ema`;
+        if (method === "sma") return `bt.indicators.SMA(self.data, period=${get("period")}).sma`;
+        return `bt.indicators.SMA(self.data, period=${get("period")}).sma`;
+      }
+      break;
+    case MACDHistogram.name:
+      if (line === "histogram") return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).histogram`;
+      break;
+    case MACD.name:
+      if (line === "macd") return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).macd`;
+      if (line === "signal") return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).signal`;
+      break;
+    case OnBalanceVolume.name:
+      if (line === "obv") return `bt.indicators.OBV(self.data).obv`;
+      break;
+    case RSI.name:
+
+      if (line === "rsi") return `bt.indicators.RSI(self.data, period=${get("period")}).rsi`;
+      break;
+    case RelativeVigorIndex.name:
+      if (line === "rvi") return `bt.indicators.RVI(self.data, period=${get("period")}).rvi`;
+      if (line === "signal") return `bt.indicators.RVI(self.data, period=${get("period")}).signal`;
+      break;
+
+    case StandardDeviation.name:
+      if (line === "stddev") return `bt.indicators.StdDev(self.data, period=${get("period")}).stddev`;
+      break;
+
+    case Stochastic.name:
+      if (line === "k") return `bt.indicators.Stochastic(self.data, period=${get("kPeriod")}).percK`;
+      if (line === "d") return `bt.indicators.Stochastic(self.data, period=${get("kPeriod")}).percD`;
+      break;
+
+    case WilliamsPercentRange.name:
+      if (line === "percentR") return `bt.indicators.WilliamsR(self.data, period=${get("period")}).r`;
+      break;
+  }
+
+  return `# unsupported or missing line: ${expr.name} [line: ${line}]`;
+}
+

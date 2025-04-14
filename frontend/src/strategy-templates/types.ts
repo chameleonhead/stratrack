@@ -78,9 +78,15 @@ export type IndicatorExpression = {
   /** 指標の名称（例: 'SMA', 'RSI' 等） */
   name: string;
   /** 指標に渡すパラメータ（期間など）、キーと値の辞書 */
-  params?: { [key: string]: string | number | boolean | null };
-  /** オプション: 指標を計算する価格の種類（終値など） */
-  source?: VariableExpression;
+  params: IndicatorParamValue[];
+  /** 値を取得するライン名 */
+  lineName?: string;
+};
+
+export type IndicatorParamValue = {
+  name: string;
+  type: "number" | "source" | "aggregationType";
+  value: string | number;
 };
 
 /** 他の変数の参照 */
@@ -125,7 +131,7 @@ export type ConstantOperand = {
 export type VariableOperand = {
   type: "variable";
   name: string;
-  shiftBars?: number
+  shiftBars?: number;
 };
 
 /** 比較条件: leftとrightを演算子operatorで比較 */

@@ -1,6 +1,42 @@
 // StrategyTemplate to MQL AST converter + MQL4 renderer
 
-import { StrategyTemplate, VariableExpression, Condition, ConditionOperand } from "../types";
+import {
+  Accelerator,
+  AccumulationDistribution,
+  ADX,
+  Alligator,
+  AwesomeOscillator,
+  ATR,
+  BearsPower,
+  BollingerBands,
+  BullsPower,
+  CommodityChannelIndex,
+  DeMarker,
+  Envelopes,
+  ForceIndex,
+  Fractals,
+  GatorOscillator,
+  Ichimoku,
+  MarketFacilitationIndex,
+  Momentum,
+  MoneyFlowIndex,
+  MA,
+  MACDHistogram,
+  MACD,
+  OnBalanceVolume,
+  RSI,
+  RelativeVigorIndex,
+  StandardDeviation,
+  Stochastic,
+  WilliamsPercentRange,
+} from "../../indicators/indicators";
+import {
+  StrategyTemplate,
+  VariableExpression,
+  Condition,
+  ConditionOperand,
+  IndicatorExpression,
+} from "../types";
 
 export class MqlFile {
   constructor(
@@ -9,7 +45,7 @@ export class MqlFile {
     public functions: MqlFunction[],
     public properties: string[] = [],
     public buffers: MqlIndexBuffer[] = []
-  ) { }
+  ) {}
 
   toString(): string {
     const lines: string[] = [];
@@ -33,7 +69,7 @@ export class MqlGlobalVariable {
     public name: string,
     public type: string,
     public init?: string
-  ) { }
+  ) {}
 }
 
 export class MqlFunction {
@@ -42,7 +78,7 @@ export class MqlFunction {
     public returnType: string,
     public body: MqlStatement[],
     public args: MqlArgument[] = []
-  ) { }
+  ) {}
 
   toString(): string {
     const header = `${this.returnType} ${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
@@ -55,7 +91,7 @@ export class MqlArgument {
   constructor(
     public name: string,
     public type: string
-  ) { }
+  ) {}
 }
 
 export class MqlIndexBuffer {
@@ -64,7 +100,7 @@ export class MqlIndexBuffer {
     public name: string,
     public style?: string,
     public label?: string
-  ) { }
+  ) {}
 }
 export abstract class MqlExpression {
   abstract toString(): string;
@@ -367,8 +403,7 @@ export function convertStrategyToMql4Ast(template: StrategyTemplate): MqlFile {
   ];
 
   const deinitBody: MqlStatement[] = [
-    ...(template.variables?.map((v) => new MqlExprStatement(`ArrayFree(${v.name})`)) ||
-      []),
+    ...(template.variables?.map((v) => new MqlExprStatement(`ArrayFree(${v.name})`)) || []),
   ];
 
   const tickBody: MqlStatement[] = [new MqlIf("Bars < 100", [new MqlReturn()])];
@@ -500,16 +535,7 @@ function emitVariableExpression(expr: VariableExpression): MqlExpression {
       return [new MqlLiteral(`${varName}[${expr.shiftBars}]`)];
     }
     case "indicator": {
-      const period = expr.params?.period ?? 14;
-      const price =
-        expr.source?.type === "price" ? priceToConst(expr.source.source) : "PRICE_CLOSE";
-      const call =
-        expr.name.toLowerCase() === "rsi"
-          ? `iRSI(NULL, 0, ${period}, ${price}, i)`
-          : expr.name.toLowerCase() === "sma"
-            ? `iMA(NULL, 0, ${period}, 0, MODE_SMA, ${price}, i)`
-            : `iCustom(NULL, 0, "${expr.name}", ${period}, i)`;
-      return [new MqlLiteral(`${call}`)];
+      return mapIndicatorNameToMqlFunction(expr);
     }
     case "variable":
       return [new MqlLiteral(`${expr.name}[0]`)];
@@ -539,7 +565,6 @@ function emitCondition(cond: Condition, shift: number = 0): MqlExpression {
   switch (cond.type) {
     case "comparison":
       return `(${emitOperand(cond.left, 0)} ${cond.operator} ${emitOperand(cond.right, 0)})`;
-
     case "cross": {
       const l_curr = emitOperand(cond.left, shift);
       const l_prev = emitOperand(cond.left, shift + 1);
@@ -565,7 +590,7 @@ function emitCondition(cond: Condition, shift: number = 0): MqlExpression {
         const condition = emitCondition(cond.condition, shift + i);
         conds.push(condition);
       }
-      return `${cond.continue === 'true' ? '' : '!'}(${conds.join(" && ")})`;
+      return `${cond.continue === "true" ? "" : "!"}(${conds.join(" && ")})`;
     }
     case "change": {
       const inner_curr = emitCondition(cond.condition, shift);
@@ -575,7 +600,13 @@ function emitCondition(cond: Condition, shift: number = 0): MqlExpression {
         : `(${inner_prev}) && !(${inner_curr})`;
     }
     case "group":
-      return "(" + cond.conditions.map(c => emitCondition(c, shift)).join(`) ${cond.operator === 'and' ? '&&' : '||'} (`) + ")";
+      return (
+        "(" +
+        cond.conditions
+          .map((c) => emitCondition(c, shift))
+          .join(`) ${cond.operator === "and" ? "&&" : "||"} (`) +
+        ")"
+      );
     default:
       return "false";
   }
@@ -585,17 +616,312 @@ function emitOperand(op: ConditionOperand, shift: number): string {
   return op.type === "variable" ? `${op.name}[${shift}]` : `${op.value}`;
 }
 
-function priceToConst(source?: string): string {
-  switch (source) {
-    case "open":
-      return "PRICE_OPEN";
-    case "high":
-      return "PRICE_HIGH";
-    case "low":
-      return "PRICE_LOW";
-    case "close":
-      return "PRICE_CLOSE";
-    default:
-      return "PRICE_CLOSE";
+function mapIndicatorNameToMqlFunction(expr: IndicatorExpression): MqlExpression {
+  switch (expr.name) {
+    case Accelerator.name:
+      return new MqlFunctionCallExpr("iAC", ["Symbol()", "0", "0"]);
+    case AccumulationDistribution.name:
+      return new MqlFunctionCallExpr("iAD", ["Symbol()", "0", "0"]);
+    case ADX.name:
+      return new MqlFunctionCallExpr("iADX", [
+        "Symbol()",
+        "0",
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        expr.lineName === "adx"
+          ? "MODE_MAIN"
+          : expr.lineName === "pdi"
+            ? "MODE_PLUSDI"
+            : expr.lineName === "mdi"
+              ? "MODE_MINUSDI"
+              : "",
+        "0",
+      ]);
+    case Alligator.name:
+      return new MqlFunctionCallExpr("iAlligator", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "jawPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "jawShift")!.value.toString(),
+        expr.params.find((p) => p.name === "teethPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "teethShift")!.value.toString(),
+        expr.params.find((p) => p.name === "lipsPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "lipsShift")!.value.toString(),
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.lineName === "jaw"
+          ? "MODE_GATORJAW"
+          : expr.lineName === "teeth"
+            ? "MODE_GATORTEETH"
+            : expr.lineName === "lips"
+              ? "MODE_GATORLIPS"
+              : "",
+        "0",
+      ]);
+    case AwesomeOscillator.name:
+      return new MqlFunctionCallExpr("iAO", ["Symbol()", "0", "0"]);
+    case ATR.name:
+      return new MqlFunctionCallExpr("iATR", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+      ]);
+    case BearsPower.name:
+      return new MqlFunctionCallExpr("iBearsPower", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case BollingerBands.name:
+      return new MqlFunctionCallExpr("iBands", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        expr.params.find((p) => p.name === "deviation")!.value.toString(),
+        "0",
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.lineName === "middle"
+          ? "MODE_MAIN"
+          : expr.lineName === "upper"
+            ? "MODE_UPPER"
+            : expr.lineName === "lower"
+              ? "MODE_LOWER"
+              : "",
+        "0",
+      ]);
+    case BullsPower.name:
+      return new MqlFunctionCallExpr("iBullsPower", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case CommodityChannelIndex.name:
+      return new MqlFunctionCallExpr("iCCI", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case DeMarker.name:
+      return new MqlFunctionCallExpr("iDeMarker", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+      ]);
+    case Envelopes.name:
+      return new MqlFunctionCallExpr("iEnvelopes", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        "0",
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.params.find((p) => p.name === "deviation")!.value.toString(),
+        expr.lineName === "basis"
+          ? "MODE_MAIN"
+          : expr.lineName === "upper"
+            ? "MODE_UPPER"
+            : expr.lineName === "lower"
+              ? "MODE_LOWER"
+              : "",
+        "0",
+      ]);
+    case ForceIndex.name:
+      return new MqlFunctionCallExpr("iForce", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case Fractals.name:
+      return new MqlFunctionCallExpr("iFractals", [
+        "Symbol()",
+        "0",
+        expr.lineName === "upFractal"
+          ? "MODE_UPPER"
+          : expr.lineName === "downFractal"
+            ? "MODE_LOWER"
+            : "",
+        "0",
+      ]);
+    case GatorOscillator.name:
+      return new MqlFunctionCallExpr("iGator", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "jawPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "jawShift")!.value.toString(),
+        expr.params.find((p) => p.name === "teethPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "teethShift")!.value.toString(),
+        expr.params.find((p) => p.name === "lipsPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "lipsShift")!.value.toString(),
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.lineName === "gatorUpper"
+          ? "MODE_UPPER"
+          : expr.lineName === "gatorLower"
+            ? "MODE_LOWER"
+            : "",
+        "0",
+      ]);
+    case Ichimoku.name:
+      return new MqlFunctionCallExpr("iIchimoku", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "tenkanPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "kijunPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "senkouPeriod")!.value.toString(),
+        expr.lineName === "tenkan"
+          ? "MODE_TENKANSEN"
+          : expr.lineName === "kijun"
+            ? "MODE_KIJUNSEN"
+            : expr.lineName === "senkouA"
+              ? "MODE_SENKOUSPANA"
+              : expr.lineName === "senkouB"
+                ? "MODE_SENKOUSPANB"
+                : expr.lineName === "chikou"
+                  ? "MODE_CHIKOUSPAN"
+                  : "",
+        "0",
+      ]);
+    case MarketFacilitationIndex.name:
+      return new MqlFunctionCallExpr("iBWMFI", ["Symbol()", "0", "0"]);
+    case Momentum.name:
+      return new MqlFunctionCallExpr("iMomentum", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case MoneyFlowIndex.name:
+      return new MqlFunctionCallExpr("iMFI", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+      ]);
+    case MA.name:
+      return new MqlFunctionCallExpr("iGator", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case MACDHistogram.name:
+      return new MqlFunctionCallExpr("iOsMA", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "fastPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "slowPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "signalPeriod")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case MACD.name:
+      return new MqlFunctionCallExpr("iMACD", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "fastPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "slowPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "signalPeriod")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        expr.lineName === "macd" ? "MODE_MAIN" : expr.lineName === "signal" ? "MODE_SIGNAL" : "",
+        "0",
+      ]);
+    case OnBalanceVolume.name:
+      return new MqlFunctionCallExpr("iOBV", [
+        "Symbol()",
+        "0",
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case RSI.name:
+      return new MqlFunctionCallExpr("iRSI", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case RelativeVigorIndex.name:
+      return new MqlFunctionCallExpr("iRVI", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        expr.lineName === "rvi" ? "MODE_MAIN" : expr.lineName === "signal" ? "MODE_SIGNAL" : "",
+        "0",
+      ]);
+    case StandardDeviation.name:
+      return new MqlFunctionCallExpr("iStdDev", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        mapSourceToMqlExpression(expr.params.find((p) => p.name === "source")!.value as string),
+        "0",
+      ]);
+    case Stochastic.name:
+      return new MqlFunctionCallExpr("iStochastic", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "kPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "dPeriod")!.value.toString(),
+        expr.params.find((p) => p.name === "slowing")!.value.toString(),
+        { sma: "MODE_SMA", ema: "MODE_EMA", smma: "MODE_SMMA", lwma: "MODE_LWMA" }[
+          expr.params.find((p) => p.name === "method")!.value.toString()
+        ] as string,
+        "0",
+        expr.lineName === "k" ? "MODE_MAIN" : expr.lineName === "d" ? "MODE_SIGNAL" : "",
+        "0",
+      ]);
+    case WilliamsPercentRange.name:
+      return new MqlFunctionCallExpr("iWPR", [
+        "Symbol()",
+        "0",
+        expr.params.find((p) => p.name === "period")!.value.toString(),
+        "0",
+      ]);
   }
+
+  return new MqlFunctionCallExpr("iCustom", ["Symbol()", "0", "0"]);
+}
+
+function mapSourceToMqlExpression(source: string): MqlExpression {
+  const map: Record<string, string> = {
+    close: "PRICE_CLOSE",
+    open: "PRICE_OPEN",
+    high: "PRICE_HIGH",
+    low: "PRICE_LOW",
+    median: "PRICE_MEDIAN",
+    typical: "PRICE_TYPICAL",
+    weighted: "PRICE_WEIGHTED",
+  };
+  const mapped = map[source];
+  // if (!mapped) throw new Error(`Unknown source type: ${source}`);
+  return new MqlLiteral(mapped);
 }

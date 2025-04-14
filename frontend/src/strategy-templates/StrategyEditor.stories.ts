@@ -24,36 +24,38 @@ export const RSI14: Story = {
             name: "rsi14",
             expression: {
               type: "indicator",
-              name: "RSI",
-              params: { period: 14 },
-              source: {
-                type: "price",
-                source: "close",
-              },
+              name: "rsi",
+              params: [
+                { name: 'period', type: 'number', value: 14 },
+                { name: 'source', type: "source", value: 'close' },
+              ],
+              lineName: 'rsi',
             },
           },
           {
             name: "rsi_sma90",
             expression: {
               type: "indicator",
-              name: "SMA",
-              params: { period: 90 },
-              source: {
-                type: "variable",
-                name: "rsi14",
-              },
+              name: "moving_average",
+              params: [
+                { name: 'method', type: 'aggregationType', value: 'sma' },
+                { name: 'period', type: 'number', value: 90 },
+                { name: 'source', type: "source", value: 'rsi14' },
+              ],
+              lineName: 'ma'
             },
           },
           {
             name: "rsi_sma90_sma90",
             expression: {
               type: "indicator",
-              name: "SMA",
-              params: { period: 90 },
-              source: {
-                type: "variable",
-                name: "rsi_sma90",
-              },
+              name: "moving_average",
+              params: [
+                { name: 'method', type: 'aggregationType', value: 'sma' },
+                { name: 'period', type: 'number', value: 90 },
+                { name: 'source', type: "source", value: 'rsi_sma90' },
+              ],
+              lineName: 'ma',
             },
           },
         ],
@@ -63,36 +65,41 @@ export const RSI14: Story = {
             condition: {
               type: "group",
               operator: "and",
-              conditions: [{
-                type: "state",
-                state: "rising",
-                operand: {
-                  type: "variable",
-                  name: "rsi_sma90",
-                }
-              }, {
-                type: "state",
-                state: "rising",
-                operand: {
-                  type: "variable",
-                  name: "rsi_sma90_sma90",
-                }
-              }, {
-                type: "continue",
-                length: 5,
-                continue: "true",
-                condition: {
-                  type: "comparison",
-                  left: { type: "variable", name: "rsi14", shiftBars: 2 },
-                  operator: ">",
+              conditions: [
+                {
+                  type: "state",
+                  state: "rising",
+                  operand: {
+                    type: "variable",
+                    name: "rsi_sma90",
+                  },
+                },
+                {
+                  type: "state",
+                  state: "rising",
+                  operand: {
+                    type: "variable",
+                    name: "rsi_sma90_sma90",
+                  },
+                },
+                {
+                  type: "continue",
+                  length: 5,
+                  continue: "true",
+                  condition: {
+                    type: "comparison",
+                    left: { type: "variable", name: "rsi14", shiftBars: 2 },
+                    operator: ">",
+                    right: { type: "constant", value: 30 },
+                  },
+                },
+                {
+                  type: "cross",
+                  direction: "cross_over",
+                  left: { type: "variable", name: "rsi14" },
                   right: { type: "constant", value: 30 },
-                }
-              }, {
-                type: "cross",
-                direction: "cross_over",
-                left: { type: "variable", name: "rsi14" },
-                right: { type: "constant", value: 30 },
-              }]
+                },
+              ],
             },
           },
         ],
@@ -133,11 +140,10 @@ export const DonchianChannel: Story = {
             expression: {
               type: "indicator",
               name: "DonchianChannelHigh",
-              params: { period: 20 },
-              source: {
-                type: "price",
-                source: "high",
-              },
+              params: [
+                { name: 'source', type: "source", value: 'high' },
+                { name: 'period', type: 'number', value: 20 },
+              ],
             },
           },
           {
@@ -145,11 +151,10 @@ export const DonchianChannel: Story = {
             expression: {
               type: "indicator",
               name: "DonchianChannelLow",
-              params: { period: 20 },
-              source: {
-                type: "price",
-                source: "low",
-              },
+              params: [
+                { name: 'period', type: 'number', value: 90 },
+                { name: 'source', type: "source", value: 'low' },
+              ],
             },
           },
           {
