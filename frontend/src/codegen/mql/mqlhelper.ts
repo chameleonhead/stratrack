@@ -19,6 +19,12 @@ import {
   MqlGlobalVariable,
   MqlIndexBuffer,
   MqlFile,
+  MqlConstructor,
+  MqlClass,
+  MqlClassField,
+  MqlClassMethod,
+  MqlDestructor,
+  MqlGlobalItem,
 } from "./mqlast";
 
 export const lit = (value: string | number): MqlLiteral => new MqlLiteral(value?.toString());
@@ -73,8 +79,42 @@ export const globalVar = (name: string, type: string, init?: string): MqlGlobalV
 
 export const file = (
   type: "expert" | "indicator",
-  vars: MqlGlobalVariable[],
-  funcs: MqlFunction[],
+  globals: MqlGlobalItem[],
   props: string[] = [],
   buffers: MqlIndexBuffer[] = []
-): MqlFile => new MqlFile(type, vars, funcs, props, buffers);
+): MqlFile => new MqlFile(type, globals, props, buffers);
+
+/** クラスフィールド（変数）の生成 */
+export const field = (
+  name: string,
+  type: string,
+  init?: MqlExpression,
+  access: "public" | "private" = "private"
+): MqlClassField => new MqlClassField(name, type, init, access);
+
+/** クラスメソッドの生成 */
+export const method = (
+  name: string,
+  returnType: string,
+  body: MqlStatement[],
+  args: MqlArgument[] = [],
+  access: "public" | "private" = "public"
+): MqlClassMethod => new MqlClassMethod(name, returnType, body, args, access);
+
+/** コンストラクタの生成 */
+export const ctor = (
+  className: string,
+  body: MqlStatement[],
+  args: MqlArgument[] = []
+): MqlConstructor => new MqlConstructor(className, body, args);
+
+/** デストラクタの生成 */
+export const dtor = (className: string, body: MqlStatement[]): MqlDestructor =>
+  new MqlDestructor(className, body);
+
+/** クラスの生成 */
+export const cls = (
+  name: string,
+  fields: MqlClassField[],
+  methods: (MqlClassMethod | MqlConstructor | MqlDestructor)[]
+): MqlClass => new MqlClass(name, fields, methods);

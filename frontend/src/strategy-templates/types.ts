@@ -80,7 +80,7 @@ export type IndicatorExpression = {
   /** 指標に渡すパラメータ（期間など）、キーと値の辞書 */
   params: IndicatorParamValue[];
   /** 値を取得するライン名 */
-  lineName?: string;
+  lineName: string;
 };
 
 export type IndicatorParamValue = {

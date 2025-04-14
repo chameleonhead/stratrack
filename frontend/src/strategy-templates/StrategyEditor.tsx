@@ -5,6 +5,7 @@ import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
 import { renderStrategyCode } from "./generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
 import { Strategy, StrategyTemplate } from "./types";
+import { useIndicatorList } from "../indicators/IndicatorProvider";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -12,6 +13,7 @@ export type StrategyEditorProps = {
 };
 
 function StrategyEditor({ value, onChange }: StrategyEditorProps) {
+  const indicators = useIndicatorList();
   const [localValue, setLocalValue] = useLocalValue(
     {
       template: {
@@ -32,14 +34,14 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
         <CodeEditor
           language="python"
           value={useMemo(
-            () => renderStrategyCode("python", localValue.template as StrategyTemplate),
+            () => renderStrategyCode("python", localValue.template as StrategyTemplate, indicators),
             [localValue]
           )}
         />
         <CodeEditor
           language="mql4"
           value={useMemo(
-            () => renderStrategyCode("mql4", localValue.template as StrategyTemplate),
+            () => renderStrategyCode("mql4", localValue.template as StrategyTemplate, indicators),
             [localValue]
           )}
         />

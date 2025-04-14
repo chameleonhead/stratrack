@@ -79,7 +79,7 @@ export type IndicatorTemplate = {
 
 export type VariableDefinition = {
   name: string;
-  expression: AggregationExpression | VariableExpression;
+  expression: AggregationExpression | IndicatorExpression | VariableExpression;
   description?: string;
 };
 
@@ -96,7 +96,6 @@ export type VariableExpression =
   | ConstantExpression
   | SourceExpression
   | NumberParamReferenceExpression
-  | IndicatorExpression
   | VariableReferenceExpression
   | UnaryOperationExpression
   | BinaryOperationExpression
@@ -128,12 +127,21 @@ export type VariableReferenceExpression = {
   shiftBars?: ConstantExpression | NumberParamReferenceExpression;
 };
 
-// 指標をネストして使用
+/** テクニカル指標の値を表す式 */
 export type IndicatorExpression = {
   type: "indicator";
+  /** 指標の名称（例: 'SMA', 'RSI' 等） */
   name: string;
-  params?: { [key: string]: string | number | boolean | null };
-  source?: VariableExpression;
+  /** 指標に渡すパラメータ（期間など）、キーと値の辞書 */
+  params: IndicatorParamValue[];
+  /** 値を取得するライン名 */
+  lineName: string;
+};
+
+export type IndicatorParamValue = {
+  name: string;
+  type: "number" | "source" | "aggregationType";
+  value: string | number;
 };
 
 // 単項演算

@@ -1,8 +1,7 @@
 export class MqlFile {
   constructor(
     public type: "expert" | "indicator",
-    public globalVars: MqlGlobalVariable[],
-    public functions: MqlFunction[],
+    public globalItems: MqlGlobalItem[],
     public properties: string[] = [],
     public buffers: MqlIndexBuffer[] = []
   ) {}
@@ -14,14 +13,26 @@ export class MqlFile {
     for (const buf of this.buffers) {
       lines.push(`double ${buf.name}[];`);
     }
-    for (const v of this.globalVars) {
-      lines.push(v.toString());
+
+    // グローバル変数 → クラス → 関数 の順にソートして出力
+    const vars = this.globalItems.filter((i) => i instanceof MqlGlobalVariable);
+    const classes = this.globalItems.filter((i) => i instanceof MqlClass);
+    const funcs = this.globalItems.filter((i) => i instanceof MqlFunction);
+
+    for (const item of vars) {
+      lines.push(item.toString());
     }
-    for (const fn of this.functions) {
-      lines.push("\n" + fn.toString());
+
+    for (const item of [...classes, ...funcs]) {
+      lines.push("\n" + item.toString());
     }
+
     return lines.join("\n");
   }
+}
+
+export abstract class MqlGlobalItem {
+  abstract toString(indent?: string): string;
 }
 
 export class MqlGlobalVariable {
@@ -95,7 +106,11 @@ export class MqlUnaryExpr extends MqlExpression {
     super();
   }
   toString(): string {
-    return `${this.operator} ${this.value.toString()}`;
+    if (this.operator === "abs") {
+      return `${this.operator}(${this.value.toString()})`;
+    } else {
+      return `${this.operator}${this.value.toString()}`;
+    }
   }
 }
 
@@ -108,7 +123,7 @@ export class MqlBinaryExpr extends MqlExpression {
     super();
   }
   toString(): string {
-    return `${this.left.toString()} ${this.operator} ${this.right.toString()}`;
+    return `${par(this.left)} ${this.operator} ${par(this.right)}`;
   }
 }
 
@@ -263,7 +278,7 @@ export class MqlBlock extends MqlStatement {
 export class MqlFunctionCall extends MqlStatement {
   constructor(
     public name: string,
-    public args: string[]
+    public args: MqlExpression[]
   ) {
     super();
   }
@@ -298,7 +313,7 @@ export class MqlClassMethod extends MqlFunction {
   }
 
   toString(indent = "  ") {
-    const header = `${indent}${this.access}: ${this.returnType} ${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
+    const header = `${indent}${this.returnType} ${this.name}(${this.args.map((a) => `${a.type} ${a.name}`).join(", ")})`;
     const bodyStr = this.body.map((stmt) => stmt.toString(indent + "  ")).join("\n");
     return `${header} {\n${bodyStr}\n${indent}}`;
   }
@@ -360,12 +375,19 @@ export class MqlClass extends MqlStatement {
 
     for (const access of ["private", "public"] as const) {
       if (sections[access].length > 0) {
-        lines.push(`  ${access}:`);
+        lines.push(`${access}:`);
         lines.push(...sections[access]);
       }
     }
 
     lines.push(`${indent}};`);
     return lines.join("\n");
+  }
+}
+function par(e: MqlExpression) {
+  if (e instanceof MqlBinaryExpr || e instanceof MqlTernaryExpr) {
+    return `(${e.toString()})`;
+  } else {
+    return e.toString();
   }
 }
