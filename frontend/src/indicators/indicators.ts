@@ -1785,7 +1785,7 @@ export const RSI: Indicator = {
         name: "avgGain",
         expression: {
           type: "aggregation",
-          method: { type: "aggregationType", value: "rma" },
+          method: { type: "aggregationType", value: "sma" },
           source: { type: "variable", name: "gain" },
           period: { type: "param", name: "period" },
         },
@@ -1794,7 +1794,7 @@ export const RSI: Indicator = {
         name: "avgLoss",
         expression: {
           type: "aggregation",
-          method: { type: "aggregationType", value: "rma" },
+          method: { type: "aggregationType", value: "sma" },
           source: { type: "variable", name: "loss" },
           period: { type: "param", name: "period" },
         },
@@ -1802,22 +1802,35 @@ export const RSI: Indicator = {
       {
         name: "rs",
         expression: {
-          type: "binary_op",
-          operator: "/",
-          left: { type: "variable", name: "avgGain" },
-          right: { type: "variable", name: "avgLoss" },
+          type: "ternary",
+          condition: {
+            type: "comparison",
+            left: { type: "variable", name: "avgLoss" },
+            operator: "==",
+            right: { type: "constant", value: 0 },
+          },
+          trueExpr: {
+            type: "constant",
+            value: 0,
+          },
+          falseExpr: {
+            type: "binary_op",
+            operator: "/",
+            left: { type: "variable", name: "avgGain" },
+            right: { type: "variable", name: "avgLoss" },
+          },
         },
       },
       {
         name: "rsi",
         expression: {
           type: "binary_op",
-          operator: "-",
           left: { type: "constant", value: 100 },
+          operator: "-",
           right: {
             type: "binary_op",
-            operator: "/",
             left: { type: "constant", value: 100 },
+            operator: "/",
             right: {
               type: "binary_op",
               operator: "+",

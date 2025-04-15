@@ -7,7 +7,7 @@ export type Indicator = {
   params: IndicatorParam[];
   lines: IndicatorLine[];
   defaultLineName?: string;
-  template?: IndicatorTemplate;
+  template: IndicatorTemplate;
 };
 
 // ====================
@@ -112,6 +112,7 @@ export type SourceExpression = {
   type: "source";
   name: string;
   shiftBars?: ConstantExpression | NumberParamReferenceExpression;
+  fallback?: ConstantExpression | NumberParamReferenceExpression;
 };
 
 // パラメーター変数参照

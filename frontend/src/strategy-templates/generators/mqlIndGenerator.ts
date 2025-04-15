@@ -10,6 +10,7 @@ import {
   MqlExpression,
   MqlExprStatement,
   MqlFor,
+  MqlFunctionCall,
   MqlFunctionCallExpr,
   MqlIf,
   MqlLiteral,
@@ -46,9 +47,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
           ),
         ]
       ),
-      new MqlReturn(
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
-      ),
+      new MqlReturn(new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))),
     ],
     [
       new MqlArgument("&src[]", "const double"),
@@ -354,10 +353,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       // バッファ確保
       new MqlDecl("tmp[]", "double"),
       new MqlExprStatement(
-        new MqlFunctionCallExpr("ArrayResize", [
-          new MqlVariableRef("tmp"),
-          new MqlVariableRef("p"),
-        ])
+        new MqlFunctionCallExpr("ArrayResize", [new MqlVariableRef("tmp"), new MqlVariableRef("p")])
       ),
 
       // コピー
@@ -412,7 +408,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
     "double",
     [
       // 合計を求めて平均を出す
-      new MqlDecl("sum", "double”,”0"),
+      new MqlDecl("sum", "double", "0"),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
         new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
@@ -452,9 +448,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
         ]
       ),
 
-      new MqlReturn(
-        new MqlBinaryExpr(new MqlVariableRef("mad"), "/", new MqlVariableRef("p"))
-      ),
+      new MqlReturn(new MqlBinaryExpr(new MqlVariableRef("mad"), "/", new MqlVariableRef("p"))),
     ],
     [
       new MqlArgument("&src[]", "const double"),
@@ -472,6 +466,7 @@ export function generateClassFromIndicator(
 ): MqlClass {
   const fields: MqlClassField[] = [];
   const methods: (MqlClassMethod | MqlConstructor | MqlDestructor)[] = [];
+  const startPeriod = calculateStartPeriod(indicator, ctx);
   const template = indicator.template!;
   const params = indicator.params;
   const variables = template.variables;
@@ -538,7 +533,7 @@ export function generateClassFromIndicator(
       (v) =>
         new MqlExprStatement(
           new MqlFunctionCallExpr("ArraySetAsSeries", [
-            new MqlVariableRef(v.name),
+            new MqlVariableRef(`this.${v.name}`),
             new MqlLiteral("true"),
           ])
         )
@@ -554,69 +549,81 @@ export function generateClassFromIndicator(
       (v) =>
         new MqlExprStatement(
           new MqlFunctionCallExpr("ArrayResize", [
-            new MqlVariableRef(v.name),
+            new MqlVariableRef(`this.${v.name}`),
             new MqlLiteral("Bars"),
           ])
         )
     )
   );
 
-  // start = max(lastCalculated, period)
-  updateBody.push(new MqlDecl("limit", "int", new MqlLiteral("Bars - 1")));
+  // メイン計算ループ
   updateBody.push(
     new MqlDecl(
       "start",
       "int",
       new MqlFunctionCallExpr("MathMax", [
-        new MqlVariableRef("lastCalculated"),
-        new MqlVariableRef("period"),
+        startPeriod
+          ? new MqlBinaryExpr(new MqlLiteral("Bars"), "-", startPeriod)
+          : new MqlLiteral("Bars"),
+        new MqlLiteral("this.lastCalculated"),
       ])
-    )
-  );
-
-  // メイン計算ループ
-  updateBody.push(
+    ),
+    new MqlDecl("end", "int", new MqlLiteral("1")),
+    new MqlIf(new MqlBinaryExpr("this.lastCalculated", "==", new MqlLiteral("0")), [
+      // 変数初期化（periodまで）
+      new MqlFor(
+        new MqlDecl("j", "int", new MqlLiteral("Bars - 1")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlVariableRef("start")),
+        new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
+        variables.flatMap((v) => {
+          return new MqlExprStatement(
+            new MqlBinaryExpr(new MqlVariableRef(`this.${v.name}[j]`), "=", new MqlLiteral("0"))
+          );
+        })
+      ),
+    ]),
     new MqlFor(
-      new MqlDecl("i", "int", new MqlVariableRef("start")),
-      new MqlBinaryExpr(new MqlVariableRef("i"), "<=", new MqlVariableRef("limit")),
-      new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("i"))),
+      new MqlDecl("j", "int", new MqlVariableRef("start")),
+      new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlVariableRef("end")),
+      new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
       // 計算本体（sum / period）
       variables.flatMap((v) => {
         if (v.expression.type === "aggregation") {
-          return callAggregationMethod(v.name, v.expression, ctx, indicator);
+          return callAggregationMethod(
+            v.name,
+            v.expression,
+            ctx,
+            indicator,
+            new MqlVariableRef("j")
+          );
         } else {
           return new MqlExprStatement(
             new MqlBinaryExpr(
-              new MqlVariableRef(`this.${v.name}[i]`),
+              new MqlVariableRef(`this.${v.name}[j]`),
               "=",
-              convertVariableExpression(v.expression, ctx)
+              convertVariableExpression(v.expression, ctx, new MqlVariableRef("j"))
             )
           );
         }
       })
-    )
-  );
-
-  // 最後に lastCalculated を更新
-  updateBody.push(
+    ),
+    // 最後に lastCalculated を更新
     new MqlExprStatement(
       new MqlBinaryExpr(
-        new MqlVariableRef("lastCalculated"),
+        new MqlVariableRef("this.lastCalculated"),
         "=",
-        new MqlBinaryExpr(new MqlVariableRef("limit"), "+", new MqlLiteral("1"))
+        new MqlBinaryExpr(new MqlVariableRef("end"), "+", new MqlLiteral("1"))
       )
     )
   );
 
   methods.push(
-    new MqlClassMethod(
-      "Update",
-      "void",
-      updateBody,
-      params
+    new MqlClassMethod("Update", "void", updateBody, [
+      new MqlArgument("i", "int"),
+      ...params
         .filter((p) => p.type === "source")
-        .map((p) => new MqlArgument(`&${p.name}[]`, "double"))
-    )
+        .map((p) => new MqlArgument(`&${p.name}[]`, "double")),
+    ])
   );
 
   // --- Get メソッド ---
@@ -625,6 +632,10 @@ export function generateClassFromIndicator(
       "Get",
       "double",
       [
+        new MqlFunctionCall("this.Update", [
+          new MqlVariableRef("i"),
+          ...params.filter((p) => p.type === "source").map((p) => new MqlVariableRef(p.name)),
+        ]),
         ...exports.flatMap((e) => {
           return [
             new MqlIf(new MqlBinaryExpr("lineName", "==", `"${e.name}"`), [
@@ -634,7 +645,13 @@ export function generateClassFromIndicator(
         }),
         new MqlReturn("-1"),
       ],
-      [new MqlArgument("lineName", "string"), new MqlArgument("i", "int")]
+      [
+        new MqlArgument("lineName", "string"),
+        new MqlArgument("i", "int"),
+        ...params
+          .filter((p) => p.type === "source")
+          .map((p) => new MqlArgument(`&${p.name}[]`, "double")),
+      ]
     )
   );
 
@@ -655,50 +672,55 @@ export function generateClassFromIndicator(
 
 function convertVariableExpression(
   expr: VariableExpression | IndicatorExpression,
-  ctx: IndicatorContext
+  ctx: IndicatorContext,
+  ref?: MqlExpression
 ): MqlExpression {
   switch (expr.type) {
     case "constant":
       return new MqlLiteral(expr.value.toString());
 
     case "param":
-      return new MqlVariableRef(expr.name);
+      return new MqlVariableRef(`this.${expr.name}`);
 
     case "source": {
-      const indexExpr = expr.shiftBars
-        ? convertVariableExpression(expr.shiftBars, ctx)
-        : new MqlLiteral("0");
+      const shiftExpr = expr.shiftBars
+        ? ref
+          ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
+          : convertVariableExpression(expr.shiftBars, ctx)
+        : ref || new MqlLiteral("0");
 
-      return new MqlLiteral(`${expr.name}[${indexExpr}]`);
+      return new MqlLiteral(`${expr.name}[${shiftExpr}]`);
     }
 
     case "variable": {
       const shiftExpr = expr.shiftBars
-        ? convertVariableExpression(expr.shiftBars, ctx)
-        : new MqlLiteral("0");
+        ? ref
+          ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
+          : convertVariableExpression(expr.shiftBars, ctx)
+        : ref || new MqlLiteral("0");
 
       return new MqlLiteral(`this.${expr.name}[${shiftExpr}]`);
     }
 
     case "binary_op":
       return new MqlBinaryExpr(
-        convertVariableExpression(expr.left, ctx),
+        convertVariableExpression(expr.left, ctx, ref),
         expr.operator,
-        convertVariableExpression(expr.right, ctx)
+        convertVariableExpression(expr.right, ctx, ref)
       );
 
     case "unary_op":
-      return new MqlUnaryExpr(expr.operator, convertVariableExpression(expr.operand, ctx));
+      return new MqlUnaryExpr(expr.operator, convertVariableExpression(expr.operand, ctx, ref));
 
     case "ternary":
       return new MqlTernaryExpr(
         new MqlBinaryExpr(
-          convertVariableExpression(expr.condition.left, ctx),
+          convertVariableExpression(expr.condition.left, ctx, ref),
           expr.condition.operator,
-          convertVariableExpression(expr.condition.right, ctx)
+          convertVariableExpression(expr.condition.right, ctx, ref)
         ),
-        convertVariableExpression(expr.trueExpr, ctx),
-        convertVariableExpression(expr.falseExpr, ctx)
+        convertVariableExpression(expr.trueExpr, ctx, ref),
+        convertVariableExpression(expr.falseExpr, ctx, ref)
       );
 
     case "indicator":
@@ -709,18 +731,26 @@ function convertVariableExpression(
   }
 }
 
-function convertAggregationMethodArgs(expr: AggregationExpression, ctx: IndicatorContext) {
+function convertAggregationMethodArgs(
+  expr: AggregationExpression,
+  ctx: IndicatorContext,
+  shift: MqlVariableRef
+) {
   switch (expr.source.type) {
     case "source":
       return [
         expr.source.name,
-        expr.source.shiftBars ? convertVariableExpression(expr.source.shiftBars, ctx) : 0,
+        expr.source.shiftBars
+          ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
+          : shift,
         convertVariableExpression(expr.period, ctx),
       ];
     case "variable":
       return [
         `this.${expr.source.name}`,
-        expr.source.shiftBars ? convertVariableExpression(expr.source.shiftBars, ctx) : 0,
+        expr.source.shiftBars
+          ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
+          : shift,
         convertVariableExpression(expr.period, ctx),
       ];
   }
@@ -730,16 +760,17 @@ function callAggregationMethod(
   name: string,
   expr: AggregationExpression,
   ctx: IndicatorContext,
-  indicator: Indicator
+  indicator: Indicator,
+  shift: MqlVariableRef
 ): MqlStatement[] {
   const method = expr.method;
   if (method.type === "aggregationType") {
     return [
       new MqlExprStatement(
         new MqlBinaryExpr(
-          new MqlVariableRef(`this.${name}[i]`),
+          new MqlVariableRef(`this.${name}[${shift}]`),
           "=",
-          new MqlFunctionCallExpr(method.value, convertAggregationMethodArgs(expr, ctx))
+          new MqlFunctionCallExpr(method.value, convertAggregationMethodArgs(expr, ctx, shift))
         )
       ),
     ];
@@ -752,13 +783,57 @@ function callAggregationMethod(
         new MqlIf(new MqlBinaryExpr(param.name, "==", `"${t}"`), [
           new MqlExprStatement(
             new MqlBinaryExpr(
-              new MqlVariableRef(`this.${name}[i]`),
+              new MqlVariableRef(`this.${name}[${shift}]`),
               "=",
-              new MqlFunctionCallExpr(t, convertAggregationMethodArgs(expr, ctx))
+              new MqlFunctionCallExpr(t, convertAggregationMethodArgs(expr, ctx, shift))
             )
           ),
         ])
     );
   }
   throw new Error("Function not implemented.");
+}
+function calculateStartPeriod(indicator: Indicator, ctx: IndicatorContext) {
+  const shiftValues: MqlExpression[] = [];
+  indicator.template.variables.forEach((v) => {
+    switch (v.expression.type) {
+      case "aggregation": {
+        const period = convertVariableExpression(v.expression.period, ctx);
+        switch (v.expression.source.type) {
+          case "source":
+          case "variable":
+            if (v.expression.source.shiftBars) {
+              shiftValues.push(
+                new MqlBinaryExpr(
+                  period,
+                  "+",
+                  convertVariableExpression(v.expression.source.shiftBars, ctx)
+                )
+              );
+            } else {
+              shiftValues.push(period);
+            }
+            break;
+          default:
+            shiftValues.push(period);
+        }
+        break;
+      }
+      case "source":
+      case "variable":
+        if (v.expression.shiftBars) {
+          shiftValues.push(convertVariableExpression(v.expression.shiftBars, ctx));
+        }
+        break;
+    }
+  });
+  const uniqueValues = [...new Set(shiftValues.map(String))];
+  if (uniqueValues.length === 0) return null;
+  if (uniqueValues.length === 1) return uniqueValues[0];
+  return uniqueValues
+    .slice(1)
+    .reduce(
+      (prev, curr) => new MqlFunctionCallExpr("MathMax", [prev, curr]),
+      new MqlFunctionCallExpr("MathMax", [uniqueValues[0], uniqueValues[1]])
+    );
 }

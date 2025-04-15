@@ -3,7 +3,6 @@ import {
   MqlClass,
   MqlExpression,
   MqlExprStatement,
-  MqlFunctionCall,
   MqlFunctionCallExpr,
   MqlGlobalVariable,
   MqlLiteral,
@@ -34,6 +33,9 @@ export class IndicatorContext {
     return new MqlFunctionCallExpr(`${this.instances[key].variableName}.Get`, [
       new MqlLiteral(`"${expr.lineName}"`),
       new MqlVariableRef("i"),
+      ...expr.params
+        .filter((p) => p.type === "source")
+        .map((p) => new MqlVariableRef(p.value as string)),
     ]);
   }
 
@@ -41,13 +43,11 @@ export class IndicatorContext {
     classes: MqlClass[];
     globals: MqlGlobalVariable[];
     init: MqlStatement[];
-    tick: MqlStatement[];
     deinit: MqlStatement[];
   } {
     const classes: MqlClass[] = [];
     const globals: MqlGlobalVariable[] = [];
     const init: MqlStatement[] = [];
-    const tick: MqlStatement[] = [];
     const deinit: MqlStatement[] = [];
 
     for (const { variableName, expr } of Object.values(this.instances)) {
@@ -76,17 +76,13 @@ export class IndicatorContext {
               `new ${className}`,
               expr.params
                 .filter((p) => p.type === "number" || p.type === "aggregationType")
-                .map((p) => p.type === "number" ? new MqlLiteral(p.value?.toString() || "") : new MqlLiteral(`"${p.value?.toString() || ""}"`))
+                .map((p) =>
+                  p.type === "number"
+                    ? new MqlLiteral(p.value?.toString() || "")
+                    : new MqlLiteral(`"${p.value?.toString() || ""}"`)
+                )
             )
           )
-        )
-      );
-
-      // 更新処理
-      tick.push(
-        new MqlFunctionCall(
-          `${variableName}.Update`,
-          expr.params.filter((p) => p.type === "source").map((p) => p.value)
         )
       );
 
@@ -96,7 +92,7 @@ export class IndicatorContext {
       );
     }
 
-    return { classes, globals, init, tick, deinit };
+    return { classes, globals, init, deinit };
   }
   pascal(snake: string): string {
     return snake
