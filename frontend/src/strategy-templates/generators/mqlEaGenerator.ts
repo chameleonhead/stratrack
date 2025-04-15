@@ -135,17 +135,21 @@ function generateTickFunction(template: StrategyTemplate, ctx: IndicatorContext)
       decl("currentBars", "int", ref("Bars")),
       decl("diff", "int", bin(ref("currentBars"), "-", ref("lastBars"))),
       iff(bin(ref("diff"), ">", lit(0)), [
-        ...template.variables.map((v) => callStmt("ArrayResize", [v.name, "Bars"])),
-        loop(
-          decl("i", "int", bin(ref("diff"), "-", lit(1))),
-          bin(ref("i"), ">=", lit(0)),
-          stmt(unary("--", ref("i"))),
-          template.variables.map((v) =>
-            stmt(bin(ref(`${v.name}[i]`), "=", emitVariableExpression(v.expression, ctx, ref("i"))))
-          )
-        ),
-        stmt(bin(ref("lastBars"), "=", ref("currentBars"))),
-      ])
+        ...template.variables.flatMap((v) => [
+          callStmt("ArraySetAsSeries", [v.name, "false"]),
+          callStmt("ArrayResize", [v.name, "Bars"]),
+          callStmt("ArraySetAsSeries", [v.name, "true"]),
+        ]),
+      ]),
+      loop(
+        decl("i", "int", bin(ref("diff"), "-", lit(1))),
+        bin(ref("i"), ">=", lit(0)),
+        stmt(unary("--", ref("i"))),
+        template.variables.map((v) =>
+          stmt(bin(ref(`${v.name}[i]`), "=", emitVariableExpression(v.expression, ctx, ref("i"))))
+        )
+      ),
+      stmt(bin(ref("lastBars"), "=", ref("currentBars")))
     );
   }
 

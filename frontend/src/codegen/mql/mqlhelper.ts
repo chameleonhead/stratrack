@@ -62,7 +62,7 @@ export const loop = (
   body: MqlStatement[]
 ): MqlFor => new MqlFor(init, cond, inc, body);
 export const comment = (text: string): MqlComment => new MqlComment(text);
-export const callStmt = (name: string, args: string[]): MqlFunctionCall =>
+export const callStmt = (name: string, args: MqlExpression[]): MqlFunctionCall =>
   new MqlFunctionCall(name, args);
 
 export const fn = (
@@ -88,9 +88,8 @@ export const file = (
 export const field = (
   name: string,
   type: string,
-  init?: MqlExpression,
   access: "public" | "private" = "private"
-): MqlClassField => new MqlClassField(name, type, init, access);
+): MqlClassField => new MqlClassField(name, type, access);
 
 /** クラスメソッドの生成 */
 export const method = (

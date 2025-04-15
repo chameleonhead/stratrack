@@ -1,25 +1,31 @@
 import {
-  MqlArgument,
-  MqlBinaryExpr,
   MqlClass,
   MqlClassField,
   MqlClassMethod,
   MqlConstructor,
-  MqlDecl,
   MqlDestructor,
   MqlExpression,
-  MqlExprStatement,
-  MqlFor,
-  MqlFunctionCall,
-  MqlFunctionCallExpr,
-  MqlIf,
-  MqlLiteral,
-  MqlReturn,
   MqlStatement,
-  MqlTernaryExpr,
-  MqlUnaryExpr,
   MqlVariableRef,
 } from "../../codegen/mql/mqlast";
+import {
+  arg,
+  bin,
+  call,
+  callStmt,
+  decl,
+  dtor,
+  field,
+  iff,
+  lit,
+  loop,
+  method,
+  ref,
+  ret,
+  stmt,
+  ternary,
+  unary,
+} from "../../codegen/mql/mqlhelper";
 import {
   AggregationExpression,
   AggregationType,
@@ -32,429 +38,230 @@ import {
 import { IndicatorContext } from "./indicatorContext";
 
 const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
-  sma: new MqlClassMethod(
+  sma: method(
     "sma",
     "double",
     [
-      new MqlDecl("sum", "double", new MqlLiteral("0")),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("sum"), "+=", new MqlVariableRef("src[i + j]"))
-          ),
-        ]
-      ),
-      new MqlReturn(new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))),
+      decl("sum", "double", lit("0")),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        stmt(bin(ref("sum"), "+=", ref("src[i + j]"))),
+      ]),
+      ret(bin(ref("sum"), "/", ref("p"))),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  ema: new MqlClassMethod(
+  ema: method(
     "ema",
     "double",
     [
-      new MqlDecl("alpha", "double", "2.0 / (p + 1)"),
-      new MqlDecl("emaValue", "double", "src[i + p - 1]"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
-        new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
+      decl("alpha", "double", "2.0 / (p + 1)"),
+      decl("emaValue", "double", "src[i + p - 1]"),
+      loop(
+        decl("j", "int", lit("p - 2")),
+        bin(ref("j"), ">=", lit("0")),
+        stmt(unary("--", ref("j"))),
         [
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("emaValue"),
+          stmt(
+            bin(
+              ref("emaValue"),
               "=",
-              new MqlBinaryExpr(
-                new MqlBinaryExpr(new MqlLiteral("alpha"), "*", new MqlVariableRef("src[i + j]")),
+              bin(
+                bin(lit("alpha"), "*", ref("src[i + j]")),
                 "+",
-                new MqlBinaryExpr(
-                  new MqlLiteral("(1 - alpha)"),
-                  "*",
-                  new MqlVariableRef("emaValue")
-                )
+                bin(lit("(1 - alpha)"), "*", ref("emaValue"))
               )
             )
           ),
         ]
       ),
-      new MqlReturn(new MqlVariableRef("emaValue")),
+      ret(ref("emaValue")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  rma: new MqlClassMethod(
+  rma: method(
     "rma",
     "double",
     [
-      new MqlDecl("value", "double", "src[i + p - 1]"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
-        new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
+      decl("value", "double", "src[i + p - 1]"),
+      loop(
+        decl("j", "int", lit("p - 2")),
+        bin(ref("j"), ">=", lit("0")),
+        stmt(unary("--", ref("j"))),
         [
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("value"),
+          stmt(
+            bin(
+              ref("value"),
               "=",
-              new MqlBinaryExpr(
-                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(p - 1)")),
-                "+",
-                new MqlVariableRef("src[i + j]")
-              )
+              bin(bin(ref("value"), "*", lit("(p - 1)")), "+", ref("src[i + j]"))
             )
           ),
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("value"),
-              "=",
-              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("p"))
-            )
-          ),
+          stmt(bin(ref("value"), "=", bin(ref("value"), "/", ref("p")))),
         ]
       ),
-      new MqlReturn(new MqlVariableRef("value")),
+      ret(ref("value")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  lwma: new MqlClassMethod(
+  lwma: method(
     "lwma",
     "double",
     [
-      new MqlDecl("weightedSum", "double", "0"),
-      new MqlDecl("totalWeight", "double", "0"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlDecl(
-            "weight",
-            "int",
-            new MqlBinaryExpr(new MqlVariableRef("p"), "-", new MqlVariableRef("j"))
-          ),
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("weightedSum"),
-              "+=",
-              new MqlBinaryExpr(new MqlVariableRef("src[i + j]"), "*", new MqlVariableRef("weight"))
-            )
-          ),
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("totalWeight"), "+=", new MqlVariableRef("weight"))
-          ),
-        ]
-      ),
-      new MqlReturn(
-        new MqlBinaryExpr(new MqlVariableRef("weightedSum"), "/", new MqlVariableRef("totalWeight"))
-      ),
+      decl("weightedSum", "double", "0"),
+      decl("totalWeight", "double", "0"),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        decl("weight", "int", bin(ref("p"), "-", ref("j"))),
+        stmt(bin(ref("weightedSum"), "+=", bin(ref("src[i + j]"), "*", ref("weight")))),
+        stmt(bin(ref("totalWeight"), "+=", ref("weight"))),
+      ]),
+      ret(bin(ref("weightedSum"), "/", ref("totalWeight"))),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  smma: new MqlClassMethod(
+  smma: method(
     "smma",
     "double",
     [
-      new MqlDecl("value", "double", "src[i + p - 1]"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
-        new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
+      decl("value", "double", "src[i + p - 1]"),
+      loop(
+        decl("j", "int", lit("p - 2")),
+        bin(ref("j"), ">=", lit("0")),
+        stmt(unary("--", ref("j"))),
         [
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("value"),
+          stmt(
+            bin(
+              ref("value"),
               "=",
-              new MqlBinaryExpr(
-                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(p - 1)")),
-                "+",
-                new MqlVariableRef("src[i + j]")
-              )
+              bin(bin(ref("value"), "*", lit("(p - 1)")), "+", ref("src[i + j]"))
             )
           ),
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("value"),
-              "=",
-              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("p"))
-            )
-          ),
+          stmt(bin(ref("value"), "=", bin(ref("value"), "/", ref("p")))),
         ]
       ),
-      new MqlReturn(new MqlVariableRef("value")),
+      ret(ref("value")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  sum: new MqlClassMethod(
+  sum: method(
     "sum",
     "double",
     [
-      new MqlDecl("total", "double", new MqlLiteral("0")),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("total"), "+=", new MqlVariableRef("src[i + j]"))
-          ),
-        ]
-      ),
-      new MqlReturn(new MqlVariableRef("total")),
+      decl("total", "double", lit("0")),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        stmt(bin(ref("total"), "+=", ref("src[i + j]"))),
+      ]),
+      ret(ref("total")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  std: new MqlClassMethod(
+  std: method(
     "std",
     "double",
     [
-      new MqlDecl("sum", "double", "0"),
-      new MqlDecl("sumSq", "double", "0"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlDecl("v", "double", new MqlVariableRef("src[i + j]")),
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("sum"), "+=", new MqlVariableRef("v"))
-          ),
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("sumSq"),
-              "+=",
-              new MqlBinaryExpr(new MqlVariableRef("v"), "*", new MqlVariableRef("v"))
-            )
-          ),
-        ]
-      ),
-      new MqlDecl(
-        "mean",
-        "double",
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
-      ),
-      new MqlReturn(
-        new MqlFunctionCallExpr("MathSqrt", [
-          new MqlBinaryExpr(
-            new MqlBinaryExpr(new MqlVariableRef("sumSq"), "/", new MqlVariableRef("p")),
-            "-",
-            new MqlBinaryExpr(new MqlVariableRef("mean"), "*", new MqlVariableRef("mean"))
-          ),
+      decl("sum", "double", "0"),
+      decl("sumSq", "double", "0"),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        decl("v", "double", ref("src[i + j]")),
+        stmt(bin(ref("sum"), "+=", ref("v"))),
+        stmt(bin(ref("sumSq"), "+=", bin(ref("v"), "*", ref("v")))),
+      ]),
+      decl("mean", "double", bin(ref("sum"), "/", ref("p"))),
+      ret(
+        call("MathSqrt", [
+          bin(bin(ref("sumSq"), "/", ref("p")), "-", bin(ref("mean"), "*", ref("mean"))),
         ])
       ),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  max: new MqlClassMethod(
+  max: method(
     "max",
     "double",
     [
-      new MqlExprStatement(new MqlLiteral("double m = src[i];")),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("1")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlIf(
-            new MqlBinaryExpr(new MqlVariableRef("src[i + j]"), ">", new MqlVariableRef("m")),
-            [
-              new MqlExprStatement(
-                new MqlBinaryExpr(new MqlVariableRef("m"), "=", new MqlVariableRef("src[i + j]"))
-              ),
-            ]
-          ),
-        ]
-      ),
-      new MqlReturn(new MqlVariableRef("m")),
+      stmt(lit("double m = src[i];")),
+      loop(decl("j", "int", lit("1")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        iff(bin(ref("src[i + j]"), ">", ref("m")), [stmt(bin(ref("m"), "=", ref("src[i + j]")))]),
+      ]),
+      ret(ref("m")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
-  min: new MqlClassMethod(
+  min: method(
     "min",
     "double",
     [
-      new MqlExprStatement(new MqlLiteral("double m = src[i];")),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("1")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlIf(
-            new MqlBinaryExpr(new MqlVariableRef("src[i + j]"), "<", new MqlVariableRef("m")),
-            [
-              new MqlExprStatement(
-                new MqlBinaryExpr(new MqlVariableRef("m"), "=", new MqlVariableRef("src[i + j]"))
-              ),
-            ]
-          ),
-        ]
-      ),
-      new MqlReturn(new MqlVariableRef("m")),
+      stmt(lit("double m = src[i];")),
+      loop(decl("j", "int", lit("1")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        iff(bin(ref("src[i + j]"), "<", ref("m")), [stmt(bin(ref("m"), "=", ref("src[i + j]")))]),
+      ]),
+      ret(ref("m")),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  median: new MqlClassMethod(
+  median: method(
     "median",
     "double",
     [
       // バッファ確保
-      new MqlDecl("tmp[]", "double"),
-      new MqlExprStatement(
-        new MqlFunctionCallExpr("ArrayResize", [new MqlVariableRef("tmp"), new MqlVariableRef("p")])
-      ),
+      decl("tmp[]", "double"),
+      callStmt("ArrayResize", [ref("tmp"), ref("p")]),
 
       // コピー
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("tmp[j]"), "=", new MqlVariableRef("src[i + j]"))
-          ),
-        ]
-      ),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        stmt(bin(ref("tmp[j]"), "=", ref("src[i + j]"))),
+      ]),
 
       // ソート
-      new MqlExprStatement(new MqlFunctionCallExpr("ArraySort", [new MqlVariableRef("tmp")])),
+      callStmt("ArraySort", [ref("tmp")]),
 
       // 奇数/偶数チェック
-      new MqlIf(
-        new MqlBinaryExpr(
-          new MqlBinaryExpr(new MqlVariableRef("p"), "%", new MqlLiteral("2")),
-          "==",
-          new MqlLiteral("0")
-        ),
-        [
-          new MqlReturn(
-            new MqlBinaryExpr(
-              new MqlBinaryExpr(
-                new MqlVariableRef("tmp[p / 2 - 1]"),
-                "+",
-                new MqlVariableRef("tmp[p / 2]")
-              ),
-              "/",
-              new MqlLiteral("2.0")
-            )
-          ),
-        ],
-        [new MqlReturn(new MqlVariableRef("tmp[p / 2]"))]
+      iff(
+        bin(bin(ref("p"), "%", lit("2")), "==", lit("0")),
+        [ret(bin(bin(ref("tmp[p / 2 - 1]"), "+", ref("tmp[p / 2]")), "/", lit("2.0")))],
+        [ret(ref("tmp[p / 2]"))]
       ),
-      new MqlExprStatement(new MqlFunctionCallExpr("ArrayFree", [new MqlVariableRef("tmp")])),
+      callStmt("ArrayFree", [ref("tmp")]),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 
-  mean_absolute_deviation: new MqlClassMethod(
+  mean_absolute_deviation: method(
     "mean_absolute_deviation",
     "double",
     [
       // 合計を求めて平均を出す
-      new MqlDecl("sum", "double", "0"),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef("sum"), "+=", new MqlVariableRef("src[i + j]"))
-          ),
-        ]
-      ),
-      new MqlDecl(
-        "mean",
-        "double",
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
-      ),
+      decl("sum", "double", "0"),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        stmt(bin(ref("sum"), "+=", ref("src[i + j]"))),
+      ]),
+      decl("mean", "double", bin(ref("sum"), "/", ref("p"))),
 
       // 平均との絶対偏差
-      new MqlExprStatement(new MqlLiteral("double mad = 0;")),
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
-        new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
-        [
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef("mad"),
-              "+=",
-              new MqlFunctionCallExpr("MathAbs", [
-                new MqlBinaryExpr(
-                  new MqlVariableRef("src[i + j]"),
-                  "-",
-                  new MqlVariableRef("mean")
-                ),
-              ])
-            )
-          ),
-        ]
-      ),
+      stmt(lit("double mad = 0;")),
+      loop(decl("j", "int", lit("0")), bin(ref("j"), "<", ref("p")), stmt(unary("++", ref("j"))), [
+        stmt(bin(ref("mad"), "+=", call("MathAbs", [bin(ref("src[i + j]"), "-", ref("mean"))]))),
+      ]),
 
-      new MqlReturn(new MqlBinaryExpr(new MqlVariableRef("mad"), "/", new MqlVariableRef("p"))),
+      ret(bin(ref("mad"), "/", ref("p"))),
     ],
-    [
-      new MqlArgument("&src[]", "const double"),
-      new MqlArgument("i", "int"),
-      new MqlArgument("p", "int"),
-    ],
+    [arg("&src[]", "const double"), arg("i", "int"), arg("p", "int")],
     "private"
   ),
 };
@@ -493,19 +300,20 @@ export function generateClassFromIndicator(
     .filter((value, index, array) => array.indexOf(value) === index);
   // --- フィールド定義 ---
   variables.forEach((v) => {
-    fields.push(new MqlClassField(`${v.name}[]`, "double", "private"));
+    fields.push(field(`${v.name}[]`, "double", "private"));
   });
-  fields.push(new MqlClassField("lastCalculated", "int", "private"));
+  fields.push(field("lastCalculated", "int", "private"));
+  fields.push(field("lastBars", "int", "private"));
 
   // --- パラメータをフィールドとして持つ（自動） ---
   for (const p of params) {
     if (!fields.find((f) => f.name === p.name)) {
       switch (p.type) {
         case "number":
-          fields.push(new MqlClassField(p.name, "int", "private"));
+          fields.push(field(p.name, "int", "private"));
           break;
         case "aggregationType":
-          fields.push(new MqlClassField(p.name, "string", "private"));
+          fields.push(field(p.name, "string", "private"));
           break;
       }
     }
@@ -520,115 +328,77 @@ export function generateClassFromIndicator(
     .map((p) => {
       switch (p.type) {
         case "number":
-          return new MqlArgument(p.name, "int");
+          return arg(p.name, "int");
         case "aggregationType":
-          return new MqlArgument(p.name, "string");
+          return arg(p.name, "string");
       }
     });
   const constructorBody: MqlStatement[] = [
-    new MqlExprStatement(new MqlBinaryExpr("this.lastCalculated", "=", 0)),
+    stmt(bin("this.lastCalculated", "=", 0)),
+    stmt(bin("this.lastBars", "=", 0)),
     ...params
       .filter((p) => p.type === "number" || p.type === "aggregationType")
       .map((p) => {
         switch (p.type) {
           case "number":
           case "aggregationType":
-            return new MqlExprStatement(
-              new MqlBinaryExpr(
-                new MqlVariableRef(`this.${p.name}`),
-                "=",
-                new MqlVariableRef(p.name)
-              )
-            );
+            return stmt(bin(ref(`this.${p.name}`), "=", ref(p.name)));
         }
       }),
-    ...variables.map(
-      (v) =>
-        new MqlExprStatement(
-          new MqlFunctionCallExpr("ArraySetAsSeries", [
-            new MqlVariableRef(`this.${v.name}`),
-            new MqlLiteral("true"),
-          ])
-        )
-    ),
+    ...variables.map((v) => callStmt("ArraySetAsSeries", [ref(`this.${v.name}`), lit("true")])),
   ];
   methods.push(new MqlConstructor(name, constructorBody, constructorArgs));
 
   // --- Update メソッド（変数式の評価） ---
   const updateBody: MqlStatement[] = [];
 
-  updateBody.push(
-    ...variables.map(
-      (v) =>
-        new MqlExprStatement(
-          new MqlFunctionCallExpr("ArrayResize", [
-            new MqlVariableRef(`this.${v.name}`),
-            new MqlLiteral("Bars"),
-          ])
-        )
-    )
-  );
-
   // メイン計算ループ
   updateBody.push(
-    new MqlDecl(
-      "start",
-      "int",
-      new MqlFunctionCallExpr("MathMax", [
-        new MqlLiteral("Bars - 1"),
-        new MqlLiteral("this.lastCalculated"),
-      ])
-    ),
-    new MqlDecl("end", "int", new MqlLiteral("1")),
-    new MqlFor(
-      new MqlDecl("j", "int", new MqlVariableRef("start")),
-      new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlVariableRef("end")),
-      new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
+    iff(bin("Bars", ">", "this.lastBars"), [
+      ...variables.flatMap((v) => [
+        callStmt("ArraySetAsSeries", [ref(`this.${v.name}`), lit("false")]),
+        callStmt("ArrayResize", [ref(`this.${v.name}`), lit("Bars")]),
+        callStmt("ArraySetAsSeries", [ref(`this.${v.name}`), lit("true")]),
+      ]),
+      stmt(bin("this.lastBars", "=", "Bars")),
+    ]),
+    decl("start", "int", call("MathMax", [lit("Bars - 1"), lit("this.lastCalculated")])),
+    decl("end", "int", ref("i")),
+    loop(
+      decl("j", "int", ref("start")),
+      bin(ref("j"), ">=", ref("end")),
+      stmt(unary("--", ref("j"))),
       // 計算本体（sum / period）
       variables.flatMap((v) => {
         if (v.invalidPeriod) {
           return [
-            new MqlIf(
-              new MqlBinaryExpr(
-                "Bars",
-                ">",
-                new MqlBinaryExpr("j", "+", convertVariableExpression(v.invalidPeriod, ctx))
-              ),
-              convertVariableDefinition(
-                v.name,
-                v.expression,
-                ctx,
-                indicator,
-                new MqlVariableRef("j")
-              ),
+            iff(
+              bin("Bars", ">", bin("j", "+", convertVariableExpression(v.invalidPeriod, ctx))),
+              convertVariableDefinition(v.name, v.expression, ctx, indicator, ref("j")),
               [
                 ...(v.fallback?.invalidPeriod
                   ? [
-                      new MqlIf(
-                        new MqlBinaryExpr(
+                      iff(
+                        bin(
                           "Bars",
                           ">",
-                          new MqlBinaryExpr(
-                            "j",
-                            "+",
-                            convertVariableExpression(v.fallback.invalidPeriod, ctx)
-                          )
+                          bin("j", "+", convertVariableExpression(v.fallback.invalidPeriod, ctx))
                         ),
                         convertVariableDefinition(
                           v.name,
                           v.fallback.expression,
                           ctx,
                           indicator,
-                          new MqlVariableRef("j")
+                          ref("j")
                         ),
                         [
-                          new MqlExprStatement(
-                            new MqlBinaryExpr(
-                              new MqlVariableRef(`this.${v.name}[j]`),
+                          stmt(
+                            bin(
+                              ref(`this.${v.name}[j]`),
                               "=",
                               v.fallback.fallback
                                 ? convertVariableExpression(v.fallback.fallback, ctx)
-                                : new MqlLiteral("0")
+                                : lit("0")
                             )
                           ),
                         ]
@@ -640,87 +410,65 @@ export function generateClassFromIndicator(
                         v.fallback.expression,
                         ctx,
                         indicator,
-                        new MqlVariableRef("j")
+                        ref("j")
                       )
-                    : [
-                        new MqlExprStatement(
-                          new MqlBinaryExpr(
-                            new MqlVariableRef(`this.${v.name}[j]`),
-                            "=",
-                            new MqlLiteral("0")
-                          )
-                        ),
-                      ]),
+                    : [stmt(bin(ref(`this.${v.name}[j]`), "=", lit("0")))]),
               ]
             ),
           ];
         } else {
-          return convertVariableDefinition(
-            v.name,
-            v.expression,
-            ctx,
-            indicator,
-            new MqlVariableRef("j")
-          );
+          return convertVariableDefinition(v.name, v.expression, ctx, indicator, ref("j"));
         }
       })
     ),
     // 最後に lastCalculated を更新
-    new MqlExprStatement(
-      new MqlBinaryExpr(
-        new MqlVariableRef("this.lastCalculated"),
+    stmt(
+      bin(
+        ref("this.lastCalculated"),
         "=",
-        new MqlBinaryExpr(new MqlVariableRef("end"), "+", new MqlLiteral("1"))
+        call("MathMin", [bin(ref("Bars"), "-", lit("1")), bin(ref("end"), "+", lit("1"))])
       )
     )
   );
 
   methods.push(
-    new MqlClassMethod("Update", "void", updateBody, [
-      new MqlArgument("i", "int"),
-      ...params
-        .filter((p) => p.type === "source")
-        .map((p) => new MqlArgument(`&${p.name}[]`, "double")),
+    method("Update", "void", updateBody, [
+      arg("i", "int"),
+      ...params.filter((p) => p.type === "source").map((p) => arg(`&${p.name}[]`, "double")),
     ])
   );
 
   // --- Get メソッド ---
   methods.push(
-    new MqlClassMethod(
+    method(
       "Get",
       "double",
       [
-        new MqlFunctionCall("this.Update", [
-          new MqlVariableRef("i"),
-          ...params.filter((p) => p.type === "source").map((p) => new MqlVariableRef(p.name)),
+        callStmt("this.Update", [
+          ref("i"),
+          ...params.filter((p) => p.type === "source").map((p) => ref(p.name)),
         ]),
         ...exports.flatMap((e) => {
           return [
-            new MqlIf(new MqlBinaryExpr("lineName", "==", `"${e.name}"`), [
-              new MqlReturn(new MqlVariableRef(`${e.variableName}[i]`)),
-            ]),
+            iff(bin("lineName", "==", `"${e.name}"`), [ret(ref(`this.${e.variableName}[i]`))]),
           ];
         }),
-        new MqlReturn("-1"),
+        ret("-1"),
       ],
       [
-        new MqlArgument("lineName", "string"),
-        new MqlArgument("i", "int"),
-        ...params
-          .filter((p) => p.type === "source")
-          .map((p) => new MqlArgument(`&${p.name}[]`, "double")),
+        arg("lineName", "string"),
+        arg("i", "int"),
+        ...params.filter((p) => p.type === "source").map((p) => arg(`&${p.name}[]`, "double")),
       ]
     )
   );
 
   // --- デストラクタ ---
   methods.push(
-    new MqlDestructor(
+    dtor(
       name,
       variables.map((v) => {
-        return new MqlExprStatement(
-          new MqlFunctionCallExpr("ArrayFree", [new MqlVariableRef(v.name)])
-        );
+        return callStmt("ArrayFree", [ref(`this.${v.name}`)]);
       })
     )
   );
@@ -731,60 +479,60 @@ export function generateClassFromIndicator(
 function convertVariableExpression(
   expr: VariableExpression | IndicatorExpression,
   ctx: IndicatorContext,
-  ref?: MqlExpression
+  shift?: MqlExpression
 ): MqlExpression {
   switch (expr.type) {
     case "constant":
-      return new MqlLiteral(expr.value.toString());
+      return lit(expr.value.toString());
 
     case "param":
-      return new MqlVariableRef(`this.${expr.name}`);
+      return ref(`this.${expr.name}`);
 
     case "source": {
       const shiftExpr = expr.shiftBars
-        ? ref
-          ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
+        ? shift
+          ? bin(shift, "+", convertVariableExpression(expr.shiftBars, ctx))
           : convertVariableExpression(expr.shiftBars, ctx)
-        : ref || new MqlLiteral("0");
-      return new MqlTernaryExpr(
-        new MqlBinaryExpr("Bars", ">", shiftExpr),
-        new MqlLiteral(`${expr.name}[${shiftExpr}]`),
-        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : new MqlLiteral("0")
+        : shift || lit("0");
+      return ternary(
+        bin("Bars", ">", shiftExpr),
+        lit(`${expr.name}[${shiftExpr}]`),
+        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : lit("0")
       );
     }
 
     case "variable": {
       const shiftExpr = expr.shiftBars
-        ? ref
-          ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
+        ? shift
+          ? bin(shift, "+", convertVariableExpression(expr.shiftBars, ctx))
           : convertVariableExpression(expr.shiftBars, ctx)
-        : ref || new MqlLiteral("0");
-      return new MqlTernaryExpr(
-        new MqlBinaryExpr("Bars", ">", shiftExpr),
-        new MqlLiteral(`this.${expr.name}[${shiftExpr}]`),
-        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : new MqlLiteral("0")
+        : shift || lit("0");
+      return ternary(
+        bin("Bars", ">", shiftExpr),
+        lit(`this.${expr.name}[${shiftExpr}]`),
+        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : lit("0")
       );
     }
 
     case "binary_op":
-      return new MqlBinaryExpr(
-        convertVariableExpression(expr.left, ctx, ref),
+      return bin(
+        convertVariableExpression(expr.left, ctx, shift),
         expr.operator,
-        convertVariableExpression(expr.right, ctx, ref)
+        convertVariableExpression(expr.right, ctx, shift)
       );
 
     case "unary_op":
-      return new MqlUnaryExpr(expr.operator, convertVariableExpression(expr.operand, ctx, ref));
+      return unary(expr.operator, convertVariableExpression(expr.operand, ctx, shift));
 
     case "ternary":
-      return new MqlTernaryExpr(
-        new MqlBinaryExpr(
-          convertVariableExpression(expr.condition.left, ctx, ref),
+      return ternary(
+        bin(
+          convertVariableExpression(expr.condition.left, ctx, shift),
           expr.condition.operator,
-          convertVariableExpression(expr.condition.right, ctx, ref)
+          convertVariableExpression(expr.condition.right, ctx, shift)
         ),
-        convertVariableExpression(expr.trueExpr, ctx, ref),
-        convertVariableExpression(expr.falseExpr, ctx, ref)
+        convertVariableExpression(expr.trueExpr, ctx, shift),
+        convertVariableExpression(expr.falseExpr, ctx, shift)
       );
 
     case "indicator":
@@ -806,18 +554,14 @@ function convertAggregationMethodArgs(
       return [
         expr.source.name,
         expr.source.shiftBars
-          ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
+          ? bin(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
           : shift,
         period.toString() === "0"
-          ? new MqlBinaryExpr(
+          ? bin(
               "Bars",
               "-",
               expr.source.shiftBars
-                ? new MqlBinaryExpr(
-                    shift,
-                    "+",
-                    convertVariableExpression(expr.source.shiftBars, ctx)
-                  )
+                ? bin(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
                 : shift
             )
           : period,
@@ -828,18 +572,14 @@ function convertAggregationMethodArgs(
       return [
         `this.${expr.source.name}`,
         expr.source.shiftBars
-          ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
+          ? bin(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
           : shift,
         period.toString() === "0"
-          ? new MqlBinaryExpr(
+          ? bin(
               "Bars",
               "-",
               expr.source.shiftBars
-                ? new MqlBinaryExpr(
-                    shift,
-                    "+",
-                    convertVariableExpression(expr.source.shiftBars, ctx)
-                  )
+                ? bin(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
                 : shift
             )
           : period,
@@ -858,11 +598,11 @@ function callAggregationMethod(
   const method = expr.method;
   if (method.type === "aggregationType") {
     return [
-      new MqlExprStatement(
-        new MqlBinaryExpr(
-          new MqlVariableRef(`this.${name}[${shift}]`),
+      stmt(
+        bin(
+          ref(`this.${name}[${shift}]`),
           "=",
-          new MqlFunctionCallExpr(method.value, convertAggregationMethodArgs(expr, ctx, shift))
+          call(`this.${method.value}`, convertAggregationMethodArgs(expr, ctx, shift))
         )
       ),
     ];
@@ -870,17 +610,16 @@ function callAggregationMethod(
     const param = indicator.params.find(
       (p) => p.type === "aggregationType" && p.name === method.name
     ) as AggregationTypeIndicatorParam;
-    return param.selectableTypes.map(
-      (t) =>
-        new MqlIf(new MqlBinaryExpr(param.name, "==", `"${t}"`), [
-          new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef(`this.${name}[${shift}]`),
-              "=",
-              new MqlFunctionCallExpr(t, convertAggregationMethodArgs(expr, ctx, shift))
-            )
-          ),
-        ])
+    return param.selectableTypes.map((t) =>
+      iff(bin(param.name, "==", `"${t}"`), [
+        stmt(
+          bin(
+            ref(`this.${name}[${shift}]`),
+            "=",
+            call(`this.${t}`, convertAggregationMethodArgs(expr, ctx, shift))
+          )
+        ),
+      ])
     );
   }
   throw new Error("Function not implemented.");
@@ -896,14 +635,6 @@ function convertVariableDefinition(
   if (e.type === "aggregation") {
     return callAggregationMethod(name, e, ctx, indicator, shift);
   } else {
-    return [
-      new MqlExprStatement(
-        new MqlBinaryExpr(
-          new MqlVariableRef(`this.${name}[j]`),
-          "=",
-          convertVariableExpression(e, ctx, shift)
-        )
-      ),
-    ];
+    return [stmt(bin(ref(`this.${name}[j]`), "=", convertVariableExpression(e, ctx, shift)))];
   }
 }

@@ -1863,7 +1863,7 @@ export const RSI: Indicator = {
             source: { type: "variable", name: "gain" },
             period: { type: "param", name: "period" },
           },
-          invalidPeriod: { type: "param", name: "period" }
+          invalidPeriod: { type: "param", name: "period" },
         },
       },
       {
@@ -1906,7 +1906,7 @@ export const RSI: Indicator = {
             source: { type: "variable", name: "loss" },
             period: { type: "param", name: "period" },
           },
-          invalidPeriod: { type: "param", name: "period" }
+          invalidPeriod: { type: "param", name: "period" },
         },
       },
       {
