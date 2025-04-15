@@ -11,7 +11,7 @@ import {
   MqlVariableRef,
 } from "../../codegen/mql/mqlast";
 import { Indicator, IndicatorExpression } from "../../indicators/types";
-import { generateClassFromIndicator } from "./malIndGenerator";
+import { generateClassFromIndicator } from "./mqlIndGenerator";
 
 export class IndicatorContext {
   private indicators: Record<string, Indicator>;
@@ -31,11 +31,7 @@ export class IndicatorContext {
       const variableName = `ind${++this.counter}`;
       this.instances[key] = { variableName, expr };
     }
-    expr.params.forEach((p) => {
-      if (p.type === "aggregationType") {
-      }
-    });
-    return new MqlFunctionCallExpr(`${this.instances[key].variableName}->Get`, [
+    return new MqlFunctionCallExpr(`${this.instances[key].variableName}.Get`, [
       new MqlLiteral(`"${expr.lineName}"`),
       new MqlVariableRef("i"),
     ]);
@@ -70,30 +66,29 @@ export class IndicatorContext {
       // グローバルポインタ
       globals.push(new MqlGlobalVariable(variableName, `${className}*`));
 
-      // コンストラクタ引数（params）
-      const args: MqlExpression[] = [];
-      for (const param of expr.params) {
-        const val = param.value;
-        if (param.type === "source") {
-          args.push(new MqlLiteral(val.toString()));
-        } else if (typeof val === "string") {
-          args.push(new MqlVariableRef(val)); // param 参照（例: period）
-        }
-      }
-
       // インスタンス生成
       init.push(
         new MqlExprStatement(
           new MqlBinaryExpr(
             new MqlVariableRef(variableName),
             "=",
-            new MqlFunctionCallExpr(`new ${className}`, args)
+            new MqlFunctionCallExpr(
+              `new ${className}`,
+              expr.params
+                .filter((p) => p.type === "number" || p.type === "aggregationType")
+                .map((p) => p.type === "number" ? new MqlLiteral(p.value?.toString() || "") : new MqlLiteral(`"${p.value?.toString() || ""}"`))
+            )
           )
         )
       );
 
       // 更新処理
-      tick.push(new MqlFunctionCall(`${variableName}->Update`, []));
+      tick.push(
+        new MqlFunctionCall(
+          `${variableName}.Update`,
+          expr.params.filter((p) => p.type === "source").map((p) => p.value)
+        )
+      );
 
       // 解放処理
       deinit.push(

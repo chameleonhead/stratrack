@@ -22,6 +22,7 @@ import {
 import {
   AggregationExpression,
   AggregationType,
+  AggregationTypeExpression,
   AggregationTypeIndicatorParam,
   Indicator,
   IndicatorExpression,
@@ -37,7 +38,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl("sum", "double", new MqlLiteral("0")),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlExprStatement(
@@ -46,13 +47,13 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
         ]
       ),
       new MqlReturn(
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("period"))
+        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
       ),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -61,10 +62,10 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
     "ema",
     "double",
     [
-      new MqlDecl("alpha", "double", "2.0 / (period + 1)"),
-      new MqlDecl("emaValue", "double", "src[i + period - 1]"),
+      new MqlDecl("alpha", "double", "2.0 / (p + 1)"),
+      new MqlDecl("emaValue", "double", "src[i + p - 1]"),
       new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("period - 2")),
+        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
         new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
         new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
         [
@@ -88,9 +89,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("emaValue")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -99,9 +100,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
     "rma",
     "double",
     [
-      new MqlDecl("value", "double", "src[i + period - 1]"),
+      new MqlDecl("value", "double", "src[i + p - 1]"),
       new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("period - 2")),
+        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
         new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
         new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
         [
@@ -110,7 +111,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
               new MqlVariableRef("value"),
               "=",
               new MqlBinaryExpr(
-                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(period - 1)")),
+                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(p - 1)")),
                 "+",
                 new MqlVariableRef("src[i + j]")
               )
@@ -120,7 +121,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
             new MqlBinaryExpr(
               new MqlVariableRef("value"),
               "=",
-              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("period"))
+              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("p"))
             )
           ),
         ]
@@ -128,9 +129,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("value")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -143,13 +144,13 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl("totalWeight", "double", "0"),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlDecl(
             "weight",
             "int",
-            new MqlBinaryExpr(new MqlVariableRef("period"), "-", new MqlVariableRef("j"))
+            new MqlBinaryExpr(new MqlVariableRef("p"), "-", new MqlVariableRef("j"))
           ),
           new MqlExprStatement(
             new MqlBinaryExpr(
@@ -168,9 +169,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       ),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -179,9 +180,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
     "smma",
     "double",
     [
-      new MqlDecl("value", "double", "src[i + period - 1]"),
+      new MqlDecl("value", "double", "src[i + p - 1]"),
       new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("period - 2")),
+        new MqlDecl("j", "int", new MqlLiteral("p - 2")),
         new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlLiteral("0")),
         new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
         [
@@ -190,7 +191,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
               new MqlVariableRef("value"),
               "=",
               new MqlBinaryExpr(
-                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(period - 1)")),
+                new MqlBinaryExpr(new MqlVariableRef("value"), "*", new MqlLiteral("(p - 1)")),
                 "+",
                 new MqlVariableRef("src[i + j]")
               )
@@ -200,7 +201,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
             new MqlBinaryExpr(
               new MqlVariableRef("value"),
               "=",
-              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("period"))
+              new MqlBinaryExpr(new MqlVariableRef("value"), "/", new MqlVariableRef("p"))
             )
           ),
         ]
@@ -208,9 +209,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("value")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -222,7 +223,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl("total", "double", new MqlLiteral("0")),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlExprStatement(
@@ -233,9 +234,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("total")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -248,7 +249,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl("sumSq", "double", "0"),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlDecl("v", "double", new MqlVariableRef("src[i + j]")),
@@ -267,12 +268,12 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl(
         "mean",
         "double",
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("period"))
+        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
       ),
       new MqlReturn(
         new MqlFunctionCallExpr("MathSqrt", [
           new MqlBinaryExpr(
-            new MqlBinaryExpr(new MqlVariableRef("sumSq"), "/", new MqlVariableRef("period")),
+            new MqlBinaryExpr(new MqlVariableRef("sumSq"), "/", new MqlVariableRef("p")),
             "-",
             new MqlBinaryExpr(new MqlVariableRef("mean"), "*", new MqlVariableRef("mean"))
           ),
@@ -280,9 +281,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       ),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -294,7 +295,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlExprStatement(new MqlLiteral("double m = src[i];")),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("1")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlIf(
@@ -310,9 +311,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("m")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -323,7 +324,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlExprStatement(new MqlLiteral("double m = src[i];")),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("1")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlIf(
@@ -339,9 +340,9 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlReturn(new MqlVariableRef("m")),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -355,14 +356,14 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlExprStatement(
         new MqlFunctionCallExpr("ArrayResize", [
           new MqlVariableRef("tmp"),
-          new MqlVariableRef("period"),
+          new MqlVariableRef("p"),
         ])
       ),
 
       // コピー
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlExprStatement(
@@ -377,7 +378,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       // 奇数/偶数チェック
       new MqlIf(
         new MqlBinaryExpr(
-          new MqlBinaryExpr(new MqlVariableRef("period"), "%", new MqlLiteral("2")),
+          new MqlBinaryExpr(new MqlVariableRef("p"), "%", new MqlLiteral("2")),
           "==",
           new MqlLiteral("0")
         ),
@@ -385,23 +386,23 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
           new MqlReturn(
             new MqlBinaryExpr(
               new MqlBinaryExpr(
-                new MqlVariableRef("tmp[period / 2 - 1]"),
+                new MqlVariableRef("tmp[p / 2 - 1]"),
                 "+",
-                new MqlVariableRef("tmp[period / 2]")
+                new MqlVariableRef("tmp[p / 2]")
               ),
               "/",
               new MqlLiteral("2.0")
             )
           ),
         ],
-        [new MqlReturn(new MqlVariableRef("tmp[period / 2]"))]
+        [new MqlReturn(new MqlVariableRef("tmp[p / 2]"))]
       ),
       new MqlExprStatement(new MqlFunctionCallExpr("ArrayFree", [new MqlVariableRef("tmp")])),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -414,7 +415,7 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl("sum", "double”,”0"),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlExprStatement(
@@ -425,14 +426,14 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       new MqlDecl(
         "mean",
         "double",
-        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("period"))
+        new MqlBinaryExpr(new MqlVariableRef("sum"), "/", new MqlVariableRef("p"))
       ),
 
       // 平均との絶対偏差
       new MqlExprStatement(new MqlLiteral("double mad = 0;")),
       new MqlFor(
         new MqlDecl("j", "int", new MqlLiteral("0")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("period")),
+        new MqlBinaryExpr(new MqlVariableRef("j"), "<", new MqlVariableRef("p")),
         new MqlExprStatement(new MqlUnaryExpr("++", new MqlVariableRef("j"))),
         [
           new MqlExprStatement(
@@ -452,13 +453,13 @@ const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
       ),
 
       new MqlReturn(
-        new MqlBinaryExpr(new MqlVariableRef("mad"), "/", new MqlVariableRef("period"))
+        new MqlBinaryExpr(new MqlVariableRef("mad"), "/", new MqlVariableRef("p"))
       ),
     ],
     [
-      new MqlArgument("src[]", "const double&"),
+      new MqlArgument("&src[]", "const double"),
       new MqlArgument("i", "int"),
-      new MqlArgument("period", "int"),
+      new MqlArgument("p", "int"),
     ],
     "private"
   ),
@@ -475,66 +476,64 @@ export function generateClassFromIndicator(
   const params = indicator.params;
   const variables = template.variables;
   const exports = template.exports;
-  const aggregationTypes: AggregationType[] = [];
-  variables.forEach(
-    (v) =>
-      v.expression.type === "aggregation" &&
-      v.expression.method.type === "aggregationType" &&
-      aggregationTypes.push(v.expression.method.value)
-  );
-  params.forEach(
-    (p) => p.type === "aggregationType" && aggregationTypes.push(...p.selectableTypes)
-  );
-
+  const aggregationTypes: AggregationType[] = variables
+    .filter(
+      (v) => v.expression.type === "aggregation" && v.expression.method.type === "aggregationType"
+    )
+    .map((v) => ((v.expression as AggregationExpression).method as AggregationTypeExpression).value)
+    .concat(params.filter((p) => p.type == "aggregationType").flatMap((p) => p.selectableTypes))
+    .filter((value, index, array) => array.indexOf(value) === index);
   // --- フィールド定義 ---
   variables.forEach((v) => {
-    fields.push(new MqlClassField(v.name, "double[]", undefined, "private"));
+    fields.push(new MqlClassField(`${v.name}[]`, "double", "private"));
   });
-  fields.push(new MqlClassField("lastCalculated", "int", new MqlLiteral("0"), "private"));
+  fields.push(new MqlClassField("lastCalculated", "int", "private"));
 
   // --- パラメータをフィールドとして持つ（自動） ---
   for (const p of params) {
     if (!fields.find((f) => f.name === p.name)) {
       switch (p.type) {
         case "number":
-          fields.push(new MqlClassField(p.name, "int", undefined, "private"));
-          break;
-        case "source":
-          fields.push(new MqlClassField(`${p.name}[]`, "double", undefined, "private"));
+          fields.push(new MqlClassField(p.name, "int", "private"));
           break;
         case "aggregationType":
-          fields.push(new MqlClassField(p.name, "string", undefined, "private"));
+          fields.push(new MqlClassField(p.name, "string", "private"));
           break;
       }
     }
   }
 
   // 集計関数を生成
-  methods.push(
-    ...aggregationTypes
-      .filter((value, index, array) => array.indexOf(value) === index)
-      .map((m) => aggregationMethodMapForClass[m])
-  );
+  methods.push(...aggregationTypes.map((m) => aggregationMethodMapForClass[m]));
 
   // --- コンストラクタ生成 ---
-  const constructorArgs = params.map((p) => {
-    switch (p.type) {
-      case "number":
-        return new MqlArgument(p.name, "int");
-      case "source":
-        return new MqlArgument(`${p.name}[]`, "double");
-      case "aggregationType":
-        return new MqlArgument(p.name, "string");
-    }
-    throw new Error("Unknown type");
-  });
+  const constructorArgs = params
+    .filter((p) => p.type === "number" || p.type === "aggregationType")
+    .map((p) => {
+      switch (p.type) {
+        case "number":
+          return new MqlArgument(p.name, "int");
+        case "aggregationType":
+          return new MqlArgument(p.name, "string");
+      }
+    });
   const constructorBody: MqlStatement[] = [
-    ...params.map(
-      (p) =>
-        new MqlExprStatement(
-          new MqlBinaryExpr(new MqlVariableRef(`this.${p.name}`), "=", new MqlVariableRef(p.name))
-        )
-    ),
+    new MqlExprStatement(new MqlBinaryExpr("this.lastCalculated", "=", 0)),
+    ...params
+      .filter((p) => p.type === "number" || p.type === "aggregationType")
+      .map((p) => {
+        switch (p.type) {
+          case "number":
+          case "aggregationType":
+            return new MqlExprStatement(
+              new MqlBinaryExpr(
+                new MqlVariableRef(`this.${p.name}`),
+                "=",
+                new MqlVariableRef(p.name)
+              )
+            );
+        }
+      }),
     ...variables.map(
       (v) =>
         new MqlExprStatement(
@@ -551,8 +550,14 @@ export function generateClassFromIndicator(
   const updateBody: MqlStatement[] = [];
 
   updateBody.push(
-    new MqlExprStatement(
-      new MqlFunctionCallExpr("ArrayResize", [new MqlVariableRef("buffer"), new MqlLiteral("Bars")])
+    ...variables.map(
+      (v) =>
+        new MqlExprStatement(
+          new MqlFunctionCallExpr("ArrayResize", [
+            new MqlVariableRef(v.name),
+            new MqlLiteral("Bars"),
+          ])
+        )
     )
   );
 
@@ -582,7 +587,7 @@ export function generateClassFromIndicator(
         } else {
           return new MqlExprStatement(
             new MqlBinaryExpr(
-              new MqlVariableRef(`${v.name}[i]`),
+              new MqlVariableRef(`this.${v.name}[i]`),
               "=",
               convertVariableExpression(v.expression, ctx)
             )
@@ -603,7 +608,16 @@ export function generateClassFromIndicator(
     )
   );
 
-  methods.push(new MqlClassMethod("Update", "void", updateBody));
+  methods.push(
+    new MqlClassMethod(
+      "Update",
+      "void",
+      updateBody,
+      params
+        .filter((p) => p.type === "source")
+        .map((p) => new MqlArgument(`&${p.name}[]`, "double"))
+    )
+  );
 
   // --- Get メソッド ---
   methods.push(
@@ -663,7 +677,7 @@ function convertVariableExpression(
         ? convertVariableExpression(expr.shiftBars, ctx)
         : new MqlLiteral("0");
 
-      return new MqlLiteral(`${expr.name}[${shiftExpr}]`);
+      return new MqlLiteral(`this.${expr.name}[${shiftExpr}]`);
     }
 
     case "binary_op":
@@ -694,6 +708,24 @@ function convertVariableExpression(
       throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
   }
 }
+
+function convertAggregationMethodArgs(expr: AggregationExpression, ctx: IndicatorContext) {
+  switch (expr.source.type) {
+    case "source":
+      return [
+        expr.source.name,
+        expr.source.shiftBars ? convertVariableExpression(expr.source.shiftBars, ctx) : 0,
+        convertVariableExpression(expr.period, ctx),
+      ];
+    case "variable":
+      return [
+        `this.${expr.source.name}`,
+        expr.source.shiftBars ? convertVariableExpression(expr.source.shiftBars, ctx) : 0,
+        convertVariableExpression(expr.period, ctx),
+      ];
+  }
+  throw new Error("unexpected aggregation source type");
+}
 function callAggregationMethod(
   name: string,
   expr: AggregationExpression,
@@ -705,12 +737,9 @@ function callAggregationMethod(
     return [
       new MqlExprStatement(
         new MqlBinaryExpr(
-          new MqlVariableRef(`${name}[i]`),
+          new MqlVariableRef(`this.${name}[i]`),
           "=",
-          new MqlFunctionCallExpr(method.value, [
-            convertVariableExpression(expr.source, ctx),
-            convertVariableExpression(expr.period, ctx),
-          ])
+          new MqlFunctionCallExpr(method.value, convertAggregationMethodArgs(expr, ctx))
         )
       ),
     ];
@@ -723,12 +752,9 @@ function callAggregationMethod(
         new MqlIf(new MqlBinaryExpr(param.name, "==", `"${t}"`), [
           new MqlExprStatement(
             new MqlBinaryExpr(
-              new MqlVariableRef(`${name}[i]`),
+              new MqlVariableRef(`this.${name}[i]`),
               "=",
-              new MqlFunctionCallExpr(t, [
-                convertVariableExpression(expr.source, ctx),
-                convertVariableExpression(expr.period, ctx),
-              ])
+              new MqlFunctionCallExpr(t, convertAggregationMethodArgs(expr, ctx))
             )
           ),
         ])

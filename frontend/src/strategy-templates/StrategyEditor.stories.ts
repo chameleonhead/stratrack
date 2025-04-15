@@ -21,6 +21,13 @@ export const RSI14: Story = {
       template: {
         variables: [
           {
+            name: "close",
+            expression: {
+              type: "price",
+              source: "close",
+            },
+          },
+          {
             name: "rsi14",
             expression: {
               type: "indicator",
@@ -139,22 +146,24 @@ export const DonchianChannel: Story = {
             name: "donchian_high",
             expression: {
               type: "indicator",
-              name: "DonchianChannelHigh",
+              name: "donchian_channel",
               params: [
                 { name: "source", type: "source", value: "high" },
                 { name: "period", type: "number", value: 20 },
               ],
+              lineName: "upper",
             },
           },
           {
             name: "donchian_low",
             expression: {
               type: "indicator",
-              name: "DonchianChannelLow",
+              name: "donchian_channel",
               params: [
                 { name: "period", type: "number", value: 90 },
                 { name: "source", type: "source", value: "low" },
               ],
+              lineName: "lower",
             },
           },
           {

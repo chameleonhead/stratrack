@@ -196,9 +196,9 @@ export function convertStrategyToMqlAst(
   const deinitFn = generateDeinitFunction(template);
   const tickFn = generateTickFunction(template, ctx);
   const { classes, globals, init, tick, deinit } = ctx.generateIndicatorDeclarations();
-  initFn.body.push(...init);
+  initFn.body.splice(0, 0, ...init);
   tickFn.body.splice(0, 0, ...tick);
-  deinitFn.body.push(...deinit);
+  deinitFn.body.splice(0, 0, ...deinit);
 
   const functions = [...generateCommonFunctionDefinitions(), initFn, deinitFn, tickFn];
 

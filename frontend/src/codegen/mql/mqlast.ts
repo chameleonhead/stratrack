@@ -9,21 +9,28 @@ export class MqlFile {
   toString(): string {
     const lines: string[] = [];
     lines.push(...this.properties.map((p) => `#property ${p}`));
-    lines.push("#property strict\n");
-    for (const buf of this.buffers) {
-      lines.push(`double ${buf.name}[];`);
-    }
+    lines.push("#property strict");
 
-    // グローバル変数 → クラス → 関数 の順にソートして出力
+    // クラス → グローバル変数 → 関数 の順にソートして出力
     const vars = this.globalItems.filter((i) => i instanceof MqlGlobalVariable);
     const classes = this.globalItems.filter((i) => i instanceof MqlClass);
     const funcs = this.globalItems.filter((i) => i instanceof MqlFunction);
+
+    for (const item of classes) {
+      lines.push("\n" + item.toString());
+    }
+
+    lines.push("\n");
+
+    for (const buf of this.buffers) {
+      lines.push(`double ${buf.name}[];`);
+    }
 
     for (const item of vars) {
       lines.push(item.toString());
     }
 
-    for (const item of [...classes, ...funcs]) {
+    for (const item of funcs) {
       lines.push("\n" + item.toString());
     }
 
@@ -107,7 +114,7 @@ export class MqlUnaryExpr extends MqlExpression {
   }
   toString(): string {
     if (this.operator === "abs") {
-      return `${this.operator}(${this.value.toString()})`;
+      return `MathAbs(${this.value.toString()})`;
     } else {
       return `${this.operator}${this.value.toString()}`;
     }
@@ -292,11 +299,10 @@ export class MqlClassField {
   constructor(
     public name: string,
     public type: string,
-    public init?: MqlExpression,
     public access: "public" | "private" = "private"
   ) {}
   toString(indent = "  ") {
-    return `${indent}${this.access}: ${this.type} ${this.name}${this.init ? ` = ${this.init.toString()}` : ""};`;
+    return `${indent}${this.type} ${this.name};`;
   }
 }
 
@@ -360,9 +366,7 @@ export class MqlClass extends MqlStatement {
     const sections: Record<"private" | "public", string[]> = { private: [], public: [] };
 
     for (const field of this.fields) {
-      sections[field.access].push(
-        `  ${field.type} ${field.name}${field.init ? ` = ${field.init.toString()}` : ""};`
-      );
+      sections[field.access].push(`  ${field.type} ${field.name};`);
     }
 
     for (const method of this.methods) {
