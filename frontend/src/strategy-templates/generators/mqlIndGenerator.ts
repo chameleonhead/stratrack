@@ -466,7 +466,6 @@ export function generateClassFromIndicator(
 ): MqlClass {
   const fields: MqlClassField[] = [];
   const methods: (MqlClassMethod | MqlConstructor | MqlDestructor)[] = [];
-  const startPeriod = calculateStartPeriod(indicator, ctx);
   const template = indicator.template!;
   const params = indicator.params;
   const variables = template.variables;
@@ -476,6 +475,20 @@ export function generateClassFromIndicator(
       (v) => v.expression.type === "aggregation" && v.expression.method.type === "aggregationType"
     )
     .map((v) => ((v.expression as AggregationExpression).method as AggregationTypeExpression).value)
+    .concat(
+      variables
+        .filter(
+          (v) =>
+            v.fallback &&
+            v.fallback.expression.type === "aggregation" &&
+            v.fallback.expression.method.type === "aggregationType"
+        )
+        .map(
+          (v) =>
+            ((v.fallback!.expression as AggregationExpression).method as AggregationTypeExpression)
+              .value
+        )
+    )
     .concat(params.filter((p) => p.type == "aggregationType").flatMap((p) => p.selectableTypes))
     .filter((value, index, array) => array.indexOf(value) === index);
   // --- フィールド定義 ---
@@ -562,47 +575,92 @@ export function generateClassFromIndicator(
       "start",
       "int",
       new MqlFunctionCallExpr("MathMax", [
-        startPeriod
-          ? new MqlBinaryExpr(new MqlLiteral("Bars"), "-", startPeriod)
-          : new MqlLiteral("Bars"),
+        new MqlLiteral("Bars - 1"),
         new MqlLiteral("this.lastCalculated"),
       ])
     ),
     new MqlDecl("end", "int", new MqlLiteral("1")),
-    new MqlIf(new MqlBinaryExpr("this.lastCalculated", "==", new MqlLiteral("0")), [
-      // 変数初期化（periodまで）
-      new MqlFor(
-        new MqlDecl("j", "int", new MqlLiteral("Bars - 1")),
-        new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlVariableRef("start")),
-        new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
-        variables.flatMap((v) => {
-          return new MqlExprStatement(
-            new MqlBinaryExpr(new MqlVariableRef(`this.${v.name}[j]`), "=", new MqlLiteral("0"))
-          );
-        })
-      ),
-    ]),
     new MqlFor(
       new MqlDecl("j", "int", new MqlVariableRef("start")),
       new MqlBinaryExpr(new MqlVariableRef("j"), ">=", new MqlVariableRef("end")),
       new MqlExprStatement(new MqlUnaryExpr("--", new MqlVariableRef("j"))),
       // 計算本体（sum / period）
       variables.flatMap((v) => {
-        if (v.expression.type === "aggregation") {
-          return callAggregationMethod(
+        if (v.invalidPeriod) {
+          return [
+            new MqlIf(
+              new MqlBinaryExpr(
+                "Bars",
+                ">",
+                new MqlBinaryExpr("j", "+", convertVariableExpression(v.invalidPeriod, ctx))
+              ),
+              convertVariableDefinition(
+                v.name,
+                v.expression,
+                ctx,
+                indicator,
+                new MqlVariableRef("j")
+              ),
+              [
+                ...(v.fallback?.invalidPeriod
+                  ? [
+                      new MqlIf(
+                        new MqlBinaryExpr(
+                          "Bars",
+                          ">",
+                          new MqlBinaryExpr(
+                            "j",
+                            "+",
+                            convertVariableExpression(v.fallback.invalidPeriod, ctx)
+                          )
+                        ),
+                        convertVariableDefinition(
+                          v.name,
+                          v.fallback.expression,
+                          ctx,
+                          indicator,
+                          new MqlVariableRef("j")
+                        ),
+                        [
+                          new MqlExprStatement(
+                            new MqlBinaryExpr(
+                              new MqlVariableRef(`this.${v.name}[j]`),
+                              "=",
+                              v.fallback.fallback
+                                ? convertVariableExpression(v.fallback.fallback, ctx)
+                                : new MqlLiteral("0")
+                            )
+                          ),
+                        ]
+                      ),
+                    ]
+                  : v.fallback
+                    ? convertVariableDefinition(
+                        v.name,
+                        v.fallback.expression,
+                        ctx,
+                        indicator,
+                        new MqlVariableRef("j")
+                      )
+                    : [
+                        new MqlExprStatement(
+                          new MqlBinaryExpr(
+                            new MqlVariableRef(`this.${v.name}[j]`),
+                            "=",
+                            new MqlLiteral("0")
+                          )
+                        ),
+                      ]),
+              ]
+            ),
+          ];
+        } else {
+          return convertVariableDefinition(
             v.name,
             v.expression,
             ctx,
             indicator,
             new MqlVariableRef("j")
-          );
-        } else {
-          return new MqlExprStatement(
-            new MqlBinaryExpr(
-              new MqlVariableRef(`this.${v.name}[j]`),
-              "=",
-              convertVariableExpression(v.expression, ctx, new MqlVariableRef("j"))
-            )
           );
         }
       })
@@ -688,8 +746,11 @@ function convertVariableExpression(
           ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
           : convertVariableExpression(expr.shiftBars, ctx)
         : ref || new MqlLiteral("0");
-
-      return new MqlLiteral(`${expr.name}[${shiftExpr}]`);
+      return new MqlTernaryExpr(
+        new MqlBinaryExpr("Bars", ">", shiftExpr),
+        new MqlLiteral(`${expr.name}[${shiftExpr}]`),
+        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : new MqlLiteral("0")
+      );
     }
 
     case "variable": {
@@ -698,8 +759,11 @@ function convertVariableExpression(
           ? new MqlBinaryExpr(ref, "+", convertVariableExpression(expr.shiftBars, ctx))
           : convertVariableExpression(expr.shiftBars, ctx)
         : ref || new MqlLiteral("0");
-
-      return new MqlLiteral(`this.${expr.name}[${shiftExpr}]`);
+      return new MqlTernaryExpr(
+        new MqlBinaryExpr("Bars", ">", shiftExpr),
+        new MqlLiteral(`this.${expr.name}[${shiftExpr}]`),
+        expr.fallback ? convertVariableExpression(expr.fallback, ctx) : new MqlLiteral("0")
+      );
     }
 
     case "binary_op":
@@ -737,22 +801,50 @@ function convertAggregationMethodArgs(
   shift: MqlVariableRef
 ) {
   switch (expr.source.type) {
-    case "source":
+    case "source": {
+      const period = convertVariableExpression(expr.period, ctx);
       return [
         expr.source.name,
         expr.source.shiftBars
           ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
           : shift,
-        convertVariableExpression(expr.period, ctx),
+        period.toString() === "0"
+          ? new MqlBinaryExpr(
+              "Bars",
+              "-",
+              expr.source.shiftBars
+                ? new MqlBinaryExpr(
+                    shift,
+                    "+",
+                    convertVariableExpression(expr.source.shiftBars, ctx)
+                  )
+                : shift
+            )
+          : period,
       ];
-    case "variable":
+    }
+    case "variable": {
+      const period = convertVariableExpression(expr.period, ctx);
       return [
         `this.${expr.source.name}`,
         expr.source.shiftBars
           ? new MqlBinaryExpr(shift, "+", convertVariableExpression(expr.source.shiftBars, ctx))
           : shift,
-        convertVariableExpression(expr.period, ctx),
+        period.toString() === "0"
+          ? new MqlBinaryExpr(
+              "Bars",
+              "-",
+              expr.source.shiftBars
+                ? new MqlBinaryExpr(
+                    shift,
+                    "+",
+                    convertVariableExpression(expr.source.shiftBars, ctx)
+                  )
+                : shift
+            )
+          : period,
       ];
+    }
   }
   throw new Error("unexpected aggregation source type");
 }
@@ -793,47 +885,25 @@ function callAggregationMethod(
   }
   throw new Error("Function not implemented.");
 }
-function calculateStartPeriod(indicator: Indicator, ctx: IndicatorContext) {
-  const shiftValues: MqlExpression[] = [];
-  indicator.template.variables.forEach((v) => {
-    switch (v.expression.type) {
-      case "aggregation": {
-        const period = convertVariableExpression(v.expression.period, ctx);
-        switch (v.expression.source.type) {
-          case "source":
-          case "variable":
-            if (v.expression.source.shiftBars) {
-              shiftValues.push(
-                new MqlBinaryExpr(
-                  period,
-                  "+",
-                  convertVariableExpression(v.expression.source.shiftBars, ctx)
-                )
-              );
-            } else {
-              shiftValues.push(period);
-            }
-            break;
-          default:
-            shiftValues.push(period);
-        }
-        break;
-      }
-      case "source":
-      case "variable":
-        if (v.expression.shiftBars) {
-          shiftValues.push(convertVariableExpression(v.expression.shiftBars, ctx));
-        }
-        break;
-    }
-  });
-  const uniqueValues = [...new Set(shiftValues.map(String))];
-  if (uniqueValues.length === 0) return null;
-  if (uniqueValues.length === 1) return uniqueValues[0];
-  return uniqueValues
-    .slice(1)
-    .reduce(
-      (prev, curr) => new MqlFunctionCallExpr("MathMax", [prev, curr]),
-      new MqlFunctionCallExpr("MathMax", [uniqueValues[0], uniqueValues[1]])
-    );
+
+function convertVariableDefinition(
+  name: string,
+  e: AggregationExpression | IndicatorExpression | VariableExpression,
+  ctx: IndicatorContext,
+  indicator: Indicator,
+  shift: MqlVariableRef
+): MqlStatement[] {
+  if (e.type === "aggregation") {
+    return callAggregationMethod(name, e, ctx, indicator, shift);
+  } else {
+    return [
+      new MqlExprStatement(
+        new MqlBinaryExpr(
+          new MqlVariableRef(`this.${name}[j]`),
+          "=",
+          convertVariableExpression(e, ctx, shift)
+        )
+      ),
+    ];
+  }
 }

@@ -81,6 +81,14 @@ export type VariableDefinition = {
   name: string;
   expression: AggregationExpression | IndicatorExpression | VariableExpression;
   description?: string;
+  invalidPeriod?: VariableExpression;
+  fallback?: VariableFallbackDefinition;
+};
+
+export type VariableFallbackDefinition = {
+  expression: AggregationExpression | IndicatorExpression | VariableExpression;
+  invalidPeriod?: ConstantExpression | NumberParamReferenceExpression;
+  fallback?: ConstantExpression | NumberParamReferenceExpression;
 };
 
 export type ExportLine = {
@@ -126,6 +134,7 @@ export type VariableReferenceExpression = {
   type: "variable";
   name: string;
   shiftBars?: ConstantExpression | NumberParamReferenceExpression;
+  fallback?: ConstantExpression | NumberParamReferenceExpression;
 };
 
 /** テクニカル指標の値を表す式 */

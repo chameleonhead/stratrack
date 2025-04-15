@@ -36,6 +36,7 @@ export const Accelerator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "fastPeriod" },
         },
+        invalidPeriod: { type: "param", name: "fastPeriod" },
       },
       {
         name: "slowSma",
@@ -45,6 +46,7 @@ export const Accelerator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "slowPeriod" },
         },
+        invalidPeriod: { type: "param", name: "slowPeriod" },
       },
       {
         name: "ao",
@@ -63,6 +65,7 @@ export const Accelerator: Indicator = {
           source: { type: "variable", name: "ao" },
           period: { type: "param", name: "signalPeriod" },
         },
+        invalidPeriod: { type: "param", name: "signalPeriod" },
       },
       {
         name: "ac",
@@ -286,6 +289,7 @@ export const ADX: Indicator = {
           source: { type: "variable", name: "plusDM" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "smoothedMinusDM",
@@ -295,6 +299,7 @@ export const ADX: Indicator = {
           source: { type: "variable", name: "minusDM" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "smoothedTR",
@@ -304,6 +309,7 @@ export const ADX: Indicator = {
           source: { type: "variable", name: "tr" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "pdi",
@@ -369,6 +375,7 @@ export const ADX: Indicator = {
           source: { type: "variable", name: "dx" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [
@@ -430,6 +437,7 @@ export const Alligator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "jawPeriod" },
         },
+        invalidPeriod: { type: "param", name: "jawPeriod" },
       },
       {
         name: "teeth",
@@ -439,6 +447,7 @@ export const Alligator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "teethPeriod" },
         },
+        invalidPeriod: { type: "param", name: "teethPeriod" },
       },
       {
         name: "lips",
@@ -448,6 +457,7 @@ export const Alligator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "lipsPeriod" },
         },
+        invalidPeriod: { type: "param", name: "lipsPeriod" },
       },
     ],
     exports: [
@@ -493,6 +503,7 @@ export const AwesomeOscillator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "fastPeriod" },
         },
+        invalidPeriod: { type: "param", name: "fastPeriod" },
       },
       {
         name: "smaSlow",
@@ -502,6 +513,7 @@ export const AwesomeOscillator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "slowPeriod" },
         },
+        invalidPeriod: { type: "param", name: "slowPeriod" },
       },
       {
         name: "ao",
@@ -587,6 +599,7 @@ export const ATR: Indicator = {
           source: { type: "variable", name: "trueRange" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "atr", variableName: "atr" }],
@@ -613,6 +626,7 @@ export const BearsPower: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "bears",
@@ -652,6 +666,7 @@ export const BollingerBands: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "stddev",
@@ -661,6 +676,7 @@ export const BollingerBands: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "upper",
@@ -719,6 +735,7 @@ export const BullsPower: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "bulls",
@@ -774,6 +791,7 @@ export const CommodityChannelIndex: Indicator = {
           source: { type: "variable", name: "tp" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "dev",
@@ -783,6 +801,7 @@ export const CommodityChannelIndex: Indicator = {
           source: { type: "variable", name: "tp" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "cci",
@@ -866,6 +885,7 @@ export const DeMarker: Indicator = {
           source: { type: "variable", name: "up" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "sumDown",
@@ -875,6 +895,7 @@ export const DeMarker: Indicator = {
           source: { type: "variable", name: "down" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "dem",
@@ -927,6 +948,7 @@ export const Envelopes: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "upper",
@@ -1016,6 +1038,7 @@ export const ForceIndex: Indicator = {
           source: { type: "variable", name: "rawForce" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "force", variableName: "force" }],
@@ -1046,6 +1069,7 @@ export const Fractals: Indicator = {
           source: { type: "source", name: "high" },
           period: { type: "constant", value: 5 },
         },
+        invalidPeriod: { type: "constant", value: 5 },
       },
       {
         name: "lowMin",
@@ -1055,6 +1079,7 @@ export const Fractals: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "constant", value: 5 },
         },
+        invalidPeriod: { type: "constant", value: 5 },
       },
       {
         name: "upFractal",
@@ -1130,6 +1155,7 @@ export const GatorOscillator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "jawPeriod" },
         },
+        invalidPeriod: { type: "param", name: "jawPeriod" },
       },
       {
         name: "teeth",
@@ -1139,6 +1165,7 @@ export const GatorOscillator: Indicator = {
           source: { type: "variable", name: "medianPrice" },
           period: { type: "param", name: "teethPeriod" },
         },
+        invalidPeriod: { type: "param", name: "teethPeriod" },
       },
       {
         name: "gatorUpper",
@@ -1195,6 +1222,7 @@ export const Ichimoku: Indicator = {
           source: { type: "source", name: "high" },
           period: { type: "param", name: "tenkanPeriod" },
         },
+        invalidPeriod: { type: "param", name: "tenkanPeriod" },
       },
       {
         name: "tenkanLow",
@@ -1204,6 +1232,7 @@ export const Ichimoku: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "param", name: "tenkanPeriod" },
         },
+        invalidPeriod: { type: "param", name: "tenkanPeriod" },
       },
       {
         name: "tenkan",
@@ -1236,6 +1265,7 @@ export const Ichimoku: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "param", name: "kijunPeriod" },
         },
+        invalidPeriod: { type: "param", name: "kijunPeriod" },
       },
       {
         name: "kijun",
@@ -1273,6 +1303,7 @@ export const Ichimoku: Indicator = {
           source: { type: "source", name: "high" },
           period: { type: "param", name: "senkouPeriod" },
         },
+        invalidPeriod: { type: "param", name: "senkouPeriod" },
       },
       {
         name: "senkouBLow",
@@ -1282,6 +1313,7 @@ export const Ichimoku: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "param", name: "senkouPeriod" },
         },
+        invalidPeriod: { type: "param", name: "senkouPeriod" },
       },
       {
         name: "senkouB",
@@ -1369,6 +1401,7 @@ export const Momentum: Indicator = {
           left: { type: "source", name: "source" },
           right: { type: "source", name: "source", shiftBars: { type: "param", name: "period" } },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "momentum", variableName: "momentum" }],
@@ -1452,6 +1485,7 @@ export const MoneyFlowIndex: Indicator = {
           source: { type: "variable", name: "positiveFlow" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "sumNegative",
@@ -1461,6 +1495,7 @@ export const MoneyFlowIndex: Indicator = {
           source: { type: "variable", name: "negativeFlow" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "moneyRatio",
@@ -1522,6 +1557,7 @@ export const MA: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "ma", variableName: "ma" }],
@@ -1553,6 +1589,7 @@ export const MACDHistogram: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "fastPeriod" },
         },
+        invalidPeriod: { type: "param", name: "fastPeriod" },
       },
       {
         name: "slowEma",
@@ -1562,6 +1599,7 @@ export const MACDHistogram: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "slowPeriod" },
         },
+        invalidPeriod: { type: "param", name: "slowPeriod" },
       },
       {
         name: "macd",
@@ -1580,6 +1618,7 @@ export const MACDHistogram: Indicator = {
           source: { type: "variable", name: "macd" },
           period: { type: "param", name: "signalPeriod" },
         },
+        invalidPeriod: { type: "param", name: "signalPeriod" },
       },
       {
         name: "histogram",
@@ -1624,6 +1663,7 @@ export const MACD: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "fastPeriod" },
         },
+        invalidPeriod: { type: "param", name: "fastPeriod" },
       },
       {
         name: "emaSlow",
@@ -1633,6 +1673,7 @@ export const MACD: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "slowPeriod" },
         },
+        invalidPeriod: { type: "param", name: "slowPeriod" },
       },
       {
         name: "macd",
@@ -1651,6 +1692,7 @@ export const MACD: Indicator = {
           source: { type: "variable", name: "macd" },
           period: { type: "param", name: "signalPeriod" },
         },
+        invalidPeriod: { type: "param", name: "signalPeriod" },
       },
       {
         name: "histogram",
@@ -1784,61 +1826,133 @@ export const RSI: Indicator = {
       {
         name: "avgGain",
         expression: {
-          type: "aggregation",
-          method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "gain" },
-          period: { type: "param", name: "period" },
+          type: "binary_op",
+          left: {
+            type: "binary_op",
+            left: {
+              type: "binary_op",
+              left: {
+                type: "variable",
+                name: "avgGain",
+                shiftBars: { type: "constant", value: 1 },
+              },
+              operator: "*",
+              right: {
+                type: "binary_op",
+                left: { type: "param", name: "period" },
+                operator: "-",
+                right: { type: "constant", value: 1 },
+              },
+            },
+            operator: "+",
+            right: { type: "variable", name: "gain" },
+          },
+          operator: "/",
+          right: { type: "param", name: "period" },
+        },
+        invalidPeriod: {
+          type: "binary_op",
+          left: { type: "param", name: "period" },
+          operator: "+",
+          right: { type: "constant", value: 1 },
+        },
+        fallback: {
+          expression: {
+            type: "aggregation",
+            method: { type: "aggregationType", value: "sma" },
+            source: { type: "variable", name: "gain" },
+            period: { type: "param", name: "period" },
+          },
+          invalidPeriod: { type: "param", name: "period" }
         },
       },
       {
         name: "avgLoss",
         expression: {
-          type: "aggregation",
-          method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "loss" },
-          period: { type: "param", name: "period" },
-        },
-      },
-      {
-        name: "rs",
-        expression: {
-          type: "ternary",
-          condition: {
-            type: "comparison",
-            left: { type: "variable", name: "avgLoss" },
-            operator: "==",
-            right: { type: "constant", value: 0 },
-          },
-          trueExpr: {
-            type: "constant",
-            value: 0,
-          },
-          falseExpr: {
+          type: "binary_op",
+          left: {
             type: "binary_op",
-            operator: "/",
-            left: { type: "variable", name: "avgGain" },
-            right: { type: "variable", name: "avgLoss" },
+            left: {
+              type: "binary_op",
+              left: {
+                type: "variable",
+                name: "avgLoss",
+                shiftBars: { type: "constant", value: 1 },
+              },
+              operator: "*",
+              right: {
+                type: "binary_op",
+                left: { type: "param", name: "period" },
+                operator: "-",
+                right: { type: "constant", value: 1 },
+              },
+            },
+            operator: "+",
+            right: { type: "variable", name: "loss" },
           },
+          operator: "/",
+          right: { type: "param", name: "period" },
+        },
+        invalidPeriod: {
+          type: "binary_op",
+          left: { type: "param", name: "period" },
+          operator: "+",
+          right: { type: "constant", value: 1 },
+        },
+        fallback: {
+          expression: {
+            type: "aggregation",
+            method: { type: "aggregationType", value: "sma" },
+            source: { type: "variable", name: "loss" },
+            period: { type: "param", name: "period" },
+          },
+          invalidPeriod: { type: "param", name: "period" }
         },
       },
       {
         name: "rsi",
         expression: {
-          type: "binary_op",
-          left: { type: "constant", value: 100 },
-          operator: "-",
-          right: {
+          type: "ternary",
+          condition: {
+            type: "comparison",
+            left: { type: "variable", name: "avgLoss" },
+            operator: "!=",
+            right: { type: "constant", value: 0 },
+          },
+          trueExpr: {
             type: "binary_op",
             left: { type: "constant", value: 100 },
-            operator: "/",
+            operator: "-",
             right: {
               type: "binary_op",
-              operator: "+",
-              left: { type: "constant", value: 1 },
-              right: { type: "variable", name: "rs" },
+              left: { type: "constant", value: 100 },
+              operator: "/",
+              right: {
+                type: "binary_op",
+                left: { type: "constant", value: 1 },
+                operator: "+",
+                right: {
+                  type: "binary_op",
+                  left: { type: "variable", name: "avgGain" },
+                  operator: "/",
+                  right: { type: "variable", name: "avgLoss" },
+                },
+              },
             },
           },
+          falseExpr: {
+            type: "ternary",
+            condition: {
+              type: "comparison",
+              left: { type: "variable", name: "avgGain" },
+              operator: "!=",
+              right: { type: "constant", value: 0 },
+            },
+            trueExpr: { type: "constant", value: 100 },
+            falseExpr: { type: "constant", value: 50 },
+          },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "rsi", variableName: "rsi" }],
@@ -1875,6 +1989,7 @@ export const RelativeVigorIndex: Indicator = {
           },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "den",
@@ -1889,6 +2004,7 @@ export const RelativeVigorIndex: Indicator = {
           },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "rvi",
@@ -1907,6 +2023,7 @@ export const RelativeVigorIndex: Indicator = {
           source: { type: "variable", name: "rvi" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "rvi", variableName: "rvi" }],
@@ -1932,6 +2049,7 @@ export const StandardDeviation: Indicator = {
           source: { type: "source", name: "source" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
     ],
     exports: [{ name: "stddev", variableName: "stddev" }],
@@ -1964,6 +2082,7 @@ export const Stochastic: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "param", name: "kPeriod" },
         },
+        invalidPeriod: { type: "param", name: "kPeriod" },
       },
       {
         name: "highestHigh",
@@ -1973,6 +2092,7 @@ export const Stochastic: Indicator = {
           source: { type: "source", name: "high" },
           period: { type: "param", name: "kPeriod" },
         },
+        invalidPeriod: { type: "param", name: "kPeriod" },
       },
       {
         name: "rawK",
@@ -2001,6 +2121,7 @@ export const Stochastic: Indicator = {
           source: { type: "variable", name: "rawK" },
           period: { type: "param", name: "slowing" },
         },
+        invalidPeriod: { type: "param", name: "slowing" },
       },
       {
         name: "d",
@@ -2010,6 +2131,7 @@ export const Stochastic: Indicator = {
           source: { type: "variable", name: "k" },
           period: { type: "param", name: "dPeriod" },
         },
+        invalidPeriod: { type: "param", name: "dPeriod" },
       },
     ],
     exports: [
@@ -2040,6 +2162,7 @@ export const WilliamsPercentRange: Indicator = {
           source: { type: "source", name: "high" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "lowestLow",
@@ -2049,6 +2172,7 @@ export const WilliamsPercentRange: Indicator = {
           source: { type: "source", name: "low" },
           period: { type: "param", name: "period" },
         },
+        invalidPeriod: { type: "param", name: "period" },
       },
       {
         name: "percentR",
