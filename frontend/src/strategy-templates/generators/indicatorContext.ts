@@ -58,7 +58,7 @@ export class IndicatorContext {
 
       const className = this.pascal(expr.name);
       // クラス定義を追加（重複しないようチェック）
-      if (!classes.find((c) => c.name === expr.name)) {
+      if (!classes.find((c) => c.name === className)) {
         const cls = generateClassFromIndicator(className, indicator, this);
         classes.push(cls);
       }
@@ -105,7 +105,7 @@ export class IndicatorContext {
   private hash(expr: IndicatorExpression): string {
     const sortedParams = Object.entries(expr.params || {})
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
       .join(",");
     return `${expr.name}(${sortedParams})`;
   }

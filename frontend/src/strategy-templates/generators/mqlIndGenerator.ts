@@ -37,6 +37,7 @@ import {
 } from "../../indicators/types";
 import { IndicatorContext } from "./indicatorContext";
 
+const DEBUG = false;
 const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
   sma: method(
     "sma",
@@ -334,7 +335,7 @@ export function generateClassFromIndicator(
       }
     });
   const constructorBody: MqlStatement[] = [
-    stmt(bin("this.lastCalculated", "=", 0)),
+    stmt(bin("this.lastCalculated", "=", -1)),
     stmt(bin("this.lastBars", "=", 0)),
     ...params
       .filter((p) => p.type === "number" || p.type === "aggregationType")
@@ -361,9 +362,29 @@ export function generateClassFromIndicator(
         callStmt("ArraySetAsSeries", [ref(`this.${v.name}`), lit("true")]),
       ]),
       stmt(bin("this.lastBars", "=", "Bars")),
+      stmt(lit("this.lastCalculated++")),
     ]),
-    decl("start", "int", call("MathMax", [lit("Bars - 1"), lit("this.lastCalculated")])),
+    decl(
+      "start",
+      "int",
+      ternary(bin("this.lastCalculated", "==", -1), bin("Bars", "-", 1), lit("this.lastCalculated"))
+    ),
     decl("end", "int", ref("i")),
+    ...(DEBUG
+      ? [
+          callStmt("Print", ['"Start: "', "start", '", end: "', "end"]),
+          ...variables.map((v) =>
+            callStmt("Print", [
+              `"Before update ${v.name}: "`,
+              `${v.name}[i]`,
+              '", "',
+              ternary("i + 1 < Bars - 1", `${v.name}[i + 1]`, 0),
+              '", "',
+              ternary("i + 2 < Bars - 1", `${v.name}[i + 2]`, 0),
+            ])
+          ),
+        ]
+      : []),
     loop(
       decl("j", "int", ref("start")),
       bin(ref("j"), ">=", ref("end")),
@@ -421,12 +442,24 @@ export function generateClassFromIndicator(
         }
       })
     ),
+    ...(DEBUG
+      ? variables.map((v) =>
+          callStmt("Print", [
+            `"After update ${v.name}: "`,
+            `${v.name}[i]`,
+            '", "',
+            ternary("i + 1 < Bars - 1", `${v.name}[i + 1]`, 0),
+            '", "',
+            ternary("i + 2 < Bars - 1", `${v.name}[i + 2]`, 0),
+          ])
+        )
+      : []),
     // 最後に lastCalculated を更新
     stmt(
       bin(
         ref("this.lastCalculated"),
         "=",
-        call("MathMin", [bin(ref("Bars"), "-", lit("1")), bin(ref("end"), "+", lit("1"))])
+        call("MathMin", [bin(ref("Bars"), "-", lit("1")), ref("end + 1")])
       )
     )
   );
@@ -444,9 +477,11 @@ export function generateClassFromIndicator(
       "Get",
       "double",
       [
-        callStmt("this.Update", [
-          ref("i"),
-          ...params.filter((p) => p.type === "source").map((p) => ref(p.name)),
+        iff("this.lastCalculated == -1 || i <= this.lastCalculated", [
+          callStmt("this.Update", [
+            ref("i"),
+            ...params.filter((p) => p.type === "source").map((p) => ref(p.name)),
+          ]),
         ]),
         ...exports.flatMap((e) => {
           return [

@@ -142,7 +142,7 @@ function generateTickFunction(template: StrategyTemplate, ctx: IndicatorContext)
         ]),
       ]),
       loop(
-        decl("i", "int", bin(ref("diff"), "-", lit(1))),
+        decl("i", "int", call("MathMin", ["Bars - 1", "diff"])),
         bin(ref("i"), ">=", lit(0)),
         stmt(unary("--", ref("i"))),
         template.variables.map((v) =>
