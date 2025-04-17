@@ -63,7 +63,11 @@ const indicatorList: Indicator[] = [
   {
     name: "donchian_channel",
     label: "ドンチャンチャネル",
-    params: [{ type: "number", name: "period", label: "期間", required: true, default: 20 }],
+    params: [
+      { type: "source", name: "high", label: "高値", required: true, default: "high" },
+      { type: "source", name: "low", label: "安値", required: true, default: "low" },
+      { type: "number", name: "period", label: "期間", required: true, default: 20 },
+    ],
     lines: [
       { name: "upper", label: "上限" },
       { name: "lower", label: "下限" },
@@ -80,6 +84,7 @@ const indicatorList: Indicator[] = [
             source: { type: "source", name: "high", valueType: "array" },
             period: { type: "param", name: "period" },
           },
+          invalidPeriod: { type: "param", name: "period" },
         },
         {
           name: "lowestLow",
@@ -89,6 +94,7 @@ const indicatorList: Indicator[] = [
             source: { type: "source", name: "low", valueType: "array" },
             period: { type: "param", name: "period" },
           },
+          invalidPeriod: { type: "param", name: "period" },
         },
         {
           name: "middle",

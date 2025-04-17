@@ -42,7 +42,7 @@ import {
 } from "../../dsl/indicator";
 import { IndicatorContext } from "./indicatorContext";
 
-const DEBUG = true;
+const DEBUG = false;
 const aggregationMethodMapForClass: Record<AggregationType, MqlClassMethod> = {
   sma: method(
     "sma",
@@ -622,8 +622,9 @@ function emitVariableExpression(
       return ctx.getVariableRef(expr);
 
     case "variable": {
+      const varName = `this.${expr.name}`
       if (expr.valueType === "array") {
-        return `this.${expr.name}`;
+        return varName;
       }
       const shiftExpr = expr.shiftBars
         ? shift
@@ -632,7 +633,7 @@ function emitVariableExpression(
         : shift || lit("0");
       return ternary(
         bin("Bars", ">", shiftExpr),
-        lit(`this.${expr.name}[${shiftExpr}]`),
+        lit(`${varName}[${shiftExpr}]`),
         expr.fallback ? emitVariableExpression(expr.fallback, ctx) : lit("0")
       );
     }

@@ -148,7 +148,23 @@ export const DonchianChannel: Story = {
             expression: {
               type: "price",
               source: "close",
-              valueType: "array",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "high",
+            expression: {
+              type: "price",
+              source: "high",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "low",
+            expression: {
+              type: "price",
+              source: "low",
+              valueType: "scalar",
             },
           },
           {
@@ -157,7 +173,8 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "donchian_channel",
               params: [
-                { name: "source", type: "source", value: "high" },
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
                 { name: "period", type: "number", value: 20 },
               ],
               lineName: "upper",
@@ -169,8 +186,9 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "donchian_channel",
               params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
                 { name: "period", type: "number", value: 90 },
-                { name: "source", type: "source", value: "low" },
               ],
               lineName: "lower",
             },
