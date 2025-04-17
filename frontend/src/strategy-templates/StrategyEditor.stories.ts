@@ -25,6 +25,7 @@ export const RSI14: Story = {
             expression: {
               type: "price",
               source: "close",
+              valueType: "scalar",
             },
           },
           {
@@ -79,6 +80,7 @@ export const RSI14: Story = {
                   operand: {
                     type: "variable",
                     name: "rsi_sma90",
+                    valueType: "array",
                   },
                 },
                 {
@@ -87,6 +89,7 @@ export const RSI14: Story = {
                   operand: {
                     type: "variable",
                     name: "rsi_sma90_sma90",
+                    valueType: "array",
                   },
                 },
                 {
@@ -95,7 +98,12 @@ export const RSI14: Story = {
                   continue: "true",
                   condition: {
                     type: "comparison",
-                    left: { type: "variable", name: "rsi14", shiftBars: 2 },
+                    left: {
+                      type: "variable",
+                      name: "rsi14",
+                      shiftBars: { type: "constant", value: 2 },
+                      valueType: "scalar",
+                    },
                     operator: ">",
                     right: { type: "constant", value: 30 },
                   },
@@ -103,7 +111,7 @@ export const RSI14: Story = {
                 {
                   type: "cross",
                   direction: "cross_over",
-                  left: { type: "variable", name: "rsi14" },
+                  left: { type: "variable", name: "rsi14", valueType: "array" },
                   right: { type: "constant", value: 30 },
                 },
               ],
@@ -115,7 +123,7 @@ export const RSI14: Story = {
             type: "long",
             condition: {
               type: "comparison",
-              left: { type: "variable", name: "rsi14" },
+              left: { type: "variable", name: "rsi14", valueType: "scalar" },
               operator: ">",
               right: { type: "constant", value: 70 },
             },
@@ -140,6 +148,7 @@ export const DonchianChannel: Story = {
             expression: {
               type: "price",
               source: "close",
+              valueType: "array",
             },
           },
           {
@@ -177,10 +186,12 @@ export const DonchianChannel: Story = {
                 left: {
                   type: "variable",
                   name: "donchian_high",
+                  valueType: "scalar",
                 },
                 right: {
                   type: "variable",
                   name: "donchian_low",
+                  valueType: "scalar",
                 },
               },
               right: {
@@ -198,11 +209,13 @@ export const DonchianChannel: Story = {
               left: {
                 type: "variable",
                 name: "close",
+                valueType: "scalar",
               },
               operator: ">",
               right: {
                 type: "variable",
                 name: "donchian_high",
+                valueType: "scalar",
               },
             },
           },
@@ -213,11 +226,13 @@ export const DonchianChannel: Story = {
               left: {
                 type: "variable",
                 name: "close",
+                valueType: "scalar",
               },
               operator: "<",
               right: {
                 type: "variable",
                 name: "donchian_low",
+                valueType: "scalar",
               },
             },
           },
@@ -230,11 +245,13 @@ export const DonchianChannel: Story = {
               left: {
                 type: "variable",
                 name: "close",
+                valueType: "scalar",
               },
               operator: "<",
               right: {
                 type: "variable",
                 name: "donchian_mid",
+                valueType: "scalar",
               },
             },
           },
@@ -245,11 +262,13 @@ export const DonchianChannel: Story = {
               left: {
                 type: "variable",
                 name: "close",
+                valueType: "scalar",
               },
               operator: ">",
               right: {
                 type: "variable",
                 name: "donchian_mid",
+                valueType: "scalar",
               },
             },
           },
@@ -337,6 +356,7 @@ export const Accelerator: Story = {
             expression: {
               type: "price",
               source: "close",
+              valueType: "array",
             },
           },
           {
@@ -366,6 +386,7 @@ export const Accelerator: Story = {
                 left: {
                   type: "variable",
                   name: "ac",
+                  valueType: "scalar",
                 },
                 operator: ">",
                 right: {
@@ -385,6 +406,7 @@ export const Accelerator: Story = {
                 left: {
                   type: "variable",
                   name: "ac",
+                  valueType: "scalar",
                 },
                 operator: "<",
                 right: {

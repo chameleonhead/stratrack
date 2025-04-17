@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { VariableDefinition } from "../types";
 import { VariableContext } from "./useVariables";
+import { StrategyVariableDefinition } from "../../dsl/strategy";
 
 // Providerコンポーネント
 function VariableProvider({
   variables,
   children,
 }: {
-  variables: VariableDefinition[];
+  variables: StrategyVariableDefinition[];
   children: React.ReactNode;
 }) {
   return (

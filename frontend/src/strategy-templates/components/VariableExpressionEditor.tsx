@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { VariableExpression } from "../types";
 import Select from "../../components/Select";
+import { StrategyVariableExpression } from "../../dsl/strategy";
 
 export type VariableExpressionEditorProps = {
   name?: string;
-  value?: VariableExpression;
-  onChange: (value: VariableExpression | undefined) => void;
+  value?: StrategyVariableExpression;
+  onChange: (value: StrategyVariableExpression | undefined) => void;
 };
 
 const EXPRESSION_TYPES = [
@@ -23,9 +23,9 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
   value,
   onChange,
 }) => {
-  const [type, setType] = useState<VariableExpression["type"]>(value?.type ?? "constant");
+  const [type, setType] = useState<StrategyVariableExpression["type"]>(value?.type ?? "constant");
 
-  const handleTypeChange = (t: VariableExpression["type"]) => {
+  const handleTypeChange = (t: StrategyVariableExpression["type"]) => {
     setType(t);
     // 初期値を入れる（必要に応じて変更）
     switch (t) {
@@ -33,13 +33,13 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
         onChange({ type: "constant", value: 0 });
         break;
       case "variable":
-        onChange({ type: "variable", name: "" });
+        onChange({ type: "variable", name: "", valueType: "scalar" });
         break;
       case "price":
-        onChange({ type: "price", source: "close" });
+        onChange({ type: "price", source: "close", valueType: "scalar" });
         break;
       case "indicator":
-        onChange({ type: "indicator", name: "RSI" });
+        onChange({ type: "indicator", name: "", params: [], lineName: "" });
         break;
       case "binary_op":
         onChange({
@@ -78,7 +78,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
         label="式の種類"
         name={`${name}.type`}
         value={type}
-        onChange={(val) => handleTypeChange(val as VariableExpression["type"])}
+        onChange={(val) => handleTypeChange(val as StrategyVariableExpression["type"])}
         options={EXPRESSION_TYPES}
       />
 

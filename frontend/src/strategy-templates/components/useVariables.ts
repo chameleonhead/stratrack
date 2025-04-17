@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import { VariableDefinition } from "../types";
+import { StrategyVariableDefinition } from "../../dsl/strategy";
 
 // Context定義
-export const VariableContext = createContext<VariableDefinition[]>([]);
+export const VariableContext = createContext<StrategyVariableDefinition[]>([]);
 
 // フックで利用できるようにする
 export const useVariables = () => useContext(VariableContext);

@@ -80,7 +80,7 @@ export const State: Story = {
         type: "state",
         state: "rising",
         length: 12,
-        operand: { type: "variable", name: "" },
+        operand: { type: "variable", name: "", valueType: "array" },
       },
     ],
   },

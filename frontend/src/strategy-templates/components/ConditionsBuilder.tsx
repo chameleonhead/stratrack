@@ -1,7 +1,7 @@
-import { Condition } from "../types";
 import ConditionRow from "./ConditionBuilder";
 import Button from "../../components/Button";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { Condition } from "../../dsl/common";
 
 export type ConditionBuilderProps = {
   value?: Partial<Condition>[];

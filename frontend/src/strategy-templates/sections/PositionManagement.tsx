@@ -1,6 +1,6 @@
 import NumberInput from "../../components/NumberInput";
+import { StrategyTemplate } from "../../dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { StrategyTemplate } from "../types";
 
 export type PositionManagementProps = {
   value?: Partial<StrategyTemplate>;

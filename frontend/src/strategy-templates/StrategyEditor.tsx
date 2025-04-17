@@ -4,8 +4,8 @@ import { useLocalValue } from "../hooks/useLocalValue";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
 import { renderStrategyCode } from "./generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
-import { Strategy, StrategyTemplate } from "./types";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
+import { Strategy, StrategyTemplate } from "../dsl/strategy";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;

@@ -1,13 +1,5 @@
 import { MqlExpression, MqlFile, MqlFunction, MqlStatement } from "../../codegen/mql/mqlast";
 import {
-  StrategyTemplate,
-  VariableExpression,
-  Condition,
-  ConditionOperand,
-  IndicatorExpression,
-} from "../types";
-
-import {
   decl,
   ref,
   lit,
@@ -24,9 +16,10 @@ import {
   unary,
   globalVar,
   file,
-  comment,
 } from "../../codegen/mql/mqlhelper";
-import { Indicator } from "../../indicators/types";
+import { Condition, ConditionOperand, VariableExpression } from "../../dsl/common";
+import { Indicator } from "../../dsl/indicator";
+import { StrategyTemplate } from "../../dsl/strategy";
 import { IndicatorContext } from "./indicatorContext";
 
 /** 共通関数定義（ポジションのリスト取得 / オープン / クローズ） */
@@ -165,12 +158,12 @@ function generateTickFunction(template: StrategyTemplate, ctx: IndicatorContext)
           bin(ref("i"), "<", call("ArraySize", [ref("tickets")])),
           stmt(unary("++", ref("i"))),
           (template.exit || []).map((rule) =>
-            iff(emitCondition(rule.condition), [callStmt("CloseOrder", ["tickets[i]"])])
+            iff(emitCondition(rule.condition, ctx), [callStmt("CloseOrder", ["tickets[i]"])])
           )
         ),
       ],
       (template.entry || []).map((e) =>
-        iff(emitCondition(e.condition), [
+        iff(emitCondition(e.condition, ctx), [
           callStmt("OpenOrder", [
             e.type === "long" ? `"buy"` : `"sell"`,
             "0.1",
@@ -209,14 +202,26 @@ export function convertStrategyToMqlAst(
 }
 
 function emitVariableExpression(
-  expr: VariableExpression | IndicatorExpression,
+  expr: VariableExpression,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
   switch (expr.type) {
     case "constant":
-      return [lit(expr.value.toString())];
+      return lit(expr.value);
     case "price": {
+      if (expr.valueType === "array") {
+        switch (expr.source) {
+          case "open":
+            return "Open";
+          case "high":
+            return "High";
+          case "low":
+            return "Low";
+          case "close":
+            return "Close";
+        }
+      }
       let varName: string;
       switch (expr.source) {
         case "ask":
@@ -238,59 +243,77 @@ function emitVariableExpression(
           varName = "Close";
           break;
       }
-
       if (typeof expr.shiftBars == "undefined") {
-        return [lit(`${varName}[${shift ? shift : 0}]`)];
+        return lit(`${varName}[${shift ? shift : 0}]`);
       }
-      return [lit(`${varName}[${expr.shiftBars}]`)];
+      return lit(`${varName}[${expr.shiftBars}]`);
     }
-    case "indicator": {
+    case "indicator":
       return ctx.getVariableRef(expr);
+
+    case "variable": {
+      if (expr.valueType === "array") {
+        return `this.${expr.name}`;
+      }
+      const shiftExpr = expr.shiftBars
+        ? shift
+          ? bin(shift, "+", emitVariableExpression(expr.shiftBars, ctx))
+          : emitVariableExpression(expr.shiftBars, ctx)
+        : shift || lit("0");
+      return ternary(
+        bin("Bars", ">", shiftExpr),
+        lit(`this.${expr.name}[${shiftExpr}]`),
+        expr.fallback ? emitVariableExpression(expr.fallback, ctx) : lit("0")
+      );
     }
-    case "variable":
-      return [lit(`${expr.name}[${shift ? shift : 0}]`)];
     case "unary_op":
-      return [unary(expr.operator, emitVariableExpression(expr.operand, ctx, shift))];
+      return unary(expr.operator, emitVariableExpression(expr.operand, ctx, shift));
     case "binary_op":
-      return [
-        bin(
-          emitVariableExpression(expr.left, ctx, shift),
-          expr.operator,
-          emitVariableExpression(expr.right, ctx, shift)
-        ),
-      ];
+      return bin(
+        emitVariableExpression(expr.left, ctx, shift),
+        expr.operator,
+        emitVariableExpression(expr.right, ctx, shift)
+      );
     case "ternary":
-      return [
-        ternary(
-          emitCondition(expr.condition, shift),
-          emitVariableExpression(expr.trueExpr, ctx, shift),
-          emitVariableExpression(expr.falseExpr, ctx, shift)
-        ),
-      ];
+      return ternary(
+        emitCondition(expr.condition, ctx, shift),
+        emitVariableExpression(expr.trueExpr, ctx, shift),
+        emitVariableExpression(expr.falseExpr, ctx, shift)
+      );
+    default:
+      throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
   }
-  return [comment("Unsupported variable type")];
 }
 
-function emitCondition(cond: Condition, shift?: MqlExpression): MqlExpression {
+function emitCondition(
+  cond: Condition,
+  ctx: IndicatorContext,
+  shift?: MqlExpression
+): MqlExpression {
   switch (cond.type) {
     case "comparison":
-      return `(${emitOperand(cond.left, shift ? shift : lit(0))} ${cond.operator} ${emitOperand(cond.right, shift ? shift : lit(0))})`;
+      return bin(
+        emitOperand(cond.left, ctx, shift ? shift : lit(0)),
+        cond.operator,
+        emitOperand(cond.right, ctx, shift ? shift : lit(0))
+      );
     case "cross": {
-      const l_curr = emitOperand(cond.left, shift ? shift : lit(0));
-      const l_prev = emitOperand(cond.left, shift ? bin(shift, "+", lit(1)) : lit(1));
-      const r_curr = emitOperand(cond.right, shift ? shift : lit(0));
-      const r_prev = emitOperand(cond.right, shift ? bin(shift, "+", lit(1)) : lit(1));
+      const l_curr = emitOperand(cond.left, ctx, shift ? shift : lit(0));
+      const l_prev = emitOperand(cond.left, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
+      const r_curr = emitOperand(cond.right, ctx, shift ? shift : lit(0));
+      const r_prev = emitOperand(cond.right, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
       return cond.direction === "cross_over"
-        ? `(${l_prev} < ${r_prev} && ${l_curr} > ${r_curr})`
-        : `(${l_prev} > ${r_prev} && ${l_curr} < ${r_curr})`;
+        ? bin(bin(l_prev, "<", r_prev), "&&", bin(l_curr, ">", r_curr))
+        : bin(bin(l_prev, ">", r_prev), "&&", bin(l_curr, "<", r_curr));
     }
     case "state": {
       const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
       for (let i = 0; i < Math.abs(cond.length || 1); i++) {
-        const var_curr = emitOperand(cond.operand, shift ? bin(shift, "+", lit(i)) : lit(i));
+        const var_curr = emitOperand(cond.operand, ctx, shift ? bin(shift, "+", lit(i)) : lit(i));
         const var_prev = emitOperand(
           cond.operand,
+          ctx,
           shift ? bin(shift, "+", lit(i + 1)) : lit(i + 1)
         );
         conds.push(`${var_curr} ${sign} ${var_prev}`);
@@ -300,14 +323,18 @@ function emitCondition(cond: Condition, shift?: MqlExpression): MqlExpression {
     case "continue": {
       const conds = [];
       for (let i = 0; i < Math.abs(cond.length || 2); i++) {
-        const condition = emitCondition(cond.condition, shift ? bin(shift, "+", lit(i)) : lit(i));
+        const condition = emitCondition(
+          cond.condition,
+          ctx,
+          shift ? bin(shift, "+", lit(i)) : lit(i)
+        );
         conds.push(condition);
       }
       return `${cond.continue === "true" ? "" : "!"}(${conds.join(" && ")})`;
     }
     case "change": {
-      const inner_curr = emitCondition(cond.condition, shift);
-      const inner_prev = emitCondition(cond.condition, shift);
+      const inner_curr = emitCondition(cond.condition, ctx, shift);
+      const inner_prev = emitCondition(cond.condition, ctx, shift);
       return cond.change === "to_true"
         ? `!(${inner_prev}) && (${inner_curr})`
         : `(${inner_prev}) && !(${inner_curr})`;
@@ -316,7 +343,7 @@ function emitCondition(cond: Condition, shift?: MqlExpression): MqlExpression {
       return (
         "(" +
         cond.conditions
-          .map((c) => emitCondition(c, shift))
+          .map((c) => emitCondition(c, ctx, shift))
           .join(`) ${cond.operator === "and" ? "&&" : "||"} (`) +
         ")"
       );
@@ -325,6 +352,33 @@ function emitCondition(cond: Condition, shift?: MqlExpression): MqlExpression {
   }
 }
 
-function emitOperand(op: ConditionOperand, shift?: MqlExpression): string {
-  return op.type === "variable" ? `${op.name}[${shift || 0}]` : `${op.value}`;
+function emitOperand(
+  op: ConditionOperand,
+  ctx: IndicatorContext,
+  shift?: MqlExpression
+): MqlExpression {
+  switch (op.type) {
+    case "constant":
+      return lit(op.value);
+    case "source":
+    case "variable": {
+      const varName = op.name;
+      if (op.valueType == "array") {
+        if (!shift || shift.toString() === "0") {
+          return lit(`${varName}[0]`);
+        } else {
+          return ternary(bin("Bars", ">", shift), `${varName}[${shift}]`, 0);
+        }
+      } else {
+        const shiftBars = op.shiftBars
+          ? emitVariableExpression(op.shiftBars, ctx, shift)
+          : shift?.toString() || "0";
+        if (shiftBars.toString() === "0") {
+          return lit(`${varName}[0]`);
+        } else {
+          return ternary(bin("Bars", ">", shiftBars), `${varName}[${shiftBars}]`, 0);
+        }
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
-import { CrossCondition } from "../types";
 import OperandSelector from "./ConditionOperandSelector";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { CrossCondition } from "../../dsl/common";
 
 export type CrossConditionSelectorProps = {
   name?: string;

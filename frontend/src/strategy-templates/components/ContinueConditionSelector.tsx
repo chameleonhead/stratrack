@@ -1,8 +1,8 @@
-import { Condition, ContinueCondition } from "../types";
 import Select from "../../components/Select";
 import NumberInput from "../../components/NumberInput";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import ConditionBuilder from "./ConditionBuilder";
+import { Condition, ContinueCondition } from "../../dsl/common";
 
 export type ContinueConditionSelectorProps = {
   name?: string;

@@ -1,8 +1,8 @@
 import Select from "../../components/Select";
-import { ConditionOperand } from "../types";
 import NumberInput from "../../components/NumberInput";
 import { useVariables } from "./useVariables";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { ConditionOperand } from "../../dsl/common";
 
 export type ConditionOperandSelectorProps = {
   name?: string;

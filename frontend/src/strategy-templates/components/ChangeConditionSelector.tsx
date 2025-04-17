@@ -1,7 +1,7 @@
-import { ChangeCondition } from "../types";
 import ConditionRow from "./ConditionBuilder";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { ChangeCondition } from "../../dsl/common";
 
 export type ChangeConditionSelectorProps = {
   name?: string;

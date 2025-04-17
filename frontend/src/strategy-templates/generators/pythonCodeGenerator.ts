@@ -9,6 +9,13 @@ import {
   PyReturn,
 } from "../../codegen/pythonast";
 import {
+  Condition,
+  ConditionOperand,
+  IndicatorExpression,
+  VariableExpression,
+} from "../../dsl/common";
+import { StrategyTemplate } from "../../dsl/strategy";
+import {
   Accelerator,
   AccumulationDistribution,
   ADX,
@@ -38,13 +45,6 @@ import {
   Stochastic,
   WilliamsPercentRange,
 } from "../../indicators/indicators";
-import {
-  Condition,
-  ConditionOperand,
-  IndicatorExpression,
-  StrategyTemplate,
-  VariableExpression,
-} from "../types";
 
 export function convertStrategyToPythonAst(template: StrategyTemplate) {
   const module = new PyModule().addImport(new PyImport("backtrader", ["bt"]));
@@ -124,8 +124,11 @@ function emitVariableExpression(expr: VariableExpression): string {
       return expr.value.toString();
     case "price": {
       const source = expr.source || "close";
+      if (expr.valueType === "array") {
+        return `self.data.${source}`;
+      }
       const shift = expr.shiftBars || 0;
-      return shift === 0 ? `self.data.${source}` : `self.data.${source}(-${shift})`;
+      return shift === 0 ? `self.data.${source}[0]` : `self.data.${source}[-${shift}]`;
     }
     case "indicator": {
       return mapIndicatorNameToBtFunction(expr);
@@ -203,7 +206,13 @@ function emitCondition(cond: Condition, shift: number = 0): string {
 
 function emitOperand(op: ConditionOperand, shift: number): string {
   if (op.type === "constant") return op.value?.toString() || "None";
-  if (op.type === "variable") return `self.${op.name}[${-(shift + (op.shiftBars ?? 0))}]`;
+  if (op.type === "variable") {
+    if (op.valueType === "scalar") {
+      return `self.${op.name}[${-(shift + (typeof op.shiftBars === "undefined" ? 0 : op.shiftBars.value))}]`;
+    } else {
+      return `self.${op.name}`;
+    }
+  }
   return "0";
 }
 function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {

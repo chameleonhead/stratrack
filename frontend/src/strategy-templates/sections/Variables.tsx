@@ -1,8 +1,12 @@
 import Button from "../../components/Button";
 import Input from "../../components/Input";
+import {
+  StrategyTemplate,
+  StrategyVariableDefinition,
+  StrategyVariableExpression,
+} from "../../dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
-import { StrategyTemplate, VariableDefinition, VariableExpression } from "../types";
 
 export type VariablesProps = {
   value?: Partial<StrategyTemplate>;
@@ -26,7 +30,7 @@ function Variables({ value, onChange }: VariablesProps) {
     });
   };
 
-  const handleUpdate = (index: number, value: VariableDefinition) => {
+  const handleUpdate = (index: number, value: StrategyVariableDefinition) => {
     const updatedVariables = [...(localValue.variables || [])];
     updatedVariables[index] = value;
     setLocalValue({ ...localValue, variables: updatedVariables });
@@ -54,7 +58,7 @@ function Variables({ value, onChange }: VariablesProps) {
             onChange={(value) =>
               handleUpdate(index, {
                 ...variable,
-                expression: value as VariableExpression,
+                expression: value as StrategyVariableExpression,
               })
             }
           />

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import ConditionBuilder from "../components/ConditionsBuilder";
-import { Condition, StrategyTemplate } from "../types";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { StrategyTemplate } from "../../dsl/strategy";
+import { Condition } from "../../dsl/common";
 
 export type EntryLogicProps = {
   value?: Partial<StrategyTemplate>;

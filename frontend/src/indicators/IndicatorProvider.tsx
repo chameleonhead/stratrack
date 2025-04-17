@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Indicator } from "./types";
 import {
   Accelerator,
   AccumulationDistribution,
@@ -30,6 +29,7 @@ import {
   Stochastic,
   WilliamsPercentRange,
 } from "./indicators";
+import { Indicator } from "../dsl/indicator";
 
 const indicatorList: Indicator[] = [
   Accelerator,
@@ -77,8 +77,8 @@ const indicatorList: Indicator[] = [
           expression: {
             type: "aggregation",
             method: { type: "aggregationType", value: "max" },
-            source: { type: "source", name: "high" },
-            period: { type: "variable", name: "period" },
+            source: { type: "source", name: "high", valueType: "array" },
+            period: { type: "param", name: "period" },
           },
         },
         {
@@ -86,8 +86,8 @@ const indicatorList: Indicator[] = [
           expression: {
             type: "aggregation",
             method: { type: "aggregationType", value: "min" },
-            source: { type: "source", name: "low" },
-            period: { type: "variable", name: "period" },
+            source: { type: "source", name: "low", valueType: "array" },
+            period: { type: "param", name: "period" },
           },
         },
         {
@@ -98,8 +98,8 @@ const indicatorList: Indicator[] = [
             left: {
               type: "binary_op",
               operator: "+",
-              left: { type: "variable", name: "highestHigh" },
-              right: { type: "variable", name: "lowestLow" },
+              left: { type: "variable", name: "highestHigh", valueType: "scalar" },
+              right: { type: "variable", name: "lowestLow", valueType: "scalar" },
             },
             right: { type: "constant", value: 2 },
           },

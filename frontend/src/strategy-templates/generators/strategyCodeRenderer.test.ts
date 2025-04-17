@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderStrategyCode } from "./strategyCodeRenderer";
-import { StrategyTemplate } from "../types";
+import { StrategyTemplate } from "../../dsl/strategy";
 
 describe("renderStrategyCode", () => {
   const template: StrategyTemplate = {
@@ -10,11 +10,11 @@ describe("renderStrategyCode", () => {
         expression: {
           type: "indicator",
           name: "RSI",
-          params: { period: 14 },
-          source: {
-            type: "price",
-            source: "close",
-          },
+          params: [
+            { name: "close", type: "source", value: "price" },
+            { name: "period", type: "number", value: 14 },
+          ],
+          lineName: "rsi",
         },
       },
     ],
@@ -23,7 +23,7 @@ describe("renderStrategyCode", () => {
         type: "long",
         condition: {
           type: "comparison",
-          left: { type: "variable", name: "rsi14" },
+          left: { type: "variable", name: "rsi14", valueType: "scalar" },
           operator: "<",
           right: { type: "constant", value: 30 },
         },
@@ -34,7 +34,7 @@ describe("renderStrategyCode", () => {
         type: "long",
         condition: {
           type: "comparison",
-          left: { type: "variable", name: "rsi14" },
+          left: { type: "variable", name: "rsi14", valueType: "scalar" },
           operator: ">",
           right: { type: "constant", value: 70 },
         },
@@ -47,7 +47,7 @@ describe("renderStrategyCode", () => {
   };
 
   it("generates Python class with correct structure", () => {
-    const code = renderStrategyCode("python", template);
+    const code = renderStrategyCode("python", template, []);
 
     expect(code).toContain("class GeneratedStrategy(bt.Strategy):");
     expect(code).toContain("  def __init__(self):");

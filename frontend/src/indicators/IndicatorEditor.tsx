@@ -1,4 +1,4 @@
-import { Indicator } from "./types";
+import { Indicator } from "../dsl/indicator";
 
 export type IndicatorEditorProps = {
   value?: Partial<Indicator>;

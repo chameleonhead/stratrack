@@ -1,5 +1,4 @@
 import Select from "../../components/Select";
-import { Condition } from "../types";
 import ComparisonConditionSelector from "./ComparisonConditionSelector";
 import ContinueConditionSelector from "./ContinueConditionSelector";
 import CrossConditionSelector from "./CrossConditionSelector";
@@ -8,6 +7,7 @@ import ChangeConditionSelector from "./ChangeConditionSelector";
 import GroupConditionSelector from "./GroupConditionSelector";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import Button from "../../components/Button";
+import { Condition } from "../../dsl/common";
 
 export type ConditionBuilderProps = {
   name?: string;
@@ -59,7 +59,7 @@ function ConditionBuilder({ name, value, onChange, onDelete }: ConditionBuilderP
       case "state":
         setCondition({
           type: "state",
-          operand: { type: "constant", value: 0 },
+          operand: { type: "variable", name: "", valueType: "array" },
           state: "rising",
         });
         break;

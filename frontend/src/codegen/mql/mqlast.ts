@@ -116,7 +116,7 @@ export class MqlUnaryExpr extends MqlExpression {
     if (this.operator === "abs") {
       return `MathAbs(${this.value.toString()})`;
     } else {
-      return `${this.operator}${this.value.toString()}`;
+      return `${this.operator}${par(this.value)}`;
     }
   }
 }
@@ -130,7 +130,13 @@ export class MqlBinaryExpr extends MqlExpression {
     super();
   }
   toString(): string {
-    return `${par(this.left)} ${this.operator} ${par(this.right)}`;
+    if (this.operator === "min") {
+      return `MathMin(${par(this.left)}, ${par(this.right)})`;
+    } else if (this.operator === "max") {
+      return `MathMax(${par(this.left)}, ${par(this.right)})`;
+    } else {
+      return `${par(this.left)} ${this.operator} ${par(this.right)}`;
+    }
   }
 }
 
@@ -143,7 +149,7 @@ export class MqlTernaryExpr extends MqlExpression {
     super();
   }
   toString(): string {
-    return `${this.condition.toString()} ? ${this.trueExpr.toString()} : ${this.falseExpr.toString()}`;
+    return `${par(this.condition)} ? ${par(this.trueExpr)} : ${par(this.falseExpr)}`;
   }
 }
 

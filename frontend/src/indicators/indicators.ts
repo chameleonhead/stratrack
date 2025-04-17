@@ -1,4 +1,4 @@
-import { Indicator } from "./types";
+import { Indicator } from "../dsl/indicator";
 
 export const Accelerator: Indicator = {
   name: "accelerator",
@@ -22,8 +22,8 @@ export const Accelerator: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -33,7 +33,7 @@ export const Accelerator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "fastPeriod" },
         },
         invalidPeriod: { type: "param", name: "fastPeriod" },
@@ -43,7 +43,7 @@ export const Accelerator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "slowPeriod" },
         },
         invalidPeriod: { type: "param", name: "slowPeriod" },
@@ -53,8 +53,8 @@ export const Accelerator: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "fastSma" },
-          right: { type: "variable", name: "slowSma" },
+          left: { type: "variable", name: "fastSma", valueType: "scalar" },
+          right: { type: "variable", name: "slowSma", valueType: "scalar" },
         },
       },
       {
@@ -62,7 +62,7 @@ export const Accelerator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "ao" },
+          source: { type: "variable", name: "ao", valueType: "array" },
           period: { type: "param", name: "signalPeriod" },
         },
         invalidPeriod: { type: "param", name: "signalPeriod" },
@@ -72,8 +72,8 @@ export const Accelerator: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "ao" },
-          right: { type: "variable", name: "aoSma" },
+          left: { type: "variable", name: "ao", valueType: "scalar" },
+          right: { type: "variable", name: "aoSma", valueType: "scalar" },
         },
       },
     ],
@@ -109,20 +109,20 @@ export const AccumulationDistribution: Indicator = {
                 type: "constant",
                 value: 2,
               },
-              right: { type: "source", name: "close" },
+              right: { type: "source", name: "close", valueType: "scalar" },
             },
             right: {
               type: "binary_op",
               operator: "+",
-              left: { type: "source", name: "high" },
-              right: { type: "source", name: "low" },
+              left: { type: "source", name: "high", valueType: "scalar" },
+              right: { type: "source", name: "low", valueType: "scalar" },
             },
           },
           right: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
         },
       },
@@ -131,8 +131,8 @@ export const AccumulationDistribution: Indicator = {
         expression: {
           type: "binary_op",
           operator: "*",
-          left: { type: "variable", name: "clv" },
-          right: { type: "source", name: "volume" },
+          left: { type: "variable", name: "clv", valueType: "scalar" },
+          right: { type: "source", name: "volume", valueType: "scalar" },
         },
       },
       {
@@ -140,7 +140,7 @@ export const AccumulationDistribution: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "mfv" },
+          source: { type: "variable", name: "mfv", valueType: "array" },
           period: { type: "constant", value: 0 }, // 全期間累積
         },
       },
@@ -171,8 +171,13 @@ export const ADX: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "high" },
-          right: { type: "source", name: "high", shiftBars: { type: "constant", value: 1 } },
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: {
+            type: "source",
+            name: "high",
+            valueType: "scalar",
+            shiftBars: { type: "constant", value: 1 },
+          },
         },
       },
       {
@@ -180,8 +185,13 @@ export const ADX: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "low", shiftBars: { type: "constant", value: 1 } },
-          right: { type: "source", name: "low" },
+          left: {
+            type: "source",
+            name: "low",
+            valueType: "scalar",
+            shiftBars: { type: "constant", value: 1 },
+          },
+          right: { type: "source", name: "low", valueType: "scalar" },
         },
       },
       {
@@ -191,18 +201,18 @@ export const ADX: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "variable", name: "upMove" },
-            right: { type: "variable", name: "downMove" },
+            left: { type: "variable", name: "upMove", valueType: "scalar" },
+            right: { type: "variable", name: "downMove", valueType: "scalar" },
           },
           trueExpr: {
             type: "ternary",
             condition: {
               type: "comparison",
               operator: ">",
-              left: { type: "variable", name: "upMove" },
+              left: { type: "variable", name: "upMove", valueType: "scalar" },
               right: { type: "constant", value: 0 },
             },
-            trueExpr: { type: "variable", name: "upMove" },
+            trueExpr: { type: "variable", name: "upMove", valueType: "scalar" },
             falseExpr: { type: "constant", value: 0 },
           },
           falseExpr: { type: "constant", value: 0 },
@@ -215,18 +225,18 @@ export const ADX: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "variable", name: "downMove" },
-            right: { type: "variable", name: "upMove" },
+            left: { type: "variable", name: "downMove", valueType: "scalar" },
+            right: { type: "variable", name: "upMove", valueType: "scalar" },
           },
           trueExpr: {
             type: "ternary",
             condition: {
               type: "comparison",
               operator: ">",
-              left: { type: "variable", name: "downMove" },
+              left: { type: "variable", name: "downMove", valueType: "scalar" },
               right: { type: "constant", value: 0 },
             },
-            trueExpr: { type: "variable", name: "downMove" },
+            trueExpr: { type: "variable", name: "downMove", valueType: "scalar" },
             falseExpr: { type: "constant", value: 0 },
           },
           falseExpr: { type: "constant", value: 0 },
@@ -237,8 +247,8 @@ export const ADX: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "high" },
-          right: { type: "source", name: "low" },
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: { type: "source", name: "low", valueType: "scalar" },
         },
       },
       {
@@ -249,8 +259,13 @@ export const ADX: Indicator = {
           operand: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "source",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
         },
       },
@@ -262,8 +277,13 @@ export const ADX: Indicator = {
           operand: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "low" },
-            right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "low", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "source",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
         },
       },
@@ -275,10 +295,10 @@ export const ADX: Indicator = {
           left: {
             type: "binary_op",
             operator: "max",
-            left: { type: "variable", name: "tr1" },
-            right: { type: "variable", name: "tr2" },
+            left: { type: "variable", name: "tr1", valueType: "scalar" },
+            right: { type: "variable", name: "tr2", valueType: "scalar" },
           },
-          right: { type: "variable", name: "tr3" },
+          right: { type: "variable", name: "tr3", valueType: "scalar" },
         },
       },
       {
@@ -286,7 +306,7 @@ export const ADX: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "rma" },
-          source: { type: "variable", name: "plusDM" },
+          source: { type: "variable", name: "plusDM", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -296,7 +316,7 @@ export const ADX: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "rma" },
-          source: { type: "variable", name: "minusDM" },
+          source: { type: "variable", name: "minusDM", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -306,7 +326,7 @@ export const ADX: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "rma" },
-          source: { type: "variable", name: "tr" },
+          source: { type: "variable", name: "tr", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -319,8 +339,8 @@ export const ADX: Indicator = {
           left: {
             type: "binary_op",
             operator: "/",
-            left: { type: "variable", name: "smoothedPlusDM" },
-            right: { type: "variable", name: "smoothedTR" },
+            left: { type: "variable", name: "smoothedPlusDM", valueType: "scalar" },
+            right: { type: "variable", name: "smoothedTR", valueType: "scalar" },
           },
           right: { type: "constant", value: 100 },
         },
@@ -333,8 +353,8 @@ export const ADX: Indicator = {
           left: {
             type: "binary_op",
             operator: "/",
-            left: { type: "variable", name: "smoothedMinusDM" },
-            right: { type: "variable", name: "smoothedTR" },
+            left: { type: "variable", name: "smoothedMinusDM", valueType: "scalar" },
+            right: { type: "variable", name: "smoothedTR", valueType: "scalar" },
           },
           right: { type: "constant", value: 100 },
         },
@@ -353,15 +373,15 @@ export const ADX: Indicator = {
               operand: {
                 type: "binary_op",
                 operator: "-",
-                left: { type: "variable", name: "pdi" },
-                right: { type: "variable", name: "mdi" },
+                left: { type: "variable", name: "pdi", valueType: "scalar" },
+                right: { type: "variable", name: "mdi", valueType: "scalar" },
               },
             },
             right: {
               type: "binary_op",
               operator: "+",
-              left: { type: "variable", name: "pdi" },
-              right: { type: "variable", name: "mdi" },
+              left: { type: "variable", name: "pdi", valueType: "scalar" },
+              right: { type: "variable", name: "mdi", valueType: "scalar" },
             },
           },
           right: { type: "constant", value: 100 },
@@ -372,7 +392,7 @@ export const ADX: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "rma" },
-          source: { type: "variable", name: "dx" },
+          source: { type: "variable", name: "dx", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -423,8 +443,8 @@ export const Alligator: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -434,7 +454,7 @@ export const Alligator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "jawPeriod" },
         },
         invalidPeriod: { type: "param", name: "jawPeriod" },
@@ -444,7 +464,7 @@ export const Alligator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "teethPeriod" },
         },
         invalidPeriod: { type: "param", name: "teethPeriod" },
@@ -454,7 +474,7 @@ export const Alligator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "lipsPeriod" },
         },
         invalidPeriod: { type: "param", name: "lipsPeriod" },
@@ -489,8 +509,8 @@ export const AwesomeOscillator: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -500,7 +520,7 @@ export const AwesomeOscillator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "fastPeriod" },
         },
         invalidPeriod: { type: "param", name: "fastPeriod" },
@@ -510,7 +530,7 @@ export const AwesomeOscillator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "slowPeriod" },
         },
         invalidPeriod: { type: "param", name: "slowPeriod" },
@@ -520,8 +540,8 @@ export const AwesomeOscillator: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "smaFast" },
-          right: { type: "variable", name: "smaSlow" },
+          left: { type: "variable", name: "smaFast", valueType: "scalar" },
+          right: { type: "variable", name: "smaSlow", valueType: "scalar" },
         },
       },
     ],
@@ -547,8 +567,8 @@ export const ATR: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "high" },
-          right: { type: "source", name: "low" },
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: { type: "source", name: "low", valueType: "scalar" },
         },
       },
       {
@@ -559,8 +579,13 @@ export const ATR: Indicator = {
           operand: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "source",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
         },
       },
@@ -572,8 +597,13 @@ export const ATR: Indicator = {
           operand: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "low" },
-            right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "low", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "source",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
         },
       },
@@ -585,10 +615,10 @@ export const ATR: Indicator = {
           left: {
             type: "binary_op",
             operator: "max",
-            left: { type: "variable", name: "tr1" },
-            right: { type: "variable", name: "tr2" },
+            left: { type: "variable", name: "tr1", valueType: "scalar" },
+            right: { type: "variable", name: "tr2", valueType: "scalar" },
           },
-          right: { type: "variable", name: "tr3" },
+          right: { type: "variable", name: "tr3", valueType: "scalar" },
         },
       },
       {
@@ -596,7 +626,7 @@ export const ATR: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "rma" },
-          source: { type: "variable", name: "trueRange" },
+          source: { type: "variable", name: "trueRange", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -623,7 +653,7 @@ export const BearsPower: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -633,8 +663,8 @@ export const BearsPower: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "low" },
-          right: { type: "variable", name: "ema" },
+          left: { type: "source", name: "low", valueType: "scalar" },
+          right: { type: "variable", name: "ema", valueType: "scalar" },
         },
       },
     ],
@@ -663,7 +693,7 @@ export const BollingerBands: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -673,7 +703,7 @@ export const BollingerBands: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "std" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -683,11 +713,11 @@ export const BollingerBands: Indicator = {
         expression: {
           type: "binary_op",
           operator: "+",
-          left: { type: "variable", name: "middle" },
+          left: { type: "variable", name: "middle", valueType: "scalar" },
           right: {
             type: "binary_op",
             operator: "*",
-            left: { type: "variable", name: "stddev" },
+            left: { type: "variable", name: "stddev", valueType: "scalar" },
             right: { type: "param", name: "deviation" },
           },
         },
@@ -697,12 +727,12 @@ export const BollingerBands: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "middle" },
+          left: { type: "variable", name: "middle", valueType: "scalar" },
           right: {
             type: "binary_op",
             operator: "*",
-            left: { type: "variable", name: "stddev" },
-            right: { type: "variable", name: "deviation" },
+            left: { type: "variable", name: "stddev", valueType: "scalar" },
+            right: { type: "variable", name: "deviation", valueType: "scalar" },
           },
         },
       },
@@ -732,7 +762,7 @@ export const BullsPower: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -742,8 +772,8 @@ export const BullsPower: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "high" },
-          right: { type: "variable", name: "ema" },
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: { type: "variable", name: "ema", valueType: "scalar" },
         },
       },
     ],
@@ -775,10 +805,10 @@ export const CommodityChannelIndex: Indicator = {
             left: {
               type: "binary_op",
               operator: "+",
-              left: { type: "source", name: "high" },
-              right: { type: "source", name: "low" },
+              left: { type: "source", name: "high", valueType: "scalar" },
+              right: { type: "source", name: "low", valueType: "scalar" },
             },
-            right: { type: "source", name: "close" },
+            right: { type: "source", name: "close", valueType: "scalar" },
           },
           right: { type: "constant", value: 3 },
         },
@@ -788,7 +818,7 @@ export const CommodityChannelIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "tp" },
+          source: { type: "variable", name: "tp", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -798,7 +828,7 @@ export const CommodityChannelIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "mean_absolute_deviation" },
-          source: { type: "variable", name: "tp" },
+          source: { type: "variable", name: "tp", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -811,13 +841,13 @@ export const CommodityChannelIndex: Indicator = {
           left: {
             type: "binary_op",
             operator: "-",
-            left: { type: "variable", name: "tp" },
-            right: { type: "variable", name: "smaTp" },
+            left: { type: "variable", name: "tp", valueType: "scalar" },
+            right: { type: "variable", name: "smaTp", valueType: "scalar" },
           },
           right: {
             type: "binary_op",
             operator: "*",
-            left: { type: "variable", name: "dev" },
+            left: { type: "variable", name: "dev", valueType: "scalar" },
             right: { type: "constant", value: 0.015 },
           },
         },
@@ -846,14 +876,24 @@ export const DeMarker: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "high", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "high",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
           trueExpr: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "high", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "high",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
           falseExpr: { type: "constant", value: 0 },
         },
@@ -865,14 +905,24 @@ export const DeMarker: Indicator = {
           condition: {
             type: "comparison",
             operator: "<",
-            left: { type: "source", name: "low" },
-            right: { type: "source", name: "low", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "low", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "low",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
           trueExpr: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "low", shiftBars: { type: "constant", value: 1 } },
-            right: { type: "source", name: "low" },
+            left: {
+              type: "source",
+              name: "low",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           falseExpr: { type: "constant", value: 0 },
         },
@@ -882,7 +932,7 @@ export const DeMarker: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "up" },
+          source: { type: "variable", name: "up", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -892,7 +942,7 @@ export const DeMarker: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "down" },
+          source: { type: "variable", name: "down", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -902,12 +952,12 @@ export const DeMarker: Indicator = {
         expression: {
           type: "binary_op",
           operator: "/",
-          left: { type: "variable", name: "sumUp" },
+          left: { type: "variable", name: "sumUp", valueType: "scalar" },
           right: {
             type: "binary_op",
             operator: "+",
-            left: { type: "variable", name: "sumUp" },
-            right: { type: "variable", name: "sumDown" },
+            left: { type: "variable", name: "sumUp", valueType: "scalar" },
+            right: { type: "variable", name: "sumDown", valueType: "scalar" },
           },
         },
       },
@@ -945,7 +995,7 @@ export const Envelopes: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "param", name: "method" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -955,7 +1005,7 @@ export const Envelopes: Indicator = {
         expression: {
           type: "binary_op",
           operator: "*",
-          left: { type: "variable", name: "basis" },
+          left: { type: "variable", name: "basis", valueType: "scalar" },
           right: {
             type: "binary_op",
             operator: "+",
@@ -974,7 +1024,7 @@ export const Envelopes: Indicator = {
         expression: {
           type: "binary_op",
           operator: "*",
-          left: { type: "variable", name: "basis" },
+          left: { type: "variable", name: "basis", valueType: "scalar" },
           right: {
             type: "binary_op",
             operator: "-",
@@ -982,7 +1032,7 @@ export const Envelopes: Indicator = {
             right: {
               type: "binary_op",
               operator: "/",
-              left: { type: "variable", name: "deviation" },
+              left: { type: "variable", name: "deviation", valueType: "scalar" },
               right: { type: "constant", value: 100 },
             },
           },
@@ -1024,10 +1074,15 @@ export const ForceIndex: Indicator = {
           left: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "close" },
-            right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "source", name: "close", valueType: "scalar" },
+            right: {
+              type: "source",
+              name: "source",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
-          right: { type: "source", name: "volume" },
+          right: { type: "source", name: "volume", valueType: "scalar" },
         },
       },
       {
@@ -1035,7 +1090,7 @@ export const ForceIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "param", name: "method" },
-          source: { type: "variable", name: "rawForce" },
+          source: { type: "variable", name: "rawForce", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -1066,7 +1121,7 @@ export const Fractals: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "constant", value: 5 },
         },
         invalidPeriod: { type: "constant", value: 5 },
@@ -1076,7 +1131,7 @@ export const Fractals: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "constant", value: 5 },
         },
         invalidPeriod: { type: "constant", value: 5 },
@@ -1088,10 +1143,10 @@ export const Fractals: Indicator = {
           condition: {
             type: "comparison",
             operator: "==",
-            left: { type: "source", name: "high" },
-            right: { type: "variable", name: "highMax" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "variable", name: "highMax", valueType: "scalar" },
           },
-          trueExpr: { type: "source", name: "high" },
+          trueExpr: { type: "source", name: "high", valueType: "scalar" },
           falseExpr: { type: "constant", value: 0 },
         },
       },
@@ -1102,10 +1157,10 @@ export const Fractals: Indicator = {
           condition: {
             type: "comparison",
             operator: "==",
-            left: { type: "source", name: "low" },
-            right: { type: "variable", name: "lowMin" },
+            left: { type: "source", name: "low", valueType: "scalar" },
+            right: { type: "variable", name: "lowMin", valueType: "scalar" },
           },
-          trueExpr: { type: "source", name: "low" },
+          trueExpr: { type: "source", name: "low", valueType: "scalar" },
           falseExpr: { type: "constant", value: 0 },
         },
       },
@@ -1141,8 +1196,8 @@ export const GatorOscillator: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -1152,7 +1207,7 @@ export const GatorOscillator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "jawPeriod" },
         },
         invalidPeriod: { type: "param", name: "jawPeriod" },
@@ -1162,7 +1217,7 @@ export const GatorOscillator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice" },
+          source: { type: "variable", name: "medianPrice", valueType: "array" },
           period: { type: "param", name: "teethPeriod" },
         },
         invalidPeriod: { type: "param", name: "teethPeriod" },
@@ -1172,8 +1227,8 @@ export const GatorOscillator: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "jaw" },
-          right: { type: "variable", name: "teeth" },
+          left: { type: "variable", name: "jaw", valueType: "scalar" },
+          right: { type: "variable", name: "teeth", valueType: "scalar" },
         },
       },
       {
@@ -1181,8 +1236,8 @@ export const GatorOscillator: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "teeth" },
-          right: { type: "variable", name: "jaw" },
+          left: { type: "variable", name: "teeth", valueType: "scalar" },
+          right: { type: "variable", name: "jaw", valueType: "scalar" },
         },
       },
     ],
@@ -1219,7 +1274,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "param", name: "tenkanPeriod" },
         },
         invalidPeriod: { type: "param", name: "tenkanPeriod" },
@@ -1229,7 +1284,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "param", name: "tenkanPeriod" },
         },
         invalidPeriod: { type: "param", name: "tenkanPeriod" },
@@ -1242,8 +1297,8 @@ export const Ichimoku: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "variable", name: "tenkanHigh" },
-            right: { type: "variable", name: "tenkanLow" },
+            left: { type: "variable", name: "tenkanHigh", valueType: "scalar" },
+            right: { type: "variable", name: "tenkanLow", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -1253,7 +1308,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "param", name: "kijunPeriod" },
         },
       },
@@ -1262,7 +1317,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "param", name: "kijunPeriod" },
         },
         invalidPeriod: { type: "param", name: "kijunPeriod" },
@@ -1275,8 +1330,8 @@ export const Ichimoku: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "variable", name: "kijunHigh" },
-            right: { type: "variable", name: "kijunLow" },
+            left: { type: "variable", name: "kijunHigh", valueType: "scalar" },
+            right: { type: "variable", name: "kijunLow", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -1289,8 +1344,8 @@ export const Ichimoku: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "variable", name: "tenkan" },
-            right: { type: "variable", name: "kijun" },
+            left: { type: "variable", name: "tenkan", valueType: "scalar" },
+            right: { type: "variable", name: "kijun", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -1300,7 +1355,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "param", name: "senkouPeriod" },
         },
         invalidPeriod: { type: "param", name: "senkouPeriod" },
@@ -1310,7 +1365,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "param", name: "senkouPeriod" },
         },
         invalidPeriod: { type: "param", name: "senkouPeriod" },
@@ -1323,8 +1378,8 @@ export const Ichimoku: Indicator = {
           left: {
             type: "binary_op",
             operator: "+",
-            left: { type: "variable", name: "senkouBHigh" },
-            right: { type: "variable", name: "senkouBLow" },
+            left: { type: "variable", name: "senkouBHigh", valueType: "scalar" },
+            right: { type: "variable", name: "senkouBLow", valueType: "scalar" },
           },
           right: { type: "constant", value: 2 },
         },
@@ -1334,6 +1389,7 @@ export const Ichimoku: Indicator = {
         expression: {
           type: "source",
           name: "close",
+          valueType: "scalar",
           shiftBars: { type: "param", name: "kijunPeriod" },
         },
       },
@@ -1368,12 +1424,13 @@ export const MarketFacilitationIndex: Indicator = {
           left: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            left: { type: "source", name: "high", valueType: "scalar" },
+            right: { type: "source", name: "low", valueType: "scalar" },
           },
           right: {
             type: "source",
             name: "volume",
+            valueType: "scalar",
           },
         },
       },
@@ -1398,8 +1455,13 @@ export const Momentum: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "source" },
-          right: { type: "source", name: "source", shiftBars: { type: "param", name: "period" } },
+          left: { type: "source", name: "source", valueType: "scalar" },
+          right: {
+            type: "source",
+            name: "source",
+            valueType: "scalar",
+            shiftBars: { type: "param", name: "period" },
+          },
         },
         invalidPeriod: { type: "param", name: "period" },
       },
@@ -1432,10 +1494,10 @@ export const MoneyFlowIndex: Indicator = {
             left: {
               type: "binary_op",
               operator: "+",
-              left: { type: "source", name: "high" },
-              right: { type: "source", name: "low" },
+              left: { type: "source", name: "high", valueType: "scalar" },
+              right: { type: "source", name: "low", valueType: "scalar" },
             },
-            right: { type: "source", name: "close" },
+            right: { type: "source", name: "close", valueType: "scalar" },
           },
           right: { type: "constant", value: 3 },
         },
@@ -1445,8 +1507,8 @@ export const MoneyFlowIndex: Indicator = {
         expression: {
           type: "binary_op",
           operator: "*",
-          left: { type: "variable", name: "tp" },
-          right: { type: "source", name: "close" }, // 通常は volume を使うが close で代用
+          left: { type: "variable", name: "tp", valueType: "scalar" },
+          right: { type: "source", name: "close", valueType: "scalar" }, // 通常は volume を使うが close で代用
         },
       },
       {
@@ -1456,10 +1518,15 @@ export const MoneyFlowIndex: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "variable", name: "tp" },
-            right: { type: "variable", name: "tp", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "variable", name: "tp", valueType: "scalar" },
+            right: {
+              type: "variable",
+              name: "tp",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
-          trueExpr: { type: "variable", name: "rawMoneyFlow" },
+          trueExpr: { type: "variable", valueType: "scalar", name: "rawMoneyFlow" },
           falseExpr: { type: "constant", value: 0 },
         },
       },
@@ -1470,10 +1537,15 @@ export const MoneyFlowIndex: Indicator = {
           condition: {
             type: "comparison",
             operator: "<",
-            left: { type: "variable", name: "tp" },
-            right: { type: "variable", name: "tp", shiftBars: { type: "constant", value: 1 } },
+            left: { type: "variable", name: "tp", valueType: "scalar" },
+            right: {
+              type: "variable",
+              name: "tp",
+              valueType: "scalar",
+              shiftBars: { type: "constant", value: 1 },
+            },
           },
-          trueExpr: { type: "variable", name: "rawMoneyFlow" },
+          trueExpr: { type: "variable", name: "rawMoneyFlow", valueType: "scalar" },
           falseExpr: { type: "constant", value: 0 },
         },
       },
@@ -1482,7 +1554,7 @@ export const MoneyFlowIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "positiveFlow" },
+          source: { type: "variable", name: "positiveFlow", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -1492,7 +1564,7 @@ export const MoneyFlowIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "negativeFlow" },
+          source: { type: "variable", name: "negativeFlow", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -1502,8 +1574,8 @@ export const MoneyFlowIndex: Indicator = {
         expression: {
           type: "binary_op",
           operator: "/",
-          left: { type: "variable", name: "sumPositive" },
-          right: { type: "variable", name: "sumNegative" },
+          left: { type: "variable", name: "sumPositive", valueType: "scalar" },
+          right: { type: "variable", name: "sumNegative", valueType: "scalar" },
         },
       },
       {
@@ -1520,7 +1592,7 @@ export const MoneyFlowIndex: Indicator = {
               type: "binary_op",
               operator: "+",
               left: { type: "constant", value: 1 },
-              right: { type: "variable", name: "moneyRatio" },
+              right: { type: "variable", name: "moneyRatio", valueType: "scalar" },
             },
           },
         },
@@ -1554,7 +1626,7 @@ export const MA: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "param", name: "method" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -1586,7 +1658,7 @@ export const MACDHistogram: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "fastPeriod" },
         },
         invalidPeriod: { type: "param", name: "fastPeriod" },
@@ -1596,7 +1668,7 @@ export const MACDHistogram: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "slowPeriod" },
         },
         invalidPeriod: { type: "param", name: "slowPeriod" },
@@ -1606,8 +1678,8 @@ export const MACDHistogram: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "fastEma" },
-          right: { type: "variable", name: "slowEma" },
+          left: { type: "variable", name: "fastEma", valueType: "scalar" },
+          right: { type: "variable", name: "slowEma", valueType: "scalar" },
         },
       },
       {
@@ -1615,7 +1687,7 @@ export const MACDHistogram: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "macd" },
+          source: { type: "variable", name: "macd", valueType: "array" },
           period: { type: "param", name: "signalPeriod" },
         },
         invalidPeriod: { type: "param", name: "signalPeriod" },
@@ -1625,8 +1697,8 @@ export const MACDHistogram: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "macd" },
-          right: { type: "variable", name: "signal" },
+          left: { type: "variable", name: "macd", valueType: "scalar" },
+          right: { type: "variable", name: "signal", valueType: "scalar" },
         },
       },
     ],
@@ -1660,7 +1732,7 @@ export const MACD: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "fastPeriod" },
         },
         invalidPeriod: { type: "param", name: "fastPeriod" },
@@ -1670,7 +1742,7 @@ export const MACD: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "slowPeriod" },
         },
         invalidPeriod: { type: "param", name: "slowPeriod" },
@@ -1680,8 +1752,8 @@ export const MACD: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "emaFast" },
-          right: { type: "variable", name: "emaSlow" },
+          left: { type: "variable", name: "emaFast", valueType: "scalar" },
+          right: { type: "variable", name: "emaSlow", valueType: "scalar" },
         },
       },
       {
@@ -1689,7 +1761,7 @@ export const MACD: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "ema" },
-          source: { type: "variable", name: "macd" },
+          source: { type: "variable", name: "macd", valueType: "array" },
           period: { type: "param", name: "signalPeriod" },
         },
         invalidPeriod: { type: "param", name: "signalPeriod" },
@@ -1699,8 +1771,8 @@ export const MACD: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "variable", name: "macd" },
-          right: { type: "variable", name: "signal" },
+          left: { type: "variable", name: "macd", valueType: "scalar" },
+          right: { type: "variable", name: "signal", valueType: "scalar" },
         },
       },
     ],
@@ -1725,8 +1797,13 @@ export const OnBalanceVolume: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "source" },
-          right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+          left: { type: "source", name: "source", valueType: "scalar" },
+          right: {
+            type: "source",
+            name: "source",
+            valueType: "scalar",
+            shiftBars: { type: "constant", value: 1 },
+          },
         },
       },
       {
@@ -1736,22 +1813,22 @@ export const OnBalanceVolume: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "variable", name: "change" },
+            left: { type: "variable", name: "change", valueType: "scalar" },
             right: { type: "constant", value: 0 },
           },
-          trueExpr: { type: "source", name: "volume" },
+          trueExpr: { type: "source", name: "volume", valueType: "scalar" },
           falseExpr: {
             type: "ternary",
             condition: {
               type: "comparison",
               operator: "<",
-              left: { type: "variable", name: "change" },
+              left: { type: "variable", name: "change", valueType: "scalar" },
               right: { type: "constant", value: 0 },
             },
             trueExpr: {
               type: "unary_op",
               operator: "-",
-              operand: { type: "source", name: "volume" },
+              operand: { type: "source", name: "volume", valueType: "scalar" },
             },
             falseExpr: { type: "constant", value: 0 },
           },
@@ -1762,7 +1839,7 @@ export const OnBalanceVolume: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "directionalVolume" },
+          source: { type: "variable", name: "directionalVolume", valueType: "array" },
           period: { type: "constant", value: 0 }, // 全期間累積
         },
       },
@@ -1787,8 +1864,13 @@ export const RSI: Indicator = {
         expression: {
           type: "binary_op",
           operator: "-",
-          left: { type: "source", name: "source" },
-          right: { type: "source", name: "source", shiftBars: { type: "constant", value: 1 } },
+          left: { type: "source", name: "source", valueType: "scalar" },
+          right: {
+            type: "source",
+            name: "source",
+            valueType: "scalar",
+            shiftBars: { type: "constant", value: 1 },
+          },
         },
       },
       {
@@ -1798,10 +1880,10 @@ export const RSI: Indicator = {
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "variable", name: "delta" },
+            left: { type: "variable", name: "delta", valueType: "scalar" },
             right: { type: "constant", value: 0 },
           },
-          trueExpr: { type: "variable", name: "delta" },
+          trueExpr: { type: "variable", name: "delta", valueType: "scalar" },
           falseExpr: { type: "constant", value: 0 },
         },
       },
@@ -1812,13 +1894,13 @@ export const RSI: Indicator = {
           condition: {
             type: "comparison",
             operator: "<",
-            left: { type: "variable", name: "delta" },
+            left: { type: "variable", name: "delta", valueType: "scalar" },
             right: { type: "constant", value: 0 },
           },
           trueExpr: {
             type: "unary_op",
             operator: "abs",
-            operand: { type: "variable", name: "delta" },
+            operand: { type: "variable", name: "delta", valueType: "scalar" },
           },
           falseExpr: { type: "constant", value: 0 },
         },
@@ -1834,6 +1916,7 @@ export const RSI: Indicator = {
               left: {
                 type: "variable",
                 name: "avgGain",
+                valueType: "scalar",
                 shiftBars: { type: "constant", value: 1 },
               },
               operator: "*",
@@ -1845,7 +1928,7 @@ export const RSI: Indicator = {
               },
             },
             operator: "+",
-            right: { type: "variable", name: "gain" },
+            right: { type: "variable", name: "gain", valueType: "scalar" },
           },
           operator: "/",
           right: { type: "param", name: "period" },
@@ -1860,7 +1943,7 @@ export const RSI: Indicator = {
           expression: {
             type: "aggregation",
             method: { type: "aggregationType", value: "sma" },
-            source: { type: "variable", name: "gain" },
+            source: { type: "variable", name: "gain", valueType: "array" },
             period: { type: "param", name: "period" },
           },
           invalidPeriod: { type: "param", name: "period" },
@@ -1877,6 +1960,7 @@ export const RSI: Indicator = {
               left: {
                 type: "variable",
                 name: "avgLoss",
+                valueType: "scalar",
                 shiftBars: { type: "constant", value: 1 },
               },
               operator: "*",
@@ -1888,7 +1972,7 @@ export const RSI: Indicator = {
               },
             },
             operator: "+",
-            right: { type: "variable", name: "loss" },
+            right: { type: "variable", name: "loss", valueType: "scalar" },
           },
           operator: "/",
           right: { type: "param", name: "period" },
@@ -1903,7 +1987,7 @@ export const RSI: Indicator = {
           expression: {
             type: "aggregation",
             method: { type: "aggregationType", value: "sma" },
-            source: { type: "variable", name: "loss" },
+            source: { type: "variable", name: "loss", valueType: "array" },
             period: { type: "param", name: "period" },
           },
           invalidPeriod: { type: "param", name: "period" },
@@ -1915,7 +1999,7 @@ export const RSI: Indicator = {
           type: "ternary",
           condition: {
             type: "comparison",
-            left: { type: "variable", name: "avgLoss" },
+            left: { type: "variable", name: "avgLoss", valueType: "scalar" },
             operator: "!=",
             right: { type: "constant", value: 0 },
           },
@@ -1933,9 +2017,9 @@ export const RSI: Indicator = {
                 operator: "+",
                 right: {
                   type: "binary_op",
-                  left: { type: "variable", name: "avgGain" },
+                  left: { type: "variable", name: "avgGain", valueType: "scalar" },
                   operator: "/",
-                  right: { type: "variable", name: "avgLoss" },
+                  right: { type: "variable", name: "avgLoss", valueType: "scalar" },
                 },
               },
             },
@@ -1944,7 +2028,7 @@ export const RSI: Indicator = {
             type: "ternary",
             condition: {
               type: "comparison",
-              left: { type: "variable", name: "avgGain" },
+              left: { type: "variable", name: "avgGain", valueType: "scalar" },
               operator: "!=",
               right: { type: "constant", value: 0 },
             },
@@ -1977,19 +2061,36 @@ export const RelativeVigorIndex: Indicator = {
   template: {
     variables: [
       {
+        name: "diff_co",
+        expression: {
+          type: "binary_op",
+          operator: "-",
+          left: { type: "source", name: "close", valueType: "scalar" },
+          right: { type: "source", name: "open", valueType: "scalar" },
+        },
+      },
+      {
         name: "num",
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
           source: {
-            type: "binary_op",
-            operator: "-",
-            left: { type: "source", name: "close" },
-            right: { type: "source", name: "open" },
+            type: "variable",
+            name: "diff_oc",
+            valueType: "array",
           },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
+      },
+      {
+        name: "diff_hl",
+        expression: {
+          type: "binary_op",
+          operator: "-",
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: { type: "source", name: "low", valueType: "scalar" },
+        },
       },
       {
         name: "den",
@@ -1997,10 +2098,9 @@ export const RelativeVigorIndex: Indicator = {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
           source: {
-            type: "binary_op",
-            operator: "-",
-            left: { type: "source", name: "high" },
-            right: { type: "source", name: "low" },
+            type: "variable",
+            name: "diff_hl",
+            valueType: "array",
           },
           period: { type: "param", name: "period" },
         },
@@ -2011,8 +2111,8 @@ export const RelativeVigorIndex: Indicator = {
         expression: {
           type: "binary_op",
           operator: "/",
-          left: { type: "variable", name: "num" },
-          right: { type: "variable", name: "den" },
+          left: { type: "variable", name: "num", valueType: "scalar" },
+          right: { type: "variable", name: "den", valueType: "scalar" },
         },
       },
       {
@@ -2020,7 +2120,7 @@ export const RelativeVigorIndex: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "rvi" },
+          source: { type: "variable", name: "rvi", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -2046,7 +2146,7 @@ export const StandardDeviation: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "std" },
-          source: { type: "source", name: "source" },
+          source: { type: "source", name: "source", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -2079,7 +2179,7 @@ export const Stochastic: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "param", name: "kPeriod" },
         },
         invalidPeriod: { type: "param", name: "kPeriod" },
@@ -2089,7 +2189,7 @@ export const Stochastic: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "param", name: "kPeriod" },
         },
         invalidPeriod: { type: "param", name: "kPeriod" },
@@ -2102,14 +2202,14 @@ export const Stochastic: Indicator = {
           left: {
             type: "binary_op",
             operator: "-",
-            left: { type: "source", name: "close" },
-            right: { type: "variable", name: "lowestLow" },
+            left: { type: "source", name: "close", valueType: "scalar" },
+            right: { type: "variable", name: "lowestLow", valueType: "scalar" },
           },
           right: {
             type: "binary_op",
             operator: "-",
-            left: { type: "variable", name: "highestHigh" },
-            right: { type: "variable", name: "lowestLow" },
+            left: { type: "variable", name: "highestHigh", valueType: "scalar" },
+            right: { type: "variable", name: "lowestLow", valueType: "scalar" },
           },
         },
       },
@@ -2118,7 +2218,7 @@ export const Stochastic: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "rawK" },
+          source: { type: "variable", name: "rawK", valueType: "array" },
           period: { type: "param", name: "slowing" },
         },
         invalidPeriod: { type: "param", name: "slowing" },
@@ -2128,7 +2228,7 @@ export const Stochastic: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "k" },
+          source: { type: "variable", name: "k", valueType: "array" },
           period: { type: "param", name: "dPeriod" },
         },
         invalidPeriod: { type: "param", name: "dPeriod" },
@@ -2159,7 +2259,7 @@ export const WilliamsPercentRange: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "max" },
-          source: { type: "source", name: "high" },
+          source: { type: "source", name: "high", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -2169,7 +2269,7 @@ export const WilliamsPercentRange: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "min" },
-          source: { type: "source", name: "low" },
+          source: { type: "source", name: "low", valueType: "array" },
           period: { type: "param", name: "period" },
         },
         invalidPeriod: { type: "param", name: "period" },
@@ -2185,14 +2285,14 @@ export const WilliamsPercentRange: Indicator = {
             left: {
               type: "binary_op",
               operator: "-",
-              left: { type: "variable", name: "highestHigh" },
-              right: { type: "source", name: "close" },
+              left: { type: "variable", name: "highestHigh", valueType: "scalar" },
+              right: { type: "source", name: "close", valueType: "scalar" },
             },
             right: {
               type: "binary_op",
               operator: "-",
-              left: { type: "variable", name: "highestHigh" },
-              right: { type: "variable", name: "lowestLow" },
+              left: { type: "variable", name: "highestHigh", valueType: "array" },
+              right: { type: "variable", name: "lowestLow", valueType: "array" },
             },
           },
           right: { type: "constant", value: -100 },
