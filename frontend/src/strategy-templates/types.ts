@@ -244,17 +244,26 @@ export type EnvironmentFilter = {
 
 export type Weekday = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 
-/** タイミング制御: 売買を許可する曜日・時間帯の指定 */
-export type TimingControl = {
-  /** 許可する曜日（0=日曜, 1=月曜,... 6=土曜 の配列） */
-  allowedDays?: Weekday[];
-  /** 許可する時間帯レンジ（24時間表記）。複数指定可 */
-  allowedTimeRange?: {
+export type DayAndTimeRange = {
+  /** 許可する曜日（0=日曜, 1=月曜,... 6=土曜） */
+  day: Weekday;
+  /** 許可する時間帯レンジ（UTC・24時間表記）。複数指定可 */
+  timeRange: {
     /** 開始時刻 (例: "09:30") */
     from: string;
     /** 終了時刻 (例: "15:30") */
     to: string;
   };
+};
+
+/** タイミング制御: 売買を許可する曜日・時間帯の指定 */
+export type TimingControl = {
+  /** 許可するタイミング */
+  allowedTradingPeriods?: DayAndTimeRange[];
+  /** 許可されていない時間の前にポジションはすべて手放す */
+  forceCloseBeforeDisallowed?: boolean;
+  /** 許可されていない時間でも手仕舞いはできるようにする */
+  allowExitDuringDisallowed?: boolean;
 };
 
 /** 複数ポジション制御: ポジション数やヘッジ許可設定 */
