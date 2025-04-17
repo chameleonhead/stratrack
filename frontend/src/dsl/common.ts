@@ -48,7 +48,7 @@ export type PriceExpression = ScalarPriceExpression | ArrayPriceExpression;
 
 export type ScalarPriceExpression = {
   type: "price";
-  source: "bid" | "ask" | "open" | "high" | "close" | "low";
+  source: "bid" | "ask" | "open" | "high" | "close" | "low" | "median" | "typical" | "weighted";
   valueType: "scalar";
   shiftBars?: ConstantExpression;
   fallback?: ConstantExpression;

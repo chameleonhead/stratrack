@@ -352,11 +352,11 @@ export const Accelerator: Story = {
       template: {
         variables: [
           {
-            name: "close",
+            name: "median",
             expression: {
               type: "price",
-              source: "close",
-              valueType: "array",
+              source: "median",
+              valueType: "scalar",
             },
           },
           {
@@ -365,11 +365,9 @@ export const Accelerator: Story = {
               type: "indicator",
               name: "accelerator",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
+                { name: "median", type: "source", value: "median" },
                 { name: "fastPeriod", type: "number", value: 5 },
                 { name: "slowPeriod", type: "number", value: 34 },
-                { name: "signalPeriod", type: "number", value: 5 },
               ],
               lineName: "ac",
             },
@@ -385,7 +383,7 @@ export const Accelerator: Story = {
                 type: "comparison",
                 left: {
                   type: "variable",
-                  name: "ac",
+                  name: "indicator",
                   valueType: "scalar",
                 },
                 operator: ">",
@@ -405,7 +403,7 @@ export const Accelerator: Story = {
                 type: "comparison",
                 left: {
                   type: "variable",
-                  name: "ac",
+                  name: "indicator",
                   valueType: "scalar",
                 },
                 operator: "<",

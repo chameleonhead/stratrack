@@ -36,7 +36,7 @@ export type SourceIndicatorParam = {
   name: string;
   label: string;
   required: boolean;
-  default?: "open" | "high" | "low" | "close" | "volume";
+  default?: "open" | "high" | "low" | "close" | "median" | "typical" | "weighted" | "volume";
 };
 
 export type AggregationTypeIndicatorParam = {

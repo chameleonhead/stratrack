@@ -4,8 +4,7 @@ export const Accelerator: Indicator = {
   name: "accelerator",
   label: "アクセラレーターオシレーター",
   params: [
-    { type: "source", name: "high", label: "高値", required: true, default: "high" },
-    { type: "source", name: "low", label: "安値", required: true, default: "low" },
+    { type: "source", name: "median", label: "中間価格（高 + 低）÷ 2", required: true, default: "median" },
     { type: "number", name: "fastPeriod", label: "短期SMA期間", required: true, default: 5 },
     { type: "number", name: "slowPeriod", label: "長期SMA期間", required: true, default: 34 },
     { type: "number", name: "signalPeriod", label: "シグナルSMA期間", required: true, default: 5 },
@@ -15,25 +14,11 @@ export const Accelerator: Indicator = {
   template: {
     variables: [
       {
-        name: "medianPrice",
-        expression: {
-          type: "binary_op",
-          operator: "/",
-          left: {
-            type: "binary_op",
-            operator: "+",
-            left: { type: "source", name: "high", valueType: "scalar" },
-            right: { type: "source", name: "low", valueType: "scalar" },
-          },
-          right: { type: "constant", value: 2 },
-        },
-      },
-      {
         name: "fastSma",
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice", valueType: "array" },
+          source: { type: "source", name: "median", valueType: "array" },
           period: { type: "param", name: "fastPeriod" },
         },
         invalidPeriod: { type: "param", name: "fastPeriod" },
@@ -43,7 +28,7 @@ export const Accelerator: Indicator = {
         expression: {
           type: "aggregation",
           method: { type: "aggregationType", value: "sma" },
-          source: { type: "variable", name: "medianPrice", valueType: "array" },
+          source: { type: "source", name: "median", valueType: "array" },
           period: { type: "param", name: "slowPeriod" },
         },
         invalidPeriod: { type: "param", name: "slowPeriod" },

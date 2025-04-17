@@ -222,31 +222,28 @@ function emitVariableExpression(
             return "Close";
         }
       }
-      let varName: string;
+      const s = typeof expr.shiftBars == "undefined" ? (shift ? shift : lit(0)) : (shift ? emitVariableExpression(expr.shiftBars, ctx, shift) : emitVariableExpression(expr.shiftBars, ctx));
       switch (expr.source) {
         case "ask":
-          varName = "Ask";
-          break;
+          return `Ask[${s}]`;
         case "bid":
-          varName = "Bid";
-          break;
+          return `Bid[${s}]`;
         case "open":
-          varName = "Open";
-          break;
+          return `Open[${s}]`;
         case "high":
-          varName = "High";
-          break;
+          return `High[${s}]`;
         case "low":
-          varName = "Low";
-          break;
+          return `Low[${s}]`;
         case "close":
-          varName = "Close";
-          break;
+          return `Close[${s}]`;
+        case "median":
+          return bin(bin(`High[${s}]`, "+", `Low[${s}]`), "/", 2);
+        case "typical":
+          return bin(bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", `Close[${s}]`), "/", 3);
+        case "weighted":
+          return bin(bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", bin(`Close[${s}]`, "+", `Open[${s}]`)), "/", 4);
       }
-      if (typeof expr.shiftBars == "undefined") {
-        return lit(`${varName}[${shift ? shift : 0}]`);
-      }
-      return lit(`${varName}[${expr.shiftBars}]`);
+      break;
     }
     case "indicator":
       return ctx.getVariableRef(expr);
