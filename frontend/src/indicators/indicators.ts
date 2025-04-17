@@ -4,7 +4,13 @@ export const Accelerator: Indicator = {
   name: "accelerator",
   label: "アクセラレーターオシレーター",
   params: [
-    { type: "source", name: "median", label: "中間価格（高 + 低）÷ 2", required: true, default: "median" },
+    {
+      type: "source",
+      name: "median",
+      label: "中間価格（高 + 低）÷ 2",
+      required: true,
+      default: "median",
+    },
     { type: "number", name: "fastPeriod", label: "短期SMA期間", required: true, default: 5 },
     { type: "number", name: "slowPeriod", label: "長期SMA期間", required: true, default: 34 },
     { type: "number", name: "signalPeriod", label: "シグナルSMA期間", required: true, default: 5 },
@@ -80,54 +86,87 @@ export const AccumulationDistribution: Indicator = {
   template: {
     variables: [
       {
-        name: "clv", // Close Location Value
+        name: "diff",
         expression: {
           type: "binary_op",
-          operator: "/",
+          operator: "-",
+          left: { type: "source", name: "high", valueType: "scalar" },
+          right: { type: "source", name: "low", valueType: "scalar" },
+        },
+      },
+      {
+        name: "clv",
+        expression: {
+          type: "binary_op",
+          operator: "-",
           left: {
             type: "binary_op",
-            operator: "-",
-            left: {
-              type: "binary_op",
-              operator: "*",
-              left: {
-                type: "constant",
-                value: 2,
-              },
-              right: { type: "source", name: "close", valueType: "scalar" },
-            },
-            right: {
-              type: "binary_op",
-              operator: "+",
-              left: { type: "source", name: "high", valueType: "scalar" },
-              right: { type: "source", name: "low", valueType: "scalar" },
-            },
+            operator: "*",
+            left: { type: "constant", value: 2 },
+            right: { type: "source", name: "close", valueType: "scalar" },
           },
           right: {
             type: "binary_op",
-            operator: "-",
+            operator: "+",
             left: { type: "source", name: "high", valueType: "scalar" },
             right: { type: "source", name: "low", valueType: "scalar" },
           },
         },
       },
       {
-        name: "mfv", // Money Flow Volume
+        name: "mfv",
         expression: {
-          type: "binary_op",
-          operator: "*",
-          left: { type: "variable", name: "clv", valueType: "scalar" },
-          right: { type: "source", name: "volume", valueType: "scalar" },
+          type: "ternary",
+          condition: {
+            type: "comparison",
+            left: { type: "variable", name: "diff", valueType: "scalar" },
+            operator: "<",
+            right: { type: "constant", value: 0.000000001 },
+          },
+          trueExpr: {
+            type: "constant",
+            value: 0,
+          },
+          falseExpr: {
+            type: "ternary",
+            condition: {
+              type: "comparison",
+              operator: "==",
+              left: { type: "variable", name: "clv", valueType: "scalar" },
+              right: { type: "constant", value: 0 },
+            },
+            trueExpr: {
+              type: "constant",
+              value: 0,
+            },
+            falseExpr: {
+              type: "binary_op",
+              operator: "*",
+              left: {
+                type: "binary_op",
+                operator: "/",
+                left: { type: "variable", name: "clv", valueType: "scalar" },
+                right: { type: "variable", name: "diff", valueType: "scalar" },
+              },
+              right: { type: "source", name: "volume", valueType: "scalar" },
+            },
+          },
         },
       },
       {
         name: "ad",
         expression: {
-          type: "aggregation",
-          method: { type: "aggregationType", value: "sum" },
-          source: { type: "variable", name: "mfv", valueType: "array" },
-          period: { type: "constant", value: 0 }, // 全期間累積
+          type: "binary_op",
+          left: {
+            type: "variable",
+            name: "ad",
+            valueType: "scalar",
+            shiftBars: { type: "constant", value: 1 },
+          },
+          operator: "+",
+          right: { type: "variable", name: "mfv", valueType: "scalar" },
         },
+        invalidPeriod: { type: "constant", value: 1 },
       },
     ],
     exports: [{ name: "ad", variableName: "ad" }],

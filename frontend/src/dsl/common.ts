@@ -48,7 +48,17 @@ export type PriceExpression = ScalarPriceExpression | ArrayPriceExpression;
 
 export type ScalarPriceExpression = {
   type: "price";
-  source: "bid" | "ask" | "open" | "high" | "close" | "low" | "median" | "typical" | "weighted";
+  source:
+    | "bid"
+    | "ask"
+    | "open"
+    | "high"
+    | "close"
+    | "low"
+    | "median"
+    | "typical"
+    | "weighted"
+    | "volume";
   valueType: "scalar";
   shiftBars?: ConstantExpression;
   fallback?: ConstantExpression;
@@ -56,7 +66,23 @@ export type ScalarPriceExpression = {
 
 export type ArrayPriceExpression = {
   type: "price";
-  source: "open" | "high" | "close" | "low";
+  source: "open" | "high" | "close" | "low" | "volume";
+  valueType: "array";
+};
+
+export type VolumeExpression = ScalarVolumeExpression | ArrayVolumeExpression;
+
+export type ScalarVolumeExpression = {
+  type: "price";
+  source: "tick" | "real";
+  valueType: "scalar";
+  shiftBars?: ConstantExpression;
+  fallback?: ConstantExpression;
+};
+
+export type ArrayVolumeExpression = {
+  type: "price";
+  source: "tick" | "real";
   valueType: "array";
 };
 
@@ -116,17 +142,17 @@ export type AggregationType =
 export type AggregationTypeExpression = { type: "aggregationType"; value: AggregationType };
 export type AggregationTypeParamExpression = { type: "param"; name: string };
 
+export type UnaryOperationExpression = {
+  type: "unary_op";
+  operator: "-" | "abs";
+  operand: VariableExpression;
+};
+
 export type BinaryOperationExpression = {
   type: "binary_op";
   operator: "+" | "-" | "*" | "/" | "max" | "min";
   left: VariableExpression;
   right: VariableExpression;
-};
-
-export type UnaryOperationExpression = {
-  type: "unary_op";
-  operator: "-" | "abs";
-  operand: VariableExpression;
 };
 
 export type TernaryExpression = {

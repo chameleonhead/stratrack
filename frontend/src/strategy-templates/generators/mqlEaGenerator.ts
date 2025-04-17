@@ -220,9 +220,18 @@ function emitVariableExpression(
             return "Low";
           case "close":
             return "Close";
+          case "volume":
+            return "Volume";
         }
       }
-      const s = typeof expr.shiftBars == "undefined" ? (shift ? shift : lit(0)) : (shift ? emitVariableExpression(expr.shiftBars, ctx, shift) : emitVariableExpression(expr.shiftBars, ctx));
+      const s =
+        typeof expr.shiftBars == "undefined"
+          ? shift
+            ? shift
+            : lit(0)
+          : shift
+            ? emitVariableExpression(expr.shiftBars, ctx, shift)
+            : emitVariableExpression(expr.shiftBars, ctx);
       switch (expr.source) {
         case "ask":
           return `Ask[${s}]`;
@@ -241,7 +250,13 @@ function emitVariableExpression(
         case "typical":
           return bin(bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", `Close[${s}]`), "/", 3);
         case "weighted":
-          return bin(bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", bin(`Close[${s}]`, "+", `Open[${s}]`)), "/", 4);
+          return bin(
+            bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", bin(`Close[${s}]`, "+", `Open[${s}]`)),
+            "/",
+            4
+          );
+        case "volume":
+          return `Volume[${s}]`;
       }
       break;
     }

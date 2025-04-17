@@ -506,3 +506,185 @@ export const Accelerator: Story = {
     },
   },
 };
+
+export const AccumulationDistribution: Story = {
+  args: {
+    value: {
+      template: {
+        variables: [
+          {
+            name: "high",
+            expression: {
+              type: "price",
+              source: "high",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "low",
+            expression: {
+              type: "price",
+              source: "low",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "close",
+            expression: {
+              type: "price",
+              source: "close",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "volume",
+            expression: {
+              type: "price",
+              source: "volume",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "indicator",
+            expression: {
+              type: "indicator",
+              name: "accumulation_distribution",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "close", type: "source", value: "close" },
+                { name: "volume", type: "source", value: "volume" },
+              ],
+              lineName: "ad",
+            },
+          },
+        ],
+        entry: [
+          {
+            type: "long",
+            condition: {
+              type: "group",
+              operator: "and",
+              conditions: [
+                {
+                  type: "state",
+                  state: "rising",
+                  operand: {
+                    type: "variable",
+                    name: "indicator",
+                    valueType: "array",
+                  },
+                },
+                {
+                  type: "state",
+                  state: "falling",
+                  operand: {
+                    type: "variable",
+                    name: "close",
+                    valueType: "array",
+                  },
+                },
+              ],
+            },
+          },
+          {
+            type: "short",
+            condition: {
+              type: "group",
+              operator: "and",
+              conditions: [
+                {
+                  type: "state",
+                  state: "falling",
+                  operand: {
+                    type: "variable",
+                    name: "indicator",
+                    valueType: "array",
+                  },
+                },
+                {
+                  type: "state",
+                  state: "rising",
+                  operand: {
+                    type: "variable",
+                    name: "close",
+                    valueType: "array",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        exit: [],
+        riskManagement: {
+          type: "fixed",
+          lotSize: 1,
+        },
+        positionManagement: {
+          trailingStop: {
+            enabled: true,
+            distance: 10,
+          },
+          takeProfit: {
+            enabled: true,
+            target: 10,
+          },
+          stopLoss: {
+            enabled: true,
+            limit: 10,
+          },
+        },
+        environmentFilter: {
+          trendCondition: false,
+          volatilityCondition: false,
+          avoidNews: false,
+        },
+        timingControl: {
+          allowedTradingPeriods: [
+            {
+              day: "mon",
+              timeRange: {
+                from: "00:00",
+                to: "23:59",
+              },
+            },
+            {
+              day: "tue",
+              timeRange: {
+                from: "00:00",
+                to: "23:59",
+              },
+            },
+            {
+              day: "wed",
+              timeRange: {
+                from: "00:00",
+                to: "23:59",
+              },
+            },
+            {
+              day: "thu",
+              timeRange: {
+                from: "00:00",
+                to: "23:59",
+              },
+            },
+            {
+              day: "fri",
+              timeRange: {
+                from: "00:00",
+                to: "23:59",
+              },
+            },
+          ],
+          forceCloseBeforeDisallowed: false,
+          allowExitDuringDisallowed: true,
+        },
+        multiPositionControl: {
+          maxPositions: 1,
+          allowHedging: false,
+        },
+      },
+    },
+  },
+};

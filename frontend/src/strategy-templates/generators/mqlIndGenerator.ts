@@ -377,18 +377,18 @@ export function generateClassFromIndicator(
     decl("end", "int", ref("i")),
     ...(DEBUG
       ? [
-        callStmt("Print", ['"Start: "', "start", '", end: "', "end"]),
-        ...variables.map((v) =>
-          callStmt("Print", [
-            `"Before update ${v.name}: "`,
-            `this.${v.name}[i]`,
-            '", "',
-            ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
-            '", "',
-            ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
-          ])
-        ),
-      ]
+          callStmt("Print", ['"Start: "', "start", '", end: "', "end"]),
+          ...variables.map((v) =>
+            callStmt("Print", [
+              `"Before update ${v.name}: "`,
+              `this.${v.name}[i]`,
+              '", "',
+              ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
+              '", "',
+              ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
+            ])
+          ),
+        ]
       : []),
     loop(
       decl("j", "int", ref("start")),
@@ -404,40 +404,40 @@ export function generateClassFromIndicator(
               [
                 ...(v.fallback?.invalidPeriod
                   ? [
-                    iff(
-                      bin(
-                        "Bars",
-                        ">",
-                        bin("j", "+", emitVariableExpression(v.fallback.invalidPeriod, ctx))
+                      iff(
+                        bin(
+                          "Bars",
+                          ">",
+                          bin("j", "+", emitVariableExpression(v.fallback.invalidPeriod, ctx))
+                        ),
+                        convertVariableDefinition(
+                          v.name,
+                          v.fallback.expression,
+                          ctx,
+                          indicator,
+                          ref("j")
+                        ),
+                        [
+                          stmt(
+                            bin(
+                              ref(`this.${v.name}[j]`),
+                              "=",
+                              v.fallback.fallback
+                                ? emitVariableExpression(v.fallback.fallback, ctx)
+                                : lit("0")
+                            )
+                          ),
+                        ]
                       ),
-                      convertVariableDefinition(
+                    ]
+                  : v.fallback
+                    ? convertVariableDefinition(
                         v.name,
                         v.fallback.expression,
                         ctx,
                         indicator,
                         ref("j")
-                      ),
-                      [
-                        stmt(
-                          bin(
-                            ref(`this.${v.name}[j]`),
-                            "=",
-                            v.fallback.fallback
-                              ? emitVariableExpression(v.fallback.fallback, ctx)
-                              : lit("0")
-                          )
-                        ),
-                      ]
-                    ),
-                  ]
-                  : v.fallback
-                    ? convertVariableDefinition(
-                      v.name,
-                      v.fallback.expression,
-                      ctx,
-                      indicator,
-                      ref("j")
-                    )
+                      )
                     : [stmt(bin(ref(`this.${v.name}[j]`), "=", lit("0")))]),
               ]
             ),
@@ -449,15 +449,15 @@ export function generateClassFromIndicator(
     ),
     ...(DEBUG
       ? variables.map((v) =>
-        callStmt("Print", [
-          `"After update ${v.name}: "`,
-          `this.${v.name}[i]`,
-          '", "',
-          ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
-          '", "',
-          ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
-        ])
-      )
+          callStmt("Print", [
+            `"After update ${v.name}: "`,
+            `this.${v.name}[i]`,
+            '", "',
+            ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
+            '", "',
+            ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
+          ])
+        )
       : []),
     // 最後に lastCalculated を更新
     stmt(
@@ -622,7 +622,7 @@ function emitVariableExpression(
       return ctx.getVariableRef(expr);
 
     case "variable": {
-      const varName = `this.${expr.name}`
+      const varName = `this.${expr.name}`;
       if (expr.valueType === "array") {
         return varName;
       }
