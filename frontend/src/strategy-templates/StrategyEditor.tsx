@@ -35,14 +35,14 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
           language="python"
           value={useMemo(
             () => renderStrategyCode("python", localValue.template as StrategyTemplate, indicators),
-            [localValue]
+            [localValue, indicators]
           )}
         />
         <CodeEditor
           language="mql4"
           value={useMemo(
             () => renderStrategyCode("mql4", localValue.template as StrategyTemplate, indicators),
-            [localValue]
+            [localValue, indicators]
           )}
         />
       </Suspense>

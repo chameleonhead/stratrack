@@ -220,6 +220,8 @@ function emitVariableExpression(
             return "Low";
           case "close":
             return "Close";
+          case "tick_volume":
+            return "Volume";
           case "volume":
             return "Volume";
         }
@@ -255,6 +257,7 @@ function emitVariableExpression(
             "/",
             4
           );
+        case "tick_volume":
         case "volume":
           return `Volume[${s}]`;
       }

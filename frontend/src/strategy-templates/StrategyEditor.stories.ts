@@ -537,10 +537,10 @@ export const AccumulationDistribution: Story = {
             },
           },
           {
-            name: "volume",
+            name: "tick_volume",
             expression: {
               type: "price",
-              source: "volume",
+              source: "tick_volume",
               valueType: "scalar",
             },
           },
@@ -553,7 +553,7 @@ export const AccumulationDistribution: Story = {
                 { name: "high", type: "source", value: "high" },
                 { name: "low", type: "source", value: "low" },
                 { name: "close", type: "source", value: "close" },
-                { name: "volume", type: "source", value: "volume" },
+                { name: "tick_volume", type: "source", value: "tick_volume" },
               ],
               lineName: "ad",
             },

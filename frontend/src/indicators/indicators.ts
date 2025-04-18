@@ -79,7 +79,13 @@ export const AccumulationDistribution: Indicator = {
     { type: "source", name: "high", label: "高値", required: true, default: "high" },
     { type: "source", name: "low", label: "安値", required: true, default: "low" },
     { type: "source", name: "close", label: "終値", required: true, default: "close" },
-    { type: "source", name: "volume", label: "出来高", required: true, default: "volume" },
+    {
+      type: "source",
+      name: "tick_volume",
+      label: "Tick出来高",
+      required: true,
+      default: "tick_volume",
+    },
   ],
   lines: [{ name: "ad", label: "A/D" }],
   defaultLineName: "ad",
@@ -148,7 +154,7 @@ export const AccumulationDistribution: Indicator = {
                 left: { type: "variable", name: "clv", valueType: "scalar" },
                 right: { type: "variable", name: "diff", valueType: "scalar" },
               },
-              right: { type: "source", name: "volume", valueType: "scalar" },
+              right: { type: "source", name: "tick_volume", valueType: "scalar" },
             },
           },
         },
@@ -167,6 +173,9 @@ export const AccumulationDistribution: Indicator = {
           right: { type: "variable", name: "mfv", valueType: "scalar" },
         },
         invalidPeriod: { type: "constant", value: 1 },
+        fallback: {
+          expression: { type: "variable", name: "mfv", valueType: "scalar" }
+        }
       },
     ],
     exports: [{ name: "ad", variableName: "ad" }],

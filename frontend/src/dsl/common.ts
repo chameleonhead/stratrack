@@ -58,6 +58,7 @@ export type ScalarPriceExpression = {
     | "median"
     | "typical"
     | "weighted"
+    | "tick_volume"
     | "volume";
   valueType: "scalar";
   shiftBars?: ConstantExpression;
@@ -66,7 +67,7 @@ export type ScalarPriceExpression = {
 
 export type ArrayPriceExpression = {
   type: "price";
-  source: "open" | "high" | "close" | "low" | "volume";
+  source: "open" | "high" | "close" | "low" | "tick_volume" | "volume";
   valueType: "array";
 };
 

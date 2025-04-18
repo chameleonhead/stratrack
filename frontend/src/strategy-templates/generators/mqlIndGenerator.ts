@@ -367,7 +367,7 @@ export function generateClassFromIndicator(
         callStmt("ArraySetAsSeries", [ref(`this.${v.name}`), lit("true")]),
       ]),
       stmt(bin("this.lastBars", "=", "Bars")),
-      stmt(lit("this.lastCalculated++")),
+      iff(bin("this.lastCalculated", "!=", -1), [stmt(lit("this.lastCalculated++"))]),
     ]),
     decl(
       "start",
@@ -592,6 +592,14 @@ function convertVariableDefinition(
   }
 }
 
+function toFixed(value: number) {
+  const e = parseInt(value.toString().split("e-")[1]);
+  if (isNaN(e)) {
+    return value.toString();
+  }
+  return value.toFixed(e);
+}
+
 function emitVariableExpression(
   expr: VariableExpression | NumberParamReferenceExpression,
   ctx: IndicatorContext,
@@ -599,7 +607,7 @@ function emitVariableExpression(
 ): MqlExpression {
   switch (expr.type) {
     case "constant":
-      return lit(expr.value);
+      return lit(toFixed(expr.value));
     case "param":
       return ref(`this.${expr.name}`);
 
@@ -730,7 +738,7 @@ function emitOperand(
 ): MqlExpression {
   switch (op.type) {
     case "constant":
-      return lit(op.value);
+      return lit(toFixed(op.value));
     case "source":
     case "variable": {
       const varName = `${op.type === "source" ? "" : "this."}${op.name}`;
