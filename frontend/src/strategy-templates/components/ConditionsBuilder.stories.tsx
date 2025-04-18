@@ -79,7 +79,7 @@ export const State: Story = {
       {
         type: "state",
         state: "rising",
-        length: 12,
+        consecutiveBars: 12,
         operand: { type: "variable", name: "", valueType: "array" },
       },
     ],

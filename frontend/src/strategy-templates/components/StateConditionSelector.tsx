@@ -36,11 +36,11 @@ function StateConditionSelector({ value, onChange }: StateConditionSelectorProps
         <div className="col-span-1">
           <NumberInput
             fullWidth
-            value={condition.length}
+            value={condition.consecutiveBars}
             onChange={(val) =>
               setCondition({
                 ...condition,
-                length: val as StateCondition["length"],
+                consecutiveBars: val as StateCondition["consecutiveBars"],
               })
             }
             placeholder="期間（任意）"

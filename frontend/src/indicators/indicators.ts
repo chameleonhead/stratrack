@@ -174,8 +174,8 @@ export const AccumulationDistribution: Indicator = {
         },
         invalidPeriod: { type: "constant", value: 1 },
         fallback: {
-          expression: { type: "variable", name: "mfv", valueType: "scalar" }
-        }
+          expression: { type: "variable", name: "mfv", valueType: "scalar" },
+        },
       },
     ],
     exports: [{ name: "ad", variableName: "ad" }],

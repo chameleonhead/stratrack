@@ -173,7 +173,7 @@ function emitCondition(cond: Condition, shift: number = 0): string {
     case "state": {
       const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
-      for (let i = 0; i < Math.abs(cond.length || 1); i++) {
+      for (let i = 0; i < Math.abs(cond.consecutiveBars || 1); i++) {
         const var_curr = emitOperand(cond.operand, shift + i);
         const var_prev = emitOperand(cond.operand, shift + i + 1);
         conds.push(`${var_curr} ${sign} ${var_prev}`);
@@ -182,7 +182,7 @@ function emitCondition(cond: Condition, shift: number = 0): string {
     }
     case "continue": {
       const conds = [];
-      for (let i = 0; i < Math.abs(cond.length || 2); i++) {
+      for (let i = 0; i < Math.abs(cond.consecutiveBars || 2); i++) {
         const condition = emitCondition(cond.condition, shift + i);
         conds.push(condition);
       }

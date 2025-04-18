@@ -94,7 +94,7 @@ export const RSI14: Story = {
                 },
                 {
                   type: "continue",
-                  length: 5,
+                  consecutiveBars: 5,
                   continue: "true",
                   condition: {
                     type: "comparison",
@@ -295,70 +295,6 @@ export const DonchianChannel: Story = {
           type: "fixed",
           lotSize: 1,
         },
-        positionManagement: {
-          trailingStop: {
-            enabled: false,
-            distance: null,
-          },
-          takeProfit: {
-            enabled: false,
-            target: null,
-          },
-          stopLoss: {
-            enabled: false,
-            limit: null,
-          },
-        },
-        environmentFilter: {
-          trendCondition: false,
-          volatilityCondition: false,
-          avoidNews: false,
-        },
-        timingControl: {
-          allowedTradingPeriods: [
-            {
-              day: "mon",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "tue",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "wed",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "thu",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "fri",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-          ],
-          forceCloseBeforeDisallowed: false,
-          allowExitDuringDisallowed: true,
-        },
-        multiPositionControl: {
-          maxPositions: 1,
-          allowHedging: false,
-        },
       },
     },
   },
@@ -367,6 +303,12 @@ export const DonchianChannel: Story = {
 export const Accelerator: Story = {
   args: {
     value: {
+      id: "accel-strategy-001",
+      name: "Accelerator戦略",
+      nameEn: "Accelerator Strategy",
+      description:
+        "Accelerator Oscillatorがゼロをクロスしたタイミングでエントリーするシンプルな戦略です。",
+      version: "1.0.0",
       template: {
         variables: [
           {
@@ -386,6 +328,7 @@ export const Accelerator: Story = {
                 { name: "median", type: "source", value: "median" },
                 { name: "fastPeriod", type: "number", value: 5 },
                 { name: "slowPeriod", type: "number", value: 34 },
+                { name: "signalPeriod", type: "number", value: 5 },
               ],
               lineName: "ac",
             },
@@ -395,112 +338,26 @@ export const Accelerator: Story = {
           {
             type: "long",
             condition: {
-              type: "change",
-              change: "to_true",
-              condition: {
-                type: "comparison",
-                left: {
-                  type: "variable",
-                  name: "indicator",
-                  valueType: "scalar",
-                },
-                operator: ">",
-                right: {
-                  type: "constant",
-                  value: 0,
-                },
-              },
+              type: "cross",
+              direction: "cross_over",
+              left: { type: "variable", name: "indicator", valueType: "array" },
+              right: { type: "constant", value: 0 },
             },
           },
           {
             type: "short",
             condition: {
-              type: "change",
-              change: "to_true",
-              condition: {
-                type: "comparison",
-                left: {
-                  type: "variable",
-                  name: "indicator",
-                  valueType: "scalar",
-                },
-                operator: "<",
-                right: {
-                  type: "constant",
-                  value: 0,
-                },
-              },
+              type: "cross",
+              direction: "cross_under",
+              left: { type: "variable", name: "indicator", valueType: "array" },
+              right: { type: "constant", value: 0 },
             },
           },
         ],
         exit: [],
         riskManagement: {
           type: "fixed",
-          lotSize: 1,
-        },
-        positionManagement: {
-          trailingStop: {
-            enabled: true,
-            distance: 10,
-          },
-          takeProfit: {
-            enabled: true,
-            target: 10,
-          },
-          stopLoss: {
-            enabled: true,
-            limit: 10,
-          },
-        },
-        environmentFilter: {
-          trendCondition: false,
-          volatilityCondition: false,
-          avoidNews: false,
-        },
-        timingControl: {
-          allowedTradingPeriods: [
-            {
-              day: "mon",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "tue",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "wed",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "thu",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "fri",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-          ],
-          forceCloseBeforeDisallowed: false,
-          allowExitDuringDisallowed: true,
-        },
-        multiPositionControl: {
-          maxPositions: 1,
-          allowHedging: false,
+          lotSize: 0.1,
         },
       },
     },
@@ -510,6 +367,12 @@ export const Accelerator: Story = {
 export const AccumulationDistribution: Story = {
   args: {
     value: {
+      id: "ad-strategy-001",
+      name: "A/D ラインブレイク戦略",
+      nameEn: "Accumulation/Distribution Strategy",
+      description:
+        "A/Dインジケーターが直近のピーク・ボトムを更新したらエントリーするシンプルなトレンド追従戦略",
+      version: "1.0.0",
       template: {
         variables: [
           {
@@ -545,17 +408,168 @@ export const AccumulationDistribution: Story = {
             },
           },
           {
-            name: "indicator",
+            name: "ad",
             expression: {
               type: "indicator",
               name: "accumulation_distribution",
+              lineName: "ad",
               params: [
                 { name: "high", type: "source", value: "high" },
                 { name: "low", type: "source", value: "low" },
                 { name: "close", type: "source", value: "close" },
-                { name: "tick_volume", type: "source", value: "tick_volume" },
+                { name: "volume", type: "source", value: "tick_volume" },
               ],
-              lineName: "ad",
+            },
+          },
+          {
+            name: "highest",
+            expression: {
+              type: "indicator",
+              name: "donchian_channel",
+              lineName: "upper",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "period", type: "number", value: 20 },
+              ],
+            },
+          },
+          {
+            name: "lowest",
+            expression: {
+              type: "indicator",
+              name: "donchian_channel",
+              lineName: "lower",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "period", type: "number", value: 20 },
+              ],
+            },
+          },
+        ],
+        entry: [
+          {
+            type: "long",
+            condition: {
+              type: "comparison",
+              left: {
+                type: "variable",
+                name: "ad",
+                valueType: "scalar",
+                shiftBars: { type: "constant", value: 0 },
+              },
+              operator: ">",
+              right: {
+                type: "variable",
+                name: "highest",
+                valueType: "scalar",
+              },
+            },
+          },
+          {
+            type: "short",
+            condition: {
+              type: "comparison",
+              left: {
+                type: "variable",
+                name: "ad",
+                valueType: "scalar",
+                shiftBars: { type: "constant", value: 0 },
+              },
+              operator: "<",
+              right: {
+                type: "variable",
+                name: "lowest",
+                valueType: "scalar",
+              },
+            },
+          },
+        ],
+        exit: [],
+        riskManagement: {
+          type: "fixed",
+          lotSize: 0.1,
+        },
+      },
+    },
+  },
+};
+
+export const ADX: Story = {
+  args: {
+    value: {
+      id: "adx-strategy-001",
+      name: "ADXトレンド追従戦略",
+      nameEn: "ADX Trend Following Strategy",
+      description: "ADXが上昇トレンドまたは下降トレンドを示したときにエントリーする戦略。",
+      version: "1.0.0",
+      template: {
+        variables: [
+          {
+            name: "high",
+            expression: {
+              type: "price",
+              source: "high",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "low",
+            expression: {
+              type: "price",
+              source: "low",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "close",
+            expression: {
+              type: "price",
+              source: "close",
+              valueType: "scalar",
+            },
+          },
+          {
+            name: "adx",
+            expression: {
+              type: "indicator",
+              name: "adx",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "close", type: "source", value: "close" },
+                { name: "period", type: "number", value: 14 },
+              ],
+              lineName: "adx",
+            },
+          },
+          {
+            name: "pdi",
+            expression: {
+              type: "indicator",
+              name: "adx",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "close", type: "source", value: "close" },
+                { name: "period", type: "number", value: 14 },
+              ],
+              lineName: "pdi",
+            },
+          },
+          {
+            name: "mdi",
+            expression: {
+              type: "indicator",
+              name: "adx",
+              params: [
+                { name: "high", type: "source", value: "high" },
+                { name: "low", type: "source", value: "low" },
+                { name: "close", type: "source", value: "close" },
+                { name: "period", type: "number", value: 14 },
+              ],
+              lineName: "mdi",
             },
           },
         ],
@@ -567,22 +581,16 @@ export const AccumulationDistribution: Story = {
               operator: "and",
               conditions: [
                 {
-                  type: "state",
-                  state: "rising",
-                  operand: {
-                    type: "variable",
-                    name: "indicator",
-                    valueType: "array",
-                  },
+                  type: "comparison",
+                  left: { type: "variable", name: "adx", valueType: "scalar" },
+                  operator: ">",
+                  right: { type: "constant", value: 25 },
                 },
                 {
-                  type: "state",
-                  state: "falling",
-                  operand: {
-                    type: "variable",
-                    name: "close",
-                    valueType: "array",
-                  },
+                  type: "comparison",
+                  left: { type: "variable", name: "pdi", valueType: "scalar" },
+                  operator: ">",
+                  right: { type: "variable", name: "mdi", valueType: "scalar" },
                 },
               ],
             },
@@ -594,22 +602,16 @@ export const AccumulationDistribution: Story = {
               operator: "and",
               conditions: [
                 {
-                  type: "state",
-                  state: "falling",
-                  operand: {
-                    type: "variable",
-                    name: "indicator",
-                    valueType: "array",
-                  },
+                  type: "comparison",
+                  left: { type: "variable", name: "adx", valueType: "scalar" },
+                  operator: ">",
+                  right: { type: "constant", value: 25 },
                 },
                 {
-                  type: "state",
-                  state: "rising",
-                  operand: {
-                    type: "variable",
-                    name: "close",
-                    valueType: "array",
-                  },
+                  type: "comparison",
+                  left: { type: "variable", name: "pdi", valueType: "scalar" },
+                  operator: ">",
+                  right: { type: "variable", name: "pdi", valueType: "scalar" },
                 },
               ],
             },
@@ -618,71 +620,7 @@ export const AccumulationDistribution: Story = {
         exit: [],
         riskManagement: {
           type: "fixed",
-          lotSize: 1,
-        },
-        positionManagement: {
-          trailingStop: {
-            enabled: true,
-            distance: 10,
-          },
-          takeProfit: {
-            enabled: true,
-            target: 10,
-          },
-          stopLoss: {
-            enabled: true,
-            limit: 10,
-          },
-        },
-        environmentFilter: {
-          trendCondition: false,
-          volatilityCondition: false,
-          avoidNews: false,
-        },
-        timingControl: {
-          allowedTradingPeriods: [
-            {
-              day: "mon",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "tue",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "wed",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "thu",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-            {
-              day: "fri",
-              timeRange: {
-                from: "00:00",
-                to: "23:59",
-              },
-            },
-          ],
-          forceCloseBeforeDisallowed: false,
-          allowExitDuringDisallowed: true,
-        },
-        multiPositionControl: {
-          maxPositions: 1,
-          allowHedging: false,
+          lotSize: 0.1,
         },
       },
     },

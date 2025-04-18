@@ -36,11 +36,11 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
         <div className="col-span-1">
           <NumberInput
             fullWidth
-            value={condition.length}
+            value={condition.consecutiveBars}
             onChange={(val) =>
               setCondition({
                 ...condition,
-                length: val as ContinueCondition["length"],
+                consecutiveBars: val as ContinueCondition["consecutiveBars"],
               })
             }
             placeholder="期間（任意）"

@@ -211,8 +211,8 @@ export type ArraySourceOperand = {
 
 export type ComparisonCondition = {
   type: "comparison";
-  left: ScalarOperand;
   operator: ">" | "<" | ">=" | "<=" | "==" | "!=";
+  left: ScalarOperand;
   right: ScalarOperand;
 };
 
@@ -226,22 +226,25 @@ export type CrossCondition = {
 export type StateCondition = {
   type: "state";
   state: "rising" | "falling";
-  length?: number;
   operand: ArrayOperand;
+  consecutiveBars?: number;
 };
 
 export type ChangeCondition = {
   type: "change";
-  condition: Condition;
   change: "to_true" | "to_false";
+  condition: Condition;
+  preconditionBars?: number;
+  confirmationBars?: number;
 };
 
 export type ContinueCondition = {
   type: "continue";
-  condition: Condition;
-  length: number;
   continue: "true" | "false";
+  condition: Condition;
+  consecutiveBars?: number;
 };
+
 export type GroupCondition = {
   type: "group";
   operator: "and" | "or";
