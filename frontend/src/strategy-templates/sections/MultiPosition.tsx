@@ -1,6 +1,6 @@
 import Checkbox from "../../components/Checkbox";
 import NumberInput from "../../components/NumberInput";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { StrategyTemplate } from "../../codegen/dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type MultiPositionProps = {

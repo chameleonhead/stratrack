@@ -2,7 +2,7 @@ import OperandSelector from "./ConditionOperandSelector";
 import Select from "../../components/Select";
 import NumberInput from "../../components/NumberInput";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { StateCondition } from "../../dsl/common";
+import { StateCondition } from "../../codegen/dsl/common";
 
 export type StateConditionSelectorProps = {
   name?: string;

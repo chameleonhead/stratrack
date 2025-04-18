@@ -29,7 +29,7 @@ import {
   Stochastic,
   WilliamsPercentRange,
 } from "./indicators";
-import { Indicator } from "../dsl/indicator";
+import { Indicator } from "../codegen/dsl/indicator";
 
 const indicatorList: Indicator[] = [
   Accelerator,

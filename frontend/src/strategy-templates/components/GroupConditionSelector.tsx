@@ -1,7 +1,7 @@
 import ConditionBuilder from "./ConditionsBuilder";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { GroupCondition } from "../../dsl/common";
+import { GroupCondition } from "../../codegen/dsl/common";
 
 export type GroupConditionSelectorProps = {
   name?: string;

@@ -4,7 +4,7 @@ import {
   StrategyTemplate,
   StrategyVariableDefinition,
   StrategyVariableExpression,
-} from "../../dsl/strategy";
+} from "../../codegen/dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
 

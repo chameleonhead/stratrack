@@ -1,7 +1,7 @@
 import OperandSelector from "./ConditionOperandSelector";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { ComparisonCondition } from "../../dsl/common";
+import { ComparisonCondition } from "../../codegen/dsl/common";
 
 export type ComparisonConditionSelectorProps = {
   name?: string;

@@ -7,7 +7,7 @@ import {
   MqlExpression,
   MqlStatement,
   MqlVariableRef,
-} from "../../codegen/mql/mqlast";
+} from "../ast/mql/mqlast";
 import {
   arg,
   bin,
@@ -25,7 +25,7 @@ import {
   stmt,
   ternary,
   unary,
-} from "../../codegen/mql/mqlhelper";
+} from "../ast/mql/mqlhelper";
 import {
   AggregationExpression,
   AggregationType,
@@ -34,12 +34,12 @@ import {
   ConditionOperand,
   NumberParamReferenceExpression,
   VariableExpression,
-} from "../../dsl/common";
+} from "../dsl/common";
 import {
   Indicator,
   AggregationTypeIndicatorParam,
   IndicatorVariableExpression,
-} from "../../dsl/indicator";
+} from "../dsl/indicator";
 import { IndicatorContext } from "./indicatorContext";
 
 const DEBUG = false;

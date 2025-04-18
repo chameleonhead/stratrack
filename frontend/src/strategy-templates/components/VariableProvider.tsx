@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { VariableContext } from "./useVariables";
-import { StrategyVariableDefinition } from "../../dsl/strategy";
+import { StrategyVariableDefinition } from "../../codegen/dsl/strategy";
 
 // Providerコンポーネント
 function VariableProvider({

@@ -7,7 +7,7 @@ import ChangeConditionSelector from "./ChangeConditionSelector";
 import GroupConditionSelector from "./GroupConditionSelector";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import Button from "../../components/Button";
-import { Condition } from "../../dsl/common";
+import { Condition } from "../../codegen/dsl/common";
 
 export type ConditionBuilderProps = {
   name?: string;

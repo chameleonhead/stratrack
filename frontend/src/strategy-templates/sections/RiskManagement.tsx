@@ -1,7 +1,7 @@
 import { useLocalValue } from "../../hooks/useLocalValue";
 import Select from "../../components/Select";
 import NumberInput from "../../components/NumberInput";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { StrategyTemplate } from "../../codegen/dsl/strategy";
 
 export type RiskManagementProps = {
   value?: Partial<StrategyTemplate>;

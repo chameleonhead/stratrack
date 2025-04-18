@@ -1,5 +1,5 @@
 import Checkbox from "../../components/Checkbox";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { StrategyTemplate } from "../../codegen/dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type FilterConditionsProps = {

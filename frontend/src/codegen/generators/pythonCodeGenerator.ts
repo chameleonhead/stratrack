@@ -7,14 +7,14 @@ import {
   PyIf,
   PyExpr,
   PyReturn,
-} from "../../codegen/pythonast";
+} from "../ast/python/pythonast";
 import {
   Condition,
   ConditionOperand,
   IndicatorExpression,
   VariableExpression,
-} from "../../dsl/common";
-import { StrategyTemplate } from "../../dsl/strategy";
+} from "../dsl/common";
+import { StrategyTemplate } from "../dsl/strategy";
 import {
   Accelerator,
   AccumulationDistribution,

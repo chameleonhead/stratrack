@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { StrategyVariableDefinition } from "../../dsl/strategy";
+import { StrategyVariableDefinition } from "../../codegen/dsl/strategy";
 
 // Context定義
 export const VariableContext = createContext<StrategyVariableDefinition[]>([]);

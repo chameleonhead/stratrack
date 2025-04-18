@@ -1,4 +1,4 @@
-import { MqlExpression, MqlFile, MqlFunction, MqlStatement } from "../../codegen/mql/mqlast";
+import { MqlExpression, MqlFile, MqlFunction, MqlStatement } from "../ast/mql/mqlast";
 import {
   decl,
   ref,
@@ -16,10 +16,10 @@ import {
   unary,
   globalVar,
   file,
-} from "../../codegen/mql/mqlhelper";
-import { Condition, ConditionOperand, VariableExpression } from "../../dsl/common";
-import { Indicator } from "../../dsl/indicator";
-import { StrategyTemplate } from "../../dsl/strategy";
+} from "../ast/mql/mqlhelper";
+import { Condition, ConditionOperand, VariableExpression } from "../dsl/common";
+import { Indicator } from "../dsl/indicator";
+import { StrategyTemplate } from "../dsl/strategy";
 import { IndicatorContext } from "./indicatorContext";
 
 /** 共通関数定義（ポジションのリスト取得 / オープン / クローズ） */

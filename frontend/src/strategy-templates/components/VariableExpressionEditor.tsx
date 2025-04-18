@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Select from "../../components/Select";
-import { StrategyVariableExpression } from "../../dsl/strategy";
+import { StrategyVariableExpression } from "../../codegen/dsl/strategy";
 
 export type VariableExpressionEditorProps = {
   name?: string;

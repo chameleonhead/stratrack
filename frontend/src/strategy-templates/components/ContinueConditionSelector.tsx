@@ -2,7 +2,7 @@ import Select from "../../components/Select";
 import NumberInput from "../../components/NumberInput";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import ConditionBuilder from "./ConditionBuilder";
-import { Condition, ContinueCondition } from "../../dsl/common";
+import { Condition, ContinueCondition } from "../../codegen/dsl/common";
 
 export type ContinueConditionSelectorProps = {
   name?: string;

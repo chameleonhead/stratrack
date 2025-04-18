@@ -1,4 +1,4 @@
-import { Indicator } from "../dsl/indicator";
+import { Indicator } from "../codegen/dsl/indicator";
 
 export const Accelerator: Indicator = {
   name: "accelerator",

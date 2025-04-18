@@ -2,10 +2,10 @@ import { Suspense, useMemo } from "react";
 import CodeEditor from "../components/CodeEditor";
 import { useLocalValue } from "../hooks/useLocalValue";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
-import { renderStrategyCode } from "./generators/strategyCodeRenderer";
+import { renderStrategyCode } from "../codegen/generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
-import { Strategy, StrategyTemplate } from "../dsl/strategy";
+import { Strategy, StrategyTemplate } from "../codegen/dsl/strategy";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;

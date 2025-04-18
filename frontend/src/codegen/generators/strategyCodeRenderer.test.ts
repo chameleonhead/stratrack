@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderStrategyCode } from "./strategyCodeRenderer";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { StrategyTemplate } from "../dsl/strategy";
 
 describe("renderStrategyCode", () => {
   const template: StrategyTemplate = {

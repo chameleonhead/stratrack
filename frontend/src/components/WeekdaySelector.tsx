@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { cn } from "../utils";
 import { useLocalValue } from "../hooks/useLocalValue";
-import { Weekday } from "../dsl/strategy";
+import { Weekday } from "../codegen/dsl/strategy";
 
 export type WeekdaySelectorProps = {
   label?: string;

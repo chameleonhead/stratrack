@@ -1,5 +1,5 @@
-import { Indicator } from "../../dsl/indicator";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { Indicator } from "../dsl/indicator";
+import { StrategyTemplate } from "../dsl/strategy";
 import { convertStrategyToMqlAst } from "./mqlEaGenerator";
 import { convertStrategyToPythonAst } from "./pythonCodeGenerator";
 

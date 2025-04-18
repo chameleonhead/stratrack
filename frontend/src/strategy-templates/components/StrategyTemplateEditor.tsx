@@ -10,7 +10,7 @@ import MultiPosition from "../sections/MultiPosition";
 import VariableProvider from "./VariableProvider";
 import Tab from "../../components/Tab";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { Strategy, StrategyTemplate } from "../../dsl/strategy";
+import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
 
 export type StrategyTemplateEditorProps = {
   value?: Partial<Strategy>;

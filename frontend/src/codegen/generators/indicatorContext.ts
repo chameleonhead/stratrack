@@ -8,9 +8,9 @@ import {
   MqlLiteral,
   MqlStatement,
   MqlVariableRef,
-} from "../../codegen/mql/mqlast";
-import { IndicatorExpression } from "../../dsl/common";
-import { Indicator } from "../../dsl/indicator";
+} from "../ast/mql/mqlast";
+import { IndicatorExpression } from "../dsl/common";
+import { Indicator } from "../dsl/indicator";
 import { generateClassFromIndicator } from "./mqlIndGenerator";
 
 export class IndicatorContext {

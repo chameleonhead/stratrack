@@ -3,7 +3,7 @@ import OperandSelector from "./ConditionOperandSelector";
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 import VariableProvider from "./VariableProvider";
-import { ConditionOperand } from "../../dsl/common";
+import { ConditionOperand } from "../../codegen/dsl/common";
 
 const meta: Meta<typeof OperandSelector> = {
   component: OperandSelector,

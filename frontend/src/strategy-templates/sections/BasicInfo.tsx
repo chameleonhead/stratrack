@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import Input from "../../components/Input";
 import TagInput from "../../components/TagInput";
 import Textarea from "../../components/Textarea";
-import { Strategy } from "../../dsl/strategy";
+import { Strategy } from "../../codegen/dsl/strategy";
 
 export type BasicInfoProps = {
   value: Partial<Strategy>;

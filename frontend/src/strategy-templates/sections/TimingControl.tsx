@@ -1,7 +1,7 @@
 import Button from "../../components/Button";
 import TimeRangePicker from "../../components/TimeRangePicker";
 import WeekdaySelector from "../../components/WeekdaySelector";
-import { DayAndTimeRange, StrategyTemplate } from "../../dsl/strategy";
+import { DayAndTimeRange, StrategyTemplate } from "../../codegen/dsl/strategy";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type TimingControlProps = {
