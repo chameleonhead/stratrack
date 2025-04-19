@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import Select from "../../components/Select";
 import StrategyComparisonConditionSelector from "./StrategyComparisonConditionSelector";
 import StrategyContinueConditionSelector from "./StrategyContinueConditionSelector";
@@ -42,65 +43,68 @@ function StrategyConditionBuilder({
     onChange
   );
 
-  const handleTypeChange = (newType: StrategyCondition["type"]) => {
-    if (condition.type === newType) return;
-    switch (newType) {
-      case "comparison":
-        setCondition({
-          type: "comparison",
-          operator: ">",
-          left: { type: "constant", value: 0, valueType: "scalar" },
-          right: { type: "constant", value: 0, valueType: "scalar" },
-        });
-        break;
-      case "cross":
-        setCondition({
-          type: "cross",
-          direction: "cross_over",
-          left: { type: "constant", value: 0, valueType: "scalar" },
-          right: { type: "constant", value: 0, valueType: "scalar" },
-        });
-        break;
-      case "state":
-        setCondition({
-          type: "state",
-          operand: { type: "variable", name: "", valueType: "bar" },
-          state: "rising",
-        });
-        break;
-      case "continue":
-        setCondition({
-          type: "continue",
-          condition: {
+  const handleTypeChange = useCallback(
+    (newType: StrategyCondition["type"]) => {
+      if (condition.type === newType) return;
+      switch (newType) {
+        case "comparison":
+          setCondition({
             type: "comparison",
             operator: ">",
             left: { type: "constant", value: 0, valueType: "scalar" },
             right: { type: "constant", value: 0, valueType: "scalar" },
-          },
-          continue: "true",
-        });
-        break;
-      case "change":
-        setCondition({
-          type: "change",
-          change: "to_true",
-          condition: {
-            type: "comparison",
-            operator: ">",
+          });
+          break;
+        case "cross":
+          setCondition({
+            type: "cross",
+            direction: "cross_over",
             left: { type: "constant", value: 0, valueType: "scalar" },
             right: { type: "constant", value: 0, valueType: "scalar" },
-          },
-        });
-        break;
-      case "group":
-        setCondition({
-          type: "group",
-          operator: "and",
-          conditions: [],
-        });
-        break;
-    }
-  };
+          });
+          break;
+        case "state":
+          setCondition({
+            type: "state",
+            operand: { type: "variable", name: "", valueType: "bar" },
+            state: "rising",
+          });
+          break;
+        case "continue":
+          setCondition({
+            type: "continue",
+            condition: {
+              type: "comparison",
+              operator: ">",
+              left: { type: "constant", value: 0, valueType: "scalar" },
+              right: { type: "constant", value: 0, valueType: "scalar" },
+            },
+            continue: "true",
+          });
+          break;
+        case "change":
+          setCondition({
+            type: "change",
+            change: "to_true",
+            condition: {
+              type: "comparison",
+              operator: ">",
+              left: { type: "constant", value: 0, valueType: "scalar" },
+              right: { type: "constant", value: 0, valueType: "scalar" },
+            },
+          });
+          break;
+        case "group":
+          setCondition({
+            type: "group",
+            operator: "and",
+            conditions: [],
+          });
+          break;
+      }
+    },
+    [condition.type, setCondition]
+  );
 
   return (
     <div className="space-y-2 border p-4 rounded">
@@ -108,7 +112,7 @@ function StrategyConditionBuilder({
         <Select
           name={`${name}.type`}
           value={condition.type}
-          onChange={(val) => handleTypeChange(val as StrategyCondition["type"])}
+          onChange={handleTypeChange as (value: string) => void}
           options={CONDITION_OPTIONS}
         />
         {onDelete ? (
@@ -117,25 +121,23 @@ function StrategyConditionBuilder({
           </Button>
         ) : null}
       </div>
-
-      {condition.type === "comparison" && (
-        <StrategyComparisonConditionSelector value={condition} onChange={onChange} />
-      )}
-      {condition.type === "cross" && (
-        <StrategyCrossConditionSelector value={condition} onChange={onChange} />
-      )}
-      {condition.type === "state" && (
-        <StrategyStateConditionSelector value={condition} onChange={onChange} />
-      )}
-      {condition.type === "continue" && (
-        <StrategyContinueConditionSelector value={condition} onChange={onChange} />
-      )}
-      {condition.type === "change" && (
-        <StrategyChangeConditionSelector value={condition} onChange={onChange} />
-      )}
-      {condition.type === "group" && (
-        <StrategyGroupConditionSelector value={condition} onChange={onChange} />
-      )}
+      {useMemo(() => {
+        switch (condition.type) {
+          case "comparison":
+            return <StrategyComparisonConditionSelector value={condition} onChange={onChange} />;
+          case "cross":
+            return <StrategyCrossConditionSelector value={condition} onChange={onChange} />;
+          case "state":
+            return <StrategyStateConditionSelector value={condition} onChange={onChange} />;
+          case "continue":
+            return <StrategyContinueConditionSelector value={condition} onChange={onChange} />;
+          case "change":
+            return <StrategyChangeConditionSelector value={condition} onChange={onChange} />;
+          case "group":
+            return <StrategyGroupConditionSelector value={condition} onChange={onChange} />;
+        }
+        return null;
+      }, [condition, onChange])}
     </div>
   );
 }

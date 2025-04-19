@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import ConditionBuilder from "../components/StrategyConditionsBuilder";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import { StrategyCondition, StrategyTemplate } from "../../codegen/dsl/strategy";
@@ -18,20 +18,32 @@ function EntryLogic({ value, onChange }: EntryLogicProps) {
     () => localValue.entry?.filter((e) => e.type === "short") || [],
     [localValue.entry]
   );
-  const handleLongConditionChange = (conditions: Partial<StrategyCondition>[]) => {
-    const longEntries = conditions.map((condition) => ({
-      type: "long" as const,
-      condition: condition as StrategyCondition,
-    }));
-    setLocalValue({ ...localValue, entry: [...shortEntries, ...longEntries] });
-  };
-  const handleShortConditionChange = (conditions: Partial<StrategyCondition>[]) => {
-    const shortEntries = conditions.map((condition) => ({
-      type: "short" as const,
-      condition: condition as StrategyCondition,
-    }));
-    setLocalValue({ ...localValue, entry: [...shortEntries, ...longEntries] });
-  };
+  const handleLongConditionChange = useCallback(
+    (conditions: Partial<StrategyCondition>[]) => {
+      setLocalValue((localValue) => {
+        const shortEntries = localValue.entry?.filter((e) => e.type === "short") || [];
+        const longEntries = conditions.map((condition) => ({
+          type: "long" as const,
+          condition: condition as StrategyCondition,
+        }));
+        return { ...localValue, entry: [...shortEntries, ...longEntries] };
+      });
+    },
+    [setLocalValue]
+  );
+  const handleShortConditionChange = useCallback(
+    (conditions: Partial<StrategyCondition>[]) => {
+      setLocalValue((localValue) => {
+        const longEntries = localValue.entry?.filter((e) => e.type === "long") || [];
+        const shortEntries = conditions.map((condition) => ({
+          type: "short" as const,
+          condition: condition as StrategyCondition,
+        }));
+        return { ...localValue, entry: [...shortEntries, ...longEntries] };
+      });
+    },
+    [setLocalValue]
+  );
   return (
     <section id="entry-logic" className="space-y-4">
       <div>

@@ -1,27 +1,42 @@
-import { useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 
 export function useLocalValue<T>(
   defaultValue: T,
-  value?: T,
+  value?: T | undefined,
   onChange?: (value: T) => void
-): [T, (newValue: T) => void] {
-  const [localValue, setLocalValue] = useState(value ?? defaultValue);
+): [T, Dispatch<SetStateAction<T>>] {
+  const [localValue, setLocalValue] = useState<T>(value ?? defaultValue);
+  const isValueUndefined = typeof value === "undefined";
 
   const updateValue = useCallback(
-    (newValue: T) => {
-      onChange?.(newValue);
-      if (typeof value === "undefined") {
-        setLocalValue(newValue);
+    (setStateAction: SetStateAction<T>) => {
+      const promise = new Promise<T>((resolve) => {
+        setLocalValue(prevState => {
+          const newValue = typeof setStateAction === "function"
+            ? (setStateAction as (prevState: T) => T)(prevState)
+            : setStateAction;
+          resolve(newValue);
+          if (isValueUndefined) {
+            return newValue
+          } else {
+            return prevState;
+          }
+        })
+      });
+      if (onChange) {
+        promise.then(onChange)
       }
     },
-    [onChange, value]
+    [onChange, isValueUndefined]
   );
 
   useEffect(() => {
     if (typeof value !== "undefined") {
-      setLocalValue(value);
+      if (value !== localValue) {
+        setLocalValue(value);
+      }
     }
-  }, [value]);
+  }, [value, localValue]);
 
   return [localValue, updateValue];
 }

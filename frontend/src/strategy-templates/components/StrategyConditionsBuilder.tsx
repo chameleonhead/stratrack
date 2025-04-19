@@ -1,30 +1,41 @@
-import ConditionRow from "./StrategyConditionBuilder";
+import StrategyConditionBuilder from "./StrategyConditionBuilder";
 import Button from "../../components/Button";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import { StrategyCondition } from "../../codegen/dsl/strategy";
+import { useCallback, useMemo } from "react";
 
-export type StrategyConditionBuilderProps = {
+export type StrategyConditionsBuilderProps = {
   value?: Partial<StrategyCondition>[];
   onChange?: (value: Partial<StrategyCondition>[]) => void;
 };
 
-function StrategyConditionBuilder({ value, onChange }: StrategyConditionBuilderProps) {
+function StrategyConditionsBuilder({ value, onChange }: StrategyConditionsBuilderProps) {
   const [localValue, setLocalValue] = useLocalValue([], value, onChange);
 
-  const updateCondition = (index: number, newCondition: Partial<StrategyCondition>) => {
-    const newConditions = [...localValue];
-    newConditions[index] = newCondition;
-    setLocalValue(newConditions);
-  };
+  const updateCondition = useCallback(
+    (index: number, newCondition: Partial<StrategyCondition>) => {
+      setLocalValue((localValue) => {
+        const newConditions = [...localValue];
+        newConditions[index] = newCondition;
+        return newConditions;
+      });
+    },
+    [setLocalValue]
+  );
 
-  const deleteCondition = (index: number) => {
-    const newConditions = [...localValue];
-    newConditions.splice(index, 1);
-    setLocalValue(newConditions);
-  };
+  const deleteCondition = useCallback(
+    (index: number) => {
+      setLocalValue((localValue) => {
+        const newConditions = [...localValue];
+        newConditions.splice(index, 1);
+        return newConditions;
+      });
+    },
+    [setLocalValue]
+  );
 
-  const addCondition = () => {
-    setLocalValue([
+  const addCondition = useCallback(() => {
+    setLocalValue((localValue) => [
       ...localValue,
       {
         type: "comparison",
@@ -33,18 +44,22 @@ function StrategyConditionBuilder({ value, onChange }: StrategyConditionBuilderP
         right: { type: "constant", value: 0, valueType: "scalar" },
       },
     ]);
-  };
+  }, [setLocalValue]);
 
   return (
     <div className="space-y-4">
-      {localValue.map((condition, index) => (
-        <ConditionRow
-          key={index}
-          value={condition}
-          onChange={(updated) => updateCondition(index, updated)}
-          onDelete={() => deleteCondition(index)}
-        />
-      ))}
+      {useMemo(
+        () =>
+          localValue.map((condition, index) => (
+            <StrategyConditionBuilder
+              key={index}
+              value={condition}
+              onChange={(updated) => updateCondition(index, updated)}
+              onDelete={() => deleteCondition(index)}
+            />
+          )),
+        [localValue, updateCondition, deleteCondition]
+      )}
 
       <Button type="button" onClick={addCondition}>
         条件を追加
@@ -53,4 +68,4 @@ function StrategyConditionBuilder({ value, onChange }: StrategyConditionBuilderP
   );
 }
 
-export default StrategyConditionBuilder;
+export default StrategyConditionsBuilder;

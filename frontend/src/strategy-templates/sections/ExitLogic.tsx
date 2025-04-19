@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import ConditionBuilder from "../components/StrategyConditionsBuilder";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import { StrategyCondition, StrategyTemplate } from "../../codegen/dsl/strategy";
@@ -18,20 +18,32 @@ function ExitLogic({ value, onChange }: ExitLogicProps) {
     () => localValue.exit?.filter((e) => e.type === "short") || [],
     [localValue.exit]
   );
-  const handleLongConditionChange = (conditions: Partial<StrategyCondition>[]) => {
-    const longEntries = conditions.map((condition) => ({
-      type: "long" as const,
-      condition: condition as StrategyCondition,
-    }));
-    setLocalValue({ ...localValue, exit: [...shortEntries, ...longEntries] });
-  };
-  const handleShortConditionChange = (conditions: Partial<StrategyCondition>[]) => {
-    const shortEntries = conditions.map((condition) => ({
-      type: "short" as const,
-      condition: condition as StrategyCondition,
-    }));
-    setLocalValue({ ...localValue, exit: [...shortEntries, ...longEntries] });
-  };
+  const handleLongConditionChange = useCallback(
+    (conditions: Partial<StrategyCondition>[]) => {
+      setLocalValue((localValue) => {
+        const shortEntries = localValue.exit?.filter((e) => e.type === "short") || [];
+        const longEntries = conditions.map((condition) => ({
+          type: "long" as const,
+          condition: condition as StrategyCondition,
+        }));
+        return { ...localValue, exit: [...shortEntries, ...longEntries] };
+      });
+    },
+    [setLocalValue]
+  );
+  const handleShortConditionChange = useCallback(
+    (conditions: Partial<StrategyCondition>[]) => {
+      setLocalValue((localValue) => {
+        const longEntries = localValue.exit?.filter((e) => e.type === "long") || [];
+        const shortEntries = conditions.map((condition) => ({
+          type: "short" as const,
+          condition: condition as StrategyCondition,
+        }));
+        return { ...localValue, exit: [...shortEntries, ...longEntries] };
+      });
+    },
+    [setLocalValue]
+  );
   return (
     <section id="exit-logic" className="space-y-4">
       <div>
