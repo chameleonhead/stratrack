@@ -9,7 +9,7 @@ import {
   MqlStatement,
   MqlVariableRef,
 } from "../ast/mql/mqlast";
-import { ArrayExpression, IndicatorExpression } from "../dsl/common";
+import { BarExpression, IndicatorExpression } from "../dsl/common";
 import { Indicator } from "../dsl/indicator";
 import { generateClassFromIndicator } from "./mqlIndGenerator";
 
@@ -27,7 +27,7 @@ export class IndicatorContext {
 
   getVariableExpression(
     expr: IndicatorExpression,
-    emitVairableExpression: (val: ArrayExpression) => MqlExpression
+    emitVairableExpression: (val: BarExpression) => MqlExpression
   ): MqlExpression {
     const key = this.hash(expr);
     if (!(key in this.instances)) {

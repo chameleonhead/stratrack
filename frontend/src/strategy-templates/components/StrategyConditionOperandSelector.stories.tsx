@@ -20,7 +20,7 @@ const meta: Meta<typeof StrategyConditionOperandSelector> = {
           },
           {
             name: "var2",
-            expression: { type: "price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
             description: "price(array)",
           },
           {
@@ -87,7 +87,7 @@ export const ScalarPriceOperand: Story = {
   args: {
     allowedTypes: ["scalar_price"],
     value: {
-      type: "price",
+      type: "scalar_price",
       source: "high",
       valueType: "scalar",
     },

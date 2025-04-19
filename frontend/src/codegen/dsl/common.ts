@@ -1,21 +1,22 @@
-export type ScalarExpression<Condition = CommonCondition> =
+export type ScalarExpression =
   | ConstantExpression
   | NumberParamReferenceExpression
+  | ScalarPriceExpression
   | BarValueExpression
   | IndicatorExpression
-  | ScalarPriceExpression
   | AggregationExpression
-  | ScalarUnaryOperationExpression<Condition>
-  | ScalarBinaryOperationExpression<Condition>
-  | ScalarTernaryExpression<Condition>;
-
-export type ArrayExpression = VariableReferenceExpression | PriceExpression | SourceExpression;
+  | ScalarUnaryOperationExpression
+  | ScalarBinaryOperationExpression
+  | ScalarTernaryExpression;
+export type BarExpression = PriceExpression | SourceExpression | VariableReferenceExpression;
 
 export type ConstantExpression = {
   type: "constant";
   value: number;
   valueType: "scalar";
 };
+
+export type PermanentVariableExpression = ConstantExpression | NumberParamReferenceExpression;
 
 export type NumberParamReferenceExpression = {
   type: "param";
@@ -42,33 +43,29 @@ export type SourceExpression = {
 };
 
 export type ScalarPriceExpression = {
-  type: "price";
+  type: "scalar_price";
   source:
-    | "bid"
-    | "ask"
-    | "open"
-    | "high"
-    | "close"
-    | "low"
-    | "median"
-    | "typical"
-    | "weighted"
-    | "tick_volume"
-    | "volume";
+  | "bid"
+  | "ask"
+  | "open"
+  | "high"
+  | "close"
+  | "low"
+  | "median"
+  | "typical"
+  | "weighted"
+  | "tick_volume"
+  | "volume";
   valueType: "scalar";
-  shiftBars?: ConstantExpression | NumberParamReferenceExpression;
-  fallback?: ScalarExpression<
-    Condition<ConstantExpression | NumberParamReferenceExpression, unknown>
-  >;
+  shiftBars?: PermanentVariableExpression;
+  fallback?: ScalarExpression;
 };
 
 export type BarValueExpression = {
   type: "bar_value";
-  source: ArrayExpression;
-  shiftBars?: ConstantExpression | NumberParamReferenceExpression;
-  fallback?: ScalarExpression<
-    Condition<ConstantExpression | NumberParamReferenceExpression, unknown>
-  >;
+  source: BarExpression;
+  shiftBars?: PermanentVariableExpression;
+  fallback?: ScalarExpression;
   valueType: "scalar";
 };
 
@@ -82,25 +79,25 @@ export type IndicatorExpression = {
 
 export type IndicatorParamValue =
   | {
-      name: string;
-      type: "number";
-      value: number;
-    }
+    name: string;
+    type: "number";
+    value: number;
+  }
   | {
-      name: string;
-      type: "aggregationType";
-      method: AggregationType;
-    }
+    name: string;
+    type: "aggregationType";
+    method: AggregationType;
+  }
   | {
-      name: string;
-      type: "source";
-      ref: VariableReferenceExpression;
-    };
+    name: string;
+    type: "source";
+    ref: VariableReferenceExpression;
+  };
 
 export type AggregationExpression = {
   type: "aggregation";
   method: AggregationMethodExpression;
-  source: ArrayExpression;
+  source: BarExpression;
   period: ScalarExpression;
   valueType: "scalar";
 };
@@ -125,84 +122,79 @@ export type AggregationType =
 export type AggregationTypeExpression = { type: "aggregationType"; value: AggregationType };
 export type AggregationTypeParamExpression = { type: "param"; name: string };
 
-export type ScalarUnaryOperationExpression<Condition = CommonCondition> = {
+export type ScalarUnaryOperationExpression = {
   type: "unary_op";
   operator: "-" | "abs";
-  operand: ScalarExpression<Condition>;
+  operand: ScalarExpression;
+  valueType: "scalar";
 };
 
-export type ScalarBinaryOperationExpression<Condition = CommonCondition> = {
+export type ScalarBinaryOperationExpression = {
   type: "binary_op";
   operator: "+" | "-" | "*" | "/" | "max" | "min";
-  left: ScalarExpression<Condition>;
-  right: ScalarExpression<Condition>;
+  left: ScalarExpression;
+  right: ScalarExpression;
+  valueType: "scalar";
 };
 
-export type ScalarTernaryExpression<Condition = CommonCondition> = {
+export type ScalarTernaryExpression = {
   type: "ternary";
-  condition: Condition;
-  trueExpr: ScalarExpression<Condition>;
-  falseExpr: ScalarExpression<Condition>;
+  condition: CommonCondition;
+  trueExpr: ScalarExpression;
+  falseExpr: ScalarExpression;
+  valueType: "scalar";
 };
 
-export type CommonCondition = Condition<ScalarOperand, ArrayOperand>;
+export type CommonCondition = Condition<ScalarExpression, BarExpression>;
 
-export type Condition<ScalarOperand, ArrayOperand> =
-  | ComparisonCondition<ScalarOperand>
-  | CrossCondition<ArrayOperand>
-  | StateCondition<ArrayOperand>
-  | ChangeCondition<ScalarOperand, ArrayOperand>
-  | ContinueCondition<ScalarOperand, ArrayOperand>
-  | GroupCondition<ScalarOperand, ArrayOperand>;
+export type Condition<ScalarExpression, BarExpression> =
+  | ComparisonCondition<ScalarExpression>
+  | CrossCondition<BarExpression>
+  | StateCondition<BarExpression>
+  | ChangeCondition<ScalarExpression, BarExpression>
+  | ContinueCondition<ScalarExpression, BarExpression>
+  | GroupCondition<ScalarExpression, BarExpression>;
 
-export type ConditionOperand = ScalarOperand | ArrayOperand;
+export type ConditionOperand = ScalarExpression | BarExpression;
 
-export type ScalarOperand =
-  | ConstantExpression
-  | NumberParamReferenceExpression
-  | ScalarPriceExpression
-  | BarValueExpression;
-
-export type ArrayOperand = VariableReferenceExpression | PriceExpression | SourceExpression;
-
-export type ComparisonCondition<ScalarOperand> = {
+export type ComparisonCondition<ScalarExpression> = {
   type: "comparison";
   operator: ">" | "<" | ">=" | "<=" | "==" | "!=";
-  left: ScalarOperand;
-  right: ScalarOperand;
+  left: ScalarExpression;
+  right: ScalarExpression;
 };
 
-export type CrossCondition<ArrayOperand> = {
+export type CrossCondition<BarExpression> = {
   type: "cross";
   direction: "cross_over" | "cross_under";
-  left: ConstantExpression | ArrayOperand;
-  right: ConstantExpression | ArrayOperand;
+  left: ConstantExpression | BarExpression;
+  right: ConstantExpression | BarExpression;
 };
 
-export type StateCondition<ArrayOperand> = {
+export type StateCondition<BarExpression> = {
   type: "state";
   state: "rising" | "falling";
-  operand: ArrayOperand;
+  operand: BarExpression;
   consecutiveBars?: number;
 };
 
-export type ChangeCondition<ScalarOperand, ArrayOperand> = {
+export type ChangeCondition<ScalarExpression, BarExpression> = {
   type: "change";
   change: "to_true" | "to_false";
-  condition: Condition<ScalarOperand, ArrayOperand>;
+  condition: Condition<ScalarExpression, BarExpression>;
   preconditionBars?: number;
   confirmationBars?: number;
 };
 
-export type ContinueCondition<ScalarOperand, ArrayOperand> = {
+export type ContinueCondition<ScalarExpression, BarExpression> = {
   type: "continue";
   continue: "true" | "false";
-  condition: Condition<ScalarOperand, ArrayOperand>;
+  condition: Condition<ScalarExpression, BarExpression>;
   consecutiveBars?: number;
 };
 
-export type GroupCondition<ScalarOperand, ArrayOperand> = {
+export type GroupCondition<ScalarExpression, BarExpression> = {
   type: "group";
   operator: "and" | "or";
-  conditions: Condition<ScalarOperand, ArrayOperand>[];
+  conditions: Condition<ScalarExpression, BarExpression>[];
 };

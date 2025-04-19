@@ -10,14 +10,12 @@ import {
 } from "../ast/python/pythonast";
 import {
   AggregationType,
-  ArrayExpression,
-  ArrayOperand,
-  Condition,
+  BarExpression,
+  CommonCondition,
   IndicatorExpression,
   ScalarExpression,
-  ScalarOperand,
 } from "../dsl/common";
-import { StrategyCondition, StrategyTemplate } from "../dsl/strategy";
+import { StrategyTemplate } from "../dsl/strategy";
 import {
   Accelerator,
   AccumulationDistribution,
@@ -121,7 +119,7 @@ export function convertStrategyToPythonAst(template: StrategyTemplate) {
   return module;
 }
 
-function emitArrayVariableExpression(expr: ArrayExpression) {
+function emitArrayVariableExpression(expr: BarExpression) {
   switch (expr.type) {
     case "price": {
       const source = expr.source || "close";
@@ -132,19 +130,26 @@ function emitArrayVariableExpression(expr: ArrayExpression) {
   }
 }
 
-function emitVariableExpression(expr: ScalarExpression<StrategyCondition> | ArrayExpression, shift?: PyExpr): string {
+function emitVariableExpression(
+  expr: ScalarExpression | BarExpression,
+  shift?: PyExpr
+): string {
   switch (expr.type) {
     case "variable":
       return `this.${expr.name}`;
+    case "scalar_price": {
+      const source = expr.source || "close";
+      const shiftBars =
+        typeof expr.shiftBars === "undefined"
+          ? shift
+          : `${emitVariableExpression(expr.shiftBars)} + ${shift}`;
+      return shiftBars?.toString() === "0"
+        ? `self.data.${source}[0]`
+        : `self.data.${source}[-${shiftBars}]`;
+    }
     case "price": {
-      if (expr.valueType === "bar") {
-        const source = expr.source || "close";
-        return `self.data.${source}`;
-      } else {
-        const source = expr.source || "close";
-        const shiftBars = typeof expr.shiftBars === 'undefined' ? shift : `${emitVariableExpression(expr.shiftBars)} + ${shift}`;
-        return shiftBars?.toString() === "0" ? `self.data.${source}[0]` : `self.data.${source}[-${shiftBars}]`;
-      }
+      const source = expr.source || "close";
+      return `self.data.${source}`;
     }
     case "constant":
       return expr.value.toString();
@@ -152,7 +157,7 @@ function emitVariableExpression(expr: ScalarExpression<StrategyCondition> | Arra
       return mapIndicatorNameToBtFunction(expr as IndicatorExpression);
     }
     case "bar_value":
-      return `${emitArrayVariableExpression(expr.source as ArrayExpression)}[${expr.shiftBars ? emitVariableExpression(expr.shiftBars) : "0"}]`;
+      return `${emitArrayVariableExpression(expr.source as BarExpression)}[${expr.shiftBars ? emitVariableExpression(expr.shiftBars) : "0"}]`;
     case "unary_op": {
       const inner = emitVariableExpression(expr.operand);
       return expr.operator === "abs" ? `abs(${inner})` : `-${inner}`;
@@ -173,7 +178,10 @@ function emitVariableExpression(expr: ScalarExpression<StrategyCondition> | Arra
   }
 }
 
-function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: PyExpr = new PyExpr("0")): string {
+function emitCondition(
+  cond: CommonCondition,
+  shift: PyExpr = new PyExpr("0")
+): string {
   switch (cond.type) {
     case "comparison":
       return `${emitVariableExpression(cond.left, shift)} ${cond.operator} ${emitVariableExpression(cond.right, shift)}`;

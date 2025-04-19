@@ -63,7 +63,7 @@ export type StrategyVariableDefinition = {
 
 // 変数式の型定義を再帰的な型から分離する
 export type StrategyVariableExpression = Exclude<
-  ScalarExpression<StrategyCondition>,
+  ScalarExpression,
   | NumberParamReferenceExpression
   | SourceExpression
   | AggregationExpression

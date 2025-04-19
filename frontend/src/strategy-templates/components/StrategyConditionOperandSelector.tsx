@@ -30,7 +30,8 @@ function toOptionType(val: ConditionOperand | undefined) {
   if (val?.type === "constant") return "constant" as const;
   if (val?.type === "variable") return "array_variable" as const;
   if (val?.type === "price") return "array_price" as const;
-  if (val?.type === "bar_value" && val?.source.type === "variable") return "scalar_variable" as const;
+  if (val?.type === "bar_value" && val?.source.type === "variable")
+    return "scalar_variable" as const;
   if (val?.type === "bar_value" && val?.source.type === "price") return "scalar_price" as const;
   return "constant" as const;
 }
@@ -72,7 +73,7 @@ function ConditionOperandSelector({
               setLocalValue({ type: "variable", name: "", valueType: "bar" });
             } else if (type === "scalar_price") {
               setLocalValue({
-                type: "price",
+                type: "scalar_price",
                 source: "close",
                 valueType: "scalar",
               });

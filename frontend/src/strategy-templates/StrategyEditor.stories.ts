@@ -23,7 +23,7 @@ export const RSI14: Story = {
           {
             name: "close",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "close",
               valueType: "scalar",
             },
@@ -165,7 +165,7 @@ export const DonchianChannel: Story = {
           {
             name: "close",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "close",
               valueType: "scalar",
             },
@@ -173,7 +173,7 @@ export const DonchianChannel: Story = {
           {
             name: "high",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "high",
               valueType: "scalar",
             },
@@ -181,7 +181,7 @@ export const DonchianChannel: Story = {
           {
             name: "low",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "low",
               valueType: "scalar",
             },
@@ -256,12 +256,14 @@ export const DonchianChannel: Story = {
                   },
                   valueType: "scalar",
                 },
+                valueType: "scalar",
               },
               right: {
                 type: "constant",
                 value: 2,
                 valueType: "scalar",
               },
+              valueType: "scalar",
             },
           },
         ],
@@ -392,7 +394,7 @@ export const Accelerator: Story = {
           {
             name: "median",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "median",
               valueType: "scalar",
             },
@@ -461,7 +463,7 @@ export const AccumulationDistribution: Story = {
           {
             name: "high",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "high",
               valueType: "scalar",
             },
@@ -469,7 +471,7 @@ export const AccumulationDistribution: Story = {
           {
             name: "low",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "low",
               valueType: "scalar",
             },
@@ -477,7 +479,7 @@ export const AccumulationDistribution: Story = {
           {
             name: "close",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "close",
               valueType: "scalar",
             },
@@ -485,7 +487,7 @@ export const AccumulationDistribution: Story = {
           {
             name: "tick_volume",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "tick_volume",
               valueType: "scalar",
             },
@@ -643,7 +645,7 @@ export const ADX: Story = {
           {
             name: "high",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "high",
               valueType: "scalar",
             },
@@ -651,7 +653,7 @@ export const ADX: Story = {
           {
             name: "low",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "low",
               valueType: "scalar",
             },
@@ -659,7 +661,7 @@ export const ADX: Story = {
           {
             name: "close",
             expression: {
-              type: "price",
+              type: "scalar_price",
               source: "close",
               valueType: "scalar",
             },

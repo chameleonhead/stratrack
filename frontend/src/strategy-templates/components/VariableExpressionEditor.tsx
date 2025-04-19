@@ -39,8 +39,8 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           valueType: "scalar",
         });
         break;
-      case "price":
-        onChange({ type: "price", source: "close", valueType: "scalar" });
+      case "scalar_price":
+        onChange({ type: "scalar_price", source: "close", valueType: "scalar" });
         break;
       case "indicator":
         onChange({ type: "indicator", name: "", params: [], lineName: "", valueType: "scalar" });
@@ -51,6 +51,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           operator: "+",
           left: { type: "constant", value: 0, valueType: "scalar" },
           right: { type: "constant", value: 0, valueType: "scalar" },
+          valueType: "scalar",
         });
         break;
       case "unary_op":
@@ -58,6 +59,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           type: "unary_op",
           operator: "-",
           operand: { type: "constant", value: 0, valueType: "scalar" },
+          valueType: "scalar",
         });
         break;
       case "ternary":
@@ -71,6 +73,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           },
           trueExpr: { type: "constant", value: 1, valueType: "scalar" },
           falseExpr: { type: "constant", value: 0, valueType: "scalar" },
+          valueType: "scalar",
         });
         break;
     }

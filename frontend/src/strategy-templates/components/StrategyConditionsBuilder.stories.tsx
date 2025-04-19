@@ -18,12 +18,18 @@ const meta = {
           },
           {
             name: "var2",
-            expression: { type: "price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
             description: "price(array)",
           },
           {
             name: "var3",
-            expression: { type: "indicator", name: "ind1", params: [], lineName: "default", valueType: "scalar" },
+            expression: {
+              type: "indicator",
+              name: "ind1",
+              params: [],
+              lineName: "default",
+              valueType: "scalar",
+            },
             description: "indicator(array)",
           },
         ]}

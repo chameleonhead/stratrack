@@ -30,7 +30,7 @@ import {
   AggregationExpression,
   AggregationType,
   AggregationTypeExpression,
-  ArrayExpression,
+  BarExpression,
   CommonCondition,
   ScalarExpression,
 } from "../dsl/common";
@@ -38,7 +38,6 @@ import {
   Indicator,
   AggregationTypeIndicatorParam,
   IndicatorVariableExpression,
-  IndicatorCondition,
 } from "../dsl/indicator";
 import { IndicatorContext } from "./indicatorContext";
 
@@ -523,10 +522,7 @@ function convertAggregationMethodArgs(
 ) {
   switch (expr.source.type) {
     case "source": {
-      const period = emitScalarVariableExpression(
-        expr.period as ScalarExpression<IndicatorCondition>,
-        ctx
-      );
+      const period = emitScalarVariableExpression(expr.period as ScalarExpression, ctx);
       return [
         expr.source.name,
         shift,
@@ -534,10 +530,7 @@ function convertAggregationMethodArgs(
       ];
     }
     case "variable": {
-      const period = emitScalarVariableExpression(
-        expr.period as ScalarExpression<IndicatorCondition>,
-        ctx
-      );
+      const period = emitScalarVariableExpression(expr.period as ScalarExpression, ctx);
       return [
         `this.${expr.source.name}`,
         shift,
@@ -598,7 +591,7 @@ function convertVariableDefinition(
   }
 }
 
-function emitArrayVariableExpression(expr: ArrayExpression): MqlExpression {
+function emitArrayVariableExpression(expr: BarExpression): MqlExpression {
   switch (expr.type) {
     case "source": {
       return expr.name;
@@ -618,7 +611,11 @@ function toFixed(value: number) {
   return value.toFixed(e);
 }
 
-function barAccess(varName: MqlExpression, shift: MqlExpression, fallback?: MqlExpression): MqlExpression {
+function barAccess(
+  varName: MqlExpression,
+  shift: MqlExpression,
+  fallback?: MqlExpression
+): MqlExpression {
   if (shift.toString() === "0") {
     return `${varName}[0]`;
   }
@@ -635,7 +632,7 @@ function emitScalarVariableExpression(
       return lit(toFixed(expr.value));
     case "param":
       return ref(`this.${expr.name}`);
-    case "price": {
+    case "scalar_price": {
       const s =
         typeof expr.shiftBars == "undefined"
           ? shift
@@ -660,10 +657,18 @@ function emitScalarVariableExpression(
         case "median":
           return bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "/", 2);
         case "typical":
-          return bin(bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", barAccess("Close", s)), "/", 3);
+          return bin(
+            bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", barAccess("Close", s)),
+            "/",
+            3
+          );
         case "weighted":
           return bin(
-            bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", bin(barAccess("Close", s), "+", barAccess("Open", s))),
+            bin(
+              bin(barAccess("High", s), "+", barAccess("Low", s)),
+              "+",
+              bin(barAccess("Close", s), "+", barAccess("Open", s))
+            ),
             "/",
             4
           );
@@ -683,9 +688,13 @@ function emitScalarVariableExpression(
           ? bin(shift, "+", emitScalarVariableExpression(expr.shiftBars, ctx))
           : emitScalarVariableExpression(expr.shiftBars, ctx)
         : shift || lit("0");
-      return barAccess(varName, shiftExpr, expr.fallback
-        ? emitScalarVariableExpression(expr.fallback as ScalarExpression, ctx)
-        : lit("0"));
+      return barAccess(
+        varName,
+        shiftExpr,
+        expr.fallback
+          ? emitScalarVariableExpression(expr.fallback as ScalarExpression, ctx)
+          : lit("0")
+      );
     }
     case "unary_op":
       return unary(expr.operator, emitScalarVariableExpression(expr.operand, ctx, shift));
@@ -705,8 +714,8 @@ function emitScalarVariableExpression(
   throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
 }
 
-function isBar(expr: ArrayExpression | ScalarExpression): boolean {
-  return (expr as ArrayExpression).valueType === "bar";
+function isBar(expr: BarExpression | ScalarExpression): boolean {
+  return (expr as BarExpression).valueType === "bar";
 }
 
 function emitCondition(
@@ -723,18 +732,18 @@ function emitCondition(
       );
     case "cross": {
       const curr = shift && `${shift}` !== "0" ? shift : lit(0);
-      const prev = typeof shift !== 'undefined' ? bin(shift, "+", lit(1)) : lit(1);
+      const prev = typeof shift !== "undefined" ? bin(shift, "+", lit(1)) : lit(1);
       const l_curr = isBar(cond.left)
-        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), curr)
+        ? barAccess(emitArrayVariableExpression(cond.left as BarExpression), curr)
         : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, curr);
       const l_prev = isBar(cond.left)
-        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), prev)
+        ? barAccess(emitArrayVariableExpression(cond.left as BarExpression), prev)
         : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, prev);
       const r_curr = isBar(cond.right)
-        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), curr)
+        ? barAccess(emitArrayVariableExpression(cond.right as BarExpression), curr)
         : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, curr);
       const r_prev = isBar(cond.right)
-        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), prev)
+        ? barAccess(emitArrayVariableExpression(cond.right as BarExpression), prev)
         : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, prev);
 
       return cond.direction === "cross_over"

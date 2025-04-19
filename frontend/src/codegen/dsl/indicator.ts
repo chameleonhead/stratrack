@@ -79,19 +79,19 @@ export type ExportLine = {
 export type IndicatorVariableDefinition = {
   name: string;
   expression: IndicatorVariableExpression;
-  invalidPeriod?: ScalarExpression<IndicatorCondition>;
+  invalidPeriod?: ScalarExpression;
   fallback?: VariableFallbackDefinition;
   description?: string;
 };
 
 export type VariableFallbackDefinition = {
   expression: IndicatorVariableExpression;
-  invalidPeriod?: ScalarExpression<IndicatorCondition>;
-  fallback?: ScalarExpression<IndicatorCondition>;
+  invalidPeriod?: ScalarExpression;
+  fallback?: ScalarExpression;
 };
 
 export type IndicatorVariableExpression = Exclude<
-  ScalarExpression<IndicatorCondition>,
+  ScalarExpression,
   PriceExpression
 >;
 

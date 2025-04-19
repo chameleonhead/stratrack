@@ -8,7 +8,7 @@ describe("renderStrategyCode", () => {
       {
         name: "close",
         expression: {
-          type: "price",
+          type: "scalar_price",
           source: "close",
           valueType: "scalar",
         },
@@ -36,7 +36,11 @@ describe("renderStrategyCode", () => {
         type: "long",
         condition: {
           type: "comparison",
-          left: { type: "bar_value", source: { type: "variable", name: "rsi14", valueType: "bar" }, valueType: "scalar" },
+          left: {
+            type: "bar_value",
+            source: { type: "variable", name: "rsi14", valueType: "bar" },
+            valueType: "scalar",
+          },
           operator: "<",
           right: { type: "constant", value: 30, valueType: "scalar" },
         },
@@ -47,7 +51,11 @@ describe("renderStrategyCode", () => {
         type: "long",
         condition: {
           type: "comparison",
-          left: { type: "bar_value", source: { type: "variable", name: "rsi14", valueType: "bar" }, valueType: "scalar" },
+          left: {
+            type: "bar_value",
+            source: { type: "variable", name: "rsi14", valueType: "bar" },
+            valueType: "scalar",
+          },
           operator: ">",
           right: { type: "constant", value: 70, valueType: "scalar" },
         },
