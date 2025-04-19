@@ -25,7 +25,7 @@ function Variables({ value, onChange }: VariablesProps) {
       ...localValue,
       variables: [
         ...(localValue.variables || []),
-        { name: "", expression: { type: "constant", value: 0 } },
+        { name: "", expression: { type: "constant", value: 0, valueType: "scalar" } },
       ],
     });
   };

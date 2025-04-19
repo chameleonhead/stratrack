@@ -21,6 +21,7 @@ export const ConstantOperand: Story = {
     value: {
       type: "constant",
       value: 100,
+      valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },
 };
@@ -28,8 +29,12 @@ export const ConstantOperand: Story = {
 export const VariablesOperand: Story = {
   args: {
     value: {
-      type: "variable",
-      name: "value1",
+      type: "bar_value",
+      source: {
+        type: "variable",
+        name: "value1",
+        valueType: "bar",
+      },
       valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },
@@ -49,8 +54,12 @@ export const VariablesOperand: Story = {
 export const VariablesOperandWithDescription: Story = {
   args: {
     value: {
-      type: "variable",
-      name: "value1",
+      type: "bar_value",
+      source: {
+        type: "variable",
+        name: "value1",
+        valueType: "bar",
+      },
       valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },

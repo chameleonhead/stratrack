@@ -26,19 +26,12 @@ const OPTIONS = [
   { value: "array_price" as const, label: "価格(配列)" },
 ];
 
-function toOptionType(
-  val: ConditionOperand["type"] | undefined,
-  allowedTypes: StrategyConditionOperandType[]
-) {
-  if (val === "constant") return "constant" as const;
-  if (val === "variable") {
-    if (allowedTypes.includes("scalar_variable")) return "scalar_variable" as const;
-    if (allowedTypes.includes("array_variable")) return "array_variable" as const;
-  }
-  if (val === "price") {
-    if (allowedTypes.includes("scalar_price")) return "scalar_price" as const;
-    if (allowedTypes.includes("array_price")) return "array_price" as const;
-  }
+function toOptionType(val: ConditionOperand | undefined) {
+  if (val?.type === "constant") return "constant" as const;
+  if (val?.type === "variable") return "array_variable" as const;
+  if (val?.type === "price") return "array_price" as const;
+  if (val?.type === "bar_value" && val?.source.type === "variable") return "scalar_variable" as const;
+  if (val?.type === "bar_value" && val?.source.type === "price") return "scalar_price" as const;
   return "constant" as const;
 }
 
@@ -56,7 +49,7 @@ function ConditionOperandSelector({
     value,
     onChange
   );
-  const optionType = toOptionType(localValue.type, allowedTypes);
+  const optionType = toOptionType(localValue as ConditionOperand);
 
   return (
     <div className="flex space-x-2">
@@ -69,11 +62,25 @@ function ConditionOperandSelector({
             const type = val as StrategyConditionOperandType;
             if (type === "constant") {
               setLocalValue({ type, value: 0 });
-            } else {
+            } else if (type === "scalar_variable") {
               setLocalValue({
-                type: "variable",
-                name: "",
-                valueType: type == "array_variable" ? "array" : "scalar",
+                type: "bar_value",
+                source: { type: "variable", name: "", valueType: "bar" },
+                valueType: "scalar",
+              });
+            } else if (type === "array_variable") {
+              setLocalValue({ type: "variable", name: "", valueType: "bar" });
+            } else if (type === "scalar_price") {
+              setLocalValue({
+                type: "price",
+                source: "close",
+                valueType: "scalar",
+              });
+            } else if (type === "array_price") {
+              setLocalValue({
+                type: "bar_value",
+                source: { type: "price", source: "close", valueType: "bar" },
+                valueType: "scalar",
               });
             }
           }}
@@ -147,7 +154,7 @@ function ConstantConditionOperandSelector({
 }
 
 type ScalarVariableConditionOperandSelectorProps = {
-  value?: Partial<Extract<ConditionOperand, { type: "variable"; valueType: "scalar" }>>;
+  value?: Partial<Extract<ConditionOperand, { type: "bar_value" }>>;
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
@@ -156,12 +163,26 @@ function ScalarVariableConditionOperandSelector({
   onChange,
 }: ScalarVariableConditionOperandSelectorProps) {
   const variables = useVariables();
+  const source = value?.source as Extract<
+    Extract<ConditionOperand, { type: "bar_value" }>["source"],
+    { type: "variable" }
+  >;
+  const shiftbars = value?.shiftBars as Extract<
+    Extract<ConditionOperand, { type: "bar_value" }>["shiftBars"],
+    { type: "constant" }
+  >;
   return (
     <div className="flex space-x-2">
       <Select
         fullWidth
-        value={value?.name}
-        onChange={(val) => onChange({ ...value, type: "variable", name: val })}
+        value={source?.name}
+        onChange={(val) =>
+          onChange({
+            ...value,
+            type: "bar_value",
+            source: { type: "variable", name: val, valueType: "bar" },
+          })
+        }
         options={variables.map((v) => ({
           value: v.name,
           label: `${v.name} ${v.description ? `(${v.description})` : ""}`,
@@ -169,11 +190,12 @@ function ScalarVariableConditionOperandSelector({
       />
       <NumberInput
         placeholder="シフト数"
-        value={value?.shiftBars?.value}
+        value={shiftbars?.value}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars:
+              val === null ? undefined : { type: "constant", value: val, valueType: "scalar" },
           })
         }
       />
@@ -213,7 +235,7 @@ const PRICE_OPTIONS = [
 ];
 
 type ScalarPriceConditionOperandSelectorProps = {
-  value?: Partial<Extract<ConditionOperand, { type: "price"; valueType: "scalar" }>>;
+  value?: Partial<Extract<ConditionOperand, { type: "bar_value" }>>;
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
@@ -221,27 +243,36 @@ function ScalarPriceConditionOperandSelector({
   value,
   onChange,
 }: ScalarPriceConditionOperandSelectorProps) {
+  const source = value?.source as Extract<
+    Extract<ConditionOperand, { type: "bar_value" }>["source"],
+    { type: "price" }
+  >;
+  const shiftbars = value?.shiftBars as Extract<
+    Extract<ConditionOperand, { type: "bar_value" }>["shiftBars"],
+    { type: "constant" }
+  >;
   return (
     <div className="flex space-x-2">
       <Select
         fullWidth
-        value={value?.source}
+        value={source?.source}
         onChange={(val) =>
           onChange({
             ...value,
-            type: "price",
-            source: val as Extract<ConditionOperand, { type: "price" }>["source"],
+            type: "bar_value",
+            source: { type: "variable", name: val, valueType: "bar" },
           })
         }
         options={PRICE_OPTIONS}
       />
       <NumberInput
         placeholder="シフト数"
-        value={value?.shiftBars?.value}
+        value={shiftbars?.value}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars:
+              val === null ? undefined : { type: "constant", value: val, valueType: "scalar" },
           })
         }
       />

@@ -29,8 +29,8 @@ function StrategyConditionBuilder({ value, onChange }: StrategyConditionBuilderP
       {
         type: "comparison",
         operator: ">",
-        left: { type: "constant", value: 0 },
-        right: { type: "constant", value: 0 },
+        left: { type: "constant", value: 0, valueType: "scalar" },
+        right: { type: "constant", value: 0, valueType: "scalar" },
       },
     ]);
   };

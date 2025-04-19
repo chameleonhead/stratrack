@@ -1,14 +1,13 @@
 import {
   AggregationType,
-  ArraySourceOperand,
-  ArrayVariableOperand,
+  BarValueExpression,
   Condition,
-  ConstantOperand,
+  ConstantExpression,
+  NumberParamReferenceExpression,
   PriceExpression,
   ScalarExpression,
-  ScalarSourceOperand,
-  ScalarVariableOperand,
-  VariableExpression,
+  SourceExpression,
+  VariableReferenceExpression,
 } from "./common";
 
 export type Indicator = {
@@ -92,11 +91,11 @@ export type VariableFallbackDefinition = {
 };
 
 export type IndicatorVariableExpression = Exclude<
-  VariableExpression<IndicatorCondition>,
+  ScalarExpression<IndicatorCondition>,
   PriceExpression
 >;
 
 export type IndicatorCondition = Condition<
-  ConstantOperand | ScalarVariableOperand | ScalarSourceOperand,
-  ArrayVariableOperand | ArraySourceOperand
+  ConstantExpression | NumberParamReferenceExpression | BarValueExpression,
+  VariableReferenceExpression | SourceExpression
 >;

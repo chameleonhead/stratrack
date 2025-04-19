@@ -30,13 +30,9 @@ import {
   AggregationExpression,
   AggregationType,
   AggregationTypeExpression,
-  ArraySourceOperand,
-  ArrayVariableOperand,
-  Condition,
-  ConstantOperand,
-  ScalarSourceOperand,
-  ScalarVariableOperand,
-  VariableExpression,
+  ArrayExpression,
+  CommonCondition,
+  ScalarExpression,
 } from "../dsl/common";
 import {
   Indicator,
@@ -291,13 +287,7 @@ export function generateClassFromIndicator(
     .filter(
       (v) => v.expression.type === "aggregation" && v.expression.method.type === "aggregationType"
     )
-    .map(
-      (v) =>
-        (
-          (v.expression as AggregationExpression<IndicatorCondition>)
-            .method as AggregationTypeExpression
-        ).value
-    )
+    .map((v) => ((v.expression as AggregationExpression).method as AggregationTypeExpression).value)
     .concat(
       variables
         .filter(
@@ -308,10 +298,8 @@ export function generateClassFromIndicator(
         )
         .map(
           (v) =>
-            (
-              (v.fallback!.expression as AggregationExpression<IndicatorCondition>)
-                .method as AggregationTypeExpression
-            ).value
+            ((v.fallback!.expression as AggregationExpression).method as AggregationTypeExpression)
+              .value
         )
     )
     .concat(params.filter((p) => p.type == "aggregationType").flatMap((p) => p.selectableTypes))
@@ -389,18 +377,18 @@ export function generateClassFromIndicator(
     decl("end", "int", ref("i")),
     ...(DEBUG
       ? [
-          callStmt("Print", ['"Start: "', "start", '", end: "', "end"]),
-          ...variables.map((v) =>
-            callStmt("Print", [
-              `"Before update ${v.name}: "`,
-              `this.${v.name}[i]`,
-              '", "',
-              ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
-              '", "',
-              ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
-            ])
-          ),
-        ]
+        callStmt("Print", ['"Start: "', "start", '", end: "', "end"]),
+        ...variables.map((v) =>
+          callStmt("Print", [
+            `"Before update ${v.name}: "`,
+            `this.${v.name}[i]`,
+            '", "',
+            ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
+            '", "',
+            ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
+          ])
+        ),
+      ]
       : []),
     loop(
       decl("j", "int", ref("start")),
@@ -411,45 +399,45 @@ export function generateClassFromIndicator(
         if (v.invalidPeriod) {
           return [
             iff(
-              bin("Bars", ">", bin("j", "+", emitVariableExpression(v.invalidPeriod, ctx))),
+              bin("Bars", ">", bin("j", "+", emitScalarVariableExpression(v.invalidPeriod, ctx))),
               convertVariableDefinition(v.name, v.expression, ctx, indicator, ref("j")),
               [
                 ...(v.fallback?.invalidPeriod
                   ? [
-                      iff(
-                        bin(
-                          "Bars",
-                          ">",
-                          bin("j", "+", emitVariableExpression(v.fallback.invalidPeriod, ctx))
-                        ),
-                        convertVariableDefinition(
-                          v.name,
-                          v.fallback.expression,
-                          ctx,
-                          indicator,
-                          ref("j")
-                        ),
-                        [
-                          stmt(
-                            bin(
-                              ref(`this.${v.name}[j]`),
-                              "=",
-                              v.fallback.fallback
-                                ? emitVariableExpression(v.fallback.fallback, ctx)
-                                : lit("0")
-                            )
-                          ),
-                        ]
+                    iff(
+                      bin(
+                        "Bars",
+                        ">",
+                        bin("j", "+", emitScalarVariableExpression(v.fallback.invalidPeriod, ctx))
                       ),
-                    ]
-                  : v.fallback
-                    ? convertVariableDefinition(
+                      convertVariableDefinition(
                         v.name,
                         v.fallback.expression,
                         ctx,
                         indicator,
                         ref("j")
-                      )
+                      ),
+                      [
+                        stmt(
+                          bin(
+                            ref(`this.${v.name}[j]`),
+                            "=",
+                            v.fallback.fallback
+                              ? emitScalarVariableExpression(v.fallback.fallback, ctx)
+                              : lit("0")
+                          )
+                        ),
+                      ]
+                    ),
+                  ]
+                  : v.fallback
+                    ? convertVariableDefinition(
+                      v.name,
+                      v.fallback.expression,
+                      ctx,
+                      indicator,
+                      ref("j")
+                    )
                     : [stmt(bin(ref(`this.${v.name}[j]`), "=", lit("0")))]),
               ]
             ),
@@ -461,15 +449,15 @@ export function generateClassFromIndicator(
     ),
     ...(DEBUG
       ? variables.map((v) =>
-          callStmt("Print", [
-            `"After update ${v.name}: "`,
-            `this.${v.name}[i]`,
-            '", "',
-            ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
-            '", "',
-            ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
-          ])
-        )
+        callStmt("Print", [
+          `"After update ${v.name}: "`,
+          `this.${v.name}[i]`,
+          '", "',
+          ternary("i + 1 < Bars - 1", `this.${v.name}[i + 1]`, 0),
+          '", "',
+          ternary("i + 2 < Bars - 1", `this.${v.name}[i + 2]`, 0),
+        ])
+      )
       : []),
     // 最後に lastCalculated を更新
     stmt(
@@ -529,13 +517,16 @@ export function generateClassFromIndicator(
 }
 
 function convertAggregationMethodArgs(
-  expr: AggregationExpression<IndicatorCondition>,
+  expr: AggregationExpression,
   ctx: IndicatorContext,
   shift: MqlVariableRef
 ) {
   switch (expr.source.type) {
     case "source": {
-      const period = emitVariableExpression(expr.period, ctx);
+      const period = emitScalarVariableExpression(
+        expr.period as ScalarExpression<IndicatorCondition>,
+        ctx
+      );
       return [
         expr.source.name,
         shift,
@@ -543,7 +534,10 @@ function convertAggregationMethodArgs(
       ];
     }
     case "variable": {
-      const period = emitVariableExpression(expr.period, ctx);
+      const period = emitScalarVariableExpression(
+        expr.period as ScalarExpression<IndicatorCondition>,
+        ctx
+      );
       return [
         `this.${expr.source.name}`,
         shift,
@@ -555,7 +549,7 @@ function convertAggregationMethodArgs(
 }
 function callAggregationMethod(
   name: string,
-  expr: AggregationExpression<IndicatorCondition>,
+  expr: AggregationExpression,
   ctx: IndicatorContext,
   indicator: Indicator,
   shift: MqlVariableRef
@@ -600,8 +594,20 @@ function convertVariableDefinition(
   if (e.type === "aggregation") {
     return callAggregationMethod(name, e, ctx, indicator, shift);
   } else {
-    return [stmt(bin(ref(`this.${name}[j]`), "=", emitVariableExpression(e, ctx, shift)))];
+    return [stmt(bin(ref(`this.${name}[j]`), "=", emitScalarVariableExpression(e, ctx, shift)))];
   }
+}
+
+function emitArrayVariableExpression(expr: ArrayExpression): MqlExpression {
+  switch (expr.type) {
+    case "source": {
+      return expr.name;
+    }
+    case "variable": {
+      return `this.${expr.name}`;
+    }
+  }
+  throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
 }
 
 function toFixed(value: number) {
@@ -612,8 +618,15 @@ function toFixed(value: number) {
   return value.toFixed(e);
 }
 
-function emitVariableExpression(
-  expr: VariableExpression<IndicatorCondition>,
+function barAccess(varName: MqlExpression, shift: MqlExpression, fallback?: MqlExpression): MqlExpression {
+  if (shift.toString() === "0") {
+    return `${varName}[0]`;
+  }
+  return ternary(bin("Bars", ">", shift), `${varName}[${shift}]`, fallback ?? lit("0"));
+}
+
+function emitScalarVariableExpression(
+  expr: ScalarExpression,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
@@ -622,82 +635,108 @@ function emitVariableExpression(
       return lit(toFixed(expr.value));
     case "param":
       return ref(`this.${expr.name}`);
-
-    case "source": {
-      if (expr.valueType === "array") {
-        return expr.name;
+    case "price": {
+      const s =
+        typeof expr.shiftBars == "undefined"
+          ? shift
+            ? shift
+            : lit(0)
+          : shift
+            ? emitScalarVariableExpression(expr.shiftBars, ctx, shift)
+            : emitScalarVariableExpression(expr.shiftBars, ctx);
+      switch (expr.source) {
+        case "ask":
+          return barAccess("Ask", s);
+        case "bid":
+          return barAccess("Bid", s);
+        case "open":
+          return barAccess("Open", s);
+        case "high":
+          return barAccess("High", s);
+        case "low":
+          return barAccess("Low", s);
+        case "close":
+          return barAccess("Close", s);
+        case "median":
+          return bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "/", 2);
+        case "typical":
+          return bin(bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", barAccess("Close", s)), "/", 3);
+        case "weighted":
+          return bin(
+            bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", bin(barAccess("Close", s), "+", barAccess("Open", s))),
+            "/",
+            4
+          );
+        case "tick_volume":
+        case "volume":
+          return barAccess("Volume", s);
       }
-      const shiftExpr = expr.shiftBars
-        ? shift
-          ? bin(shift, "+", emitVariableExpression(expr.shiftBars, ctx))
-          : emitVariableExpression(expr.shiftBars, ctx)
-        : shift || lit("0");
-      return ternary(
-        bin("Bars", ">", shiftExpr),
-        lit(`${expr.name}[${shiftExpr}]`),
-        expr.fallback ? emitVariableExpression(expr.fallback, ctx) : lit("0")
-      );
+      break;
     }
     case "indicator":
-      return ctx.getVariableExpression(expr, (e) =>
-        emitVariableExpression(e as VariableExpression<IndicatorCondition>, ctx, shift)
-      );
+      return ctx.getVariableExpression(expr, emitArrayVariableExpression);
 
-    case "variable": {
-      const varName = `this.${expr.name}`;
-      if (expr.valueType === "array") {
-        return varName;
-      }
+    case "bar_value": {
+      const varName = emitArrayVariableExpression(expr.source);
       const shiftExpr = expr.shiftBars
         ? shift
-          ? bin(shift, "+", emitVariableExpression(expr.shiftBars, ctx))
-          : emitVariableExpression(expr.shiftBars, ctx)
+          ? bin(shift, "+", emitScalarVariableExpression(expr.shiftBars, ctx))
+          : emitScalarVariableExpression(expr.shiftBars, ctx)
         : shift || lit("0");
-      return ternary(
-        bin("Bars", ">", shiftExpr),
-        lit(`${varName}[${shiftExpr}]`),
-        expr.fallback ? emitVariableExpression(expr.fallback, ctx) : lit("0")
-      );
+      return barAccess(varName, shiftExpr, expr.fallback
+        ? emitScalarVariableExpression(expr.fallback as ScalarExpression, ctx)
+        : lit("0"));
     }
     case "unary_op":
-      return unary(expr.operator, emitVariableExpression(expr.operand, ctx, shift));
+      return unary(expr.operator, emitScalarVariableExpression(expr.operand, ctx, shift));
     case "binary_op":
       return bin(
-        emitVariableExpression(expr.left, ctx, shift),
+        emitScalarVariableExpression(expr.left, ctx, shift),
         expr.operator,
-        emitVariableExpression(expr.right, ctx, shift)
+        emitScalarVariableExpression(expr.right, ctx, shift)
       );
     case "ternary":
       return ternary(
         emitCondition(expr.condition, ctx, shift),
-        emitVariableExpression(expr.trueExpr, ctx, shift),
-        emitVariableExpression(expr.falseExpr, ctx, shift)
+        emitScalarVariableExpression(expr.trueExpr, ctx, shift),
+        emitScalarVariableExpression(expr.falseExpr, ctx, shift)
       );
-    default:
-      throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
   }
+  throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
+}
+
+function isBar(expr: ArrayExpression | ScalarExpression): boolean {
+  return (expr as ArrayExpression).valueType === "bar";
 }
 
 function emitCondition(
-  cond: Condition<
-    ConstantOperand | ScalarVariableOperand | ScalarSourceOperand,
-    ArrayVariableOperand | ArraySourceOperand
-  >,
+  cond: CommonCondition,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
   switch (cond.type) {
     case "comparison":
       return bin(
-        emitOperand(cond.left, ctx, shift ? shift : lit(0)),
+        emitScalarVariableExpression(cond.left, ctx, shift ? shift : lit(0)),
         cond.operator,
-        emitOperand(cond.right, ctx, shift ? shift : lit(0))
+        emitScalarVariableExpression(cond.right, ctx, shift ? shift : lit(0))
       );
     case "cross": {
-      const l_curr = emitOperand(cond.left, ctx, shift ? shift : lit(0));
-      const l_prev = emitOperand(cond.left, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
-      const r_curr = emitOperand(cond.right, ctx, shift ? shift : lit(0));
-      const r_prev = emitOperand(cond.right, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
+      const curr = shift && `${shift}` !== "0" ? shift : lit(0);
+      const prev = typeof shift !== 'undefined' ? bin(shift, "+", lit(1)) : lit(1);
+      const l_curr = isBar(cond.left)
+        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), curr)
+        : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, curr);
+      const l_prev = isBar(cond.left)
+        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), prev)
+        : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, prev);
+      const r_curr = isBar(cond.right)
+        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), curr)
+        : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, curr);
+      const r_prev = isBar(cond.right)
+        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), prev)
+        : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, prev);
+
       return cond.direction === "cross_over"
         ? bin(bin(l_prev, "<", r_prev), "&&", bin(l_curr, ">", r_curr))
         : bin(bin(l_prev, ">", r_prev), "&&", bin(l_curr, "<", r_curr));
@@ -705,14 +744,15 @@ function emitCondition(
     case "state": {
       const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
+      const varName = emitArrayVariableExpression(cond.operand);
       for (let i = 0; i < Math.abs(cond.consecutiveBars || 1); i++) {
-        const var_curr = emitOperand(cond.operand, ctx, shift ? bin(shift, "+", lit(i)) : lit(i));
-        const var_prev = emitOperand(
-          cond.operand,
-          ctx,
-          shift ? bin(shift, "+", lit(i + 1)) : lit(i + 1)
+        conds.push(
+          bin(
+            barAccess(varName, shift ? bin(shift, "+", lit(i)) : lit(i)),
+            sign,
+            barAccess(varName, shift ? bin(shift, "+", lit(i + 1)) : lit(i + 1))
+          )
         );
-        conds.push(`${var_curr} ${sign} ${var_prev}`);
       }
       return conds.join(" and ");
     }
@@ -745,41 +785,5 @@ function emitCondition(
       );
     default:
       return "false";
-  }
-}
-
-function emitOperand(
-  op:
-    | ConstantOperand
-    | ScalarVariableOperand
-    | ScalarSourceOperand
-    | ArrayVariableOperand
-    | ArraySourceOperand,
-  ctx: IndicatorContext,
-  shift?: MqlExpression
-): MqlExpression {
-  switch (op.type) {
-    case "constant":
-      return lit(toFixed(op.value));
-    case "source":
-    case "variable": {
-      const varName = `${op.type === "source" ? "" : "this."}${op.name}`;
-      if (op.valueType == "array") {
-        if (!shift || shift.toString() === "0") {
-          return lit(`${varName}[0]`);
-        } else {
-          return ternary(bin("Bars", ">", shift), `${varName}[${shift}]`, 0);
-        }
-      } else {
-        const shiftBars = op.shiftBars
-          ? emitVariableExpression(op.shiftBars, ctx, shift)
-          : shift?.toString() || "0";
-        if (shiftBars.toString() === "0") {
-          return lit(`${varName}[0]`);
-        } else {
-          return ternary(bin("Bars", ">", shiftBars), `${varName}[${shiftBars}]`, 0);
-        }
-      }
-    }
   }
 }

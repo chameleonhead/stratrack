@@ -17,16 +17,9 @@ import {
   globalVar,
   file,
 } from "../ast/mql/mqlhelper";
-import {
-  ArrayPriceOperand,
-  ArrayVariableOperand,
-  ConstantOperand,
-  ScalarPriceOperand,
-  ScalarVariableOperand,
-  VariableExpression,
-} from "../dsl/common";
+import { ArrayExpression, CommonCondition, ScalarExpression } from "../dsl/common";
 import { Indicator } from "../dsl/indicator";
-import { StrategyCondition, StrategyTemplate } from "../dsl/strategy";
+import { StrategyTemplate } from "../dsl/strategy";
 import { IndicatorContext } from "./indicatorContext";
 
 /** 共通関数定義（ポジションのリスト取得 / オープン / クローズ） */
@@ -146,7 +139,9 @@ function generateTickFunction(template: StrategyTemplate, ctx: IndicatorContext)
         bin(ref("i"), ">=", lit(0)),
         stmt(unary("--", ref("i"))),
         template.variables.map((v) =>
-          stmt(bin(ref(`${v.name}[i]`), "=", emitVariableExpression(v.expression, ctx, ref("i"))))
+          stmt(
+            bin(ref(`${v.name}[i]`), "=", emitScalarVariableExpression(v.expression, ctx, ref("i")))
+          )
         )
       ),
       stmt(bin(ref("lastBars"), "=", ref("currentBars")))
@@ -208,124 +203,159 @@ export function convertStrategyToMqlAst(
   return file("expert", [...vars, ...globals, ...classes, ...functions], ["show_inputs"], []);
 }
 
-function emitVariableExpression(
-  expr: VariableExpression<StrategyCondition>,
+function emitArrayVariableExpression(expr: ArrayExpression): MqlExpression {
+  switch (expr.type) {
+    case "price": {
+      switch (expr.source) {
+        case "open":
+          return "Open";
+        case "high":
+          return "High";
+        case "low":
+          return "Low";
+        case "close":
+          return "Close";
+        case "tick_volume":
+          return "Volume";
+        case "volume":
+          return "Volume";
+      }
+      break;
+    }
+    case "variable": {
+      return expr.name;
+    }
+  }
+  throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
+}
+
+function toFixed(value: number) {
+  const e = parseInt(value.toString().split("e-")[1]);
+  if (isNaN(e)) {
+    return value.toString();
+  }
+  return value.toFixed(e);
+}
+
+function barAccess(varName: MqlExpression, shift: MqlExpression, fallback?: MqlExpression): MqlExpression {
+  if (shift.toString() === "0") {
+    return `${varName}[0]`;
+  }
+  return ternary(bin("Bars", ">", shift), `${varName}[${shift}]`, fallback ?? lit("0"));
+}
+
+function emitScalarVariableExpression(
+  expr: ScalarExpression,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
   switch (expr.type) {
     case "constant":
-      return lit(expr.value);
+      return lit(toFixed(expr.value));
+    case "param":
+      return ref(expr.name);
     case "price": {
-      if (expr.valueType === "array") {
-        switch (expr.source) {
-          case "open":
-            return "Open";
-          case "high":
-            return "High";
-          case "low":
-            return "Low";
-          case "close":
-            return "Close";
-          case "tick_volume":
-            return "Volume";
-          case "volume":
-            return "Volume";
-        }
-      }
       const s =
         typeof expr.shiftBars == "undefined"
           ? shift
             ? shift
             : lit(0)
           : shift
-            ? emitVariableExpression(expr.shiftBars, ctx, shift)
-            : emitVariableExpression(expr.shiftBars, ctx);
+            ? emitScalarVariableExpression(expr.shiftBars, ctx, shift)
+            : emitScalarVariableExpression(expr.shiftBars, ctx);
       switch (expr.source) {
         case "ask":
-          return `Ask[${s}]`;
+          return barAccess("Ask", s);
         case "bid":
-          return `Bid[${s}]`;
+          return barAccess("Bid", s);
         case "open":
-          return `Open[${s}]`;
+          return barAccess("Open", s);
         case "high":
-          return `High[${s}]`;
+          return barAccess("High", s);
         case "low":
-          return `Low[${s}]`;
+          return barAccess("Low", s);
         case "close":
-          return `Close[${s}]`;
+          return barAccess("Close", s);
         case "median":
-          return bin(bin(`High[${s}]`, "+", `Low[${s}]`), "/", 2);
+          return bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "/", 2);
         case "typical":
-          return bin(bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", `Close[${s}]`), "/", 3);
+          return bin(bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", barAccess("Close", s)), "/", 3);
         case "weighted":
           return bin(
-            bin(bin(`High[${s}]`, "+", `Low[${s}]`), "+", bin(`Close[${s}]`, "+", `Open[${s}]`)),
+            bin(bin(barAccess("High", s), "+", barAccess("Low", s)), "+", bin(barAccess("Close", s), "+", barAccess("Open", s))),
             "/",
             4
           );
         case "tick_volume":
         case "volume":
-          return `Volume[${s}]`;
+          return barAccess("Volume", s);
       }
       break;
     }
     case "indicator":
-      return ctx.getVariableExpression(expr, (e) =>
-        emitVariableExpression(e as VariableExpression<StrategyCondition>, ctx, shift)
-      );
+      return ctx.getVariableExpression(expr, emitArrayVariableExpression);
 
-    case "variable": {
-      const varName = expr.name;
-      if (expr.valueType === "array") {
-        return varName;
-      }
+    case "bar_value": {
+      const varName = emitArrayVariableExpression(expr.source);
       const shiftExpr = expr.shiftBars
         ? shift
-          ? bin(shift, "+", emitVariableExpression(expr.shiftBars, ctx))
-          : emitVariableExpression(expr.shiftBars, ctx)
+          ? bin(shift, "+", emitScalarVariableExpression(expr.shiftBars, ctx))
+          : emitScalarVariableExpression(expr.shiftBars, ctx)
         : shift || lit("0");
-      return ternary(
-        bin("Bars", ">", shiftExpr),
-        lit(`${varName}[${shiftExpr}]`),
-        expr.fallback ? emitVariableExpression(expr.fallback, ctx) : lit("0")
-      );
+      return barAccess(varName, shiftExpr, expr.fallback
+        ? emitScalarVariableExpression(expr.fallback as ScalarExpression, ctx)
+        : lit("0"));
     }
     case "unary_op":
-      return unary(expr.operator, emitVariableExpression(expr.operand, ctx, shift));
+      return unary(expr.operator, emitScalarVariableExpression(expr.operand, ctx, shift));
     case "binary_op":
       return bin(
-        emitVariableExpression(expr.left, ctx, shift),
+        emitScalarVariableExpression(expr.left, ctx, shift),
         expr.operator,
-        emitVariableExpression(expr.right, ctx, shift)
+        emitScalarVariableExpression(expr.right, ctx, shift)
       );
     case "ternary":
       return ternary(
         emitCondition(expr.condition, ctx, shift),
-        emitVariableExpression(expr.trueExpr, ctx, shift),
-        emitVariableExpression(expr.falseExpr, ctx, shift)
+        emitScalarVariableExpression(expr.trueExpr, ctx, shift),
+        emitScalarVariableExpression(expr.falseExpr, ctx, shift)
       );
   }
   throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
 }
 
+function isBar(expr: ArrayExpression | ScalarExpression): boolean {
+  return (expr as ArrayExpression).valueType === "bar";
+}
+
 function emitCondition(
-  cond: StrategyCondition,
+  cond: CommonCondition,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
   switch (cond.type) {
     case "comparison":
       return bin(
-        emitOperand(cond.left, ctx, shift ? shift : lit(0)),
+        emitScalarVariableExpression(cond.left, ctx, shift ? shift : lit(0)),
         cond.operator,
-        emitOperand(cond.right, ctx, shift ? shift : lit(0))
+        emitScalarVariableExpression(cond.right, ctx, shift ? shift : lit(0))
       );
     case "cross": {
-      const l_curr = emitOperand(cond.left, ctx, shift ? shift : lit(0));
-      const l_prev = emitOperand(cond.left, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
-      const r_curr = emitOperand(cond.right, ctx, shift ? shift : lit(0));
-      const r_prev = emitOperand(cond.right, ctx, shift ? bin(shift, "+", lit(1)) : lit(1));
+      const curr = shift && `${shift}` !== "0" ? shift : lit(0);
+      const prev = typeof shift !== 'undefined' ? bin(shift, "+", lit(1)) : lit(1);
+      const l_curr = isBar(cond.left)
+        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), curr)
+        : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, curr);
+      const l_prev = isBar(cond.left)
+        ? barAccess(emitArrayVariableExpression(cond.left as ArrayExpression), prev)
+        : emitScalarVariableExpression(cond.left as ScalarExpression, ctx, prev);
+      const r_curr = isBar(cond.right)
+        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), curr)
+        : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, curr);
+      const r_prev = isBar(cond.right)
+        ? barAccess(emitArrayVariableExpression(cond.right as ArrayExpression), prev)
+        : emitScalarVariableExpression(cond.right as ScalarExpression, ctx, prev);
+
       return cond.direction === "cross_over"
         ? bin(bin(l_prev, "<", r_prev), "&&", bin(l_curr, ">", r_curr))
         : bin(bin(l_prev, ">", r_prev), "&&", bin(l_curr, "<", r_curr));
@@ -333,14 +363,15 @@ function emitCondition(
     case "state": {
       const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
+      const varName = emitArrayVariableExpression(cond.operand);
       for (let i = 0; i < Math.abs(cond.consecutiveBars || 1); i++) {
-        const var_curr = emitOperand(cond.operand, ctx, shift ? bin(shift, "+", lit(i)) : lit(i));
-        const var_prev = emitOperand(
-          cond.operand,
-          ctx,
-          shift ? bin(shift, "+", lit(i + 1)) : lit(i + 1)
+        conds.push(
+          bin(
+            barAccess(varName, shift ? bin(shift, "+", lit(i)) : lit(i)),
+            sign,
+            barAccess(varName, shift ? bin(shift, "+", lit(i + 1)) : lit(i + 1))
+          )
         );
-        conds.push(`${var_curr} ${sign} ${var_prev}`);
       }
       return conds.join(" and ");
     }
@@ -373,57 +404,5 @@ function emitCondition(
       );
     default:
       return "false";
-  }
-}
-
-function emitOperand(
-  op:
-    | ConstantOperand
-    | ScalarVariableOperand
-    | ScalarPriceOperand
-    | ArrayVariableOperand
-    | ArrayPriceOperand,
-  ctx: IndicatorContext,
-  shift?: MqlExpression
-): MqlExpression {
-  switch (op.type) {
-    case "constant":
-      return lit(op.value);
-    case "price":
-    case "variable": {
-      const varName = op.type === "price" ? resolvePriceName(op.source) : op.name;
-      if (op.valueType == "array") {
-        if (!shift || shift.toString() === "0") {
-          return lit(`${varName}[0]`);
-        } else {
-          return ternary(bin("Bars", ">", shift), `${varName}[${shift}]`, 0);
-        }
-      } else {
-        const shiftBars = op.shiftBars
-          ? emitVariableExpression(op.shiftBars, ctx, shift)
-          : shift?.toString() || "0";
-        if (shiftBars.toString() === "0") {
-          return lit(`${varName}[0]`);
-        } else {
-          return ternary(bin("Bars", ">", shiftBars), `${varName}[${shiftBars}]`, 0);
-        }
-      }
-    }
-  }
-}
-function resolvePriceName(source: "open" | "high" | "close" | "low" | "tick_volume" | "volume") {
-  switch (source) {
-    case "open":
-      return "Open";
-    case "high":
-      return "High";
-    case "low":
-      return "Low";
-    case "close":
-      return "Close";
-    case "tick_volume":
-      return "Volume";
-    case "volume":
-      return "Volume";
   }
 }

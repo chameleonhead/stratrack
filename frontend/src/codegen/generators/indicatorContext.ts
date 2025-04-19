@@ -37,7 +37,7 @@ export class IndicatorContext {
     return new MqlFunctionCallExpr(`${this.instances[key].variableName}.Get`, [
       new MqlLiteral(`"${expr.lineName}"`),
       new MqlVariableRef("i"),
-      ...expr.params.filter((p) => p.type === "source").map((p) => emitVairableExpression(p.value)),
+      ...expr.params.filter((p) => p.type === "source").map((p) => emitVairableExpression(p.ref)),
     ]);
   }
 

@@ -10,12 +10,12 @@ import {
 } from "../ast/python/pythonast";
 import {
   AggregationType,
+  ArrayExpression,
   ArrayOperand,
   Condition,
-  ConditionOperand,
   IndicatorExpression,
+  ScalarExpression,
   ScalarOperand,
-  VariableExpression,
 } from "../dsl/common";
 import { StrategyCondition, StrategyTemplate } from "../dsl/strategy";
 import {
@@ -121,23 +121,38 @@ export function convertStrategyToPythonAst(template: StrategyTemplate) {
   return module;
 }
 
-function emitVariableExpression(expr: VariableExpression<StrategyCondition>): string {
+function emitArrayVariableExpression(expr: ArrayExpression) {
   switch (expr.type) {
-    case "constant":
-      return expr.value.toString();
     case "price": {
       const source = expr.source || "close";
-      if (expr.valueType === "array") {
-        return `self.data.${source}`;
-      }
-      const shift = expr.shiftBars || 0;
-      return shift === 0 ? `self.data.${source}[0]` : `self.data.${source}[-${shift}]`;
+      return `self.data.${source}`;
     }
+    default:
+      return "0";
+  }
+}
+
+function emitVariableExpression(expr: ScalarExpression<StrategyCondition> | ArrayExpression, shift?: PyExpr): string {
+  switch (expr.type) {
+    case "variable":
+      return `this.${expr.name}`;
+    case "price": {
+      if (expr.valueType === "bar") {
+        const source = expr.source || "close";
+        return `self.data.${source}`;
+      } else {
+        const source = expr.source || "close";
+        const shiftBars = typeof expr.shiftBars === 'undefined' ? shift : `${emitVariableExpression(expr.shiftBars)} + ${shift}`;
+        return shiftBars?.toString() === "0" ? `self.data.${source}[0]` : `self.data.${source}[-${shiftBars}]`;
+      }
+    }
+    case "constant":
+      return expr.value.toString();
     case "indicator": {
       return mapIndicatorNameToBtFunction(expr as IndicatorExpression);
     }
-    case "variable":
-      return `self.${expr.name}`;
+    case "bar_value":
+      return `${emitArrayVariableExpression(expr.source as ArrayExpression)}[${expr.shiftBars ? emitVariableExpression(expr.shiftBars) : "0"}]`;
     case "unary_op": {
       const inner = emitVariableExpression(expr.operand);
       return expr.operator === "abs" ? `abs(${inner})` : `-${inner}`;
@@ -158,15 +173,15 @@ function emitVariableExpression(expr: VariableExpression<StrategyCondition>): st
   }
 }
 
-function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: number = 0): string {
+function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: PyExpr = new PyExpr("0")): string {
   switch (cond.type) {
     case "comparison":
-      return `${emitOperand(cond.left, shift)} ${cond.operator} ${emitOperand(cond.right, shift)}`;
+      return `${emitVariableExpression(cond.left, shift)} ${cond.operator} ${emitVariableExpression(cond.right, shift)}`;
     case "cross": {
-      const l_curr = emitOperand(cond.left, shift);
-      const l_prev = emitOperand(cond.left, shift + 1);
-      const r_curr = emitOperand(cond.right, shift);
-      const r_prev = emitOperand(cond.right, shift + 1);
+      const l_curr = emitVariableExpression(cond.left, shift);
+      const l_prev = emitVariableExpression(cond.left, new PyExpr(`${shift} + 1`));
+      const r_curr = emitVariableExpression(cond.right, shift);
+      const r_prev = emitVariableExpression(cond.right, new PyExpr(`${shift} + 1`));
       if (cond.direction === "cross_over") {
         return `${l_prev} < ${r_prev} and ${l_curr} > ${r_curr}`;
       } else {
@@ -177,8 +192,8 @@ function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: numb
       const conds = [];
       const sign = cond.state === "rising" ? ">" : "<";
       for (let i = 0; i < Math.abs(cond.consecutiveBars || 1); i++) {
-        const var_curr = emitOperand(cond.operand, shift + i);
-        const var_prev = emitOperand(cond.operand, shift + i + 1);
+        const var_curr = emitVariableExpression(cond.operand, new PyExpr(`${shift} + ${i}`));
+        const var_prev = emitVariableExpression(cond.operand, new PyExpr(`${shift} + ${i} + 1`));
         conds.push(`${var_curr} ${sign} ${var_prev}`);
       }
       return conds.join(" and ");
@@ -186,7 +201,7 @@ function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: numb
     case "continue": {
       const conds = [];
       for (let i = 0; i < Math.abs(cond.consecutiveBars || 2); i++) {
-        const condition = emitCondition(cond.condition, shift + i);
+        const condition = emitCondition(cond.condition, new PyExpr(`${shift} + ${i}`));
         conds.push(condition);
       }
       return `${cond.continue === "true" ? "" : "not "}(${conds.join(" and ")})`;
@@ -205,18 +220,6 @@ function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: numb
     default:
       return "False";
   }
-}
-
-function emitOperand(op: ConditionOperand, shift: number): string {
-  if (op.type === "constant") return op.value?.toString() || "None";
-  if (op.type === "variable") {
-    if (op.valueType === "scalar") {
-      return `self.${op.name}[${-(shift + (typeof op.shiftBars === "undefined" ? 0 : op.shiftBars.value))}]`;
-    } else {
-      return `self.${op.name}`;
-    }
-  }
-  return "0";
 }
 function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
   const getNumber = (name: string): number =>

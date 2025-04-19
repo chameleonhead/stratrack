@@ -38,10 +38,11 @@ export const RSI14: Story = {
                 {
                   name: "source",
                   type: "source",
-                  value: { type: "variable", name: "close", valueType: "array" },
+                  ref: { type: "variable", name: "close", valueType: "bar" },
                 },
               ],
               lineName: "rsi",
+              valueType: "scalar",
             },
           },
           {
@@ -55,10 +56,11 @@ export const RSI14: Story = {
                 {
                   name: "source",
                   type: "source",
-                  value: { type: "variable", name: "rsi14", valueType: "array" },
+                  ref: { type: "variable", name: "rsi14", valueType: "bar" },
                 },
               ],
               lineName: "ma",
+              valueType: "scalar",
             },
           },
           {
@@ -72,10 +74,11 @@ export const RSI14: Story = {
                 {
                   name: "source",
                   type: "source",
-                  value: { type: "variable", name: "rsi_sma90", valueType: "array" },
+                  ref: { type: "variable", name: "rsi_sma90", valueType: "bar" },
                 },
               ],
               lineName: "ma",
+              valueType: "scalar",
             },
           },
         ],
@@ -92,7 +95,7 @@ export const RSI14: Story = {
                   operand: {
                     type: "variable",
                     name: "rsi_sma90",
-                    valueType: "array",
+                    valueType: "bar",
                   },
                 },
                 {
@@ -101,7 +104,7 @@ export const RSI14: Story = {
                   operand: {
                     type: "variable",
                     name: "rsi_sma90_sma90",
-                    valueType: "array",
+                    valueType: "bar",
                   },
                 },
                 {
@@ -111,20 +114,20 @@ export const RSI14: Story = {
                   condition: {
                     type: "comparison",
                     left: {
-                      type: "variable",
-                      name: "rsi14",
-                      shiftBars: { type: "constant", value: 2 },
+                      type: "bar_value",
+                      source: { type: "variable", name: "rsi14", valueType: "bar" },
+                      shiftBars: { type: "constant", value: 2, valueType: "scalar" },
                       valueType: "scalar",
                     },
                     operator: ">",
-                    right: { type: "constant", value: 30 },
+                    right: { type: "constant", value: 30, valueType: "scalar" },
                   },
                 },
                 {
                   type: "cross",
                   direction: "cross_over",
-                  left: { type: "variable", name: "rsi14", valueType: "array" },
-                  right: { type: "constant", value: 30 },
+                  left: { type: "variable", name: "rsi14", valueType: "bar" },
+                  right: { type: "constant", value: 30, valueType: "scalar" },
                 },
               ],
             },
@@ -135,9 +138,13 @@ export const RSI14: Story = {
             type: "long",
             condition: {
               type: "comparison",
-              left: { type: "variable", name: "rsi14", valueType: "scalar" },
+              left: {
+                type: "bar_value",
+                source: { type: "variable", name: "rsi14", valueType: "bar" },
+                valueType: "scalar",
+              },
               operator: ">",
-              right: { type: "constant", value: 70 },
+              right: { type: "constant", value: 70, valueType: "scalar" },
             },
           },
         ],
@@ -188,16 +195,17 @@ export const DonchianChannel: Story = {
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 20 },
               ],
               lineName: "upper",
+              valueType: "scalar",
             },
           },
           {
@@ -209,16 +217,17 @@ export const DonchianChannel: Story = {
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 90 },
               ],
               lineName: "lower",
+              valueType: "scalar",
             },
           },
           {
@@ -230,19 +239,28 @@ export const DonchianChannel: Story = {
                 type: "binary_op",
                 operator: "+",
                 left: {
-                  type: "variable",
-                  name: "donchian_high",
+                  type: "bar_value",
+                  source: {
+                    type: "variable",
+                    name: "donchian_high",
+                    valueType: "bar",
+                  },
                   valueType: "scalar",
                 },
                 right: {
-                  type: "variable",
-                  name: "donchian_low",
+                  type: "bar_value",
+                  source: {
+                    type: "variable",
+                    name: "donchian_low",
+                    valueType: "bar",
+                  },
                   valueType: "scalar",
                 },
               },
               right: {
                 type: "constant",
                 value: 2,
+                valueType: "scalar",
               },
             },
           },
@@ -253,14 +271,22 @@ export const DonchianChannel: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "close",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "close",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
               operator: ">",
               right: {
-                type: "variable",
-                name: "donchian_high",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "donchian_high",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -270,14 +296,22 @@ export const DonchianChannel: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "close",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "close",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
               operator: "<",
               right: {
-                type: "variable",
-                name: "donchian_low",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "donchian_low",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -289,14 +323,22 @@ export const DonchianChannel: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "close",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "close",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
               operator: "<",
               right: {
-                type: "variable",
-                name: "donchian_mid",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "donchian_mid",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -306,14 +348,22 @@ export const DonchianChannel: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "close",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "close",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
               operator: ">",
               right: {
-                type: "variable",
-                name: "donchian_mid",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "donchian_mid",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -356,13 +406,14 @@ export const Accelerator: Story = {
                 {
                   name: "median",
                   type: "source",
-                  value: { type: "variable", name: "median", valueType: "array" },
+                  ref: { type: "variable", name: "median", valueType: "bar" },
                 },
                 { name: "fastPeriod", type: "number", value: 5 },
                 { name: "slowPeriod", type: "number", value: 34 },
                 { name: "signalPeriod", type: "number", value: 5 },
               ],
               lineName: "ac",
+              valueType: "scalar",
             },
           },
         ],
@@ -372,8 +423,8 @@ export const Accelerator: Story = {
             condition: {
               type: "cross",
               direction: "cross_over",
-              left: { type: "variable", name: "indicator", valueType: "array" },
-              right: { type: "constant", value: 0 },
+              left: { type: "variable", name: "indicator", valueType: "bar" },
+              right: { type: "constant", value: 0, valueType: "scalar" },
             },
           },
           {
@@ -381,8 +432,8 @@ export const Accelerator: Story = {
             condition: {
               type: "cross",
               direction: "cross_under",
-              left: { type: "variable", name: "indicator", valueType: "array" },
-              right: { type: "constant", value: 0 },
+              left: { type: "variable", name: "indicator", valueType: "bar" },
+              right: { type: "constant", value: 0, valueType: "scalar" },
             },
           },
         ],
@@ -444,29 +495,30 @@ export const AccumulationDistribution: Story = {
             expression: {
               type: "indicator",
               name: "accumulation_distribution",
-              lineName: "ad",
               params: [
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 {
                   name: "close",
                   type: "source",
-                  value: { type: "variable", name: "close", valueType: "array" },
+                  ref: { type: "variable", name: "close", valueType: "bar" },
                 },
                 {
                   name: "volume",
                   type: "source",
-                  value: { type: "variable", name: "tick_volume", valueType: "array" },
+                  ref: { type: "variable", name: "tick_volume", valueType: "bar" },
                 },
               ],
+              lineName: "ad",
+              valueType: "scalar",
             },
           },
           {
@@ -474,20 +526,21 @@ export const AccumulationDistribution: Story = {
             expression: {
               type: "indicator",
               name: "donchian_channel",
-              lineName: "upper",
               params: [
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 20 },
               ],
+              lineName: "upper",
+              valueType: "scalar",
             },
           },
           {
@@ -495,20 +548,21 @@ export const AccumulationDistribution: Story = {
             expression: {
               type: "indicator",
               name: "donchian_channel",
-              lineName: "lower",
               params: [
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 20 },
               ],
+              lineName: "lower",
+              valueType: "scalar",
             },
           },
         ],
@@ -518,15 +572,23 @@ export const AccumulationDistribution: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "ad",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "ad",
+                  valueType: "bar",
+                },
+                shiftBars: { type: "constant", value: 0, valueType: "scalar" },
                 valueType: "scalar",
-                shiftBars: { type: "constant", value: 0 },
               },
               operator: ">",
               right: {
-                type: "variable",
-                name: "highest",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "highest",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -536,15 +598,23 @@ export const AccumulationDistribution: Story = {
             condition: {
               type: "comparison",
               left: {
-                type: "variable",
-                name: "ad",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "ad",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
-                shiftBars: { type: "constant", value: 0 },
+                shiftBars: { type: "constant", value: 0, valueType: "scalar" },
               },
               operator: "<",
               right: {
-                type: "variable",
-                name: "lowest",
+                type: "bar_value",
+                source: {
+                  type: "variable",
+                  name: "lowest",
+                  valueType: "bar",
+                },
                 valueType: "scalar",
               },
             },
@@ -603,21 +673,22 @@ export const ADX: Story = {
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 {
                   name: "close",
                   type: "source",
-                  value: { type: "variable", name: "close", valueType: "array" },
+                  ref: { type: "variable", name: "close", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "adx",
+              valueType: "scalar",
             },
           },
           {
@@ -629,21 +700,22 @@ export const ADX: Story = {
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 {
                   name: "close",
                   type: "source",
-                  value: { type: "variable", name: "close", valueType: "array" },
+                  ref: { type: "variable", name: "close", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "pdi",
+              valueType: "scalar",
             },
           },
           {
@@ -655,21 +727,22 @@ export const ADX: Story = {
                 {
                   name: "high",
                   type: "source",
-                  value: { type: "variable", name: "high", valueType: "array" },
+                  ref: { type: "variable", name: "high", valueType: "bar" },
                 },
                 {
                   name: "low",
                   type: "source",
-                  value: { type: "variable", name: "low", valueType: "array" },
+                  ref: { type: "variable", name: "low", valueType: "bar" },
                 },
                 {
                   name: "close",
                   type: "source",
-                  value: { type: "variable", name: "close", valueType: "array" },
+                  ref: { type: "variable", name: "close", valueType: "bar" },
                 },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "mdi",
+              valueType: "scalar",
             },
           },
         ],
@@ -682,15 +755,27 @@ export const ADX: Story = {
               conditions: [
                 {
                   type: "comparison",
-                  left: { type: "variable", name: "adx", valueType: "scalar" },
+                  left: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "adx", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                   operator: ">",
-                  right: { type: "constant", value: 25 },
+                  right: { type: "constant", value: 25, valueType: "scalar" },
                 },
                 {
                   type: "comparison",
-                  left: { type: "variable", name: "pdi", valueType: "scalar" },
+                  left: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "pdi", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                   operator: ">",
-                  right: { type: "variable", name: "mdi", valueType: "scalar" },
+                  right: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "mdi", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                 },
               ],
             },
@@ -703,15 +788,27 @@ export const ADX: Story = {
               conditions: [
                 {
                   type: "comparison",
-                  left: { type: "variable", name: "adx", valueType: "scalar" },
+                  left: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "adx", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                   operator: ">",
-                  right: { type: "constant", value: 25 },
+                  right: { type: "constant", value: 25, valueType: "scalar" },
                 },
                 {
                   type: "comparison",
-                  left: { type: "variable", name: "pdi", valueType: "scalar" },
+                  left: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "pdi", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                   operator: ">",
-                  right: { type: "variable", name: "pdi", valueType: "scalar" },
+                  right: {
+                    type: "bar_value",
+                    source: { type: "variable", name: "pdi", valueType: "bar" },
+                    valueType: "scalar",
+                  },
                 },
               ],
             },

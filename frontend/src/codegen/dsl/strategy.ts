@@ -1,17 +1,14 @@
 import {
   AggregationExpression,
-  ArrayOperand,
-  ArrayPriceOperand,
-  ArrayVariableOperand,
+  BarValueExpression,
   Condition,
-  ConstantOperand,
+  ConstantExpression,
   NumberParamReferenceExpression,
   PriceExpression,
-  ScalarOperand,
-  ScalarPriceOperand,
-  ScalarVariableOperand,
+  ScalarExpression,
+  ScalarPriceExpression,
   SourceExpression,
-  VariableExpression,
+  VariableReferenceExpression,
 } from "./common";
 
 export type Strategy = {
@@ -66,16 +63,16 @@ export type StrategyVariableDefinition = {
 
 // 変数式の型定義を再帰的な型から分離する
 export type StrategyVariableExpression = Exclude<
-  VariableExpression<StrategyCondition>,
+  ScalarExpression<StrategyCondition>,
   | NumberParamReferenceExpression
-  | SourceExpression<Condition<ScalarOperand, ArrayOperand>>
-  | AggregationExpression<StrategyCondition>
+  | SourceExpression
+  | AggregationExpression
   | Extract<PriceExpression, { valueType: "array" }>
 >;
 
 export type StrategyCondition = Condition<
-  ConstantOperand | ScalarVariableOperand | ScalarPriceOperand,
-  ArrayVariableOperand | ArrayPriceOperand
+  ConstantExpression | ScalarPriceExpression | BarValueExpression,
+  VariableReferenceExpression | PriceExpression
 >;
 
 // エントリー条件: エントリーのトリガーとなる条件

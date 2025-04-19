@@ -15,7 +15,7 @@ const meta: Meta<typeof StrategyConditionOperandSelector> = {
         variables={[
           {
             name: "var1",
-            expression: { type: "constant", value: 1 },
+            expression: { type: "constant", value: 1, valueType: "scalar" },
             description: "constant(scalar)",
           },
           {
@@ -25,7 +25,13 @@ const meta: Meta<typeof StrategyConditionOperandSelector> = {
           },
           {
             name: "var3",
-            expression: { type: "indicator", name: "ind1", params: [], lineName: "default" },
+            expression: {
+              type: "indicator",
+              name: "ind1",
+              params: [],
+              lineName: "default",
+              valueType: "scalar",
+            },
             description: "indicator(array)",
           },
         ]}
@@ -46,6 +52,7 @@ export const ConstantOperand: Story = {
     value: {
       type: "constant",
       value: 100,
+      valueType: "scalar",
     },
   },
 };
@@ -54,8 +61,12 @@ export const ScalarVariableOperand: Story = {
   args: {
     allowedTypes: ["scalar_variable"],
     value: {
-      type: "variable",
-      name: "value1",
+      type: "bar_value",
+      source: {
+        type: "variable",
+        name: "value1",
+        valueType: "bar",
+      },
       valueType: "scalar",
     },
   },
@@ -67,7 +78,7 @@ export const ArrayVariableOperand: Story = {
     value: {
       type: "variable",
       name: "value1",
-      valueType: "array",
+      valueType: "bar",
     },
   },
 };
@@ -87,9 +98,13 @@ export const ArrayPriceOperand: Story = {
   args: {
     allowedTypes: ["array_price"],
     value: {
-      type: "price",
-      source: "high",
-      valueType: "array",
+      type: "bar_value",
+      source: {
+        type: "price",
+        source: "high",
+        valueType: "bar",
+      },
+      valueType: "scalar",
     },
   },
 };
