@@ -6,12 +6,24 @@ describe("renderStrategyCode", () => {
   const template: StrategyTemplate = {
     variables: [
       {
+        name: "close",
+        expression: {
+          type: "price",
+          source: "close",
+          valueType: "scalar",
+        },
+      },
+      {
         name: "rsi14",
         expression: {
           type: "indicator",
           name: "RSI",
           params: [
-            { name: "close", type: "source", value: "price" },
+            {
+              name: "close",
+              type: "source",
+              value: { type: "variable", name: "close", valueType: "array" },
+            },
             { name: "period", type: "number", value: 14 },
           ],
           lineName: "rsi",

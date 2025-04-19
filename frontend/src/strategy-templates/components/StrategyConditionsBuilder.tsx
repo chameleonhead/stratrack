@@ -1,17 +1,17 @@
-import ConditionRow from "./ConditionBuilder";
+import ConditionRow from "./StrategyConditionBuilder";
 import Button from "../../components/Button";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { Condition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
 
-export type ConditionBuilderProps = {
-  value?: Partial<Condition>[];
-  onChange?: (value: Partial<Condition>[]) => void;
+export type StrategyConditionBuilderProps = {
+  value?: Partial<StrategyCondition>[];
+  onChange?: (value: Partial<StrategyCondition>[]) => void;
 };
 
-function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
+function StrategyConditionBuilder({ value, onChange }: StrategyConditionBuilderProps) {
   const [localValue, setLocalValue] = useLocalValue([], value, onChange);
 
-  const updateCondition = (index: number, newCondition: Partial<Condition>) => {
+  const updateCondition = (index: number, newCondition: Partial<StrategyCondition>) => {
     const newConditions = [...localValue];
     newConditions[index] = newCondition;
     setLocalValue(newConditions);
@@ -53,4 +53,4 @@ function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   );
 }
 
-export default ConditionBuilder;
+export default StrategyConditionBuilder;

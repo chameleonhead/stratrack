@@ -1,10 +1,11 @@
-import ConditionBuilder from "./ConditionsBuilder";
+import StrategyConditionsBuilder from "./StrategyConditionsBuilder";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { GroupCondition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
+
+type GroupCondition = Extract<StrategyCondition, { type: "group" }>;
 
 export type GroupConditionSelectorProps = {
-  name?: string;
   value: Partial<GroupCondition>;
   onChange: (value: Partial<GroupCondition>) => void;
 };
@@ -30,7 +31,7 @@ function GroupConditionSelector({ value, onChange }: GroupConditionSelectorProps
         options={LOGIC_OPTIONS}
       />
 
-      <ConditionBuilder
+      <StrategyConditionsBuilder
         value={condition.conditions}
         onChange={(val) =>
           setCondition({

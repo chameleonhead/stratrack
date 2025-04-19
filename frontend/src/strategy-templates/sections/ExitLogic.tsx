@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import ConditionBuilder from "../components/ConditionsBuilder";
+import ConditionBuilder from "../components/StrategyConditionsBuilder";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { StrategyTemplate } from "../../codegen/dsl/strategy";
-import { Condition } from "../../codegen/dsl/common";
+import { StrategyCondition, StrategyTemplate } from "../../codegen/dsl/strategy";
 
 export type ExitLogicProps = {
   value?: Partial<StrategyTemplate>;
@@ -19,17 +18,17 @@ function ExitLogic({ value, onChange }: ExitLogicProps) {
     () => localValue.exit?.filter((e) => e.type === "short") || [],
     [localValue.exit]
   );
-  const handleLongConditionChange = (conditions: Partial<Condition>[]) => {
+  const handleLongConditionChange = (conditions: Partial<StrategyCondition>[]) => {
     const longEntries = conditions.map((condition) => ({
       type: "long" as const,
-      condition: condition as Condition,
+      condition: condition as StrategyCondition,
     }));
     setLocalValue({ ...localValue, exit: [...shortEntries, ...longEntries] });
   };
-  const handleShortConditionChange = (conditions: Partial<Condition>[]) => {
+  const handleShortConditionChange = (conditions: Partial<StrategyCondition>[]) => {
     const shortEntries = conditions.map((condition) => ({
       type: "short" as const,
-      condition: condition as Condition,
+      condition: condition as StrategyCondition,
     }));
     setLocalValue({ ...localValue, exit: [...shortEntries, ...longEntries] });
   };

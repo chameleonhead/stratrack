@@ -9,12 +9,15 @@ import {
   PyReturn,
 } from "../ast/python/pythonast";
 import {
+  AggregationType,
+  ArrayOperand,
   Condition,
   ConditionOperand,
   IndicatorExpression,
+  ScalarOperand,
   VariableExpression,
 } from "../dsl/common";
-import { StrategyTemplate } from "../dsl/strategy";
+import { StrategyCondition, StrategyTemplate } from "../dsl/strategy";
 import {
   Accelerator,
   AccumulationDistribution,
@@ -118,7 +121,7 @@ export function convertStrategyToPythonAst(template: StrategyTemplate) {
   return module;
 }
 
-function emitVariableExpression(expr: VariableExpression): string {
+function emitVariableExpression(expr: VariableExpression<StrategyCondition>): string {
   switch (expr.type) {
     case "constant":
       return expr.value.toString();
@@ -131,7 +134,7 @@ function emitVariableExpression(expr: VariableExpression): string {
       return shift === 0 ? `self.data.${source}[0]` : `self.data.${source}[-${shift}]`;
     }
     case "indicator": {
-      return mapIndicatorNameToBtFunction(expr);
+      return mapIndicatorNameToBtFunction(expr as IndicatorExpression);
     }
     case "variable":
       return `self.${expr.name}`;
@@ -155,7 +158,7 @@ function emitVariableExpression(expr: VariableExpression): string {
   }
 }
 
-function emitCondition(cond: Condition, shift: number = 0): string {
+function emitCondition(cond: Condition<ScalarOperand, ArrayOperand>, shift: number = 0): string {
   switch (cond.type) {
     case "comparison":
       return `${emitOperand(cond.left, shift)} ${cond.operator} ${emitOperand(cond.right, shift)}`;
@@ -216,8 +219,11 @@ function emitOperand(op: ConditionOperand, shift: number): string {
   return "0";
 }
 function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
-  const get = (name: string): string | number =>
-    expr.params.find((p) => p.name === name)?.value ?? "undefined";
+  const getNumber = (name: string): number =>
+    expr.params.filter((p) => p.type === "number").find((p) => p.name === name)?.value as number;
+  const getMethod = (name: string): AggregationType =>
+    expr.params.filter((p) => p.type === "aggregationType").find((p) => p.name === name)
+      ?.method as AggregationType;
 
   const line = expr.lineName ?? "";
 
@@ -230,10 +236,11 @@ function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
       break;
 
     case ADX.name:
-      if (line === "adx") return `bt.indicators.ADX(self.data, period=${get("period")}).adx`;
-      if (line === "pdi") return `bt.indicators.PlusDI(self.data, period=${get("period")}).plusDI`;
+      if (line === "adx") return `bt.indicators.ADX(self.data, period=${getNumber("period")}).adx`;
+      if (line === "pdi")
+        return `bt.indicators.PlusDI(self.data, period=${getNumber("period")}).plusDI`;
       if (line === "mdi")
-        return `bt.indicators.MinusDI(self.data, period=${get("period")}).minusDI`;
+        return `bt.indicators.MinusDI(self.data, period=${getNumber("period")}).minusDI`;
       break;
 
     case Alligator.name:
@@ -242,7 +249,7 @@ function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
       throw new Error("failed");
 
     case ATR.name:
-      if (line === "atr") return `bt.indicators.ATR(self.data, period=${get("period")}).atr`;
+      if (line === "atr") return `bt.indicators.ATR(self.data, period=${getNumber("period")}).atr`;
       break;
 
     case BearsPower.name:
@@ -250,17 +257,17 @@ function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
 
     case BollingerBands.name:
       if (line === "upper")
-        return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).top`;
+        return `bt.indicators.BollingerBands(self.data, period=${getNumber("period")}, devfactor=${getNumber("deviation")}).top`;
       if (line === "middle")
-        return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).mid`;
+        return `bt.indicators.BollingerBands(self.data, period=${getNumber("period")}, devfactor=${getNumber("deviation")}).mid`;
       if (line === "lower")
-        return `bt.indicators.BollingerBands(self.data, period=${get("period")}, devfactor=${get("deviation")}).bot`;
+        return `bt.indicators.BollingerBands(self.data, period=${getNumber("period")}, devfactor=${getNumber("deviation")}).bot`;
       break;
 
     case BullsPower.name:
       throw new Error("failed");
     case CommodityChannelIndex.name:
-      if (line === "cci") return `bt.indicators.CCI(self.data, period=${get("period")}).cci`;
+      if (line === "cci") return `bt.indicators.CCI(self.data, period=${getNumber("period")}).cci`;
       break;
 
     case DeMarker.name:
@@ -269,7 +276,7 @@ function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
       throw new Error("failed");
     case ForceIndex.name:
       if (line === "force")
-        return `bt.indicators.ForceIndex(self.data, period=${get("period")}).force`;
+        return `bt.indicators.ForceIndex(self.data, period=${getNumber("period")}).force`;
       break;
     case Fractals.name:
       throw new Error("fail");
@@ -282,56 +289,59 @@ function mapIndicatorNameToBtFunction(expr: IndicatorExpression): string {
       throw new Error("fail");
     case Momentum.name:
       if (line === "momentum")
-        return `bt.indicators.Momentum(self.data, period=${get("period")}).momentum`;
+        return `bt.indicators.Momentum(self.data, period=${getNumber("period")}).momentum`;
       break;
     case MoneyFlowIndex.name:
       if (line === "mfi")
-        return `bt.talib.MFI(self.data.high, self.data.low, self.data.close, self.data.volume, timeperiod=${get("period")})`;
+        return `bt.talib.MFI(self.data.high, self.data.low, self.data.close, self.data.volume, timeperiod=${getNumber("period")})`;
       break;
     case MA.name:
       if (line === "ma") {
-        const method = get("method");
-        if (method === "ema") return `bt.indicators.EMA(self.data, period=${get("period")}).ema`;
-        if (method === "sma") return `bt.indicators.SMA(self.data, period=${get("period")}).sma`;
-        return `bt.indicators.SMA(self.data, period=${get("period")}).sma`;
+        const method = getMethod("method");
+        if (method === "ema")
+          return `bt.indicators.EMA(self.data, period=${getNumber("period")}).ema`;
+        if (method === "sma")
+          return `bt.indicators.SMA(self.data, period=${getNumber("period")}).sma`;
+        return `bt.indicators.SMA(self.data, period=${getNumber("period")}).sma`;
       }
       break;
     case MACDHistogram.name:
       if (line === "histogram")
-        return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).histogram`;
+        return `bt.indicators.MACD(self.data, period_me1=${getNumber("fastPeriod")}, period_me2=${getNumber("slowPeriod")}, period_signal=${getNumber("signalPeriod")}).histogram`;
       break;
     case MACD.name:
       if (line === "macd")
-        return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).macd`;
+        return `bt.indicators.MACD(self.data, period_me1=${getNumber("fastPeriod")}, period_me2=${getNumber("slowPeriod")}, period_signal=${getNumber("signalPeriod")}).macd`;
       if (line === "signal")
-        return `bt.indicators.MACD(self.data, period_me1=${get("fastPeriod")}, period_me2=${get("slowPeriod")}, period_signal=${get("signalPeriod")}).signal`;
+        return `bt.indicators.MACD(self.data, period_me1=${getNumber("fastPeriod")}, period_me2=${getNumber("slowPeriod")}, period_signal=${getNumber("signalPeriod")}).signal`;
       break;
     case OnBalanceVolume.name:
       if (line === "obv") return `bt.indicators.OBV(self.data).obv`;
       break;
     case RSI.name:
-      if (line === "rsi") return `bt.indicators.RSI(self.data, period=${get("period")}).rsi`;
+      if (line === "rsi") return `bt.indicators.RSI(self.data, period=${getNumber("period")}).rsi`;
       break;
     case RelativeVigorIndex.name:
-      if (line === "rvi") return `bt.indicators.RVI(self.data, period=${get("period")}).rvi`;
-      if (line === "signal") return `bt.indicators.RVI(self.data, period=${get("period")}).signal`;
+      if (line === "rvi") return `bt.indicators.RVI(self.data, period=${getNumber("period")}).rvi`;
+      if (line === "signal")
+        return `bt.indicators.RVI(self.data, period=${getNumber("period")}).signal`;
       break;
 
     case StandardDeviation.name:
       if (line === "stddev")
-        return `bt.indicators.StdDev(self.data, period=${get("period")}).stddev`;
+        return `bt.indicators.StdDev(self.data, period=${getNumber("period")}).stddev`;
       break;
 
     case Stochastic.name:
       if (line === "k")
-        return `bt.indicators.Stochastic(self.data, period=${get("kPeriod")}).percK`;
+        return `bt.indicators.Stochastic(self.data, period=${getNumber("kPeriod")}).percK`;
       if (line === "d")
-        return `bt.indicators.Stochastic(self.data, period=${get("kPeriod")}).percD`;
+        return `bt.indicators.Stochastic(self.data, period=${getNumber("kPeriod")}).percD`;
       break;
 
     case WilliamsPercentRange.name:
       if (line === "percentR")
-        return `bt.indicators.WilliamsR(self.data, period=${get("period")}).r`;
+        return `bt.indicators.WilliamsR(self.data, period=${getNumber("period")}).r`;
       break;
   }
 

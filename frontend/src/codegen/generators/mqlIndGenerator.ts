@@ -30,15 +30,19 @@ import {
   AggregationExpression,
   AggregationType,
   AggregationTypeExpression,
+  ArraySourceOperand,
+  ArrayVariableOperand,
   Condition,
-  ConditionOperand,
-  NumberParamReferenceExpression,
+  ConstantOperand,
+  ScalarSourceOperand,
+  ScalarVariableOperand,
   VariableExpression,
 } from "../dsl/common";
 import {
   Indicator,
   AggregationTypeIndicatorParam,
   IndicatorVariableExpression,
+  IndicatorCondition,
 } from "../dsl/indicator";
 import { IndicatorContext } from "./indicatorContext";
 
@@ -287,7 +291,13 @@ export function generateClassFromIndicator(
     .filter(
       (v) => v.expression.type === "aggregation" && v.expression.method.type === "aggregationType"
     )
-    .map((v) => ((v.expression as AggregationExpression).method as AggregationTypeExpression).value)
+    .map(
+      (v) =>
+        (
+          (v.expression as AggregationExpression<IndicatorCondition>)
+            .method as AggregationTypeExpression
+        ).value
+    )
     .concat(
       variables
         .filter(
@@ -298,8 +308,10 @@ export function generateClassFromIndicator(
         )
         .map(
           (v) =>
-            ((v.fallback!.expression as AggregationExpression).method as AggregationTypeExpression)
-              .value
+            (
+              (v.fallback!.expression as AggregationExpression<IndicatorCondition>)
+                .method as AggregationTypeExpression
+            ).value
         )
     )
     .concat(params.filter((p) => p.type == "aggregationType").flatMap((p) => p.selectableTypes))
@@ -517,7 +529,7 @@ export function generateClassFromIndicator(
 }
 
 function convertAggregationMethodArgs(
-  expr: AggregationExpression,
+  expr: AggregationExpression<IndicatorCondition>,
   ctx: IndicatorContext,
   shift: MqlVariableRef
 ) {
@@ -543,7 +555,7 @@ function convertAggregationMethodArgs(
 }
 function callAggregationMethod(
   name: string,
-  expr: AggregationExpression,
+  expr: AggregationExpression<IndicatorCondition>,
   ctx: IndicatorContext,
   indicator: Indicator,
   shift: MqlVariableRef
@@ -601,7 +613,7 @@ function toFixed(value: number) {
 }
 
 function emitVariableExpression(
-  expr: VariableExpression | NumberParamReferenceExpression,
+  expr: VariableExpression<IndicatorCondition>,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
@@ -627,7 +639,9 @@ function emitVariableExpression(
       );
     }
     case "indicator":
-      return ctx.getVariableRef(expr);
+      return ctx.getVariableExpression(expr, (e) =>
+        emitVariableExpression(e as VariableExpression<IndicatorCondition>, ctx, shift)
+      );
 
     case "variable": {
       const varName = `this.${expr.name}`;
@@ -665,7 +679,10 @@ function emitVariableExpression(
 }
 
 function emitCondition(
-  cond: Condition,
+  cond: Condition<
+    ConstantOperand | ScalarVariableOperand | ScalarSourceOperand,
+    ArrayVariableOperand | ArraySourceOperand
+  >,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
@@ -732,7 +749,12 @@ function emitCondition(
 }
 
 function emitOperand(
-  op: ConditionOperand,
+  op:
+    | ConstantOperand
+    | ScalarVariableOperand
+    | ScalarSourceOperand
+    | ArrayVariableOperand
+    | ArraySourceOperand,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {

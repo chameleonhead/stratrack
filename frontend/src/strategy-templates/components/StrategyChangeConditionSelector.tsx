@@ -1,13 +1,15 @@
-import ConditionRow from "./ConditionBuilder";
+import StrategyConditionBuilder from "./StrategyConditionBuilder";
 import NumberInput from "../../components/NumberInput";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { ChangeCondition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
 
-export type ChangeConditionSelectorProps = {
+type StrategyChangeCondition = Extract<StrategyCondition, { type: "change" }>;
+
+export type StrategyChangeConditionSelectorProps = {
   name?: string;
-  value: Partial<ChangeCondition>;
-  onChange: (value: Partial<ChangeCondition>) => void;
+  value: Partial<StrategyChangeCondition>;
+  onChange: (value: Partial<StrategyChangeCondition>) => void;
 };
 
 const CHANGE_OPTIONS = [
@@ -15,7 +17,10 @@ const CHANGE_OPTIONS = [
   { value: "to_false", label: "true → false への変化" },
 ];
 
-function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorProps) {
+function StrategyChangeConditionSelector({
+  value,
+  onChange,
+}: StrategyChangeConditionSelectorProps) {
   const [condition, setCondition] = useLocalValue({ type: "change" }, value, onChange);
 
   return (
@@ -28,7 +33,7 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
           onChange={(val) =>
             setCondition({
               ...condition,
-              change: val as ChangeCondition["change"],
+              change: val as StrategyChangeCondition["change"],
             })
           }
           options={CHANGE_OPTIONS}
@@ -40,7 +45,7 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
           onChange={(val) =>
             setCondition({
               ...condition,
-              preconditionBars: val as ChangeCondition["preconditionBars"],
+              preconditionBars: val as StrategyChangeCondition["preconditionBars"],
             })
           }
         />
@@ -51,18 +56,18 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
           onChange={(val) =>
             setCondition({
               ...condition,
-              confirmationBars: val as ChangeCondition["confirmationBars"],
+              confirmationBars: val as StrategyChangeCondition["confirmationBars"],
             })
           }
         />
       </div>
       <div>
-        <ConditionRow
+        <StrategyConditionBuilder
           value={condition.condition}
           onChange={(val) =>
             setCondition({
               ...condition,
-              condition: val as ChangeCondition["condition"],
+              condition: val as StrategyChangeCondition["condition"],
             })
           }
         />
@@ -71,4 +76,4 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
   );
 }
 
-export default ChangeConditionSelector;
+export default StrategyChangeConditionSelector;

@@ -9,7 +9,7 @@ import {
   MqlStatement,
   MqlVariableRef,
 } from "../ast/mql/mqlast";
-import { IndicatorExpression } from "../dsl/common";
+import { ArrayExpression, IndicatorExpression } from "../dsl/common";
 import { Indicator } from "../dsl/indicator";
 import { generateClassFromIndicator } from "./mqlIndGenerator";
 
@@ -25,7 +25,10 @@ export class IndicatorContext {
     this.counter = 0;
   }
 
-  getVariableRef(expr: IndicatorExpression): MqlExpression {
+  getVariableExpression(
+    expr: IndicatorExpression,
+    emitVairableExpression: (val: ArrayExpression) => MqlExpression
+  ): MqlExpression {
     const key = this.hash(expr);
     if (!(key in this.instances)) {
       const variableName = `ind${++this.counter}`;
@@ -34,9 +37,7 @@ export class IndicatorContext {
     return new MqlFunctionCallExpr(`${this.instances[key].variableName}.Get`, [
       new MqlLiteral(`"${expr.lineName}"`),
       new MqlVariableRef("i"),
-      ...expr.params
-        .filter((p) => p.type === "source")
-        .map((p) => new MqlVariableRef(p.value as string)),
+      ...expr.params.filter((p) => p.type === "source").map((p) => emitVairableExpression(p.value)),
     ]);
   }
 
@@ -80,7 +81,7 @@ export class IndicatorContext {
                 .map((p) =>
                   p.type === "number"
                     ? new MqlLiteral(p.value?.toString() || "")
-                    : new MqlLiteral(`"${p.value?.toString() || ""}"`)
+                    : new MqlLiteral(`"${p.method?.toString() || ""}"`)
                 )
             )
           )

@@ -1,8 +1,13 @@
 import {
   AggregationType,
-  ConstantExpression,
-  NumberParamReferenceExpression,
+  ArraySourceOperand,
+  ArrayVariableOperand,
+  Condition,
+  ConstantOperand,
   PriceExpression,
+  ScalarExpression,
+  ScalarSourceOperand,
+  ScalarVariableOperand,
   VariableExpression,
 } from "./common";
 
@@ -75,15 +80,23 @@ export type ExportLine = {
 export type IndicatorVariableDefinition = {
   name: string;
   expression: IndicatorVariableExpression;
-  invalidPeriod?: IndicatorVariableExpression;
+  invalidPeriod?: ScalarExpression<IndicatorCondition>;
   fallback?: VariableFallbackDefinition;
   description?: string;
 };
 
 export type VariableFallbackDefinition = {
   expression: IndicatorVariableExpression;
-  invalidPeriod?: ConstantExpression | NumberParamReferenceExpression;
-  fallback?: ConstantExpression | NumberParamReferenceExpression;
+  invalidPeriod?: ScalarExpression<IndicatorCondition>;
+  fallback?: ScalarExpression<IndicatorCondition>;
 };
 
-export type IndicatorVariableExpression = Exclude<VariableExpression, PriceExpression>;
+export type IndicatorVariableExpression = Exclude<
+  VariableExpression<IndicatorCondition>,
+  PriceExpression
+>;
+
+export type IndicatorCondition = Condition<
+  ConstantOperand | ScalarVariableOperand | ScalarSourceOperand,
+  ArrayVariableOperand | ArraySourceOperand
+>;

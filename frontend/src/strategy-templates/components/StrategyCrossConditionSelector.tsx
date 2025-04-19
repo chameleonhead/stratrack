@@ -1,7 +1,9 @@
-import OperandSelector from "./ConditionOperandSelector";
+import OperandSelector from "./StrategyConditionOperandSelector";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { CrossCondition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
+
+type CrossCondition = Extract<StrategyCondition, { type: "cross" }>;
 
 export type CrossConditionSelectorProps = {
   name?: string;

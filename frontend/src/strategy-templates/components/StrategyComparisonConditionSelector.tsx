@@ -1,12 +1,13 @@
-import OperandSelector from "./ConditionOperandSelector";
+import OperandSelector from "./StrategyConditionOperandSelector";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { ComparisonCondition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
 
-export type ComparisonConditionSelectorProps = {
-  name?: string;
-  value: Partial<ComparisonCondition>;
-  onChange: (value: Partial<ComparisonCondition>) => void;
+type StrategyComparisonCondition = Extract<StrategyCondition, { type: "comparison" }>;
+
+export type StrategyComparisonConditionSelectorProps = {
+  value: Partial<StrategyComparisonCondition>;
+  onChange: (value: Partial<StrategyComparisonCondition>) => void;
 };
 
 const COMPARISON_OPERATORS = [
@@ -18,7 +19,10 @@ const COMPARISON_OPERATORS = [
   { value: "!=", label: "!=" },
 ];
 
-function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSelectorProps) {
+function StrategyComparisonConditionSelector({
+  value,
+  onChange,
+}: StrategyComparisonConditionSelectorProps) {
   const [condtion, setCondition] = useLocalValue({ type: "comparison" }, value, onChange);
 
   return (
@@ -30,7 +34,7 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
           onChange={(left) =>
             setCondition({
               ...condtion,
-              left: left as ComparisonCondition["left"],
+              left: left as StrategyComparisonCondition["left"],
             })
           }
         />
@@ -43,7 +47,7 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
           onChange={(operator) =>
             setCondition({
               ...condtion,
-              operator: operator as ComparisonCondition["operator"],
+              operator: operator as StrategyComparisonCondition["operator"],
             })
           }
           options={COMPARISON_OPERATORS}
@@ -57,7 +61,7 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
           onChange={(right) =>
             setCondition({
               ...condtion,
-              right: right as ComparisonCondition["right"],
+              right: right as StrategyComparisonCondition["right"],
             })
           }
         />
@@ -66,4 +70,4 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
   );
 }
 
-export default ComparisonConditionSelector;
+export default StrategyComparisonConditionSelector;

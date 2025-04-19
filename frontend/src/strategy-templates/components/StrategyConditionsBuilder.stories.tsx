@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
-import ConditionsBuilder from "./ConditionsBuilder";
+import StrategyConditionsBuilder from "./StrategyConditionsBuilder";
 import VariableProvider from "./VariableProvider";
 
 const meta = {
-  component: ConditionsBuilder,
+  component: StrategyConditionsBuilder,
   args: { onChange: fn() },
   decorators: [
     (story) => (
@@ -32,7 +32,7 @@ const meta = {
       </VariableProvider>
     ),
   ],
-} satisfies Meta<typeof ConditionsBuilder>;
+} satisfies Meta<typeof StrategyConditionsBuilder>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

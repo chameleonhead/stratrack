@@ -1,11 +1,11 @@
-import ConditionOperandSelector from "./ConditionOperandSelector";
+import StrategyConditionOperandSelector from "./StrategyConditionOperandSelector";
 
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 import VariableProvider from "./VariableProvider";
 
-const meta: Meta<typeof ConditionOperandSelector> = {
-  component: ConditionOperandSelector,
+const meta: Meta<typeof StrategyConditionOperandSelector> = {
+  component: StrategyConditionOperandSelector,
   args: {
     onChange: fn(),
   },
@@ -38,7 +38,7 @@ const meta: Meta<typeof ConditionOperandSelector> = {
 
 export default meta;
 
-type Story = StoryObj<typeof ConditionOperandSelector>;
+type Story = StoryObj<typeof StrategyConditionOperandSelector>;
 
 export const ConstantOperand: Story = {
   args: {
@@ -50,7 +50,7 @@ export const ConstantOperand: Story = {
   },
 };
 
-export const ScalarVariablesOperand: Story = {
+export const ScalarVariableOperand: Story = {
   args: {
     allowedTypes: ["scalar_variable"],
     value: {
@@ -61,12 +61,34 @@ export const ScalarVariablesOperand: Story = {
   },
 };
 
-export const ArrayVariablesOperand: Story = {
+export const ArrayVariableOperand: Story = {
   args: {
     allowedTypes: ["array_variable"],
     value: {
       type: "variable",
       name: "value1",
+      valueType: "array",
+    },
+  },
+};
+
+export const ScalarPriceOperand: Story = {
+  args: {
+    allowedTypes: ["scalar_price"],
+    value: {
+      type: "price",
+      source: "high",
+      valueType: "scalar",
+    },
+  },
+};
+
+export const ArrayPriceOperand: Story = {
+  args: {
+    allowedTypes: ["array_price"],
+    value: {
+      type: "price",
+      source: "high",
       valueType: "array",
     },
   },

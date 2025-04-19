@@ -1,34 +1,36 @@
+import OperandSelector from "./StrategyConditionOperandSelector";
 import Select from "../../components/Select";
 import NumberInput from "../../components/NumberInput";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import ConditionBuilder from "./ConditionBuilder";
-import { Condition, ContinueCondition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
 
-export type ContinueConditionSelectorProps = {
+type StateCondition = Extract<StrategyCondition, { type: "state" }>;
+
+export type StateConditionSelectorProps = {
   name?: string;
-  value: Partial<ContinueCondition>;
-  onChange: (value: Partial<ContinueCondition>) => void;
+  value: Partial<StateCondition>;
+  onChange: (value: Partial<StateCondition>) => void;
 };
 
 const STATE_OPTIONS = [
-  { value: "true", label: "真が継続" },
-  { value: "false", label: "偽が継続" },
+  { value: "rising", label: "上昇傾向 (Rising)" },
+  { value: "falling", label: "下降傾向 (Falling)" },
 ];
 
-function ContinueConditionSelector({ value, onChange }: ContinueConditionSelectorProps) {
-  const [condition, setCondition] = useLocalValue({ type: "continue" }, value, onChange);
+function StateConditionSelector({ value, onChange }: StateConditionSelectorProps) {
+  const [condition, setCondition] = useLocalValue({ type: "state" }, value, onChange);
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
         <div className="col-span-1">
           <Select
-            label="条件"
+            label="状態"
             fullWidth
-            value={condition.continue}
+            value={condition.state}
             onChange={(val) =>
               setCondition({
                 ...condition,
-                continue: val as ContinueCondition["continue"],
+                state: val as StateCondition["state"],
               })
             }
             options={STATE_OPTIONS}
@@ -42,7 +44,7 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
             onChange={(val) =>
               setCondition({
                 ...condition,
-                consecutiveBars: val as ContinueCondition["consecutiveBars"],
+                consecutiveBars: val as StateCondition["consecutiveBars"],
               })
             }
             placeholder="期間（任意）"
@@ -50,12 +52,13 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
         </div>
       </div>
       <div>
-        <ConditionBuilder
-          value={condition.condition as Partial<Condition> | undefined}
+        <OperandSelector
+          allowedTypes={["array_variable"]}
+          value={condition.operand}
           onChange={(val) =>
             setCondition({
               ...condition,
-              condition: val as ContinueCondition["condition"],
+              operand: val as StateCondition["operand"],
             })
           }
         />
@@ -64,4 +67,4 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
   );
 }
 
-export default ContinueConditionSelector;
+export default StateConditionSelector;

@@ -17,9 +17,16 @@ import {
   globalVar,
   file,
 } from "../ast/mql/mqlhelper";
-import { Condition, ConditionOperand, VariableExpression } from "../dsl/common";
+import {
+  ArrayPriceOperand,
+  ArrayVariableOperand,
+  ConstantOperand,
+  ScalarPriceOperand,
+  ScalarVariableOperand,
+  VariableExpression,
+} from "../dsl/common";
 import { Indicator } from "../dsl/indicator";
-import { StrategyTemplate } from "../dsl/strategy";
+import { StrategyCondition, StrategyTemplate } from "../dsl/strategy";
 import { IndicatorContext } from "./indicatorContext";
 
 /** 共通関数定義（ポジションのリスト取得 / オープン / クローズ） */
@@ -202,7 +209,7 @@ export function convertStrategyToMqlAst(
 }
 
 function emitVariableExpression(
-  expr: VariableExpression,
+  expr: VariableExpression<StrategyCondition>,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
@@ -264,7 +271,9 @@ function emitVariableExpression(
       break;
     }
     case "indicator":
-      return ctx.getVariableRef(expr);
+      return ctx.getVariableExpression(expr, (e) =>
+        emitVariableExpression(e as VariableExpression<StrategyCondition>, ctx, shift)
+      );
 
     case "variable": {
       const varName = expr.name;
@@ -296,13 +305,12 @@ function emitVariableExpression(
         emitVariableExpression(expr.trueExpr, ctx, shift),
         emitVariableExpression(expr.falseExpr, ctx, shift)
       );
-    default:
-      throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
   }
+  throw new Error("Unsupported VariableExpression type: " + JSON.stringify(expr));
 }
 
 function emitCondition(
-  cond: Condition,
+  cond: StrategyCondition,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
@@ -369,16 +377,21 @@ function emitCondition(
 }
 
 function emitOperand(
-  op: ConditionOperand,
+  op:
+    | ConstantOperand
+    | ScalarVariableOperand
+    | ScalarPriceOperand
+    | ArrayVariableOperand
+    | ArrayPriceOperand,
   ctx: IndicatorContext,
   shift?: MqlExpression
 ): MqlExpression {
   switch (op.type) {
     case "constant":
       return lit(op.value);
-    case "source":
+    case "price":
     case "variable": {
-      const varName = op.name;
+      const varName = op.type === "price" ? resolvePriceName(op.source) : op.name;
       if (op.valueType == "array") {
         if (!shift || shift.toString() === "0") {
           return lit(`${varName}[0]`);
@@ -396,5 +409,21 @@ function emitOperand(
         }
       }
     }
+  }
+}
+function resolvePriceName(source: "open" | "high" | "close" | "low" | "tick_volume" | "volume") {
+  switch (source) {
+    case "open":
+      return "Open";
+    case "high":
+      return "High";
+    case "low":
+      return "Low";
+    case "close":
+      return "Close";
+    case "tick_volume":
+      return "Volume";
+    case "volume":
+      return "Volume";
   }
 }

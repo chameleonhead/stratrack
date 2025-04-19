@@ -1,8 +1,15 @@
 import {
   AggregationExpression,
+  ArrayOperand,
+  ArrayPriceOperand,
+  ArrayVariableOperand,
   Condition,
+  ConstantOperand,
   NumberParamReferenceExpression,
   PriceExpression,
+  ScalarOperand,
+  ScalarPriceOperand,
+  ScalarVariableOperand,
   SourceExpression,
   VariableExpression,
 } from "./common";
@@ -59,11 +66,16 @@ export type StrategyVariableDefinition = {
 
 // 変数式の型定義を再帰的な型から分離する
 export type StrategyVariableExpression = Exclude<
-  VariableExpression,
+  VariableExpression<StrategyCondition>,
   | NumberParamReferenceExpression
-  | SourceExpression
-  | AggregationExpression
+  | SourceExpression<Condition<ScalarOperand, ArrayOperand>>
+  | AggregationExpression<StrategyCondition>
   | Extract<PriceExpression, { valueType: "array" }>
+>;
+
+export type StrategyCondition = Condition<
+  ConstantOperand | ScalarVariableOperand | ScalarPriceOperand,
+  ArrayVariableOperand | ArrayPriceOperand
 >;
 
 // エントリー条件: エントリーのトリガーとなる条件
@@ -71,7 +83,7 @@ export type EntryCondition = {
   /** エントリー条件のタイプ */
   type: "long" | "short";
   /** エントリー条件のトリガーとなる条件 */
-  condition: Condition;
+  condition: StrategyCondition;
 };
 
 // イグジット条件: 手仕舞い（決済）の条件
@@ -79,7 +91,7 @@ export type ExitCondition = {
   /** イグジット条件のタイプ */
   type: "long" | "short";
   /** イグジット条件のトリガーとなる条件 */
-  condition: Condition;
+  condition: StrategyCondition;
 };
 
 /** 保有中戦略: トレールストップ・利確・損切り・ナンピン等の設定 */

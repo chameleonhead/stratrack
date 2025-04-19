@@ -35,7 +35,11 @@ export const RSI14: Story = {
               name: "rsi",
               params: [
                 { name: "period", type: "number", value: 14 },
-                { name: "source", type: "source", value: "close" },
+                {
+                  name: "source",
+                  type: "source",
+                  value: { type: "variable", name: "close", valueType: "array" },
+                },
               ],
               lineName: "rsi",
             },
@@ -46,9 +50,13 @@ export const RSI14: Story = {
               type: "indicator",
               name: "moving_average",
               params: [
-                { name: "method", type: "aggregationType", value: "sma" },
+                { name: "method", type: "aggregationType", method: "sma" },
                 { name: "period", type: "number", value: 90 },
-                { name: "source", type: "source", value: "rsi14" },
+                {
+                  name: "source",
+                  type: "source",
+                  value: { type: "variable", name: "rsi14", valueType: "array" },
+                },
               ],
               lineName: "ma",
             },
@@ -59,9 +67,13 @@ export const RSI14: Story = {
               type: "indicator",
               name: "moving_average",
               params: [
-                { name: "method", type: "aggregationType", value: "sma" },
+                { name: "method", type: "aggregationType", method: "sma" },
                 { name: "period", type: "number", value: 90 },
-                { name: "source", type: "source", value: "rsi_sma90" },
+                {
+                  name: "source",
+                  type: "source",
+                  value: { type: "variable", name: "rsi_sma90", valueType: "array" },
+                },
               ],
               lineName: "ma",
             },
@@ -173,8 +185,16 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "donchian_channel",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 20 },
               ],
               lineName: "upper",
@@ -186,8 +206,16 @@ export const DonchianChannel: Story = {
               type: "indicator",
               name: "donchian_channel",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 90 },
               ],
               lineName: "lower",
@@ -325,7 +353,11 @@ export const Accelerator: Story = {
               type: "indicator",
               name: "accelerator",
               params: [
-                { name: "median", type: "source", value: "median" },
+                {
+                  name: "median",
+                  type: "source",
+                  value: { type: "variable", name: "median", valueType: "array" },
+                },
                 { name: "fastPeriod", type: "number", value: 5 },
                 { name: "slowPeriod", type: "number", value: 34 },
                 { name: "signalPeriod", type: "number", value: 5 },
@@ -414,10 +446,26 @@ export const AccumulationDistribution: Story = {
               name: "accumulation_distribution",
               lineName: "ad",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
-                { name: "close", type: "source", value: "close" },
-                { name: "volume", type: "source", value: "tick_volume" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
+                {
+                  name: "close",
+                  type: "source",
+                  value: { type: "variable", name: "close", valueType: "array" },
+                },
+                {
+                  name: "volume",
+                  type: "source",
+                  value: { type: "variable", name: "tick_volume", valueType: "array" },
+                },
               ],
             },
           },
@@ -428,8 +476,16 @@ export const AccumulationDistribution: Story = {
               name: "donchian_channel",
               lineName: "upper",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 20 },
               ],
             },
@@ -441,8 +497,16 @@ export const AccumulationDistribution: Story = {
               name: "donchian_channel",
               lineName: "lower",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 20 },
               ],
             },
@@ -536,9 +600,21 @@ export const ADX: Story = {
               type: "indicator",
               name: "adx",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
-                { name: "close", type: "source", value: "close" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
+                {
+                  name: "close",
+                  type: "source",
+                  value: { type: "variable", name: "close", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "adx",
@@ -550,9 +626,21 @@ export const ADX: Story = {
               type: "indicator",
               name: "adx",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
-                { name: "close", type: "source", value: "close" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
+                {
+                  name: "close",
+                  type: "source",
+                  value: { type: "variable", name: "close", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "pdi",
@@ -564,9 +652,21 @@ export const ADX: Story = {
               type: "indicator",
               name: "adx",
               params: [
-                { name: "high", type: "source", value: "high" },
-                { name: "low", type: "source", value: "low" },
-                { name: "close", type: "source", value: "close" },
+                {
+                  name: "high",
+                  type: "source",
+                  value: { type: "variable", name: "high", valueType: "array" },
+                },
+                {
+                  name: "low",
+                  type: "source",
+                  value: { type: "variable", name: "low", valueType: "array" },
+                },
+                {
+                  name: "close",
+                  type: "source",
+                  value: { type: "variable", name: "close", valueType: "array" },
+                },
                 { name: "period", type: "number", value: 14 },
               ],
               lineName: "mdi",

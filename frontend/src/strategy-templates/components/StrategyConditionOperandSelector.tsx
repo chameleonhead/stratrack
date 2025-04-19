@@ -5,10 +5,15 @@ import { useLocalValue } from "../../hooks/useLocalValue";
 import { ConditionOperand } from "../../codegen/dsl/common";
 import { useMemo } from "react";
 
-export type ConditionOperandType = "constant" | "scalar_variable" | "array_variable";
+export type StrategyConditionOperandType =
+  | "constant"
+  | "scalar_variable"
+  | "array_variable"
+  | "scalar_price"
+  | "array_price";
 
 export type ConditionOperandSelectorProps = {
-  allowedTypes: ConditionOperandType[];
+  allowedTypes: StrategyConditionOperandType[];
   value?: Partial<ConditionOperand>;
   onChange: (value: Partial<ConditionOperand>) => void;
 };
@@ -17,16 +22,22 @@ const OPTIONS = [
   { value: "constant" as const, label: "数値" },
   { value: "scalar_variable" as const, label: "変数(スカラー)" },
   { value: "array_variable" as const, label: "変数(配列)" },
+  { value: "scalar_price" as const, label: "価格(スカラー)" },
+  { value: "array_price" as const, label: "価格(配列)" },
 ];
 
 function toOptionType(
   val: ConditionOperand["type"] | undefined,
-  allowedTypes: ConditionOperandType[]
+  allowedTypes: StrategyConditionOperandType[]
 ) {
   if (val === "constant") return "constant" as const;
   if (val === "variable") {
     if (allowedTypes.includes("scalar_variable")) return "scalar_variable" as const;
     if (allowedTypes.includes("array_variable")) return "array_variable" as const;
+  }
+  if (val === "price") {
+    if (allowedTypes.includes("scalar_price")) return "scalar_price" as const;
+    if (allowedTypes.includes("array_price")) return "array_price" as const;
   }
   return "constant" as const;
 }
@@ -55,7 +66,7 @@ function ConditionOperandSelector({
           fullWidth
           value={optionType}
           onChange={(val) => {
-            const type = val as ConditionOperandType;
+            const type = val as StrategyConditionOperandType;
             if (type === "constant") {
               setLocalValue({ type, value: 0 });
             } else {
@@ -85,6 +96,18 @@ function ConditionOperandSelector({
         {optionType === "array_variable" && (
           <ArrayVariableConditionOperandSelector
             value={localValue as ArrayVariableConditionOperandSelectorProps["value"]}
+            onChange={(v) => setLocalValue(v)}
+          />
+        )}
+        {optionType === "scalar_price" && (
+          <ScalarPriceConditionOperandSelector
+            value={localValue as ScalarPriceConditionOperandSelectorProps["value"]}
+            onChange={(v) => setLocalValue(v)}
+          />
+        )}
+        {optionType === "array_price" && (
+          <ArrayPriceConditionOperandSelector
+            value={localValue as ArrayPriceConditionOperandSelectorProps["value"]}
             onChange={(v) => setLocalValue(v)}
           />
         )}
@@ -177,6 +200,75 @@ function ArrayVariableConditionOperandSelector({
         value: v.name,
         label: `${v.name} ${v.description ? `(${v.description})` : ""}`,
       }))}
+    />
+  );
+}
+
+const PRICE_OPTIONS = [
+  { value: "open", label: "始値" },
+  { value: "high", label: "高値" },
+  { value: "low", label: "安値" },
+  { value: "close", label: "終値" },
+  { value: "volume", label: "出来高" },
+];
+
+type ScalarPriceConditionOperandSelectorProps = {
+  value?: Partial<Extract<ConditionOperand, { type: "price"; valueType: "scalar" }>>;
+  onChange: (value: Partial<ConditionOperand>) => void;
+};
+
+function ScalarPriceConditionOperandSelector({
+  value,
+  onChange,
+}: ScalarPriceConditionOperandSelectorProps) {
+  return (
+    <div className="flex space-x-2">
+      <Select
+        fullWidth
+        value={value?.source}
+        onChange={(val) =>
+          onChange({
+            ...value,
+            type: "price",
+            source: val as Extract<ConditionOperand, { type: "price" }>["source"],
+          })
+        }
+        options={PRICE_OPTIONS}
+      />
+      <NumberInput
+        placeholder="シフト数"
+        value={value?.shiftBars?.value}
+        onChange={(val) =>
+          onChange({
+            ...value,
+            shiftBars: val === null ? undefined : { type: "constant", value: val },
+          })
+        }
+      />
+    </div>
+  );
+}
+
+type ArrayPriceConditionOperandSelectorProps = {
+  value?: Partial<Extract<ConditionOperand, { type: "price" }>>;
+  onChange: (value: Partial<ConditionOperand>) => void;
+};
+
+function ArrayPriceConditionOperandSelector({
+  value,
+  onChange,
+}: ArrayPriceConditionOperandSelectorProps) {
+  return (
+    <Select
+      fullWidth
+      value={value?.source}
+      onChange={(val) =>
+        onChange({
+          type: "price",
+          source: val as Extract<ConditionOperand, { type: "price" }>["source"],
+        })
+      }
+      options={PRICE_OPTIONS}
     />
   );
 }

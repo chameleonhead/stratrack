@@ -1,18 +1,18 @@
 import Select from "../../components/Select";
-import ComparisonConditionSelector from "./ComparisonConditionSelector";
-import ContinueConditionSelector from "./ContinueConditionSelector";
-import CrossConditionSelector from "./CrossConditionSelector";
-import StateConditionSelector from "./StateConditionSelector";
-import ChangeConditionSelector from "./ChangeConditionSelector";
-import GroupConditionSelector from "./GroupConditionSelector";
+import StrategyComparisonConditionSelector from "./StrategyComparisonConditionSelector";
+import StrategyContinueConditionSelector from "./StrategyContinueConditionSelector";
+import StrategyCrossConditionSelector from "./StrategyCrossConditionSelector";
+import StrategyStateConditionSelector from "./StrategyStateConditionSelector";
+import StrategyChangeConditionSelector from "./StrategyChangeConditionSelector";
+import StrategyGroupConditionSelector from "./StrategyGroupConditionSelector";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import Button from "../../components/Button";
-import { Condition } from "../../codegen/dsl/common";
+import { StrategyCondition } from "../../codegen/dsl/strategy";
 
-export type ConditionBuilderProps = {
+export type StrategyConditionBuilderProps = {
   name?: string;
-  value?: Partial<Condition>;
-  onChange: (value: Partial<Condition>) => void;
+  value?: Partial<StrategyCondition>;
+  onChange: (value: Partial<StrategyCondition>) => void;
   onDelete?: () => void;
 };
 
@@ -25,7 +25,12 @@ const CONDITION_OPTIONS = [
   { value: "group", label: "グループ条件" },
 ];
 
-function ConditionBuilder({ name, value, onChange, onDelete }: ConditionBuilderProps) {
+function StrategyConditionBuilder({
+  name,
+  value,
+  onChange,
+  onDelete,
+}: StrategyConditionBuilderProps) {
   const [condition, setCondition] = useLocalValue(
     {
       type: "comparison",
@@ -37,7 +42,7 @@ function ConditionBuilder({ name, value, onChange, onDelete }: ConditionBuilderP
     onChange
   );
 
-  const handleTypeChange = (newType: Condition["type"]) => {
+  const handleTypeChange = (newType: StrategyCondition["type"]) => {
     if (condition.type === newType) return;
     switch (newType) {
       case "comparison":
@@ -103,7 +108,7 @@ function ConditionBuilder({ name, value, onChange, onDelete }: ConditionBuilderP
         <Select
           name={`${name}.type`}
           value={condition.type}
-          onChange={(val) => handleTypeChange(val as Condition["type"])}
+          onChange={(val) => handleTypeChange(val as StrategyCondition["type"])}
           options={CONDITION_OPTIONS}
         />
         {onDelete ? (
@@ -114,25 +119,25 @@ function ConditionBuilder({ name, value, onChange, onDelete }: ConditionBuilderP
       </div>
 
       {condition.type === "comparison" && (
-        <ComparisonConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyComparisonConditionSelector value={condition} onChange={onChange} />
       )}
       {condition.type === "cross" && (
-        <CrossConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyCrossConditionSelector value={condition} onChange={onChange} />
       )}
       {condition.type === "state" && (
-        <StateConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyStateConditionSelector value={condition} onChange={onChange} />
       )}
       {condition.type === "continue" && (
-        <ContinueConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyContinueConditionSelector value={condition} onChange={onChange} />
       )}
       {condition.type === "change" && (
-        <ChangeConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyChangeConditionSelector value={condition} onChange={onChange} />
       )}
       {condition.type === "group" && (
-        <GroupConditionSelector name={name} value={condition} onChange={onChange} />
+        <StrategyGroupConditionSelector value={condition} onChange={onChange} />
       )}
     </div>
   );
 }
 
-export default ConditionBuilder;
+export default StrategyConditionBuilder;
