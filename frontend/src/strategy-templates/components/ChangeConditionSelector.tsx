@@ -1,4 +1,5 @@
 import ConditionRow from "./ConditionBuilder";
+import NumberInput from "../../components/NumberInput";
 import Select from "../../components/Select";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import { ChangeCondition } from "../../codegen/dsl/common";
@@ -19,8 +20,9 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
 
   return (
     <div className="grid gap-4 items-center">
-      <div>
+      <div className="grid md:grid-cols-3 gap-4 items-center">
         <Select
+          label="変化"
           fullWidth
           value={condition.change}
           onChange={(val) =>
@@ -30,6 +32,28 @@ function ChangeConditionSelector({ value, onChange }: ChangeConditionSelectorPro
             })
           }
           options={CHANGE_OPTIONS}
+        />
+        <NumberInput
+          label="変化前期間"
+          fullWidth
+          value={condition.preconditionBars || 1}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              preconditionBars: val as ChangeCondition["preconditionBars"],
+            })
+          }
+        />
+        <NumberInput
+          label="変化後期間"
+          fullWidth
+          value={condition.confirmationBars || 1}
+          onChange={(val) =>
+            setCondition({
+              ...condition,
+              confirmationBars: val as ChangeCondition["confirmationBars"],
+            })
+          }
         />
       </div>
       <div>

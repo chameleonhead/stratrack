@@ -19,14 +19,14 @@ function CrossConditionSelector({ name, value, onChange }: CrossConditionSelecto
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-      <div className="col-span-1 md:col-span-2">
+      <div className="md:col-span-2">
         <OperandSelector
-          name={`${name}.left`}
+          allowedTypes={["constant", "array_variable"]}
           value={condtion.left}
           onChange={(left) => setCondition({ ...condtion, left: left as CrossCondition["left"] })}
         />
       </div>
-      <div className="col-span-1">
+      <div>
         <Select
           fullWidth
           name={`${name}.direction`}
@@ -40,8 +40,9 @@ function CrossConditionSelector({ name, value, onChange }: CrossConditionSelecto
           options={CROSS_DIRECTIONS}
         />
       </div>
-      <div className="col-span-1 md:col-span-2">
+      <div className="md:col-span-2">
         <OperandSelector
+          allowedTypes={["constant", "array_variable"]}
           value={condtion.right}
           onChange={(right) =>
             setCondition({

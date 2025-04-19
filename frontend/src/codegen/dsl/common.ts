@@ -219,8 +219,8 @@ export type ComparisonCondition = {
 export type CrossCondition = {
   type: "cross";
   direction: "cross_over" | "cross_under";
-  left: ConditionOperand;
-  right: ConditionOperand;
+  left: ConstantOperand | ArrayOperand;
+  right: ConstantOperand | ArrayOperand;
 };
 
 export type StateCondition = {

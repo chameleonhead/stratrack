@@ -22,9 +22,10 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
   const [condtion, setCondition] = useLocalValue({ type: "comparison" }, value, onChange);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-      <div className="col-span-1 md:col-span-2">
+    <div className="grid grid-cols-2 xl:grid-cols-11 gap-4 items-center">
+      <div className="col-span-2 xl:col-span-5">
         <OperandSelector
+          allowedTypes={["constant", "scalar_variable"]}
           value={condtion.left}
           onChange={(left) =>
             setCondition({
@@ -35,7 +36,7 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
         />
       </div>
 
-      <div className="col-span-1 md:col-span-1">
+      <div className="col-span-2 xl:col-span-1">
         <Select
           fullWidth
           value={condtion.operator}
@@ -49,8 +50,9 @@ function ComparisonConditionSelector({ value, onChange }: ComparisonConditionSel
         />
       </div>
 
-      <div className="col-span-1 md:col-span-2">
+      <div className="col-span-2 xl:col-span-5">
         <OperandSelector
+          allowedTypes={["constant", "scalar_variable"]}
           value={condtion.right}
           onChange={(right) =>
             setCondition({

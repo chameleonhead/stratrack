@@ -22,6 +22,7 @@ function StateConditionSelector({ value, onChange }: StateConditionSelectorProps
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
         <div className="col-span-1">
           <Select
+            label="状態"
             fullWidth
             value={condition.state}
             onChange={(val) =>
@@ -35,6 +36,7 @@ function StateConditionSelector({ value, onChange }: StateConditionSelectorProps
         </div>
         <div className="col-span-1">
           <NumberInput
+            label="期間"
             fullWidth
             value={condition.consecutiveBars}
             onChange={(val) =>
@@ -49,6 +51,7 @@ function StateConditionSelector({ value, onChange }: StateConditionSelectorProps
       </div>
       <div>
         <OperandSelector
+          allowedTypes={["array_variable"]}
           value={condition.operand}
           onChange={(val) =>
             setCondition({

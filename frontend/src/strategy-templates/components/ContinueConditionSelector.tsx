@@ -22,6 +22,7 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
         <div className="col-span-1">
           <Select
+            label="条件"
             fullWidth
             value={condition.continue}
             onChange={(val) =>
@@ -35,6 +36,7 @@ function ContinueConditionSelector({ value, onChange }: ContinueConditionSelecto
         </div>
         <div className="col-span-1">
           <NumberInput
+            label="期間"
             fullWidth
             value={condition.consecutiveBars}
             onChange={(val) =>

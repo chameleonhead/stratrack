@@ -2,6 +2,7 @@ import {
   AggregationExpression,
   Condition,
   NumberParamReferenceExpression,
+  PriceExpression,
   SourceExpression,
   VariableExpression,
 } from "./common";
@@ -59,7 +60,10 @@ export type StrategyVariableDefinition = {
 // 変数式の型定義を再帰的な型から分離する
 export type StrategyVariableExpression = Exclude<
   VariableExpression,
-  NumberParamReferenceExpression | SourceExpression | AggregationExpression
+  | NumberParamReferenceExpression
+  | SourceExpression
+  | AggregationExpression
+  | Extract<PriceExpression, { valueType: "array" }>
 >;
 
 // エントリー条件: エントリーのトリガーとなる条件

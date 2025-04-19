@@ -2,20 +2,42 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { fn } from "@storybook/test";
 
 import ConditionsBuilder from "./ConditionsBuilder";
+import VariableProvider from "./VariableProvider";
 
 const meta = {
   component: ConditionsBuilder,
   args: { onChange: fn() },
+  decorators: [
+    (story) => (
+      <VariableProvider
+        variables={[
+          {
+            name: "var1",
+            expression: { type: "constant", value: 1 },
+            description: "constant(scalar)",
+          },
+          {
+            name: "var2",
+            expression: { type: "price", source: "open", valueType: "scalar" },
+            description: "price(array)",
+          },
+          {
+            name: "var3",
+            expression: { type: "indicator", name: "ind1", params: [], lineName: "default" },
+            description: "indicator(array)",
+          },
+        ]}
+      >
+        {story()}
+      </VariableProvider>
+    ),
+  ],
 } satisfies Meta<typeof ConditionsBuilder>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    value: [],
-  },
-};
+export const Default: Story = {};
 
 export const Comparison: Story = {
   args: {
@@ -24,33 +46,20 @@ export const Comparison: Story = {
         type: "comparison",
         operator: ">",
         left: { type: "constant", value: 100 },
-        right: { type: "constant", value: 300 },
+        right: { type: "variable", name: "", valueType: "scalar" },
       },
     ],
   },
 };
 
-export const CrossOver: Story = {
+export const Cross: Story = {
   args: {
     value: [
       {
         type: "cross",
         direction: "cross_over",
         left: { type: "constant", value: 100 },
-        right: { type: "constant", value: 300 },
-      },
-    ],
-  },
-};
-
-export const CrossUnder: Story = {
-  args: {
-    value: [
-      {
-        type: "cross",
-        direction: "cross_under",
-        left: { type: "constant", value: 100 },
-        right: { type: "constant", value: 300 },
+        right: { type: "variable", name: "", valueType: "array" },
       },
     ],
   },
@@ -81,6 +90,49 @@ export const State: Story = {
         state: "rising",
         consecutiveBars: 12,
         operand: { type: "variable", name: "", valueType: "array" },
+      },
+    ],
+  },
+};
+
+export const Continue: Story = {
+  args: {
+    value: [
+      {
+        type: "continue",
+        continue: "true",
+        consecutiveBars: 12,
+        condition: {
+          type: "comparison",
+          left: { type: "variable", name: "", valueType: "scalar" },
+          operator: "==",
+          right: { type: "constant", value: 1 },
+        },
+      },
+    ],
+  },
+};
+
+export const Group: Story = {
+  args: {
+    value: [
+      {
+        type: "group",
+        operator: "and",
+        conditions: [
+          {
+            type: "comparison",
+            left: { type: "variable", name: "", valueType: "scalar" },
+            operator: ">=",
+            right: { type: "constant", value: 1 },
+          },
+          {
+            type: "comparison",
+            left: { type: "variable", name: "", valueType: "scalar" },
+            operator: "<=",
+            right: { type: "constant", value: 2 },
+          },
+        ],
       },
     ],
   },
