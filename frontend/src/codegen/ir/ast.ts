@@ -1,5 +1,5 @@
-import { AggregationType } from "../../dsl/common";
-import { IndicatorParam } from "../../dsl/indicator";
+import { AggregationType } from "../dsl/common";
+import { IndicatorParam } from "../dsl/indicator";
 
 export type IRProgram = {
   aggregations: AggregationType[];

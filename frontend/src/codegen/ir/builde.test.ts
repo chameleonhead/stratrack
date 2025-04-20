@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { IRComparisonCondition, IRIndicatorDefinition, IRIndicatorInstance, IRProgram } from ".";
-import { analyzeStrategyWithDependencies } from "../../analyzers";
-import { StrategyTemplate } from "../../dsl/strategy";
+import { IRComparisonCondition, IRIndicatorDefinition, IRIndicatorInstance, IRProgram } from "./ast";
+import { analyzeStrategyWithDependencies } from "../analyzers";
+import { StrategyTemplate } from "../dsl/strategy";
 import { buildIRFromAnalysis } from "./builder";
-import { MA } from "../../../indicators/indicators";
+import { MA } from "../../indicators/indicators";
 
 describe("buildIRFromAnalysis", () => {
   // テストで使用する戦略とIRProgramをスコープ外で定義

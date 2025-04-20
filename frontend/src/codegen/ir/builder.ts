@@ -1,11 +1,11 @@
-import { StrategyAnalysisContext } from "../../analyzers";
-import { IndicatorVariableDefinition } from "../../dsl/indicator";
+import { StrategyAnalysisContext } from "../analyzers";
+import { IndicatorVariableDefinition } from "../dsl/indicator";
 import {
   BarExpression,
   CommonCondition,
   IndicatorParamValue,
   ScalarExpression,
-} from "../../dsl/common";
+} from "../dsl/common";
 import {
   IRProgram,
   IRStrategy,
@@ -31,7 +31,7 @@ import {
   IRTemporaryVariableRef,
   IRIndicatorDefinition,
   IRAggregationTypeValue,
-} from ".";
+} from "./ast";
 
 export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
   const indicatorRefMap = new Map<string, string>();
