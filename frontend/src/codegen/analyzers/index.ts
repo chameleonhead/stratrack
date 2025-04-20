@@ -1,8 +1,11 @@
 import { AggregationType, BarExpression, ScalarExpression } from "../dsl/common";
 import { Indicator, IndicatorParam, IndicatorTemplate } from "../dsl/indicator";
 import { StrategyTemplate } from "../dsl/strategy";
-import { visitScalarExpression, visitCondition } from "./visitors";
+import { visitCondition, visitScalarExpression } from "./visitors";
 
+// ==========================
+// 分析結果（分析フェーズ）
+// ==========================
 export type StrategyAnalysisResult = {
   usedIndicators: Map<string, IndicatorParam[]>;
   usedAggregationTypes: Set<AggregationType>;
@@ -10,6 +13,73 @@ export type StrategyAnalysisResult = {
   variableDependencyGraph: Map<string, Set<string>>;
   errors: string[];
 };
+
+export type IndicatorInstance = {
+  name: string;
+  params: IndicatorParam[];
+  indicator: Indicator;
+};
+
+export type StrategyAnalysisContext = {
+  strategy: StrategyTemplate;
+  indicatorInstances: IndicatorInstance[];
+  usedAggregationTypes: Set<AggregationType>;
+  variableDependencyOrder: string[];
+  variableDependencyGraph: Map<string, Set<string>>;
+  errors: string[];
+};
+
+// ==========================
+// 中間AST構造（生成フェーズ）
+// ==========================
+
+
+// ==========================
+// 分析実行
+// ==========================
+export function analyzeStrategyWithDependencies(
+  strategy: StrategyTemplate,
+  indicatorCatalog: Record<string, Indicator>
+): StrategyAnalysisContext {
+  const indicatorInstances: IndicatorInstance[] = [];
+  const usedAggregationTypes = new Set<AggregationType>();
+  const errors: string[] = [];
+
+  const ctxUsedIndicators = new Map<string, IndicatorParam[]>();
+  const result = analyzeTemplate(strategy, indicatorCatalog, ctxUsedIndicators, usedAggregationTypes);
+
+  const queue = Array.from(ctxUsedIndicators.entries()).map(([name, params]) => ({ name, paramsList: [params] }));
+
+  while (queue.length) {
+    const { name, paramsList } = queue.pop()!;
+    const indicator = indicatorCatalog[name];
+    if (!indicator) {
+      errors.push(`インジケーター定義が見つかりません: ${name}`);
+      continue;
+    }
+
+    for (const params of paramsList) {
+      indicatorInstances.push({ name, params, indicator });
+
+      const nestedCtx = new Map<string, IndicatorParam[]>();
+      analyzeTemplate(indicator.template, indicatorCatalog, nestedCtx, usedAggregationTypes);
+
+      for (const [nestedName, nestedParams] of nestedCtx.entries()) {
+        queue.push({ name: nestedName, paramsList: [nestedParams] });
+      }
+    }
+  }
+
+  return {
+    strategy,
+    indicatorInstances,
+    usedAggregationTypes,
+    variableDependencyOrder: result.variableDependencyOrder,
+    variableDependencyGraph: result.variableDependencyGraph,
+    errors: [...result.errors, ...errors],
+  };
+}
+
 
 export function analyzeTemplate(
   template: StrategyTemplate | IndicatorTemplate,
@@ -21,7 +91,6 @@ export function analyzeTemplate(
   Array.from(usedIndicators.entries()).forEach(([name, params]) => {
     usedIndicatorsWithStringParam.set(name, new Set(JSON.stringify(params)));
   });
-  const usedAggregationTypesNew = new Set(usedAggregationTypes);
   const dependencyGraph = new Map<string, Set<string>>();
   const errors: string[] = [];
 
@@ -60,12 +129,12 @@ export function analyzeTemplate(
       // 集約関数の記録
       expr.params.forEach((p) => {
         if (p.type === "aggregationType") {
-          usedAggregationTypesNew.add(p.method);
+          usedAggregationTypes.add(p.method);
         }
       });
     } else if (expr.type === "aggregation") {
       if (expr.method.type === "aggregationType") {
-        usedAggregationTypesNew.add(expr.method.value);
+        usedAggregationTypes.add(expr.method.value);
       }
     } else if (expr.type === "variable") {
       if (fromVar) {

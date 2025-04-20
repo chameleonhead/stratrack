@@ -3,6 +3,7 @@ import {
   BarValueExpression,
   Condition,
   ConstantExpression,
+  IndicatorExpression,
   NumberParamReferenceExpression,
   PriceExpression,
   ScalarExpression,
@@ -71,7 +72,7 @@ export type StrategyVariableExpression = Exclude<
 >;
 
 export type StrategyCondition = Condition<
-  ConstantExpression | ScalarPriceExpression | BarValueExpression,
+  ConstantExpression | ScalarPriceExpression | BarValueExpression | IndicatorExpression,
   VariableReferenceExpression | PriceExpression
 >;
 
