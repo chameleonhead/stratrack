@@ -6,6 +6,8 @@ import { renderStrategyCode } from "../codegen/generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
 import { Strategy, StrategyTemplate } from "../codegen/dsl/strategy";
+import { analyzeTemplate } from "../codegen/analyzers";
+import { Indicator } from "../codegen/dsl/indicator";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -24,7 +26,24 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
       } as StrategyTemplate,
     } as Partial<Strategy>,
     value,
-    onChange
+    (v) => {
+      console.log(
+        "StrategyEditor",
+        analyzeTemplate(
+          v.template!,
+          indicators.reduce(
+            (acc, i) => {
+              acc[i.name] = i;
+              return acc;
+            },
+            {} as Record<string, Indicator>
+          )
+        )
+      );
+      if (onChange) {
+        onChange(v);
+      }
+    }
   );
   return (
     <div className="grid space-y-4">
