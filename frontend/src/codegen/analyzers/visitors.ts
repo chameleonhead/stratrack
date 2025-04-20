@@ -29,10 +29,7 @@ export function visitScalarExpression(expr: ScalarExpression, visitor: Visitor) 
   }
 }
 
-export function visitCondition(
-  cond: CommonCondition,
-  visitor: Visitor,
-) {
+export function visitCondition(cond: CommonCondition, visitor: Visitor) {
   switch (cond.type) {
     case "comparison":
       visitScalarExpression(cond.left, visitor);
@@ -61,4 +58,4 @@ export function visitCondition(
       cond.conditions.forEach((c) => visitCondition(c, visitor));
       break;
   }
-} 
+}

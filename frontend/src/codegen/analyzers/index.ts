@@ -1,4 +1,9 @@
-import { AggregationType, BarExpression, ScalarExpression } from "../dsl/common";
+import {
+  AggregationType,
+  BarExpression,
+  IndicatorParamValue,
+  ScalarExpression,
+} from "../dsl/common";
 import { Indicator, IndicatorParam, IndicatorTemplate } from "../dsl/indicator";
 import { StrategyTemplate } from "../dsl/strategy";
 import { visitCondition, visitScalarExpression } from "./visitors";
@@ -7,21 +12,29 @@ import { visitCondition, visitScalarExpression } from "./visitors";
 // 分析結果（分析フェーズ）
 // ==========================
 export type StrategyAnalysisResult = {
-  usedIndicators: Map<string, IndicatorParam[]>;
+  usedIndicators: Map<string, IndicatorParamValue[][]>;
   usedAggregationTypes: Set<AggregationType>;
   variableDependencyOrder: string[];
   variableDependencyGraph: Map<string, Set<string>>;
   errors: string[];
 };
 
-export type IndicatorInstance = {
+export type IndicatorDefinition = {
   name: string;
   params: IndicatorParam[];
   indicator: Indicator;
 };
 
+export type IndicatorInstance = {
+  callerId: number;
+  name: string;
+  params: IndicatorParamValue[];
+  indicator: Indicator;
+};
+
 export type StrategyAnalysisContext = {
   strategy: StrategyTemplate;
+  indicatorDefinitions: IndicatorDefinition[];
   indicatorInstances: IndicatorInstance[];
   usedAggregationTypes: Set<AggregationType>;
   variableDependencyOrder: string[];
@@ -30,48 +43,60 @@ export type StrategyAnalysisContext = {
 };
 
 // ==========================
-// 中間AST構造（生成フェーズ）
-// ==========================
-
-
-// ==========================
 // 分析実行
 // ==========================
 export function analyzeStrategyWithDependencies(
   strategy: StrategyTemplate,
   indicatorCatalog: Record<string, Indicator>
 ): StrategyAnalysisContext {
+  const indicatorDefinitions: IndicatorDefinition[] = [];
   const indicatorInstances: IndicatorInstance[] = [];
   const usedAggregationTypes = new Set<AggregationType>();
   const errors: string[] = [];
 
-  const ctxUsedIndicators = new Map<string, IndicatorParam[]>();
-  const result = analyzeTemplate(strategy, indicatorCatalog, ctxUsedIndicators, usedAggregationTypes);
+  const ctxUsedIndicators = new Map<string, IndicatorParamValue[][]>();
 
-  const queue = Array.from(ctxUsedIndicators.entries()).map(([name, params]) => ({ name, paramsList: [params] }));
+  let callerId: number = 0;
+  const result = analyzeTemplate(
+    strategy,
+    indicatorCatalog,
+    ctxUsedIndicators,
+    usedAggregationTypes
+  );
+
+  const queue = Array.from(ctxUsedIndicators.entries()).map(([name, params]) => ({
+    callerId,
+    name,
+    paramsList: params,
+  }));
 
   while (queue.length) {
-    const { name, paramsList } = queue.pop()!;
+    const { callerId: cid, name, paramsList } = queue.pop()!;
     const indicator = indicatorCatalog[name];
     if (!indicator) {
       errors.push(`インジケーター定義が見つかりません: ${name}`);
       continue;
     }
+    if (!indicatorDefinitions.some((i) => callerId !== cid && i.name === name)) {
+      indicatorDefinitions.push({ name, params: indicator.params, indicator });
 
-    for (const params of paramsList) {
-      indicatorInstances.push({ name, params, indicator });
-
-      const nestedCtx = new Map<string, IndicatorParam[]>();
+      callerId++;
+      const nestedCtx = new Map<string, IndicatorParamValue[][]>();
       analyzeTemplate(indicator.template, indicatorCatalog, nestedCtx, usedAggregationTypes);
 
       for (const [nestedName, nestedParams] of nestedCtx.entries()) {
-        queue.push({ name: nestedName, paramsList: [nestedParams] });
+        queue.push({ callerId, name: nestedName, paramsList: nestedParams });
       }
+    }
+
+    for (const params of paramsList) {
+      indicatorInstances.push({ callerId: cid, name, params, indicator });
     }
   }
 
   return {
     strategy,
+    indicatorDefinitions,
     indicatorInstances,
     usedAggregationTypes,
     variableDependencyOrder: result.variableDependencyOrder,
@@ -80,11 +105,10 @@ export function analyzeStrategyWithDependencies(
   };
 }
 
-
 export function analyzeTemplate(
   template: StrategyTemplate | IndicatorTemplate,
   availableIndicators: Record<string, Indicator>,
-  usedIndicators: Map<string, IndicatorParam[]> = new Map(),
+  usedIndicators: Map<string, IndicatorParamValue[][]> = new Map(),
   usedAggregationTypes: Set<AggregationType> = new Set()
 ): StrategyAnalysisResult {
   const usedIndicatorsWithStringParam: Map<string, Set<string>> = new Map();
@@ -189,7 +213,7 @@ export function analyzeTemplate(
   usedIndicators.clear();
   usedIndicatorsWithStringParam.forEach((params, name) => {
     const parsedParams = Array.from(params).map((p) => JSON.parse(p));
-    usedIndicators.set(name, parsedParams);
+    usedIndicators.set(name, parsedParams as IndicatorParamValue[][]);
   });
 
   return {

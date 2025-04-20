@@ -130,10 +130,7 @@ function emitArrayVariableExpression(expr: BarExpression) {
   }
 }
 
-function emitVariableExpression(
-  expr: ScalarExpression | BarExpression,
-  shift?: PyExpr
-): string {
+function emitVariableExpression(expr: ScalarExpression | BarExpression, shift?: PyExpr): string {
   switch (expr.type) {
     case "variable":
       return `this.${expr.name}`;
@@ -178,10 +175,7 @@ function emitVariableExpression(
   }
 }
 
-function emitCondition(
-  cond: CommonCondition,
-  shift: PyExpr = new PyExpr("0")
-): string {
+function emitCondition(cond: CommonCondition, shift: PyExpr = new PyExpr("0")): string {
   switch (cond.type) {
     case "comparison":
       return `${emitVariableExpression(cond.left, shift)} ${cond.operator} ${emitVariableExpression(cond.right, shift)}`;

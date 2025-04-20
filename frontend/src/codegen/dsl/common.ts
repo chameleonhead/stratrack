@@ -45,17 +45,17 @@ export type SourceExpression = {
 export type ScalarPriceExpression = {
   type: "scalar_price";
   source:
-  | "bid"
-  | "ask"
-  | "open"
-  | "high"
-  | "close"
-  | "low"
-  | "median"
-  | "typical"
-  | "weighted"
-  | "tick_volume"
-  | "volume";
+    | "bid"
+    | "ask"
+    | "open"
+    | "high"
+    | "close"
+    | "low"
+    | "median"
+    | "typical"
+    | "weighted"
+    | "tick_volume"
+    | "volume";
   valueType: "scalar";
   shiftBars?: PermanentVariableExpression;
   fallback?: ScalarExpression;
@@ -79,20 +79,20 @@ export type IndicatorExpression = {
 
 export type IndicatorParamValue =
   | {
-    name: string;
-    type: "number";
-    value: number;
-  }
+      name: string;
+      type: "number";
+      value: number;
+    }
   | {
-    name: string;
-    type: "aggregationType";
-    method: AggregationType;
-  }
+      name: string;
+      type: "aggregationType";
+      method: AggregationType;
+    }
   | {
-    name: string;
-    type: "source";
-    ref: VariableReferenceExpression;
-  };
+      name: string;
+      type: "source";
+      ref: VariableReferenceExpression;
+    };
 
 export type AggregationExpression = {
   type: "aggregation";

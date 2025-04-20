@@ -90,10 +90,7 @@ export type VariableFallbackDefinition = {
   fallback?: ScalarExpression;
 };
 
-export type IndicatorVariableExpression = Exclude<
-  ScalarExpression,
-  PriceExpression
->;
+export type IndicatorVariableExpression = Exclude<ScalarExpression, PriceExpression>;
 
 export type IndicatorCondition = Condition<
   ConstantExpression | NumberParamReferenceExpression | BarValueExpression,

@@ -11,20 +11,21 @@ export function useLocalValue<T>(
   const updateValue = useCallback(
     (setStateAction: SetStateAction<T>) => {
       const promise = new Promise<T>((resolve) => {
-        setLocalValue(prevState => {
-          const newValue = typeof setStateAction === "function"
-            ? (setStateAction as (prevState: T) => T)(prevState)
-            : setStateAction;
+        setLocalValue((prevState) => {
+          const newValue =
+            typeof setStateAction === "function"
+              ? (setStateAction as (prevState: T) => T)(prevState)
+              : setStateAction;
           resolve(newValue);
           if (isValueUndefined) {
-            return newValue
+            return newValue;
           } else {
             return prevState;
           }
-        })
+        });
       });
       if (onChange) {
-        promise.then(onChange)
+        promise.then(onChange);
       }
     },
     [onChange, isValueUndefined]

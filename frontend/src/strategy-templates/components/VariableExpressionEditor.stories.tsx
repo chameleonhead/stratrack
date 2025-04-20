@@ -42,7 +42,10 @@ export const VariablesOperand: Story = {
     (story) => (
       <VariableProvider
         variables={[
-          { name: "value1", expression: { type: "scalar_price", source: "open", valueType: "scalar" } },
+          {
+            name: "value1",
+            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
+          },
         ]}
       >
         {story()}
