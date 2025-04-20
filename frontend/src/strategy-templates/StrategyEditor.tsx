@@ -6,10 +6,6 @@ import { renderStrategyCode } from "../codegen/generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
 import { Strategy, StrategyTemplate } from "../codegen/dsl/strategy";
-import { analyzeStrategyWithDependencies } from "../codegen/analyzers";
-import { Indicator } from "../codegen/dsl/indicator";
-import { buildIRFromAnalysis } from "../codegen/ir/builder";
-import { convertIrToMqlProgram, renderMqlProgram } from "../codegen/mql";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -44,21 +40,10 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
         />
         <CodeEditor
           language="mql4"
-          value={useMemo(() => {
-            const analysis = analyzeStrategyWithDependencies(
-              localValue.template as StrategyTemplate,
-              indicators.reduce(
-                (acc, i) => {
-                  acc[i.name] = i;
-                  return acc;
-                },
-                {} as Record<string, Indicator>
-              )
-            );
-            const ir = buildIRFromAnalysis(analysis);
-            const mqlProgram = convertIrToMqlProgram(ir);
-            return renderMqlProgram(mqlProgram);
-          }, [localValue, indicators])}
+          value={useMemo(
+            () => renderStrategyCode("mql4", localValue.template as StrategyTemplate, indicators),
+            [localValue, indicators]
+          )}
         />
       </Suspense>
     </div>
