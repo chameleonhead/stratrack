@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { IRComparisonCondition, IRIndicatorDefinition, IRIndicatorInstance, IRProgram } from "./ast";
+import {
+  IRComparisonCondition,
+  IRIndicatorDefinition,
+  IRIndicatorInstance,
+  IRProgram,
+} from "./ast";
 import { analyzeStrategyWithDependencies } from "../analyzers";
 import { StrategyTemplate } from "../dsl/strategy";
 import { buildIRFromAnalysis } from "./builder";
@@ -92,10 +97,15 @@ describe("buildIRFromAnalysis", () => {
 
     // エントリー条件の検証（単一のエントリー条件が正しく設定されていること）
     // IRProgram内のエントリー条件オブジェクトを取得
-    const entryCondition = strategy.entryConditions[0] as IRComparisonCondition;
-    expect(entryCondition.type).toBe("comparison");
-    expect(entryCondition.operator).toBe(">");
-    expect(entryCondition.left).toEqual({
+    const entryCondition = strategy.entryConditions[0] as {
+      type: "long";
+      condition: IRComparisonCondition;
+    };
+    expect(entryCondition.type).toBe("long");
+    expect(entryCondition.condition).toBeDefined();
+    expect(entryCondition.condition.type).toBe("comparison");
+    expect(entryCondition.condition.operator).toBe(">");
+    expect(entryCondition.condition.left).toEqual({
       type: "bar_variable_ref",
       source: {
         source: "close",
@@ -110,7 +120,7 @@ describe("buildIRFromAnalysis", () => {
         value: 0,
       },
     });
-    expect(entryCondition.right).toEqual({
+    expect(entryCondition.condition.right).toEqual({
       type: "bar_variable_ref",
       source: {
         name: "fastSMA",
@@ -165,7 +175,6 @@ describe("buildIRFromAnalysis", () => {
 
   it("sma 集約が正しく変換されていることを確認する", () => {
     expect(irProgram.aggregations).toBeDefined();
-    console.log(irProgram.aggregations);
     const aggregations = irProgram.aggregations;
     expect(aggregations.length).toBe(1);
     expect(aggregations[0]).toBe("sma");

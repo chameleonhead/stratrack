@@ -11,20 +11,24 @@ export type IRProgram = {
 export type IRStrategy = {
   name: string;
   variables: IRVariable[];
-  entryConditions: IRCondition[];
-  exitConditions: IRCondition[];
+  entryConditions: { type: "long" | "short"; condition: IRCondition }[];
+  exitConditions: { type: "long" | "short"; condition: IRCondition }[];
+  usedAggregations: AggregationType[];
 };
 
 export type IRIndicatorDefinition = {
   name: string;
+  pascalName: string; // 例: "Rsi"
   params: IndicatorParam[];
   variables: IRVariable[];
   exportVars: string[];
+  usedAggregations: AggregationType[];
 };
 
 export type IRIndicatorInstance = {
   id: string; // 例: "rsi_1"
-  name: string;
+  name: string; // 例: "rsi"
+  pascalName: string; // 例: "Rsi"
   params: IRExpression[];
 };
 
@@ -109,6 +113,8 @@ export type IRAggregationTypeValue = {
 export type IRIndicatorRef = {
   type: "indicator_ref";
   refId: string; // indicator instance id
+  params: IRExpression[];
+  lineName: string;
 };
 
 export type IRAggregation = {

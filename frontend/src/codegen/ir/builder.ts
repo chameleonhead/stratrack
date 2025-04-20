@@ -35,12 +35,6 @@ import {
 
 export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
   const indicatorRefMap = new Map<string, string>();
-  const strategy: IRStrategy = {
-    name: "Generated",
-    variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorRefMap)) ?? [],
-    entryConditions: ctx.strategy.entry.map((e) => mapCondition(e.condition, indicatorRefMap)),
-    exitConditions: ctx.strategy.exit.map((e) => mapCondition(e.condition, indicatorRefMap)),
-  };
 
   const indicatorDefs: IRIndicatorDefinition[] = ctx.indicatorDefinitions.map((instance, index) => {
     const irVars = instance.indicator.template.variables.map((v) =>
@@ -50,25 +44,42 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
     return {
       id: `${instance.name}_${index + 1}`,
       name: instance.name,
+      pascalName: pascal(instance.name),
       params: instance.params,
       outputLine: instance.indicator.defaultLineName ?? exports[0],
       variables: irVars,
       exportVars: exports,
+      usedAggregations: Array.from(instance.usedAggregationTypes),
     };
   });
 
   const indicatorInstances: IRIndicatorInstance[] = ctx.indicatorInstances.map(
     (instance, index) => {
-      const key = `${instance.callerId}::${instance.name}::${JSON.stringify(instance.params)}`;
-      const id = `${instance.name}_${index + 1}`;
+      const key = `${instance.name}::${JSON.stringify(instance.params)}`;
+      const id = `ind${index + 1}`;
       indicatorRefMap.set(key, id);
       return {
-        id: `${instance.name}_${index + 1}`,
+        id,
         name: instance.name,
+        pascalName: pascal(instance.name),
         params: instance.params.map((p) => mapIndicatorParamValue(p, indicatorRefMap)),
       };
     }
   );
+
+  const strategy: IRStrategy = {
+    name: "Generated",
+    variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorRefMap)) ?? [],
+    entryConditions: ctx.strategy.entry.map((e) => ({
+      type: e.type,
+      condition: mapCondition(e.condition, indicatorRefMap),
+    })),
+    exitConditions: ctx.strategy.exit.map((e) => ({
+      type: e.type,
+      condition: mapCondition(e.condition, indicatorRefMap),
+    })),
+    usedAggregations: Array.from(ctx.usedAggregationTypes),
+  };
 
   return {
     aggregations: Array.from(ctx.usedAggregationTypes),
@@ -164,7 +175,12 @@ function mapExpression(
       } satisfies IRBarVariableRef;
     }
     case "indicator":
-      return { type: "indicator_ref", refId: resolveIndicatorRefId(expr) } satisfies IRIndicatorRef; // 後でリンク解決
+      return {
+        type: "indicator_ref",
+        refId: resolveIndicatorRefId(expr),
+        params: expr.params.map((p) => mapIndicatorParamValue(p, indicatorRefMap)),
+        lineName: expr.lineName,
+      } satisfies IRIndicatorRef;
     case "aggregation":
       return {
         type: "aggregation",
@@ -244,4 +260,12 @@ function mapCondition(cond: CommonCondition, indicatorRefMap: Map<string, string
     default:
       throw new Error(`Unsupported condition type: ${(cond as { type: string }).type}`);
   }
+}
+
+function pascal(snake: string): string {
+  return snake
+    .split("_")
+    .filter(Boolean) // 空文字を除去（例: __abc）
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
 }

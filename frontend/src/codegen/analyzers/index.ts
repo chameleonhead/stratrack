@@ -23,10 +23,10 @@ export type IndicatorDefinition = {
   name: string;
   params: IndicatorParam[];
   indicator: Indicator;
+  usedAggregationTypes: Set<AggregationType>;
 };
 
 export type IndicatorInstance = {
-  callerId: number;
   name: string;
   params: IndicatorParamValue[];
   indicator: Indicator;
@@ -55,8 +55,6 @@ export function analyzeStrategyWithDependencies(
   const errors: string[] = [];
 
   const ctxUsedIndicators = new Map<string, IndicatorParamValue[][]>();
-
-  let callerId: number = 0;
   const result = analyzeTemplate(
     strategy,
     indicatorCatalog,
@@ -65,32 +63,39 @@ export function analyzeStrategyWithDependencies(
   );
 
   const queue = Array.from(ctxUsedIndicators.entries()).map(([name, params]) => ({
-    callerId,
     name,
     paramsList: params,
   }));
 
   while (queue.length) {
-    const { callerId: cid, name, paramsList } = queue.pop()!;
+    const { name, paramsList } = queue.pop()!;
     const indicator = indicatorCatalog[name];
     if (!indicator) {
       errors.push(`インジケーター定義が見つかりません: ${name}`);
       continue;
     }
-    if (!indicatorDefinitions.some((i) => callerId !== cid && i.name === name)) {
-      indicatorDefinitions.push({ name, params: indicator.params, indicator });
-
-      callerId++;
+    if (!indicatorDefinitions.some((i) => i.name === name)) {
       const nestedCtx = new Map<string, IndicatorParamValue[][]>();
-      analyzeTemplate(indicator.template, indicatorCatalog, nestedCtx, usedAggregationTypes);
+      const nestedUsedAggregationTypes = new Set<AggregationType>();
+      analyzeTemplate(indicator.template, indicatorCatalog, nestedCtx, nestedUsedAggregationTypes);
+      nestedUsedAggregationTypes.forEach((type) => {
+        usedAggregationTypes.add(type);
+      });
+
+      indicatorDefinitions.push({
+        name,
+        params: indicator.params,
+        indicator,
+        usedAggregationTypes: nestedUsedAggregationTypes,
+      });
 
       for (const [nestedName, nestedParams] of nestedCtx.entries()) {
-        queue.push({ callerId, name: nestedName, paramsList: nestedParams });
+        queue.push({ name: nestedName, paramsList: nestedParams });
       }
     }
 
     for (const params of paramsList) {
-      indicatorInstances.push({ callerId: cid, name, params, indicator });
+      indicatorInstances.push({ name, params, indicator });
     }
   }
 
