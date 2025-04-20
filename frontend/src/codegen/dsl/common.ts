@@ -99,6 +99,7 @@ export type AggregationExpression = {
   method: AggregationMethodExpression;
   source: BarExpression;
   period: ScalarExpression;
+  fallback?: ScalarExpression;
   valueType: "scalar";
 };
 

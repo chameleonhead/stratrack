@@ -135,7 +135,7 @@ function generateInitFunction(strategy: IRStrategy, instances: IRIndicatorInstan
       assignStmt(
         ref(i.id),
         call(
-          `new ${i.name}`,
+          `new ${i.pascalName}`,
           i.params
             .filter((p) => p.type === "constant" || p.type === "aggregation_type_value")
             .map((p) => emitMqlExprFromIR("strategy", p))
@@ -189,9 +189,22 @@ function generateTickFunction(strategy: IRStrategy): MqlFunction {
         declStmt("i", "int", call("MathMin", [binary("-", barsRef, ONE), diffRef])),
         binary(">=", ref("i"), ZERO),
         stmt(unary("--", ref("i"))),
-        strategy.variables.map((v) =>
-          assignStmt(access(ref(v.name), ref("i")), emitMqlExprFromIR("strategy", v.expression, ref("i")))
-        )
+        strategy.variables.map((v) => {
+          if (v.invalidPeriod) {
+            return assignStmt(
+              access(ref(v.name), ref("i")),
+              ternary(
+                binary(">", barsRef, emitMqlExprFromIR("strategy", v.invalidPeriod, ref("i"))),
+                emitMqlExprFromIR("strategy", v.expression, ref("i")),
+                v.fallback ? emitMqlExprFromIR("strategy", v.fallback, ref("i")) : lit(0)
+              )
+            );
+          }
+          return assignStmt(
+            access(ref(v.name), ref("i")),
+            emitMqlExprFromIR("strategy", v.expression, ref("i"))
+          );
+        })
       ),
       stmt(binary("=", lastBarsRef, currentBarsRef))
     );

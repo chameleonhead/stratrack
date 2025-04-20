@@ -155,6 +155,7 @@ describe("buildIRFromAnalysis", () => {
         ? irIndicator.exportVars
         : Object.values(irIndicator.exportVars)
     ).toContain("ma");
+    expect(irIndicator.usedAggregations).toContain("sma");
   });
 
   it("SMAインジケーターが IRIndicatorInstance に正しく変換されていることを確認する", () => {
@@ -176,7 +177,7 @@ describe("buildIRFromAnalysis", () => {
   it("sma 集約が正しく変換されていることを確認する", () => {
     expect(irProgram.aggregations).toBeDefined();
     const aggregations = irProgram.aggregations;
-    expect(aggregations.length).toBe(1);
+    expect(aggregations.length).toBe(4);
     expect(aggregations[0]).toBe("sma");
   });
 });

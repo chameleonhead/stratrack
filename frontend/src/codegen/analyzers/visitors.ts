@@ -19,9 +19,11 @@ export function visitScalarExpression(expr: ScalarExpression, visitor: Visitor) 
       break;
     case "aggregation":
       visitScalarExpression(expr.period, visitor);
+      if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
       break;
     case "bar_value":
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
+      if (expr.shiftBars) visitScalarExpression(expr.shiftBars, visitor);
       break;
     case "scalar_price":
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);

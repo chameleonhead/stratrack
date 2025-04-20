@@ -1,5 +1,5 @@
-import { StrategyAnalysisContext } from "../analyzers";
-import { IndicatorVariableDefinition } from "../dsl/indicator";
+import { IndicatorDefinition, StrategyAnalysisContext } from "../analyzers";
+import { IndicatorParam, IndicatorVariableDefinition } from "../dsl/indicator";
 import {
   BarExpression,
   CommonCondition,
@@ -32,51 +32,63 @@ import {
   IRIndicatorDefinition,
   IRAggregationTypeValue,
 } from "./ast";
+import { StrategyVariableDefinition } from "../dsl/strategy";
+
+type IndicatorContext = {
+  map: Map<string, string>;
+  currentDefinition?: IndicatorDefinition;
+};
 
 export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
-  const indicatorRefMap = new Map<string, string>();
-
-  const indicatorDefs: IRIndicatorDefinition[] = ctx.indicatorDefinitions.map((instance, index) => {
-    const irVars = instance.indicator.template.variables.map((v) =>
-      mapIndicatorVariable(v, indicatorRefMap)
-    );
-    const exports = instance.indicator.template.exports.map((e) => e.variableName);
-    return {
-      id: `${instance.name}_${index + 1}`,
-      name: instance.name,
-      pascalName: pascal(instance.name),
-      params: instance.params,
-      outputLine: instance.indicator.defaultLineName ?? exports[0],
-      variables: irVars,
-      exportVars: exports,
-      usedAggregations: Array.from(instance.usedAggregationTypes),
-    };
-  });
+  const indicatorContext = {
+    map: new Map(),
+  } as IndicatorContext;
 
   const indicatorInstances: IRIndicatorInstance[] = ctx.indicatorInstances.map(
     (instance, index) => {
       const key = `${instance.name}::${JSON.stringify(instance.params)}`;
       const id = `ind${index + 1}`;
-      indicatorRefMap.set(key, id);
+      indicatorContext.map.set(key, id);
       return {
         id,
         name: instance.name,
         pascalName: pascal(instance.name),
-        params: instance.params.map((p) => mapIndicatorParamValue(p, indicatorRefMap)),
+        params: instance.params.map((p) => mapIndicatorParamValue(p, indicatorContext)),
       };
     }
   );
 
+  const indicatorDefs: IRIndicatorDefinition[] = ctx.indicatorDefinitions.map(
+    (definition, index) => {
+      const irVars = definition.indicator.template.variables.map((v) => {
+        indicatorContext.currentDefinition = definition;
+        return mapIndicatorVariable(v, indicatorContext);
+      });
+      const exports = definition.indicator.template.exports.map((e) => e.variableName);
+      return {
+        id: `${definition.name}_${index + 1}`,
+        name: definition.name,
+        pascalName: pascal(definition.name),
+        params: definition.params,
+        outputLine: definition.indicator.defaultLineName ?? exports[0],
+        variables: irVars,
+        exportVars: exports,
+        usedAggregations: Array.from(definition.usedAggregationTypes),
+      };
+    }
+  );
+
+  delete indicatorContext.currentDefinition;
   const strategy: IRStrategy = {
     name: "Generated",
-    variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorRefMap)) ?? [],
+    variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorContext)) ?? [],
     entryConditions: ctx.strategy.entry.map((e) => ({
       type: e.type,
-      condition: mapCondition(e.condition, indicatorRefMap),
+      condition: mapCondition(e.condition, indicatorContext),
     })),
     exitConditions: ctx.strategy.exit.map((e) => ({
       type: e.type,
-      condition: mapCondition(e.condition, indicatorRefMap),
+      condition: mapCondition(e.condition, indicatorContext),
     })),
     usedAggregations: Array.from(ctx.usedAggregationTypes),
   };
@@ -90,28 +102,32 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
 }
 
 function mapStrategyVariable(
-  v: { name: string; expression: ScalarExpression },
-  indicatorRefMap: Map<string, string>
+  v: StrategyVariableDefinition,
+  indicatorContext: IndicatorContext
 ): IRVariable {
   return {
     name: v.name,
-    expression: mapExpression(v.expression, indicatorRefMap),
+    expression: mapExpression(v.expression, indicatorContext),
+    invalidPeriod: v.invalidPeriod ? mapExpression(v.invalidPeriod, indicatorContext) : undefined,
+    fallback: v.fallback ? mapExpression(v.fallback, indicatorContext) : undefined,
   };
 }
 
 function mapIndicatorVariable(
   v: IndicatorVariableDefinition,
-  indicatorRefMap: Map<string, string>
+  indicatorContext: IndicatorContext
 ): IRVariable {
   return {
     name: v.name,
-    expression: mapExpression(v.expression, indicatorRefMap),
+    expression: mapExpression(v.expression, indicatorContext),
+    invalidPeriod: v.invalidPeriod ? mapExpression(v.invalidPeriod, indicatorContext) : undefined,
+    fallback: v.fallback ? mapExpression(v.fallback, indicatorContext) : undefined,
   };
 }
 
 function mapIndicatorParamValue(
   v: IndicatorParamValue,
-  indicatorRefMap: Map<string, string>
+  indicatorContext: IndicatorContext
 ): IRExpression {
   switch (v.type) {
     case "aggregationType":
@@ -119,7 +135,7 @@ function mapIndicatorParamValue(
     case "number":
       return { type: "constant", value: v.value } satisfies IRConstant;
     case "source":
-      return mapExpression(v.ref, indicatorRefMap);
+      return mapExpression(v.ref, indicatorContext);
     default:
       throw new Error(`Unsupported Parameter Value type: ${JSON.stringify(v)}`);
   }
@@ -127,12 +143,12 @@ function mapIndicatorParamValue(
 
 function mapExpression(
   expr: ScalarExpression | BarExpression,
-  indicatorRefMap: Map<string, string>
+  indicatorContext: IndicatorContext
 ): IRExpression {
   function resolveIndicatorRefId(expr: ScalarExpression): string {
     if (expr.type !== "indicator") throw new Error("Invalid indicator expression");
     const key = `${expr.name}::${JSON.stringify(expr.params)}`;
-    return indicatorRefMap.get(key) ?? `unknown_${expr.name}`;
+    return indicatorContext.map.get(key) ?? `unknown_${expr.name}`;
   }
   switch (expr.type) {
     case "constant":
@@ -147,10 +163,10 @@ function mapExpression(
     case "scalar_price": {
       const ref = { type: "price_ref", source: expr.source } as IRPriceRef;
       const shiftBar = expr.shiftBars
-        ? mapExpression(expr.shiftBars, indicatorRefMap)
+        ? mapExpression(expr.shiftBars, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       const fallback = expr.fallback
-        ? mapExpression(expr.fallback, indicatorRefMap)
+        ? mapExpression(expr.fallback, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       return {
         type: "bar_variable_ref",
@@ -160,12 +176,12 @@ function mapExpression(
       } satisfies IRBarVariableRef;
     }
     case "bar_value": {
-      const ref = mapExpression(expr.source, indicatorRefMap) as IRPriceRef | IRVariableRef;
+      const ref = mapExpression(expr.source, indicatorContext) as IRPriceRef | IRVariableRef;
       const shiftBar = expr.shiftBars
-        ? mapExpression(expr.shiftBars, indicatorRefMap)
+        ? mapExpression(expr.shiftBars, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       const fallback = expr.fallback
-        ? mapExpression(expr.fallback, indicatorRefMap)
+        ? mapExpression(expr.fallback, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       return {
         type: "bar_variable_ref",
@@ -178,69 +194,122 @@ function mapExpression(
       return {
         type: "indicator_ref",
         refId: resolveIndicatorRefId(expr),
-        params: expr.params.map((p) => mapIndicatorParamValue(p, indicatorRefMap)),
+        params: expr.params.map((p) => mapIndicatorParamValue(p, indicatorContext)),
         lineName: expr.lineName,
       } satisfies IRIndicatorRef;
-    case "aggregation":
-      return {
-        type: "aggregation",
-        method: expr.method.type === "aggregationType" ? expr.method.value : "sma",
-        source: mapExpression(expr.source, indicatorRefMap),
-        period: mapExpression(expr.period, indicatorRefMap),
-      } satisfies IRAggregation;
+    case "aggregation": {
+      const source = mapExpression(expr.source, indicatorContext);
+      const fallback = expr.fallback ? mapExpression(expr.fallback, indicatorContext) : undefined;
+      const period = mapExpression(expr.period, indicatorContext);
+      if (expr.method.type === "aggregationType") {
+        return {
+          type: "aggregation",
+          method: expr.method.value,
+          source,
+          fallback,
+          period,
+        } satisfies IRAggregation;
+      } else {
+        const definition = indicatorContext.currentDefinition;
+        if (!definition) {
+          throw new Error("Current definition is not set");
+        }
+        const name = expr.method.name;
+        const aggregationTypes = definition.params
+          .filter((p) => p.type === "aggregationType" && p.name === name)
+          .flatMap(
+            (p) => (p as Extract<IndicatorParam, { type: "aggregationType" }>).selectableTypes
+          );
+
+        return aggregationTypes.splice(1).reduce(
+          (acc: IRExpression, type) => {
+            return {
+              type: "ternary",
+              condition: {
+                type: "comparison",
+                operator: "==",
+                left: {
+                  type: "aggregation_type_value",
+                  method: type,
+                } satisfies IRAggregationTypeValue,
+                right: {
+                  type: "variable_ref",
+                  name,
+                } satisfies IRVariableRef,
+              },
+              trueExpr: {
+                type: "aggregation",
+                method: type,
+                source,
+                fallback,
+                period,
+              } satisfies IRAggregation,
+              falseExpr: acc,
+            } satisfies IRTernaryOp;
+          },
+          {
+            type: "aggregation",
+            method: aggregationTypes[0],
+            source,
+            fallback,
+            period,
+          } satisfies IRAggregation
+        );
+      }
+    }
     case "unary_op":
       return {
         type: "unary",
         operator: expr.operator,
-        operand: mapExpression(expr.operand, indicatorRefMap),
+        operand: mapExpression(expr.operand, indicatorContext),
       } satisfies IRUnaryOp;
     case "binary_op":
       return {
         type: "binary",
         operator: expr.operator,
-        left: mapExpression(expr.left, indicatorRefMap),
-        right: mapExpression(expr.right, indicatorRefMap),
+        left: mapExpression(expr.left, indicatorContext),
+        right: mapExpression(expr.right, indicatorContext),
       } satisfies IRBinaryOp;
     case "ternary":
       return {
         type: "ternary",
-        condition: mapCondition(expr.condition, indicatorRefMap),
-        trueExpr: mapExpression(expr.trueExpr, indicatorRefMap),
-        falseExpr: mapExpression(expr.falseExpr, indicatorRefMap),
+        condition: mapCondition(expr.condition, indicatorContext),
+        trueExpr: mapExpression(expr.trueExpr, indicatorContext),
+        falseExpr: mapExpression(expr.falseExpr, indicatorContext),
       } satisfies IRTernaryOp;
     default:
       throw new Error(`Unsupported expression type: ${(expr as { type: string }).type}`);
   }
 }
 
-function mapCondition(cond: CommonCondition, indicatorRefMap: Map<string, string>): IRCondition {
+function mapCondition(cond: CommonCondition, indicatorContext: IndicatorContext): IRCondition {
   switch (cond.type) {
     case "comparison":
       return {
         type: "comparison",
         operator: cond.operator,
-        left: mapExpression(cond.left, indicatorRefMap),
-        right: mapExpression(cond.right, indicatorRefMap),
+        left: mapExpression(cond.left, indicatorContext),
+        right: mapExpression(cond.right, indicatorContext),
       } satisfies IRComparisonCondition;
     case "cross":
       return {
         type: "cross",
         direction: cond.direction,
-        left: mapExpression(cond.left, indicatorRefMap),
-        right: mapExpression(cond.right, indicatorRefMap),
+        left: mapExpression(cond.left, indicatorContext),
+        right: mapExpression(cond.right, indicatorContext),
       } satisfies IRCrossCondition;
     case "state":
       return {
         type: "state",
         state: cond.state,
-        operand: mapExpression(cond.operand, indicatorRefMap),
+        operand: mapExpression(cond.operand, indicatorContext),
         consecutiveBars: cond.consecutiveBars,
       } satisfies IRStateCondition;
     case "change":
       return {
         type: "change",
         change: cond.change,
-        condition: mapCondition(cond.condition, indicatorRefMap),
+        condition: mapCondition(cond.condition, indicatorContext),
         preconditionBars: cond.preconditionBars,
         confirmationBars: cond.confirmationBars,
       } satisfies IRChangeCondition;
@@ -248,14 +317,14 @@ function mapCondition(cond: CommonCondition, indicatorRefMap: Map<string, string
       return {
         type: "continue",
         continue: cond.continue,
-        condition: mapCondition(cond.condition, indicatorRefMap),
+        condition: mapCondition(cond.condition, indicatorContext),
         consecutiveBars: cond.consecutiveBars,
       } satisfies IRContinueCondition;
     case "group":
       return {
         type: "group",
         operator: cond.operator,
-        conditions: cond.conditions.map((c) => mapCondition(c, indicatorRefMap)),
+        conditions: cond.conditions.map((c) => mapCondition(c, indicatorContext)),
       } satisfies IRGroupCondition;
     default:
       throw new Error(`Unsupported condition type: ${(cond as { type: string }).type}`);

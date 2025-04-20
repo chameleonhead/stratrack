@@ -254,11 +254,9 @@ export const AccumulationDistribution: Indicator = {
         },
         invalidPeriod: { type: "constant", value: 1, valueType: "scalar" },
         fallback: {
-          expression: {
-            type: "bar_value",
-            source: { type: "variable", name: "mfv", valueType: "bar" },
-            valueType: "scalar",
-          },
+          type: "bar_value",
+          source: { type: "variable", name: "mfv", valueType: "bar" },
+          valueType: "scalar",
         },
       },
     ],
@@ -2753,14 +2751,12 @@ export const RSI: Indicator = {
           valueType: "scalar",
         },
         fallback: {
-          expression: {
-            type: "aggregation",
-            method: { type: "aggregationType", value: "sma" },
-            source: { type: "variable", name: "gain", valueType: "bar" },
-            period: { type: "param", name: "period", valueType: "scalar" },
-            valueType: "scalar",
-          },
-          invalidPeriod: { type: "param", name: "period", valueType: "scalar" },
+          type: "aggregation",
+          method: { type: "aggregationType", value: "sma" },
+          source: { type: "variable", name: "gain", valueType: "bar" },
+          period: { type: "param", name: "period", valueType: "scalar" },
+          fallback: { type: "constant", value: 0, valueType: "scalar" },
+          valueType: "scalar",
         },
       },
       {
@@ -2807,14 +2803,11 @@ export const RSI: Indicator = {
           valueType: "scalar",
         },
         fallback: {
-          expression: {
-            type: "aggregation",
-            method: { type: "aggregationType", value: "sma" },
-            source: { type: "variable", name: "loss", valueType: "bar" },
-            period: { type: "param", name: "period", valueType: "scalar" },
-            valueType: "scalar",
-          },
-          invalidPeriod: { type: "param", name: "period", valueType: "scalar" },
+          type: "aggregation",
+          method: { type: "aggregationType", value: "sma" },
+          source: { type: "variable", name: "loss", valueType: "bar" },
+          period: { type: "param", name: "period", valueType: "scalar" },
+          valueType: "scalar",
         },
       },
       {

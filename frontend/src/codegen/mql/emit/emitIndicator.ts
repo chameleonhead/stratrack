@@ -127,18 +127,18 @@ export function emitMqlIndicatorFromIR(indicator: IRIndicatorDefinition): MqlCla
     declStmt("end", "int", ref("i")),
     ...(DEBUG
       ? [
-        callStmt("Print", [strlit("Start: "), ref("start"), strlit(", end: "), ref("end")]),
-        ...variables.map((v) =>
-          callStmt("Print", [
-            strlit(`Before update ${v.name}: `),
-            access(member(ref("this"), v.name), ref("i")),
-            strlit(", "),
-            access(member(ref("this"), v.name), binary("+", ref("i"), lit(1)), false),
-            strlit(", "),
-            access(member(ref("this"), v.name), binary("+", ref("i"), lit(2)), false),
-          ])
-        ),
-      ]
+          callStmt("Print", [strlit("Start: "), ref("start"), strlit(", end: "), ref("end")]),
+          ...variables.map((v) =>
+            callStmt("Print", [
+              strlit(`Before update ${v.name}: `),
+              access(member(ref("this"), v.name), ref("i")),
+              strlit(", "),
+              access(member(ref("this"), v.name), binary("+", ref("i"), lit(1)), false),
+              strlit(", "),
+              access(member(ref("this"), v.name), binary("+", ref("i"), lit(2)), false),
+            ])
+          ),
+        ]
       : []),
     loop(
       declStmt("j", "int", ref("start")),
@@ -146,6 +146,16 @@ export function emitMqlIndicatorFromIR(indicator: IRIndicatorDefinition): MqlCla
       stmt(unary("--", ref("j"))),
       // 計算本体（sum / period）
       variables.flatMap((v) => {
+        if (v.invalidPeriod) {
+          return assignStmt(
+            access(member(thisRef, v.name), ref("j")),
+            ternary(
+              binary(">", barsRef, emitMqlExprFromIR("indicator", v.invalidPeriod, ref("j"))),
+              emitMqlExprFromIR("indicator", v.expression, ref("j")),
+              v.fallback ? emitMqlExprFromIR("indicator", v.fallback, ref("j")) : lit(0)
+            )
+          );
+        }
         return assignStmt(
           access(member(thisRef, v.name), ref("j")),
           emitMqlExprFromIR("indicator", v.expression, ref("j"))
@@ -154,15 +164,15 @@ export function emitMqlIndicatorFromIR(indicator: IRIndicatorDefinition): MqlCla
     ),
     ...(DEBUG
       ? variables.map((v) =>
-        callStmt("Print", [
-          strlit(`After update ${v.name}: `),
-          access(member(ref("this"), v.name), ref("i")),
-          strlit(", "),
-          access(member(ref("this"), v.name), binary("+", ref("i"), lit(1)), false),
-          strlit(", "),
-          access(member(ref("this"), v.name), binary("+", ref("i"), lit(2)), false),
-        ])
-      )
+          callStmt("Print", [
+            strlit(`After update ${v.name}: `),
+            access(member(ref("this"), v.name), ref("i")),
+            strlit(", "),
+            access(member(ref("this"), v.name), binary("+", ref("i"), lit(1)), false),
+            strlit(", "),
+            access(member(ref("this"), v.name), binary("+", ref("i"), lit(2)), false),
+          ])
+        )
       : []),
     // 最後に lastCalculated を更新
     stmt(

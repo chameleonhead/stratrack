@@ -165,10 +165,32 @@ function renderExpr(expr: MqlExpr): string {
       return expr.before
         ? `${expr.operator}${renderExpr(expr.value)}`
         : `${renderExpr(expr.value)}${expr.operator}`;
-    case "binary":
-      return `${renderExpr(expr.left)} ${expr.operator} ${renderExpr(expr.right)}`;
-    case "ternary":
-      return `${renderExpr(expr.condition)} ? ${renderExpr(expr.trueExpr)} : ${renderExpr(expr.falseExpr)}`;
+    case "binary": {
+      const left =
+        expr.left.type === "binary" || expr.left.type === "ternary"
+          ? `(${renderExpr(expr.left)})`
+          : renderExpr(expr.left);
+      const right =
+        expr.right.type === "binary" || expr.right.type === "ternary"
+          ? `(${renderExpr(expr.right)})`
+          : renderExpr(expr.right);
+      return `${left} ${expr.operator} ${right}`;
+    }
+    case "ternary": {
+      const condition =
+        expr.condition.type === "binary" || expr.condition.type === "ternary"
+          ? `(${renderExpr(expr.condition)})`
+          : renderExpr(expr.condition);
+      const trueExpr =
+        expr.trueExpr.type === "binary" || expr.trueExpr.type === "ternary"
+          ? `(${renderExpr(expr.trueExpr)})`
+          : renderExpr(expr.trueExpr);
+      const falseExpr =
+        expr.falseExpr.type === "binary" || expr.falseExpr.type === "ternary"
+          ? `(${renderExpr(expr.falseExpr)})`
+          : renderExpr(expr.falseExpr);
+      return `${condition} ? ${trueExpr} : ${falseExpr}`;
+    }
     case "cond":
       return "(" + expr.conditions.map(renderExpr).join(`) ${expr.operator} (`) + ")";
     case "call":

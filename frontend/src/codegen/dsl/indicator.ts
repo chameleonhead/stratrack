@@ -80,14 +80,8 @@ export type IndicatorVariableDefinition = {
   name: string;
   expression: IndicatorVariableExpression;
   invalidPeriod?: ScalarExpression;
-  fallback?: VariableFallbackDefinition;
-  description?: string;
-};
-
-export type VariableFallbackDefinition = {
-  expression: IndicatorVariableExpression;
-  invalidPeriod?: ScalarExpression;
   fallback?: ScalarExpression;
+  description?: string;
 };
 
 export type IndicatorVariableExpression = Exclude<ScalarExpression, PriceExpression>;

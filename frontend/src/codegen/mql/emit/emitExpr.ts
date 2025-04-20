@@ -15,7 +15,11 @@ import {
 } from "../helper";
 import { MqlExpr } from "../ast";
 
-export function emitMqlExprFromIR(context: "strategy" | "indicator", expr: IRExpression, shift?: MqlExpr): MqlExpr {
+export function emitMqlExprFromIR(
+  context: "strategy" | "indicator",
+  expr: IRExpression,
+  shift?: MqlExpr
+): MqlExpr {
   switch (expr.type) {
     case "constant":
       return lit(expr.value);
@@ -45,14 +49,21 @@ export function emitMqlExprFromIR(context: "strategy" | "indicator", expr: IRExp
     case "bar_variable_ref": {
       const base = emitMqlExprFromIR(context, expr.source, shift);
       const shiftBars =
-        typeof expr.shiftBar === "undefined" ? lit(0) : emitMqlExprFromIR(context, expr.shiftBar, shift);
+        typeof expr.shiftBar === "undefined"
+          ? lit(0)
+          : emitMqlExprFromIR(context, expr.shiftBar, shift);
       const fallback =
-        typeof expr.fallback === "undefined" ? lit(0) : emitMqlExprFromIR(context, expr.fallback, shift);
+        typeof expr.fallback === "undefined"
+          ? lit(0)
+          : emitMqlExprFromIR(context, expr.fallback, shift);
       const index = typeof shift === "undefined" ? shiftBars : binary("+", shiftBars, shift);
       const isSafe = index.type === "literal" && index.value === "0";
       return access(base, index, isSafe, fallback);
     }
     case "unary":
+      if (expr.operator === "abs") {
+        return call("MathAbs", [emitMqlExprFromIR(context, expr.operand, shift)]);
+      }
       return unary(expr.operator, emitMqlExprFromIR(context, expr.operand, shift));
     case "binary": {
       return binary(
@@ -67,18 +78,31 @@ export function emitMqlExprFromIR(context: "strategy" | "indicator", expr: IRExp
         emitMqlExprFromIR(context, expr.trueExpr, shift),
         emitMqlExprFromIR(context, expr.falseExpr, shift)
       );
-    case "aggregation":
+    case "aggregation": {
+      let callExpr: MqlExpr;
       if (context === "strategy") {
-        return call(expr.method, [
+        callExpr = call(expr.method, [
           emitMqlExprFromIR(context, expr.source),
+          shift ?? lit(0),
           emitMqlExprFromIR(context, expr.period, shift),
         ]);
       } else {
-        return methodCall(ref("this"), expr.method, [
+        callExpr = methodCall(ref("this"), expr.method, [
           emitMqlExprFromIR(context, expr.source),
+          shift ?? lit(0),
           emitMqlExprFromIR(context, expr.period, shift),
         ]);
       }
+      return ternary(
+        binary(
+          ">",
+          ref("Bars"),
+          shift ? binary("+", emitMqlExprFromIR(context, expr.period), shift || lit(0)) : lit(0)
+        ),
+        callExpr,
+        expr.fallback ? emitMqlExprFromIR(context, expr.fallback, shift) : lit(0)
+      );
+    }
     case "indicator_ref":
       return methodCall(ref(expr.refId), "Get", [
         strlit(expr.lineName),
@@ -88,13 +112,17 @@ export function emitMqlExprFromIR(context: "strategy" | "indicator", expr: IRExp
           .map((p) => emitMqlExprFromIR(context, p)),
       ]);
     case "aggregation_type_value":
-      return lit(expr.method);
+      return strlit(expr.method);
     default:
       throw new Error(`Unsupported IR expression type: ${(expr as { type: string }).type}`);
   }
 }
 
-export function emitMqlCondFromIR(context: "strategy" | "indicator", expr: IRCondition, shift?: MqlExpr): MqlExpr {
+export function emitMqlCondFromIR(
+  context: "strategy" | "indicator",
+  expr: IRCondition,
+  shift?: MqlExpr
+): MqlExpr {
   switch (expr.type) {
     case "comparison":
       return binary(

@@ -35,6 +35,8 @@ export type IRIndicatorInstance = {
 export type IRVariable = {
   name: string;
   expression: IRExpression;
+  invalidPeriod?: IRExpression;
+  fallback?: IRExpression;
 };
 
 export type IRCondition =
@@ -121,6 +123,7 @@ export type IRAggregation = {
   type: "aggregation";
   method: AggregationType;
   source: IRExpression;
+  fallback?: IRExpression;
   period: IRExpression;
 };
 

@@ -59,6 +59,8 @@ export type StrategyTemplate = {
 export type StrategyVariableDefinition = {
   name: string; // 変数名（例: rsi_avg）
   expression: StrategyVariableExpression; // RSIやMACDなどの指標オペランド（再帰可能）
+  invalidPeriod?: ScalarExpression;
+  fallback?: ScalarExpression;
   description?: string;
 };
 

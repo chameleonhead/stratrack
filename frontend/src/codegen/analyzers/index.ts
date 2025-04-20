@@ -78,10 +78,16 @@ export function analyzeStrategyWithDependencies(
       const nestedCtx = new Map<string, IndicatorParamValue[][]>();
       const nestedUsedAggregationTypes = new Set<AggregationType>();
       analyzeTemplate(indicator.template, indicatorCatalog, nestedCtx, nestedUsedAggregationTypes);
+      indicator.params.forEach((param) => {
+        if (param.type === "aggregationType") {
+          param.selectableTypes.forEach((type) => {
+            nestedUsedAggregationTypes.add(type);
+          });
+        }
+      });
       nestedUsedAggregationTypes.forEach((type) => {
         usedAggregationTypes.add(type);
       });
-
       indicatorDefinitions.push({
         name,
         params: indicator.params,
@@ -154,13 +160,6 @@ export function analyzeTemplate(
       if (!lineExists) {
         errors.push(`インジケーター '${expr.name}' にライン '${expr.lineName}' は存在しません`);
       }
-
-      // 集約関数の記録
-      expr.params.forEach((p) => {
-        if (p.type === "aggregationType") {
-          usedAggregationTypes.add(p.method);
-        }
-      });
     } else if (expr.type === "aggregation") {
       if (expr.method.type === "aggregationType") {
         usedAggregationTypes.add(expr.method.value);
@@ -177,6 +176,12 @@ export function analyzeTemplate(
     const currentVar = v.name;
     dependencyGraph.set(currentVar, new Set());
     visitScalarExpression(v.expression, (e) => processExpr(e, currentVar));
+    if (v.invalidPeriod) {
+      visitScalarExpression(v.invalidPeriod, (e) => processExpr(e, currentVar));
+    }
+    if (v.fallback) {
+      visitScalarExpression(v.fallback, (e) => processExpr(e, currentVar));
+    }
   }
 
   // Entry and exit condition indicators
