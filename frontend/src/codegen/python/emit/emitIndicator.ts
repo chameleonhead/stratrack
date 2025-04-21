@@ -1,16 +1,38 @@
 import { IRIndicatorDefinition } from "../../ir/ast";
-import { PyStatement, PyClass, PyFunction } from "../ast";
-import { attr, ref, func, ret, cls } from "../helper";
+import { PyStatement, PyClass, PyFunction, PyAssignment } from "../ast";
+import { attr, ref, func, ret, cls, lit, assign, tuple } from "../helper";
 import { emitVariableAssign } from "./emitExpr";
 
 export function emitBtIndicatorFromIR(ind: IRIndicatorDefinition): PyClass {
-  const initBody: PyStatement[] = ind.variables.map(emitVariableAssign);
+  const fields: PyAssignment[] = [];
+  fields.push(assign(ref("lines"), tuple(ind.exportVars.map(lit))));
+  fields.push(
+    assign(
+      ref("params"),
+      tuple(
+        ind.params
+          .filter((p) => p.type === "number" || p.type === "aggregationType")
+          .map((p) =>
+            tuple([
+              lit(p.name),
+              lit(typeof p.default === "number" ? p.default : p.default?.toString() || null),
+            ])
+          )
+      )
+    )
+  );
 
-  const initFunc: PyFunction = func("__init__", ["self"], initBody);
+  const initBody: PyStatement[] = []
+  initBody.push(...ind.variables.map(emitVariableAssign));
+  const initFunc: PyFunction = func(
+    "__init__",
+    ["self"],
+    initBody
+  );
 
   const getFuncs: PyFunction[] = ind.exportVars.map((name) =>
     func(name, ["self"], [ret(attr(ref("self"), name))])
   );
 
-  return cls(ind.pascalName, [initFunc, ...getFuncs]);
+  return cls(ind.pascalName, fields, [initFunc, ...getFuncs], ["bt.indicators.Indicator"]);
 }

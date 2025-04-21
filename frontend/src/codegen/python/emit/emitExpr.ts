@@ -73,8 +73,10 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
       return attr(ref("self.data"), expr.source);
     case "bar_shift": {
       const base = emitPyExpr(expr.source);
-      if (expr.shiftBar && expr.shiftBar.type === "constant" && expr.shiftBar.value === 0) {
-        return call(attr(base, "shift"), [emitPyExpr(expr.shiftBar)]);
+      if (expr.shiftBar) {
+        if (expr.shiftBar.type !== "constant" || expr.shiftBar.value !== 0) {
+          return call(attr(base, "shift"), [emitPyExpr(expr.shiftBar)]);
+        }
       }
       return base;
     }
@@ -87,7 +89,12 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
     case "aggregation_type_value":
       return lit(expr.method); // used as literal value
     case "indicator_ref":
-      return call(attr(ref("self"), expr.refId), expr.params.map(emitPyExpr));
+      return call(
+        ref(expr.pascalName),
+        expr.params
+          .filter((p) => p.type === "variable_ref" || p.type == "source_param_ref")
+          .map(emitPyExpr)
+      );
     case "ternary":
       return ternary(
         emitPyCondExpr(expr.condition),

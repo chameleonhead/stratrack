@@ -13,13 +13,26 @@ export function renderPythonBtProgram(node: PyModule): string {
 
   if (node.imports) {
     for (const imp of node.imports) {
-      lines.push(`${imp}`);
+      lines.push(renderStatement(imp));
     }
-    lines.push("");
   }
 
   for (const cls of node.classes) {
+    lines.push("");
     lines.push(renderClass(cls));
+  }
+
+  for (const fn of node.functions || []) {
+    lines.push("");
+    lines.push(renderFunction(fn));
+  }
+
+  if (node.main) {
+    lines.push("");
+    lines.push("if __name__ == '__main__':");
+    for (const stmt of node.main) {
+      lines.push(indent(renderStatement(stmt)));
+    }
   }
 
   return lines.join("\n");
@@ -28,6 +41,13 @@ export function renderPythonBtProgram(node: PyModule): string {
 function renderClass(cls: PyClass): string {
   const base = cls.baseClasses?.length ? `(${cls.baseClasses.join(", ")})` : "";
   const lines: string[] = [`class ${cls.name}${base}:`];
+
+  if (cls.fields.length > 0) {
+    for (const field of cls.fields) {
+      lines.push(indent(renderStatement(field)));
+    }
+    lines.push("");
+  }
 
   if (cls.methods.length === 0) {
     lines.push(indent("pass"));
@@ -57,6 +77,15 @@ function renderFunction(fn: PyFunction): string {
 
 function renderStatement(stmt: PyStatement): string {
   switch (stmt.type) {
+    case "import":
+      if (stmt.from) {
+        return `from ${stmt.from} import ${stmt.name}`;
+      }
+      return `import ${stmt.name}`;
+    case "class":
+      return renderClass(stmt);
+    case "function":
+      return renderFunction(stmt);
     case "assign":
       return `${renderExpr(stmt.target)} = ${renderExpr(stmt.value)}`;
     case "if": {
@@ -91,16 +120,45 @@ function renderExpr(expr: PyExpression): string {
   switch (expr.type) {
     case "literal":
       if (typeof expr.value === "string") return `"${expr.value}"`;
+      if (typeof expr.value === "boolean") return expr.value === true ? "True" : "False";
       if (expr.value === null) return "None";
       return String(expr.value);
     case "variable":
       return expr.name;
-    case "binary":
-      return `${renderExpr(expr.left)} ${expr.operator} ${renderExpr(expr.right)}`;
+    case "binary": {
+      const left =
+        expr.left.type === "binary" || expr.left.type === "ternary"
+          ? `(${renderExpr(expr.left)})`
+          : renderExpr(expr.left);
+      const right =
+        expr.right.type === "binary" || expr.right.type === "ternary"
+          ? `(${renderExpr(expr.right)})`
+          : renderExpr(expr.right);
+      return `${left} ${expr.operator} ${right}`;
+    }
     case "unary":
+      if (expr.operator === "not") {
+        return `not ${renderExpr(expr.operand)}`;
+      }
+      if (expr.operator === "abs") {
+        return `abs(${renderExpr(expr.operand)})`;
+      }
       return `${expr.operator}${renderExpr(expr.operand)}`;
-    case "ternary":
-      return `${renderExpr(expr.trueExpr)} if ${renderExpr(expr.condition)} else ${renderExpr(expr.falseExpr)}`;
+    case "ternary": {
+      const condition =
+        expr.condition.type === "ternary"
+          ? `(${renderExpr(expr.condition)})`
+          : renderExpr(expr.condition);
+      const trueExpr =
+        expr.trueExpr.type === "binary" || expr.trueExpr.type === "ternary"
+          ? `(${renderExpr(expr.trueExpr)})`
+          : renderExpr(expr.trueExpr);
+      const falseExpr =
+        expr.falseExpr.type === "binary" || expr.falseExpr.type === "ternary"
+          ? `(${renderExpr(expr.falseExpr)})`
+          : renderExpr(expr.falseExpr);
+      return `${trueExpr} if ${condition} else ${falseExpr}`;
+    }
     case "call":
       return `${renderExpr(expr.function)}(${expr.args.map(renderExpr).join(", ")})`;
     case "attribute":
@@ -113,5 +171,7 @@ function renderExpr(expr: PyExpression): string {
       return `[${expr.elements.map(renderExpr).join(", ")}]`;
     case "dict":
       return `{${expr.entries.map((e) => `${renderExpr(e.key)}: ${renderExpr(e.value)}`).join(", ")}}`;
+    case "tuple":
+      return `(${expr.elements.map(renderExpr).join(", ")},)`;
   }
 }

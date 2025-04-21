@@ -114,7 +114,9 @@ export type IRAggregationTypeValue = {
 
 export type IRIndicatorRef = {
   type: "indicator_ref";
-  refId: string; // indicator instance id
+  name: string;
+  pascalName: string;
+  refId: string;
   params: IRExpression[];
   lineName: string;
 };

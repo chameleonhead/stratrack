@@ -194,6 +194,8 @@ function mapExpression(
       return {
         type: "indicator_ref",
         refId: resolveIndicatorRefId(expr),
+        name: expr.name,
+        pascalName: pascal(expr.name),
         params: expr.params.map((p) => mapIndicatorParamValue(p, indicatorContext)),
         lineName: expr.lineName,
       } satisfies IRIndicatorRef;

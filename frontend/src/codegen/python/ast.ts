@@ -1,8 +1,16 @@
 // モジュール（ファイル）
 export type PyModule = {
   type: "module";
-  imports?: string[];
+  imports?: PyImport[];
   classes: PyClass[];
+  functions?: PyFunction[];
+  main?: PyStatement[];
+};
+
+export type PyImport = {
+  type: "import";
+  name: string;
+  from?: string;
 };
 
 // クラス定義
@@ -10,6 +18,7 @@ export type PyClass = {
   type: "class";
   name: string;
   baseClasses?: string[];
+  fields: PyAssignment[];
   methods: PyFunction[];
 };
 
@@ -26,6 +35,9 @@ export type PyFunction = {
 // ============================
 
 export type PyStatement =
+  | PyFunction
+  | PyClass
+  | PyImport
   | PyAssignment
   | PyIf
   | PyExprStatement
@@ -115,7 +127,8 @@ export type PyExpression =
   | PySubscript
   | PyCompare
   | PyList
-  | PyDict;
+  | PyDict
+  | PyTuple;
 
 // リテラル（数値・文字列・true/false/null）
 export type PyLiteral = {
@@ -191,4 +204,10 @@ export type PyList = {
 export type PyDict = {
   type: "dict";
   entries: { key: PyExpression; value: PyExpression }[];
+};
+
+// タプル
+export type PyTuple = {
+  type: "tuple";
+  elements: PyExpression[];
 };

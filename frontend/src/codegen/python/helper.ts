@@ -28,6 +28,8 @@ import {
   PyClass,
   PyModule,
   PyTernaryOp,
+  PyImport,
+  PyTuple,
 } from "./ast";
 
 export const lit = (value: string | number | boolean | null): PyLiteral => ({
@@ -111,6 +113,11 @@ export const list = (elements: PyExpression[]): PyList => ({
   elements,
 });
 
+export const tuple = (elements: PyExpression[]): PyTuple => ({
+  type: "tuple",
+  elements,
+});
+
 export const dict = (entries: { key: PyExpression; value: PyExpression }[]): PyDict => ({
   type: "dict",
   entries,
@@ -188,14 +195,26 @@ export const func = (name: string, args: string[], body: PyStatement[]): PyFunct
   body,
 });
 
+export const imp = (name: string, from?: string): PyImport => ({
+  type: "import",
+  name,
+  from,
+});
+
 // ------------------------------------
 // Class helper
 // ------------------------------------
 
-export const cls = (name: string, methods: PyFunction[], baseClasses: string[] = []): PyClass => ({
+export const cls = (
+  name: string,
+  fields: PyAssignment[],
+  methods: PyFunction[],
+  baseClasses: string[] = []
+): PyClass => ({
   type: "class",
   name,
   baseClasses,
+  fields,
   methods,
 });
 
@@ -203,8 +222,14 @@ export const cls = (name: string, methods: PyFunction[], baseClasses: string[] =
 // Module helper
 // ------------------------------------
 
-export const mod = (classes: PyClass[], imports: string[] = []): PyModule => ({
+export const mod = (
+  globals: (PyClass | PyFunction)[],
+  imports: PyImport[] = [],
+  main?: PyStatement[]
+): PyModule => ({
   type: "module",
-  classes,
+  classes: globals.filter((cls) => cls.type === "class"),
+  functions: globals.filter((fn) => fn.type === "function"),
+  main,
   imports,
 });
