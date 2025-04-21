@@ -28,7 +28,7 @@ import {
   IRGroupCondition,
   IRBarVariableRef,
   IRPriceRef,
-  IRTemporaryVariableRef,
+  IRSourceParamRef,
   IRIndicatorDefinition,
   IRAggregationTypeValue,
 } from "./ast";
@@ -154,7 +154,7 @@ function mapExpression(
     case "constant":
       return { type: "constant", value: expr.value } satisfies IRConstant;
     case "source":
-      return { type: "temporary_variable_ref", name: expr.name } satisfies IRTemporaryVariableRef;
+      return { type: "source_param_ref", name: expr.name } satisfies IRSourceParamRef;
     case "price":
       return { type: "price_ref", source: expr.source } satisfies IRPriceRef;
     case "param":

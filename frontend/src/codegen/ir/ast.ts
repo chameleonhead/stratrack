@@ -98,7 +98,7 @@ export type IRExpression =
   | IRBinaryOp
   | IRTernaryOp
   | IRVariableRef
-  | IRTemporaryVariableRef
+  | IRSourceParamRef
   | IRPriceRef
   | IRBarVariableRef;
 
@@ -157,14 +157,14 @@ export type IRVariableRef = {
   name: string;
 };
 
-export type IRTemporaryVariableRef = {
-  type: "temporary_variable_ref";
+export type IRSourceParamRef = {
+  type: "source_param_ref";
   name: string;
 };
 
 export type IRBarVariableRef = {
   type: "bar_variable_ref";
-  source: IRVariableRef | IRPriceRef | IRTemporaryVariableRef;
+  source: IRVariableRef | IRPriceRef | IRSourceParamRef;
   shiftBar?: IRExpression;
   fallback?: IRExpression;
 };

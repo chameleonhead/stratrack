@@ -63,7 +63,7 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
       return lit(expr.value);
     case "variable_ref":
       return attr(ref("self"), expr.name);
-    case "temporary_variable_ref":
+    case "source_param_ref":
       return ref(expr.name);
     case "unary":
       return unary(expr.operator, emitPyExpr(expr.operand));

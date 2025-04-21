@@ -23,7 +23,7 @@ export function emitMqlExprFromIR(
   switch (expr.type) {
     case "constant":
       return lit(expr.value);
-    case "temporary_variable_ref":
+    case "source_param_ref":
       return ref(expr.name);
     case "variable_ref":
       if (context === "strategy") {
