@@ -30,36 +30,33 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
     // 初期値を入れる（必要に応じて変更）
     switch (t) {
       case "constant":
-        onChange({ type: "constant", value: 0, valueType: "scalar" });
+        onChange({ type: "constant", value: 0 });
         break;
-      case "bar_value":
+      case "bar_shift":
         onChange({
-          type: "bar_value",
-          source: { type: "variable", name: "", valueType: "bar" },
-          valueType: "scalar",
+          type: "bar_shift",
+          source: { type: "variable", name: "" },
         });
         break;
       case "scalar_price":
-        onChange({ type: "scalar_price", source: "close", valueType: "scalar" });
+        onChange({ type: "scalar_price", source: "close" });
         break;
       case "indicator":
-        onChange({ type: "indicator", name: "", params: [], lineName: "", valueType: "scalar" });
+        onChange({ type: "indicator", name: "", params: [], lineName: "" });
         break;
       case "binary_op":
         onChange({
           type: "binary_op",
           operator: "+",
-          left: { type: "constant", value: 0, valueType: "scalar" },
-          right: { type: "constant", value: 0, valueType: "scalar" },
-          valueType: "scalar",
+          left: { type: "constant", value: 0 },
+          right: { type: "constant", value: 0 },
         });
         break;
       case "unary_op":
         onChange({
           type: "unary_op",
           operator: "-",
-          operand: { type: "constant", value: 0, valueType: "scalar" },
-          valueType: "scalar",
+          operand: { type: "constant", value: 0 },
         });
         break;
       case "ternary":
@@ -68,12 +65,11 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           condition: {
             type: "comparison",
             operator: ">",
-            left: { type: "constant", value: 0, valueType: "scalar" },
-            right: { type: "constant", value: 0, valueType: "scalar" },
+            left: { type: "constant", value: 0 },
+            right: { type: "constant", value: 0 },
           },
-          trueExpr: { type: "constant", value: 1, valueType: "scalar" },
-          falseExpr: { type: "constant", value: 0, valueType: "scalar" },
-          valueType: "scalar",
+          trueExpr: { type: "constant", value: 1 },
+          falseExpr: { type: "constant", value: 0 },
         });
         break;
     }

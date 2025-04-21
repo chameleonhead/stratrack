@@ -21,7 +21,7 @@ export function visitScalarExpression(expr: ScalarExpression, visitor: Visitor) 
       visitScalarExpression(expr.period, visitor);
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
       break;
-    case "bar_value":
+    case "bar_shift":
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
       if (expr.shiftBars) visitScalarExpression(expr.shiftBars, visitor);
       break;

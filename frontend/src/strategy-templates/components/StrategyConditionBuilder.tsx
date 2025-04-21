@@ -36,8 +36,8 @@ function StrategyConditionBuilder({
     {
       type: "comparison",
       operator: ">",
-      left: { type: "constant", value: 0, valueType: "scalar" },
-      right: { type: "constant", value: 0, valueType: "scalar" },
+      left: { type: "constant", value: 0 },
+      right: { type: "constant", value: 0 },
     },
     value,
     onChange
@@ -51,22 +51,22 @@ function StrategyConditionBuilder({
           setCondition({
             type: "comparison",
             operator: ">",
-            left: { type: "constant", value: 0, valueType: "scalar" },
-            right: { type: "constant", value: 0, valueType: "scalar" },
+            left: { type: "constant", value: 0 },
+            right: { type: "constant", value: 0 },
           });
           break;
         case "cross":
           setCondition({
             type: "cross",
             direction: "cross_over",
-            left: { type: "constant", value: 0, valueType: "scalar" },
-            right: { type: "constant", value: 0, valueType: "scalar" },
+            left: { type: "constant", value: 0 },
+            right: { type: "constant", value: 0 },
           });
           break;
         case "state":
           setCondition({
             type: "state",
-            operand: { type: "variable", name: "", valueType: "bar" },
+            operand: { type: "variable", name: "" },
             state: "rising",
           });
           break;
@@ -76,8 +76,8 @@ function StrategyConditionBuilder({
             condition: {
               type: "comparison",
               operator: ">",
-              left: { type: "constant", value: 0, valueType: "scalar" },
-              right: { type: "constant", value: 0, valueType: "scalar" },
+              left: { type: "constant", value: 0 },
+              right: { type: "constant", value: 0 },
             },
             continue: "true",
           });
@@ -89,8 +89,8 @@ function StrategyConditionBuilder({
             condition: {
               type: "comparison",
               operator: ">",
-              left: { type: "constant", value: 0, valueType: "scalar" },
-              right: { type: "constant", value: 0, valueType: "scalar" },
+              left: { type: "constant", value: 0 },
+              right: { type: "constant", value: 0 },
             },
           });
           break;

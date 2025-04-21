@@ -2,7 +2,10 @@ import { PyClass, PyExpression, PyFunction, PyModule, PyStatement } from "./ast"
 
 function indent(text: string, level = 1): string {
   const pad = "  ".repeat(level);
-  return text.split("\n").map(line => pad + line).join("\n");
+  return text
+    .split("\n")
+    .map((line) => pad + line)
+    .join("\n");
 }
 
 export function renderPythonBtProgram(node: PyModule): string {
@@ -57,8 +60,8 @@ function renderStatement(stmt: PyStatement): string {
     case "assign":
       return `${renderExpr(stmt.target)} = ${renderExpr(stmt.value)}`;
     case "if": {
-      const thenBody = stmt.thenBody.map(s => indent(renderStatement(s))).join("\n");
-      const elseBody = stmt.elseBody?.map(s => indent(renderStatement(s))).join("\n");
+      const thenBody = stmt.thenBody.map((s) => indent(renderStatement(s))).join("\n");
+      const elseBody = stmt.elseBody?.map((s) => indent(renderStatement(s))).join("\n");
       let result = `if ${renderExpr(stmt.condition)}:\n${thenBody}`;
       if (stmt.elseBody) {
         result += `\nelse:\n${elseBody}`;
@@ -70,9 +73,9 @@ function renderStatement(stmt: PyStatement): string {
     case "return":
       return stmt.value ? `return ${renderExpr(stmt.value)}` : "return";
     case "for":
-      return `for ${stmt.variable} in ${renderExpr(stmt.iterable)}:\n${stmt.body.map(s => indent(renderStatement(s))).join("\n")}`;
+      return `for ${stmt.variable} in ${renderExpr(stmt.iterable)}:\n${stmt.body.map((s) => indent(renderStatement(s))).join("\n")}`;
     case "while":
-      return `while ${renderExpr(stmt.condition)}:\n${stmt.body.map(s => indent(renderStatement(s))).join("\n")}`;
+      return `while ${renderExpr(stmt.condition)}:\n${stmt.body.map((s) => indent(renderStatement(s))).join("\n")}`;
     case "break":
       return "break";
     case "continue":
@@ -109,6 +112,6 @@ function renderExpr(expr: PyExpression): string {
     case "list":
       return `[${expr.elements.map(renderExpr).join(", ")}]`;
     case "dict":
-      return `{${expr.entries.map(e => `${renderExpr(e.key)}: ${renderExpr(e.value)}`).join(", ")}}`;
+      return `{${expr.entries.map((e) => `${renderExpr(e.key)}: ${renderExpr(e.value)}`).join(", ")}}`;
   }
 }

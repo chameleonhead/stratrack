@@ -21,7 +21,6 @@ export const ConstantOperand: Story = {
     value: {
       type: "constant",
       value: 100,
-      valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },
 };
@@ -29,13 +28,11 @@ export const ConstantOperand: Story = {
 export const VariablesOperand: Story = {
   args: {
     value: {
-      type: "bar_value",
+      type: "bar_shift",
       source: {
         type: "variable",
         name: "value1",
-        valueType: "bar",
       },
-      valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },
   decorators: [
@@ -44,7 +41,7 @@ export const VariablesOperand: Story = {
         variables={[
           {
             name: "value1",
-            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open" },
           },
         ]}
       >
@@ -57,13 +54,11 @@ export const VariablesOperand: Story = {
 export const VariablesOperandWithDescription: Story = {
   args: {
     value: {
-      type: "bar_value",
+      type: "bar_shift",
       source: {
         type: "variable",
         name: "value1",
-        valueType: "bar",
       },
-      valueType: "scalar",
     },
   } satisfies { value: ConditionOperand },
   decorators: [
@@ -72,7 +67,7 @@ export const VariablesOperandWithDescription: Story = {
         variables={[
           {
             name: "value1",
-            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open" },
             description: "テスト変数",
           },
         ]}

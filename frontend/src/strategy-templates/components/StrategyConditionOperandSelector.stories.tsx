@@ -15,12 +15,12 @@ const meta: Meta<typeof StrategyConditionOperandSelector> = {
         variables={[
           {
             name: "var1",
-            expression: { type: "constant", value: 1, valueType: "scalar" },
+            expression: { type: "constant", value: 1 },
             description: "constant(scalar)",
           },
           {
             name: "var2",
-            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open" },
             description: "price(array)",
           },
           {
@@ -30,7 +30,6 @@ const meta: Meta<typeof StrategyConditionOperandSelector> = {
               name: "ind1",
               params: [],
               lineName: "default",
-              valueType: "scalar",
             },
             description: "indicator(array)",
           },
@@ -52,7 +51,6 @@ export const ConstantOperand: Story = {
     value: {
       type: "constant",
       value: 100,
-      valueType: "scalar",
     },
   },
 };
@@ -61,13 +59,11 @@ export const ScalarVariableOperand: Story = {
   args: {
     allowedTypes: ["scalar_variable"],
     value: {
-      type: "bar_value",
+      type: "bar_shift",
       source: {
         type: "variable",
         name: "value1",
-        valueType: "bar",
       },
-      valueType: "scalar",
     },
   },
 };
@@ -78,7 +74,6 @@ export const ArrayVariableOperand: Story = {
     value: {
       type: "variable",
       name: "value1",
-      valueType: "bar",
     },
   },
 };
@@ -89,7 +84,6 @@ export const ScalarPriceOperand: Story = {
     value: {
       type: "scalar_price",
       source: "high",
-      valueType: "scalar",
     },
   },
 };
@@ -98,13 +92,11 @@ export const ArrayPriceOperand: Story = {
   args: {
     allowedTypes: ["array_price"],
     value: {
-      type: "bar_value",
+      type: "bar_shift",
       source: {
         type: "price",
         source: "high",
-        valueType: "bar",
       },
-      valueType: "scalar",
     },
   },
 };

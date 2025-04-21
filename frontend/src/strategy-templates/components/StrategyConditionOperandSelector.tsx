@@ -30,9 +30,9 @@ function toOptionType(val: ConditionOperand | undefined) {
   if (val?.type === "constant") return "constant" as const;
   if (val?.type === "variable") return "array_variable" as const;
   if (val?.type === "price") return "array_price" as const;
-  if (val?.type === "bar_value" && val?.source.type === "variable")
+  if (val?.type === "bar_shift" && val?.source.type === "variable")
     return "scalar_variable" as const;
-  if (val?.type === "bar_value" && val?.source.type === "price") return "scalar_price" as const;
+  if (val?.type === "bar_shift" && val?.source.type === "price") return "scalar_price" as const;
   return "constant" as const;
 }
 
@@ -65,23 +65,20 @@ function ConditionOperandSelector({
               setLocalValue({ type, value: 0 });
             } else if (type === "scalar_variable") {
               setLocalValue({
-                type: "bar_value",
-                source: { type: "variable", name: "", valueType: "bar" },
-                valueType: "scalar",
+                type: "bar_shift",
+                source: { type: "variable", name: "" },
               });
             } else if (type === "array_variable") {
-              setLocalValue({ type: "variable", name: "", valueType: "bar" });
+              setLocalValue({ type: "variable", name: "" });
             } else if (type === "scalar_price") {
               setLocalValue({
                 type: "scalar_price",
                 source: "close",
-                valueType: "scalar",
               });
             } else if (type === "array_price") {
               setLocalValue({
-                type: "bar_value",
-                source: { type: "price", source: "close", valueType: "bar" },
-                valueType: "scalar",
+                type: "bar_shift",
+                source: { type: "price", source: "close" },
               });
             }
           }}
@@ -155,7 +152,7 @@ function ConstantConditionOperandSelector({
 }
 
 type ScalarVariableConditionOperandSelectorProps = {
-  value?: Partial<Extract<ConditionOperand, { type: "bar_value" }>>;
+  value?: Partial<Extract<ConditionOperand, { type: "bar_shift" }>>;
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
@@ -165,11 +162,11 @@ function ScalarVariableConditionOperandSelector({
 }: ScalarVariableConditionOperandSelectorProps) {
   const variables = useVariables();
   const source = value?.source as Extract<
-    Extract<ConditionOperand, { type: "bar_value" }>["source"],
+    Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "variable" }
   >;
   const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_value" }>["shiftBars"],
+    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
     { type: "constant" }
   >;
   return (
@@ -180,8 +177,8 @@ function ScalarVariableConditionOperandSelector({
         onChange={(val) =>
           onChange({
             ...value,
-            type: "bar_value",
-            source: { type: "variable", name: val, valueType: "bar" },
+            type: "bar_shift",
+            source: { type: "variable", name: val },
           })
         }
         options={variables.map((v) => ({
@@ -195,8 +192,7 @@ function ScalarVariableConditionOperandSelector({
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars:
-              val === null ? undefined : { type: "constant", value: val, valueType: "scalar" },
+            shiftBars: val === null ? undefined : { type: "constant", value: val },
           })
         }
       />
@@ -236,7 +232,7 @@ const PRICE_OPTIONS = [
 ];
 
 type ScalarPriceConditionOperandSelectorProps = {
-  value?: Partial<Extract<ConditionOperand, { type: "bar_value" }>>;
+  value?: Partial<Extract<ConditionOperand, { type: "bar_shift" }>>;
   onChange: (value: Partial<ConditionOperand>) => void;
 };
 
@@ -245,11 +241,11 @@ function ScalarPriceConditionOperandSelector({
   onChange,
 }: ScalarPriceConditionOperandSelectorProps) {
   const source = value?.source as Extract<
-    Extract<ConditionOperand, { type: "bar_value" }>["source"],
+    Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "price" }
   >;
   const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_value" }>["shiftBars"],
+    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
     { type: "constant" }
   >;
   return (
@@ -260,8 +256,8 @@ function ScalarPriceConditionOperandSelector({
         onChange={(val) =>
           onChange({
             ...value,
-            type: "bar_value",
-            source: { type: "variable", name: val, valueType: "bar" },
+            type: "bar_shift",
+            source: { type: "variable", name: val },
           })
         }
         options={PRICE_OPTIONS}
@@ -272,8 +268,7 @@ function ScalarPriceConditionOperandSelector({
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars:
-              val === null ? undefined : { type: "constant", value: val, valueType: "scalar" },
+            shiftBars: val === null ? undefined : { type: "constant", value: val },
           })
         }
       />

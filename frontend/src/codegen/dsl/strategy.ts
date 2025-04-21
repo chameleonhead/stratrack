@@ -1,10 +1,10 @@
 import {
   AggregationExpression,
-  BarValueExpression,
+  BarShiftExpression,
   Condition,
   ConstantExpression,
   IndicatorExpression,
-  NumberParamReferenceExpression,
+  ParamReferenceExpression,
   PriceExpression,
   ScalarExpression,
   ScalarPriceExpression,
@@ -67,14 +67,14 @@ export type StrategyVariableDefinition = {
 // 変数式の型定義を再帰的な型から分離する
 export type StrategyVariableExpression = Exclude<
   ScalarExpression,
-  | NumberParamReferenceExpression
+  | ParamReferenceExpression
   | SourceExpression
   | AggregationExpression
   | Extract<PriceExpression, { valueType: "array" }>
 >;
 
 export type StrategyCondition = Condition<
-  ConstantExpression | ScalarPriceExpression | BarValueExpression | IndicatorExpression,
+  ConstantExpression | ScalarPriceExpression | BarShiftExpression | IndicatorExpression,
   VariableReferenceExpression | PriceExpression
 >;
 

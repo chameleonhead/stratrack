@@ -1,9 +1,9 @@
 import {
   AggregationType,
-  BarValueExpression,
+  BarShiftExpression,
   Condition,
   ConstantExpression,
-  NumberParamReferenceExpression,
+  ParamReferenceExpression,
   PriceExpression,
   ScalarExpression,
   SourceExpression,
@@ -87,6 +87,6 @@ export type IndicatorVariableDefinition = {
 export type IndicatorVariableExpression = Exclude<ScalarExpression, PriceExpression>;
 
 export type IndicatorCondition = Condition<
-  ConstantExpression | NumberParamReferenceExpression | BarValueExpression,
+  ConstantExpression | ParamReferenceExpression | BarShiftExpression,
   VariableReferenceExpression | SourceExpression
 >;

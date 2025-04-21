@@ -35,7 +35,7 @@ describe("buildIRFromAnalysis", () => {
               {
                 type: "source",
                 name: "source",
-                ref: { type: "variable", name: "close", valueType: "bar" },
+                ref: { type: "variable", name: "close" },
               }, // 終値を指定
               {
                 type: "aggregationType",
@@ -44,7 +44,6 @@ describe("buildIRFromAnalysis", () => {
               }, // 終値を指定
             ],
             lineName: "ma",
-            valueType: "scalar",
           },
         },
         {
@@ -52,7 +51,6 @@ describe("buildIRFromAnalysis", () => {
           expression: {
             type: "scalar_price",
             source: "close",
-            valueType: "scalar",
           },
         },
       ],
@@ -62,12 +60,11 @@ describe("buildIRFromAnalysis", () => {
           type: "long",
           condition: {
             type: "comparison", // 比較条件
-            left: { type: "scalar_price", source: "close", valueType: "scalar" },
+            left: { type: "scalar_price", source: "close" },
             operator: ">",
             right: {
-              type: "bar_value",
-              source: { type: "variable", name: "fastSMA", valueType: "bar" },
-              valueType: "scalar",
+              type: "bar_shift",
+              source: { type: "variable", name: "fastSMA" },
             },
           },
         },

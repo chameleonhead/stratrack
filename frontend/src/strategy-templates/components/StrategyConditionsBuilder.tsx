@@ -40,8 +40,8 @@ function StrategyConditionsBuilder({ value, onChange }: StrategyConditionsBuilde
       {
         type: "comparison",
         operator: ">",
-        left: { type: "constant", value: 0, valueType: "scalar" },
-        right: { type: "constant", value: 0, valueType: "scalar" },
+        left: { type: "constant", value: 0 },
+        right: { type: "constant", value: 0 },
       },
     ]);
   }, [setLocalValue]);

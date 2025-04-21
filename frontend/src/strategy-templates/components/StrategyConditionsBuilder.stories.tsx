@@ -13,12 +13,12 @@ const meta = {
         variables={[
           {
             name: "var1",
-            expression: { type: "constant", value: 1, valueType: "scalar" },
+            expression: { type: "constant", value: 1 },
             description: "constant(scalar)",
           },
           {
             name: "var2",
-            expression: { type: "scalar_price", source: "open", valueType: "scalar" },
+            expression: { type: "scalar_price", source: "open" },
             description: "price(array)",
           },
           {
@@ -28,7 +28,6 @@ const meta = {
               name: "ind1",
               params: [],
               lineName: "default",
-              valueType: "scalar",
             },
             description: "indicator(array)",
           },
@@ -51,11 +50,10 @@ export const Comparison: Story = {
       {
         type: "comparison",
         operator: ">",
-        left: { type: "constant", value: 100, valueType: "scalar" },
+        left: { type: "constant", value: 100 },
         right: {
-          type: "bar_value",
-          source: { type: "variable", name: "", valueType: "bar" },
-          valueType: "scalar",
+          type: "bar_shift",
+          source: { type: "variable", name: "" },
         },
       },
     ],
@@ -68,8 +66,8 @@ export const Cross: Story = {
       {
         type: "cross",
         direction: "cross_over",
-        left: { type: "constant", value: 100, valueType: "scalar" },
-        right: { type: "variable", name: "", valueType: "bar" },
+        left: { type: "constant", value: 100 },
+        right: { type: "variable", name: "" },
       },
     ],
   },
@@ -84,8 +82,8 @@ export const Change: Story = {
         condition: {
           type: "comparison",
           operator: ">",
-          left: { type: "constant", value: 100, valueType: "scalar" },
-          right: { type: "constant", value: 300, valueType: "scalar" },
+          left: { type: "constant", value: 100 },
+          right: { type: "constant", value: 300 },
         },
       },
     ],
@@ -99,7 +97,7 @@ export const State: Story = {
         type: "state",
         state: "rising",
         consecutiveBars: 12,
-        operand: { type: "variable", name: "", valueType: "bar" },
+        operand: { type: "variable", name: "" },
       },
     ],
   },
@@ -115,12 +113,11 @@ export const Continue: Story = {
         condition: {
           type: "comparison",
           left: {
-            type: "bar_value",
-            source: { type: "variable", name: "", valueType: "bar" },
-            valueType: "scalar",
+            type: "bar_shift",
+            source: { type: "variable", name: "" },
           },
           operator: "==",
-          right: { type: "constant", value: 1, valueType: "scalar" },
+          right: { type: "constant", value: 1 },
         },
       },
     ],
@@ -137,22 +134,20 @@ export const Group: Story = {
           {
             type: "comparison",
             left: {
-              type: "bar_value",
-              source: { type: "variable", name: "", valueType: "bar" },
-              valueType: "scalar",
+              type: "bar_shift",
+              source: { type: "variable", name: "" },
             },
             operator: ">=",
-            right: { type: "constant", value: 1, valueType: "scalar" },
+            right: { type: "constant", value: 1 },
           },
           {
             type: "comparison",
             left: {
-              type: "bar_value",
-              source: { type: "variable", name: "", valueType: "bar" },
-              valueType: "scalar",
+              type: "bar_shift",
+              source: { type: "variable", name: "" },
             },
             operator: "<=",
-            right: { type: "constant", value: 2, valueType: "scalar" },
+            right: { type: "constant", value: 2 },
           },
         ],
       },

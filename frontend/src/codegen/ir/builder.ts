@@ -175,7 +175,7 @@ function mapExpression(
         fallback,
       } satisfies IRBarVariableRef;
     }
-    case "bar_value": {
+    case "bar_shift": {
       const ref = mapExpression(expr.source, indicatorContext) as IRPriceRef | IRVariableRef;
       const shiftBar = expr.shiftBars
         ? mapExpression(expr.shiftBars, indicatorContext)

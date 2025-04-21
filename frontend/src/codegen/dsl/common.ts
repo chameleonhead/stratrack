@@ -1,8 +1,8 @@
 export type ScalarExpression =
   | ConstantExpression
-  | NumberParamReferenceExpression
+  | ParamReferenceExpression
   | ScalarPriceExpression
-  | BarValueExpression
+  | BarShiftExpression
   | IndicatorExpression
   | AggregationExpression
   | ScalarUnaryOperationExpression
@@ -13,33 +13,28 @@ export type BarExpression = PriceExpression | SourceExpression | VariableReferen
 export type ConstantExpression = {
   type: "constant";
   value: number;
-  valueType: "scalar";
 };
 
-export type PermanentVariableExpression = ConstantExpression | NumberParamReferenceExpression;
+export type PermanentVariableExpression = ConstantExpression | ParamReferenceExpression;
 
-export type NumberParamReferenceExpression = {
+export type ParamReferenceExpression = {
   type: "param";
   name: string;
-  valueType: "scalar";
 };
 
 export type VariableReferenceExpression = {
   type: "variable";
   name: string;
-  valueType: "bar";
 };
 
 export type PriceExpression = {
   type: "price";
   source: "open" | "high" | "close" | "low" | "tick_volume" | "volume";
-  valueType: "bar";
 };
 
 export type SourceExpression = {
   type: "source";
   name: string;
-  valueType: "bar";
 };
 
 export type ScalarPriceExpression = {
@@ -56,17 +51,15 @@ export type ScalarPriceExpression = {
     | "weighted"
     | "tick_volume"
     | "volume";
-  valueType: "scalar";
   shiftBars?: PermanentVariableExpression;
   fallback?: ScalarExpression;
 };
 
-export type BarValueExpression = {
-  type: "bar_value";
+export type BarShiftExpression = {
+  type: "bar_shift";
   source: BarExpression;
   shiftBars?: PermanentVariableExpression;
   fallback?: ScalarExpression;
-  valueType: "scalar";
 };
 
 export type IndicatorExpression = {
@@ -74,7 +67,6 @@ export type IndicatorExpression = {
   name: string;
   params: IndicatorParamValue[];
   lineName: string;
-  valueType: "scalar";
 };
 
 export type IndicatorParamValue =
@@ -100,7 +92,6 @@ export type AggregationExpression = {
   source: BarExpression;
   period: ScalarExpression;
   fallback?: ScalarExpression;
-  valueType: "scalar";
 };
 
 export type AggregationMethodExpression =
@@ -127,7 +118,6 @@ export type ScalarUnaryOperationExpression = {
   type: "unary_op";
   operator: "-" | "abs";
   operand: ScalarExpression;
-  valueType: "scalar";
 };
 
 export type ScalarBinaryOperationExpression = {
@@ -135,7 +125,6 @@ export type ScalarBinaryOperationExpression = {
   operator: "+" | "-" | "*" | "/" | "max" | "min";
   left: ScalarExpression;
   right: ScalarExpression;
-  valueType: "scalar";
 };
 
 export type ScalarTernaryExpression = {
@@ -143,7 +132,6 @@ export type ScalarTernaryExpression = {
   condition: CommonCondition;
   trueExpr: ScalarExpression;
   falseExpr: ScalarExpression;
-  valueType: "scalar";
 };
 
 export type CommonCondition = Condition<ScalarExpression, BarExpression>;
