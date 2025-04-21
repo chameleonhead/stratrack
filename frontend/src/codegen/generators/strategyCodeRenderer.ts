@@ -3,8 +3,7 @@ import { Indicator } from "../dsl/indicator";
 import { StrategyTemplate } from "../dsl/strategy";
 import { buildIRFromAnalysis } from "../ir/builder";
 import { convertIrToMqlProgram, renderMqlProgram } from "../mql";
-import { emitBtProgramFromIR } from "../python/emit";
-import { renderPythonBtProgram } from "../python/renderer";
+import { convertIrToBtProgramFromIR, renderPythonBtProgram } from "../python";
 
 export function renderStrategyCode(
   language: string,
@@ -23,7 +22,7 @@ export function renderStrategyCode(
   );
   const ir = buildIRFromAnalysis(analysis);
   if (language === "python") {
-    const pythonAst = emitBtProgramFromIR(ir);
+    const pythonAst = convertIrToBtProgramFromIR(ir);
     return renderPythonBtProgram(pythonAst);
   }
   if (language === "mql4") {
