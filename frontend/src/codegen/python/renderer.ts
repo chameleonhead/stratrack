@@ -1,65 +1,114 @@
-import { PyModule, PyExpression, PyStatement, PyFunction, PyClass } from "./ast";
+import { PyClass, PyExpression, PyFunction, PyModule, PyStatement } from "./ast";
 
-export function renderPythonBtProgram(module: PyModule): string {
-  const emitExpr = (expr: PyExpression): string => {
-    switch (expr.type) {
-      case "literal":
-        return JSON.stringify(expr.value);
-      case "variable":
-        return expr.name;
-      case "attribute":
-        return `${emitExpr(expr.object)}.${expr.attr}`;
-      case "call":
-        return `${emitExpr(expr.function)}(${expr.args.map(emitExpr).join(", ")})`;
-      case "binary":
-        return `(${emitExpr(expr.left)} ${expr.operator} ${emitExpr(expr.right)})`;
-      case "unary":
-        return `${expr.operator}(${emitExpr(expr.operand)})`;
-      case "compare":
-        return `${emitExpr(expr.left)} ${expr.operators.map((op, i) => `${op} ${emitExpr(expr.comparators[i])}`).join(" ")}`;
-      case "subscript":
-        return `${emitExpr(expr.value)}[${emitExpr(expr.index)}]`;
-      default:
-        return "<expr>";
+function indent(text: string, level = 1): string {
+  const pad = "  ".repeat(level);
+  return text.split("\n").map(line => pad + line).join("\n");
+}
+
+export function renderPythonBtProgram(node: PyModule): string {
+  const lines: string[] = [];
+
+  if (node.imports) {
+    for (const imp of node.imports) {
+      lines.push(`${imp}`);
     }
-  };
+    lines.push("");
+  }
 
-  const emitStmt = (stmt: PyStatement, indent: string): string => {
-    switch (stmt.type) {
-      case "assign":
-        return `${indent}${emitExpr(stmt.target)} = ${emitExpr(stmt.value)}`;
-      case "expr_stmt":
-        return `${indent}${emitExpr(stmt.expression)}`;
-      case "return":
-        return `${indent}return${stmt.value ? " " + emitExpr(stmt.value) : ""}`;
-      case "comment":
-        return `${indent}# ${stmt.text}`;
-      case "if": {
-        const thenLines = stmt.thenBody.map((s) => emitStmt(s, indent + "    ")).join("\n");
-        const elseLines = stmt.elseBody?.map((s) => emitStmt(s, indent + "    ")).join("\n");
-        return (
-          `${indent}if ${emitExpr(stmt.condition)}:\n${thenLines}` +
-          (elseLines ? `\n${indent}else:\n${elseLines}` : "")
-        );
+  for (const cls of node.classes) {
+    lines.push(renderClass(cls));
+  }
+
+  return lines.join("\n");
+}
+
+function renderClass(cls: PyClass): string {
+  const base = cls.baseClasses?.length ? `(${cls.baseClasses.join(", ")})` : "";
+  const lines: string[] = [`class ${cls.name}${base}:`];
+
+  if (cls.methods.length === 0) {
+    lines.push(indent("pass"));
+  } else {
+    for (const method of cls.methods) {
+      lines.push(indent(renderFunction(method)));
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function renderFunction(fn: PyFunction): string {
+  const args = fn.args.join(", ");
+  const lines: string[] = [`def ${fn.name}(${args}):`];
+
+  if (fn.body.length === 0) {
+    lines.push(indent("pass"));
+  } else {
+    for (const stmt of fn.body) {
+      lines.push(indent(renderStatement(stmt)));
+    }
+  }
+
+  return lines.join("\n");
+}
+
+function renderStatement(stmt: PyStatement): string {
+  switch (stmt.type) {
+    case "assign":
+      return `${renderExpr(stmt.target)} = ${renderExpr(stmt.value)}`;
+    case "if": {
+      const thenBody = stmt.thenBody.map(s => indent(renderStatement(s))).join("\n");
+      const elseBody = stmt.elseBody?.map(s => indent(renderStatement(s))).join("\n");
+      let result = `if ${renderExpr(stmt.condition)}:\n${thenBody}`;
+      if (stmt.elseBody) {
+        result += `\nelse:\n${elseBody}`;
       }
-      default:
-        return `${indent}pass  # <stmt>`;
+      return result;
     }
-  };
+    case "expr_stmt":
+      return renderExpr(stmt.expression);
+    case "return":
+      return stmt.value ? `return ${renderExpr(stmt.value)}` : "return";
+    case "for":
+      return `for ${stmt.variable} in ${renderExpr(stmt.iterable)}:\n${stmt.body.map(s => indent(renderStatement(s))).join("\n")}`;
+    case "while":
+      return `while ${renderExpr(stmt.condition)}:\n${stmt.body.map(s => indent(renderStatement(s))).join("\n")}`;
+    case "break":
+      return "break";
+    case "continue":
+      return "continue";
+    case "pass":
+      return "pass";
+    case "comment":
+      return `# ${stmt.text}`;
+  }
+}
 
-  const emitFunc = (f: PyFunction): string => {
-    const head = `def ${f.name}(${f.args.join(", ")}):`;
-    const body = f.body.length > 0 ? f.body.map((s) => emitStmt(s, "    ")).join("\n") : "    pass";
-    return `${head}\n${body}`;
-  };
-
-  const emitClass = (c: PyClass): string => {
-    const base = c.baseClasses?.length ? `(${c.baseClasses.join(", ")})` : "";
-    const body = c.methods.length > 0 ? c.methods.map(emitFunc).join("\n\n") : "    pass";
-    return `class ${c.name}${base}:\n${body}`;
-  };
-
-  const header = module.imports?.join("\n") ?? "";
-  const classes = module.classes.map(emitClass).join("\n\n");
-  return [header, classes].filter(Boolean).join("\n\n");
+function renderExpr(expr: PyExpression): string {
+  switch (expr.type) {
+    case "literal":
+      if (typeof expr.value === "string") return `"${expr.value}"`;
+      if (expr.value === null) return "None";
+      return String(expr.value);
+    case "variable":
+      return expr.name;
+    case "binary":
+      return `${renderExpr(expr.left)} ${expr.operator} ${renderExpr(expr.right)}`;
+    case "unary":
+      return `${expr.operator}${renderExpr(expr.operand)}`;
+    case "ternary":
+      return `${renderExpr(expr.trueExpr)} if ${renderExpr(expr.condition)} else ${renderExpr(expr.falseExpr)}`;
+    case "call":
+      return `${renderExpr(expr.function)}(${expr.args.map(renderExpr).join(", ")})`;
+    case "attribute":
+      return `${renderExpr(expr.object)}.${expr.attr}`;
+    case "subscript":
+      return `${renderExpr(expr.value)}[${renderExpr(expr.index)}]`;
+    case "compare":
+      return `${renderExpr(expr.left)} ${expr.operators.map((op, i) => `${op} ${renderExpr(expr.comparators[i])}`).join(" ")}`;
+    case "list":
+      return `[${expr.elements.map(renderExpr).join(", ")}]`;
+    case "dict":
+      return `{${expr.entries.map(e => `${renderExpr(e.key)}: ${renderExpr(e.value)}`).join(", ")}}`;
+  }
 }
