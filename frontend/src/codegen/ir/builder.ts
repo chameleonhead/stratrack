@@ -26,7 +26,7 @@ import {
   IRChangeCondition,
   IRContinueCondition,
   IRGroupCondition,
-  IRBarVariableRef,
+  IRBarShift,
   IRPriceRef,
   IRSourceParamRef,
   IRIndicatorDefinition,
@@ -169,11 +169,11 @@ function mapExpression(
         ? mapExpression(expr.fallback, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       return {
-        type: "bar_variable_ref",
+        type: "bar_shift",
         source: ref,
         shiftBar,
         fallback,
-      } satisfies IRBarVariableRef;
+      } satisfies IRBarShift;
     }
     case "bar_shift": {
       const ref = mapExpression(expr.source, indicatorContext) as IRPriceRef | IRVariableRef;
@@ -184,11 +184,11 @@ function mapExpression(
         ? mapExpression(expr.fallback, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
       return {
-        type: "bar_variable_ref",
+        type: "bar_shift",
         source: ref,
         shiftBar,
         fallback,
-      } satisfies IRBarVariableRef;
+      } satisfies IRBarShift;
     }
     case "indicator":
       return {

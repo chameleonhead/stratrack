@@ -61,20 +61,20 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
   switch (expr.type) {
     case "constant":
       return lit(expr.value);
-    case "variable_ref":
-      return attr(ref("self"), expr.name);
     case "source_param_ref":
       return ref(expr.name);
+    case "variable_ref":
+      return attr(ref("self"), expr.name);
     case "unary":
       return unary(expr.operator, emitPyExpr(expr.operand));
     case "binary":
       return bin(expr.operator, emitPyExpr(expr.left), emitPyExpr(expr.right));
     case "price_ref":
       return attr(ref("self.data"), expr.source);
-    case "bar_variable_ref": {
+    case "bar_shift": {
       const base = emitPyExpr(expr.source);
-      if (expr.shiftBar) {
-        return sub(base, emitPyExpr(expr.shiftBar));
+      if (expr.shiftBar && expr.shiftBar.type === "constant" && expr.shiftBar.value === 0) {
+        return call(attr(base, "shift"), [emitPyExpr(expr.shiftBar)]);
       }
       return base;
     }

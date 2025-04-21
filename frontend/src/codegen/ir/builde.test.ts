@@ -103,7 +103,7 @@ describe("buildIRFromAnalysis", () => {
     expect(entryCondition.condition.type).toBe("comparison");
     expect(entryCondition.condition.operator).toBe(">");
     expect(entryCondition.condition.left).toEqual({
-      type: "bar_variable_ref",
+      type: "bar_shift",
       source: {
         source: "close",
         type: "price_ref",
@@ -118,7 +118,7 @@ describe("buildIRFromAnalysis", () => {
       },
     });
     expect(entryCondition.condition.right).toEqual({
-      type: "bar_variable_ref",
+      type: "bar_shift",
       source: {
         name: "fastSMA",
         type: "variable_ref",

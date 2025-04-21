@@ -48,7 +48,7 @@ export function emitMqlExprFromIR(
         default:
           throw new Error(`Unknown price source: ${expr.source}`);
       }
-    case "bar_variable_ref": {
+    case "bar_shift": {
       const shiftBars =
         typeof expr.shiftBar === "undefined"
           ? lit(0)

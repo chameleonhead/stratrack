@@ -100,7 +100,7 @@ export type IRExpression =
   | IRVariableRef
   | IRSourceParamRef
   | IRPriceRef
-  | IRBarVariableRef;
+  | IRBarShift;
 
 export type IRConstant = {
   type: "constant";
@@ -162,8 +162,8 @@ export type IRSourceParamRef = {
   name: string;
 };
 
-export type IRBarVariableRef = {
-  type: "bar_variable_ref";
+export type IRBarShift = {
+  type: "bar_shift";
   source: IRVariableRef | IRPriceRef | IRSourceParamRef;
   shiftBar?: IRExpression;
   fallback?: IRExpression;
