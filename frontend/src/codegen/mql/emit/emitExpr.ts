@@ -23,6 +23,12 @@ export function emitMqlExprFromIR(
   switch (expr.type) {
     case "constant":
       return lit(expr.value);
+    case "constant_param_ref":
+      if (context === "strategy") {
+        return ref(expr.name);
+      } else {
+        return member(ref("this"), expr.name);
+      }
     case "source_param_ref":
       return ref(expr.name);
     case "variable_ref":
@@ -170,6 +176,7 @@ export function emitMqlExprFromIR(
         strlit(expr.lineName),
         shift ?? lit(0),
         ...expr.params
+          .map((p) => p.value)
           .filter((p) => p.type !== "constant" && p.type !== "aggregation_type_value")
           .map((p) => emitMqlExprFromIR(context, p)),
       ]);

@@ -98,6 +98,7 @@ export type IRExpression =
   | IRBinaryOp
   | IRTernaryOp
   | IRVariableRef
+  | IRConstantParamRef
   | IRSourceParamRef
   | IRPriceRef
   | IRBarShift;
@@ -117,9 +118,14 @@ export type IRIndicatorRef = {
   name: string;
   pascalName: string;
   refId: string;
-  params: IRExpression[];
+  params: IRIndicatorParamValue[];
   lineName: string;
 };
+
+export type IRIndicatorParamValue = {
+  name: string;
+  value: IRExpression;
+}
 
 export type IRAggregation = {
   type: "aggregation";
@@ -156,6 +162,11 @@ export type IRPriceRef = {
 
 export type IRVariableRef = {
   type: "variable_ref";
+  name: string;
+};
+
+export type IRConstantParamRef = {
+  type: "constant_param_ref";
   name: string;
 };
 

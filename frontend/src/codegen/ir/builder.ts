@@ -31,6 +31,7 @@ import {
   IRSourceParamRef,
   IRIndicatorDefinition,
   IRAggregationTypeValue,
+  IRConstantParamRef,
 } from "./ast";
 import { StrategyVariableDefinition } from "../dsl/strategy";
 
@@ -158,6 +159,7 @@ function mapExpression(
     case "price":
       return { type: "price_ref", source: expr.source } satisfies IRPriceRef;
     case "param":
+      return { type: "constant_param_ref", name: expr.name } satisfies IRConstantParamRef;
     case "variable":
       return { type: "variable_ref", name: expr.name } satisfies IRVariableRef;
     case "scalar_price": {
@@ -196,7 +198,10 @@ function mapExpression(
         refId: resolveIndicatorRefId(expr),
         name: expr.name,
         pascalName: pascal(expr.name),
-        params: expr.params.map((p) => mapIndicatorParamValue(p, indicatorContext)),
+        params: expr.params.map((p) => ({
+          name: p.name,
+          value: mapIndicatorParamValue(p, indicatorContext),
+        })),
         lineName: expr.lineName,
       } satisfies IRIndicatorRef;
     case "aggregation": {

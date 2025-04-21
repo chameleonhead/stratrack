@@ -10,25 +10,19 @@ export function emitBtIndicatorFromIR(ind: IRIndicatorDefinition): PyClass {
     assign(
       ref("params"),
       tuple(
-        ind.params
-          .filter((p) => p.type === "number" || p.type === "aggregationType")
-          .map((p) =>
-            tuple([
-              lit(p.name),
-              lit(typeof p.default === "number" ? p.default : p.default?.toString() || null),
-            ])
-          )
+        ind.params.map((p) =>
+          tuple([
+            lit(p.name),
+            lit(typeof p.default === "number" ? p.default : p.default?.toString() || null),
+          ])
+        )
       )
     )
   );
 
-  const initBody: PyStatement[] = []
+  const initBody: PyStatement[] = [];
   initBody.push(...ind.variables.map(emitVariableAssign));
-  const initFunc: PyFunction = func(
-    "__init__",
-    ["self"],
-    initBody
-  );
+  const initFunc: PyFunction = func("__init__", ["self"], initBody);
 
   const getFuncs: PyFunction[] = ind.exportVars.map((name) =>
     func(name, ["self"], [ret(attr(ref("self"), name))])

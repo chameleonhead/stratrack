@@ -61,8 +61,10 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
   switch (expr.type) {
     case "constant":
       return lit(expr.value);
+    case "constant_param_ref":
+      return attr(ref("self.params"), expr.name);
     case "source_param_ref":
-      return ref(expr.name);
+      return attr(ref("self.params"), expr.name);
     case "variable_ref":
       return attr(ref("self"), expr.name);
     case "unary":
@@ -91,9 +93,7 @@ export function emitPyExpr(expr: IRExpression): PyExpression {
     case "indicator_ref":
       return call(
         ref(expr.pascalName),
-        expr.params
-          .filter((p) => p.type === "variable_ref" || p.type == "source_param_ref")
-          .map(emitPyExpr)
+        expr.params.map((p) => bin("=", ref(p.name), emitPyExpr(p.value)))
       );
     case "ternary":
       return ternary(
