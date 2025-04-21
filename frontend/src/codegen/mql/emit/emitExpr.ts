@@ -43,11 +43,12 @@ export function emitMqlExprFromIR(
           return ref("Close");
         case "volume":
           return ref("Volume");
+        case "tick_volume":
+          return ref("Volume");
         default:
           throw new Error(`Unknown price source: ${expr.source}`);
       }
     case "bar_variable_ref": {
-      const base = emitMqlExprFromIR(context, expr.source, shift);
       const shiftBars =
         typeof expr.shiftBar === "undefined"
           ? lit(0)
@@ -58,6 +59,67 @@ export function emitMqlExprFromIR(
           : emitMqlExprFromIR(context, expr.fallback, shift);
       const index = typeof shift === "undefined" ? shiftBars : binary("+", shiftBars, shift);
       const isSafe = index.type === "literal" && index.value === "0";
+      if (expr.source.type === "price_ref") {
+        switch (expr.source.source) {
+          case "ask":
+            return access(ref("Ask"), index, isSafe, fallback);
+          case "bid":
+            return access(ref("Bid"), index, isSafe, fallback);
+          case "open":
+            return access(ref("Open"), index, isSafe, fallback);
+          case "high":
+            return access(ref("High"), index, isSafe, fallback);
+          case "low":
+            return access(ref("Low"), index, isSafe, fallback);
+          case "close":
+            return access(ref("Close"), index, isSafe, fallback);
+          case "median":
+            return ternary(
+              binary(">", ref("Bars"), index),
+              binary(
+                "/",
+                binary("+", access(ref("High"), index), access(ref("Low"), index)),
+                lit(2)
+              ),
+              fallback
+            );
+          case "typical":
+            return ternary(
+              binary(">", ref("Bars"), index),
+              binary(
+                "/",
+                binary(
+                  "+",
+                  binary("+", access(ref("High"), index), access(ref("Low"), index)),
+                  access(ref("Close"), index)
+                ),
+                lit(3)
+              ),
+              fallback
+            );
+          case "weighted":
+            return ternary(
+              binary(">", ref("Bars"), index),
+              binary(
+                "/",
+                binary(
+                  "+",
+                  binary("+", access(ref("High"), index), access(ref("Low"), index)),
+                  binary("+", access(ref("Close"), index), access(ref("Open"), index))
+                ),
+                lit(4)
+              ),
+              fallback
+            );
+          case "tick_volume":
+          case "volume":
+            return access(ref("Volume"), index, isSafe, fallback);
+          default:
+            throw new Error(`Unknown price source: ${expr.source}`);
+        }
+      }
+
+      const base = emitMqlExprFromIR(context, expr.source, shift);
       return access(base, index, isSafe, fallback);
     }
     case "unary":
