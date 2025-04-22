@@ -5,7 +5,7 @@ import { emitBtIndicatorFromIR } from "./emitIndicator";
 import { emitBtStrategyFromIR } from "./emitStrategy";
 
 export function emitBtProgramFromIR(program: IRProgram): PyModule {
-  const indicators = program.indicatorDefs.map(emitBtIndicatorFromIR);
+  const indicators = program.indicatorDefs.map(i => emitBtIndicatorFromIR(i));
   const strategy = emitBtStrategyFromIR(program.strategy);
 
   const main: PyStatement[] = [

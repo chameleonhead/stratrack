@@ -6,7 +6,7 @@ import {
   call,
   attr,
   ref,
-  func,
+  fn,
   cls,
   bin,
   list,
@@ -41,7 +41,7 @@ export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
   nextFuncBody.push(iff(unary("not", ref("self.position")), entryConds));
   nextFuncBody.push(iff(ref("self.position"), exitConds));
 
-  const notifyOrderFunc: PyFunction = func(
+  const notifyOrderFunc: PyFunction = fn(
     "notify_order",
     ["self", "order"],
     [
@@ -59,7 +59,7 @@ export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
     ]
   );
 
-  const notifyTradeFunc: PyFunction = func(
+  const notifyTradeFunc: PyFunction = fn(
     "notify_trade",
     ["self", "trade"],
     [
@@ -69,9 +69,9 @@ export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
     ]
   );
 
-  const nextFunc: PyFunction = func("next", ["self"], nextFuncBody);
+  const nextFunc: PyFunction = fn("next", ["self"], nextFuncBody);
 
-  const initFunc: PyFunction = func("__init__", ["self"], initBody);
+  const initFunc: PyFunction = fn("__init__", ["self"], initBody);
 
   return cls(
     strategy.name,

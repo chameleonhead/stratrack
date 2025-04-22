@@ -188,7 +188,7 @@ export const whileStmt = (condition: PyExpression, body: PyStatement[]): PyWhile
 // Function helper
 // ------------------------------------
 
-export const func = (name: string, args: string[], body: PyStatement[]): PyFunction => ({
+export const fn = (name: string, args: string[], body: PyStatement[]): PyFunction => ({
   type: "function",
   name,
   args,
