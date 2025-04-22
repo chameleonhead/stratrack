@@ -122,6 +122,7 @@ export type PyExpression =
   | PyBinaryOp
   | PyUnaryOp
   | PyTernaryOp
+  | PyLogicalOp
   | PyCall
   | PyAttribute
   | PySubscript
@@ -165,6 +166,13 @@ export type PyTernaryOp = {
   falseExpr: PyExpression;
 };
 
+// 論理演算
+export type PyLogicalOp = {
+  type: "logical";
+  operator: "and" | "or";
+  conditions: PyExpression[];
+};
+
 // 関数・メソッド呼び出し
 export type PyCall = {
   type: "call";
@@ -184,6 +192,7 @@ export type PySubscript = {
   type: "subscript";
   value: PyExpression;
   index: PyExpression;
+  fallback?: PyExpression;
 };
 
 // 比較演算（複数条件対応）

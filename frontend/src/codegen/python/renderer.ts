@@ -164,9 +164,14 @@ function renderExpr(expr: PyExpression): string {
     case "attribute":
       return `${renderExpr(expr.object)}.${expr.attr}`;
     case "subscript":
+      if (expr.fallback) {
+        return `${renderExpr(expr.value)}[${renderExpr(expr.index)}] if len(${renderExpr(expr.value)}) > ${renderExpr(expr.index)} else ${renderExpr(expr.fallback)}`;
+      }
       return `${renderExpr(expr.value)}[${renderExpr(expr.index)}]`;
     case "compare":
       return `${renderExpr(expr.left)} ${expr.operators.map((op, i) => `${op} ${renderExpr(expr.comparators[i])}`).join(" ")}`;
+    case "logical":
+      return `(${expr.conditions.map(renderExpr).join(` ${expr.operator} `)})`;
     case "list":
       return `[${expr.elements.map(renderExpr).join(", ")}]`;
     case "dict":

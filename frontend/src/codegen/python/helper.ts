@@ -30,6 +30,7 @@ import {
   PyTernaryOp,
   PyImport,
   PyTuple,
+  PyLogicalOp,
 } from "./ast";
 
 export const lit = (value: string | number | boolean | null): PyLiteral => ({
@@ -54,10 +55,15 @@ export const call = (fn: PyExpression, args: PyExpression[] = []): PyCall => ({
   args,
 });
 
-export const sub = (value: PyExpression, index: PyExpression): PySubscript => ({
+export const sub = (
+  value: PyExpression,
+  index: PyExpression,
+  fallback?: PyExpression
+): PySubscript => ({
   type: "subscript",
   value,
   index,
+  fallback,
 });
 
 export const cmp = (
@@ -69,6 +75,18 @@ export const cmp = (
   left,
   operators,
   comparators,
+});
+
+export const and = (...conditions: PyExpression[]): PyLogicalOp => ({
+  type: "logical",
+  operator: "and",
+  conditions,
+});
+
+export const or = (...conditions: PyExpression[]): PyLogicalOp => ({
+  type: "logical",
+  operator: "or",
+  conditions,
 });
 
 export const unary = (operator: string, operand: PyExpression): PyUnaryOp => ({

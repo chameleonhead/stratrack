@@ -197,7 +197,7 @@ export function emitMqlCondFromIR(
       return binary(
         expr.operator,
         emitMqlExprFromIR(context, expr.left, shift),
-        emitMqlExprFromIR(context, expr.right, shift ? binary("+", shift, lit(1)) : lit(1))
+        emitMqlExprFromIR(context, expr.right, shift)
       );
     case "cross": {
       const curr = shift ? binary("+", shift, lit(0)) : lit(0);
