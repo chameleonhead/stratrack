@@ -23,6 +23,7 @@ export type IndicatorDefinition = {
   name: string;
   params: IndicatorParam[];
   indicator: Indicator;
+  indicatorInstances: IndicatorInstance[];
   usedAggregationTypes: Set<AggregationType>;
 };
 
@@ -62,13 +63,24 @@ export function analyzeStrategyWithDependencies(
     usedAggregationTypes
   );
 
+  Array.from(ctxUsedIndicators.entries()).forEach(([name, params]) => {
+    const indicator = indicatorCatalog[name];
+    if (!indicator) {
+      errors.push(`インジケーター定義が見つかりません: ${name}`);
+      return;
+    }
+    for (const p of params) {
+      indicatorInstances.push({ name, params: p, indicator });
+    }
+  });
+
   const queue = Array.from(ctxUsedIndicators.entries()).map(([name, params]) => ({
     name,
     paramsList: params,
   }));
 
   while (queue.length) {
-    const { name, paramsList } = queue.pop()!;
+    const { name } = queue.pop()!;
     const indicator = indicatorCatalog[name];
     if (!indicator) {
       errors.push(`インジケーター定義が見つかりません: ${name}`);
@@ -92,16 +104,26 @@ export function analyzeStrategyWithDependencies(
         name,
         params: indicator.params,
         indicator,
+        indicatorInstances: Array.from(nestedCtx.entries()).flatMap(
+          ([nestedName, nestedParams]) => {
+            const nestedIndicator = indicatorCatalog[nestedName];
+            if (!nestedIndicator) {
+              errors.push(`インジケーター定義が見つかりません: ${nestedName}`);
+              return [];
+            }
+            return nestedParams.map((params) => ({
+              name: nestedName,
+              params,
+              indicator: nestedIndicator,
+            }));
+          }
+        ),
         usedAggregationTypes: nestedUsedAggregationTypes,
       });
 
       for (const [nestedName, nestedParams] of nestedCtx.entries()) {
         queue.push({ name: nestedName, paramsList: nestedParams });
       }
-    }
-
-    for (const params of paramsList) {
-      indicatorInstances.push({ name, params, indicator });
     }
   }
 

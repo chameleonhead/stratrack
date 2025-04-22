@@ -157,8 +157,8 @@ describe("buildIRFromAnalysis", () => {
 
   it("SMAインジケーターが IRIndicatorInstance に正しく変換されていることを確認する", () => {
     // IRProgram 内のインジケーターインスタンスリストを取得
-    expect(irProgram.indicatorInstances).toBeDefined();
-    const indicatorInstanceList = irProgram.indicatorInstances;
+    expect(irProgram.strategy.indicators).toBeDefined();
+    const indicatorInstanceList = irProgram.strategy.indicators;
     expect(indicatorInstanceList.length).toBe(1);
 
     const irIndicator = indicatorInstanceList[0] as IRIndicatorInstance;
@@ -168,7 +168,10 @@ describe("buildIRFromAnalysis", () => {
     expect(irIndicator.name).toBe(MA.name);
     // パラメータに period: 5 が含まれていること
     expect(irIndicator.params).toBeDefined();
-    expect(irIndicator.params.filter((p) => p.type === "constant" && p.value === 5).length).toBe(1);
+    expect(
+      irIndicator.params.map((p) => p.value).filter((p) => p.type === "constant" && p.value === 5)
+        .length
+    ).toBe(1);
   });
 
   it("sma 集約が正しく変換されていることを確認する", () => {

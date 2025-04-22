@@ -54,7 +54,10 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
         id,
         name: instance.name,
         pascalName: pascal(instance.name),
-        params: instance.params.map((p) => mapIndicatorParamValue(p, indicatorContext)),
+        params: instance.params.map((p) => ({
+          name: p.name,
+          value: mapIndicatorParamValue(p, indicatorContext),
+        })),
       };
     }
   );
@@ -73,6 +76,20 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
         params: definition.params,
         outputLine: definition.indicator.defaultLineName ?? exports[0],
         variables: irVars,
+        indicators: definition.indicatorInstances.map((instance, i) => {
+          const key = `${instance.name}::${JSON.stringify(instance.params)}`;
+          const id = `${definition.name}_${i + 1}`;
+          indicatorContext.map.set(key, id);
+          return {
+            id,
+            name: instance.name,
+            pascalName: pascal(instance.name),
+            params: instance.params.map((p) => ({
+              name: p.name,
+              value: mapIndicatorParamValue(p, indicatorContext),
+            })),
+          };
+        }),
         exportVars: exports,
         usedAggregations: Array.from(definition.usedAggregationTypes),
       };
@@ -83,6 +100,7 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
   const strategy: IRStrategy = {
     name: "Generated",
     variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorContext)) ?? [],
+    indicators: indicatorInstances,
     entryConditions: ctx.strategy.entry.map((e) => ({
       type: e.type,
       condition: mapCondition(e.condition, indicatorContext),
@@ -98,7 +116,6 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
     aggregations: Array.from(ctx.usedAggregationTypes),
     strategy,
     indicatorDefs,
-    indicatorInstances,
   };
 }
 

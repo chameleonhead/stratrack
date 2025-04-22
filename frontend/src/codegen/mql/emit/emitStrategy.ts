@@ -137,6 +137,7 @@ function generateInitFunction(strategy: IRStrategy, instances: IRIndicatorInstan
         call(
           `new ${i.pascalName}`,
           i.params
+            .map((p) => p.value)
             .filter((p) => p.type === "constant" || p.type === "aggregation_type_value")
             .map((p) => emitMqlExprFromIR("strategy", p))
         )
@@ -250,15 +251,15 @@ function generateTickFunction(strategy: IRStrategy): MqlFunction {
  * StrategyTemplate から MQL4 AST ファイルを生成
  */
 export function emitMqlEaFromIR(program: IRProgram): MqlProgram {
-  const strategy = program.strategy;
   const indicatorClasses = program.indicatorDefs.map((i) => emitMqlIndicatorFromIR(i));
+  const strategy = program.strategy;
 
   const vars = (strategy.variables ?? []).map((v) => decl(`${v.name}[]`, "double"));
   vars.push(decl("MagicNumber", "int", lit("123456")));
-  vars.push(...program.indicatorInstances.map((i) => decl(i.id, `${i.pascalName}*`)));
+  vars.push(...program.strategy.indicators.map((i) => decl(i.id, `${i.pascalName}*`)));
 
-  const initFn = generateInitFunction(strategy, program.indicatorInstances);
-  const deinitFn = generateDeinitFunction(strategy, program.indicatorInstances);
+  const initFn = generateInitFunction(strategy, strategy.indicators);
+  const deinitFn = generateDeinitFunction(strategy, strategy.indicators);
   const tickFn = generateTickFunction(strategy);
 
   const functions = [...generateCommonFunctionDefinitions(), initFn, deinitFn, tickFn];
