@@ -1,5 +1,5 @@
 import { IRStrategy } from "../../ir/ast";
-import { PyClass, PyFunction, PyStatement } from "../ast";
+import { PyAssignment, PyClass, PyFunction, PyStatement } from "../ast";
 import {
   iff,
   stmt,
@@ -14,14 +14,28 @@ import {
   lit,
   ret,
   unary,
+  sub,
+  tuple,
 } from "../helper";
-import { emitVariableAssign, emitPyCondExpr } from "./emitExpr";
+import { emitPyCondExpr, emitPyExpr } from "./emitExpr";
 
 export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
+  const fields: PyAssignment[] = [];
+  fields.push(assign(ref("lines"), tuple(strategy.variables.map((v) => lit(`_${v.name}`)))));
   const initBody: PyStatement[] = [];
   initBody.push(assign(attr(ref("self"), "order_history"), list([])));
   initBody.push(assign(attr(ref("self"), "trade_history"), list([])));
-  initBody.push(...strategy.variables.map(emitVariableAssign));
+  initBody.push(
+    ...strategy.indicators.map((v) =>
+      assign(
+        attr(ref("self"), v.id),
+        call(
+          ref(v.pascalName),
+          v.params.map((p) => bin("=", ref(p.name), emitPyExpr(p.value)))
+        )
+      )
+    )
+  );
   initBody.push(assign(attr(ref("self"), "order"), lit(null)));
 
   const entryConds = strategy.entryConditions.map((e) =>
@@ -36,10 +50,15 @@ export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
     ])
   );
 
-  const nextFuncBody: PyStatement[] = [];
-  nextFuncBody.push(iff(ref("self.order"), [ret()]));
-  nextFuncBody.push(iff(unary("not", ref("self.position")), entryConds));
-  nextFuncBody.push(iff(ref("self.position"), exitConds));
+  const nextBody: PyStatement[] = [];
+  nextBody.push(
+    ...strategy.variables.map((v) =>
+      assign(sub(attr(ref("self.lines"), `_${v.name}`), lit(0)), emitPyExpr(v.expression, "scalar"))
+    )
+  );
+  nextBody.push(iff(ref("self.order"), [ret()]));
+  nextBody.push(iff(unary("not", ref("self.position")), entryConds));
+  nextBody.push(iff(ref("self.position"), exitConds));
 
   const notifyOrderFunc: PyFunction = fn(
     "notify_order",
@@ -69,13 +88,13 @@ export function emitBtStrategyFromIR(strategy: IRStrategy): PyClass {
     ]
   );
 
-  const nextFunc: PyFunction = fn("next", ["self"], nextFuncBody);
+  const nextFunc: PyFunction = fn("next", ["self"], nextBody);
 
   const initFunc: PyFunction = fn("__init__", ["self"], initBody);
 
   return cls(
     strategy.name,
-    [],
+    fields,
     [initFunc, notifyOrderFunc, notifyTradeFunc, nextFunc],
     ["bt.Strategy"]
   );

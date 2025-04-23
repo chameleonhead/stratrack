@@ -257,9 +257,9 @@ function mapExpression(
                   method: type,
                 } satisfies IRAggregationTypeValue,
                 right: {
-                  type: "variable_ref",
+                  type: "constant_param_ref",
                   name,
-                } satisfies IRVariableRef,
+                } satisfies IRConstantParamRef,
               },
               trueExpr: {
                 type: "aggregation",

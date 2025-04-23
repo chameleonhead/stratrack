@@ -136,17 +136,22 @@ function renderExpr(expr: PyExpression): string {
           : renderExpr(expr.right);
       return `${left} ${expr.operator} ${right}`;
     }
-    case "unary":
+    case "unary": {
+      const operand =
+        expr.operand.type === "binary" || expr.operand.type === "ternary"
+          ? `(${renderExpr(expr.operand)})`
+          : renderExpr(expr.operand);
       if (expr.operator === "not") {
-        return `not ${renderExpr(expr.operand)}`;
+        return `not ${operand}`;
       }
       if (expr.operator === "abs") {
-        return `abs(${renderExpr(expr.operand)})`;
+        return `abs(${operand})`;
       }
-      return `${expr.operator}${renderExpr(expr.operand)}`;
+      return `${expr.operator}${operand}`;
+    }
     case "ternary": {
       const condition =
-        expr.condition.type === "ternary"
+        expr.condition.type === "compare"
           ? `(${renderExpr(expr.condition)})`
           : renderExpr(expr.condition);
       const trueExpr =
@@ -164,12 +169,38 @@ function renderExpr(expr: PyExpression): string {
     case "attribute":
       return `${renderExpr(expr.object)}.${expr.attr}`;
     case "subscript":
-      if (expr.fallback) {
-        return `${renderExpr(expr.value)}[${renderExpr(expr.index)}] if len(${renderExpr(expr.value)}) > ${renderExpr(expr.index)} else ${renderExpr(expr.fallback)}`;
-      }
       return `${renderExpr(expr.value)}[${renderExpr(expr.index)}]`;
-    case "compare":
-      return `${renderExpr(expr.left)} ${expr.operators.map((op, i) => `${op} ${renderExpr(expr.comparators[i])}`).join(" ")}`;
+    case "slice": {
+      const start = expr.start ? renderExpr(expr.start) : "";
+      const stop = expr.stop ? renderExpr(expr.stop) : "";
+      const step = expr.step ? renderExpr(expr.step) : "";
+      if (start && stop && step) {
+        return `${start}:${stop}:${step}`;
+      } else if (start && stop) {
+        return `${start}:${stop}`;
+      } else if (start) {
+        return `${start}:`;
+      } else if (stop) {
+        return `:${stop}`;
+      }
+      return ":";
+    }
+    case "compare": {
+      const left =
+        expr.left.type === "binary" || expr.left.type === "ternary"
+          ? `(${renderExpr(expr.left)})`
+          : renderExpr(expr.left);
+      return `${left} ${expr.operators
+        .map((op, i) => ({
+          op,
+          comp:
+            expr.comparators[i].type === "binary" || expr.comparators[i].type === "ternary"
+              ? `(${renderExpr(expr.comparators[i])})`
+              : renderExpr(expr.comparators[i]),
+        }))
+        .map(({ op, comp }) => `${op} ${comp}`)
+        .join(" ")}`;
+    }
     case "logical":
       return `(${expr.conditions.map(renderExpr).join(` ${expr.operator} `)})`;
     case "list":
@@ -178,5 +209,7 @@ function renderExpr(expr: PyExpression): string {
       return `{${expr.entries.map((e) => `${renderExpr(e.key)}: ${renderExpr(e.value)}`).join(", ")}}`;
     case "tuple":
       return `(${expr.elements.map(renderExpr).join(", ")},)`;
+    case "for_expr":
+      return `for ${expr.variable} in ${renderExpr(expr.iterable)}: ${renderExpr(expr.body)}`;
   }
 }

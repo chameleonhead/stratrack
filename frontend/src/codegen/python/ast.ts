@@ -126,10 +126,12 @@ export type PyExpression =
   | PyCall
   | PyAttribute
   | PySubscript
+  | PySlicing
   | PyCompare
   | PyList
   | PyDict
-  | PyTuple;
+  | PyTuple
+  | PyForExpr;
 
 // リテラル（数値・文字列・true/false/null）
 export type PyLiteral = {
@@ -141,6 +143,14 @@ export type PyLiteral = {
 export type PyVariable = {
   type: "variable";
   name: string;
+};
+
+// スライス
+export type PySlicing = {
+  type: "slice";
+  start: PyExpression | null;
+  stop: PyExpression | null;
+  step: PyExpression | null;
 };
 
 // 二項演算
@@ -192,7 +202,6 @@ export type PySubscript = {
   type: "subscript";
   value: PyExpression;
   index: PyExpression;
-  fallback?: PyExpression;
 };
 
 // 比較演算（複数条件対応）
@@ -219,4 +228,11 @@ export type PyDict = {
 export type PyTuple = {
   type: "tuple";
   elements: PyExpression[];
+};
+
+export type PyForExpr = {
+  type: "for_expr";
+  variable: string[];
+  iterable: PyExpression;
+  body: PyExpression;
 };

@@ -10,7 +10,6 @@ import {
   PyCall,
   PySubscript,
   PyCompare,
-  PyUnaryOp,
   PyList,
   PyDict,
   PyAssignment,
@@ -31,6 +30,8 @@ import {
   PyImport,
   PyTuple,
   PyLogicalOp,
+  PyForExpr,
+  PySlicing,
 } from "./ast";
 
 export const lit = (value: string | number | boolean | null): PyLiteral => ({
@@ -55,15 +56,21 @@ export const call = (fn: PyExpression, args: PyExpression[] = []): PyCall => ({
   args,
 });
 
-export const sub = (
-  value: PyExpression,
-  index: PyExpression,
-  fallback?: PyExpression
-): PySubscript => ({
+export const sub = (value: PyExpression, index: PyExpression): PySubscript => ({
   type: "subscript",
   value,
   index,
-  fallback,
+});
+
+export const slice = (
+  start: PyExpression | null = null,
+  stop: PyExpression | null = null,
+  step: PyExpression | null = null
+): PySlicing => ({
+  type: "slice",
+  start,
+  stop,
+  step,
 });
 
 export const cmp = (
@@ -89,11 +96,14 @@ export const or = (...conditions: PyExpression[]): PyLogicalOp => ({
   conditions,
 });
 
-export const unary = (operator: string, operand: PyExpression): PyUnaryOp => ({
-  type: "unary",
-  operator,
-  operand,
-});
+export const unary = (operator: string, operand: PyExpression): PyExpression =>
+  operator === "-" && isZeroLiteral(operand)
+    ? operand
+    : {
+        type: "unary",
+        operator,
+        operand,
+      };
 
 export const bin = (operator: string, left: PyExpression, right: PyExpression): PyExpression => {
   if ((operator === "+" || operator === "-") && (isZeroLiteral(left) || isZeroLiteral(right))) {
@@ -139,6 +149,17 @@ export const tuple = (elements: PyExpression[]): PyTuple => ({
 export const dict = (entries: { key: PyExpression; value: PyExpression }[]): PyDict => ({
   type: "dict",
   entries,
+});
+
+export const forExpr = (
+  iterable: PyExpression,
+  variable: string | string[],
+  body: PyExpression
+): PyForExpr => ({
+  type: "for_expr",
+  iterable,
+  variable: Array.isArray(variable) ? variable : [variable],
+  body,
 });
 
 // ------------------------------------

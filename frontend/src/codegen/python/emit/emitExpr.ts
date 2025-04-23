@@ -1,54 +1,245 @@
 import { AggregationType } from "../../dsl/common";
-import { IRExpression, IRCondition, IRVariable } from "../../ir/ast";
-import { PyExpression, PyStatement } from "../ast";
-import { call, attr, ref, lit, unary, bin, sub, ternary, cmp, assign, and, or } from "../helper";
+import { IRExpression, IRCondition } from "../../ir/ast";
+import { PyExpression, PyFunction } from "../ast";
+import {
+  call,
+  attr,
+  ref,
+  lit,
+  unary,
+  bin,
+  sub,
+  ternary,
+  cmp,
+  and,
+  or,
+  fn,
+  ret,
+  assign,
+  forStmt,
+  forExpr,
+  iff,
+} from "../helper";
 
-export function emitAggregation(
-  method: AggregationType,
-  source: PyExpression,
-  period: PyExpression
-): PyExpression {
-  let btFuncName: string;
+export function emitAggregationMethod(method: AggregationType): PyFunction {
   switch (method) {
     case "sma":
-      btFuncName = "SMA";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          ret(
+            bin(
+              "/",
+              call(ref("sum"), [call(attr(ref("line"), "get"), [ref("period")])]),
+              ref("period")
+            )
+          ),
+        ]
+      );
     case "ema":
-      btFuncName = "EMA";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(ref("alpha"), bin("/", lit(2), bin("+", ref("period"), lit(1)))),
+          assign(ref("result"), call(attr(ref("line"), "get"), [ref("period")])),
+          forStmt("i", call(ref("range"), [bin("+", unary("-", ref("period")), lit(1)), lit(0)]), [
+            assign(
+              ref("result"),
+              bin(
+                "+",
+                bin("*", ref("alpha"), sub(ref("line"), ref("i"))),
+                bin("*", bin("-", lit(1), ref("alpha")), ref("result"))
+              )
+            ),
+          ]),
+          ret(ref("result")),
+        ]
+      );
+
     case "rma":
-      btFuncName = "RMA";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(ref("result"), call(attr(ref("line"), "get"), [ref("period")])),
+          assign(ref("alpha"), bin("/", lit(1), ref("period"))),
+          forStmt("i", call(ref("range"), [bin("+", unary("-", ref("period")), lit(1)), lit(0)]), [
+            assign(
+              ref("result"),
+              bin(
+                "+",
+                bin("*", ref("alpha"), sub(ref("line"), ref("i"))),
+                bin("*", bin("-", lit(1), ref("alpha")), ref("result"))
+              )
+            ),
+          ]),
+          ret(ref("result")),
+        ]
+      );
     case "lwma":
-      btFuncName = "LWMA";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(ref("weighted_sum"), lit(0)),
+          assign(ref("weight_total"), lit(0)),
+          forStmt("i", call(ref("range"), [ref("period")]), [
+            assign(ref("weight"), bin("-", ref("period"), ref("i"))),
+            assign(
+              ref("weighted_sum"),
+              bin(
+                "+",
+                ref("weighted_sum"),
+                bin("*", sub(ref("line"), bin("-", unary("-", ref("i")), lit(1))), ref("weight"))
+              )
+            ),
+            assign(ref("weight_total"), bin("+", ref("weight_total"), ref("weight"))),
+          ]),
+          ret(bin("/", ref("weighted_sum"), ref("weight_total"))),
+        ]
+      );
     case "smma":
-      btFuncName = "SMMA";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(
+            ref("result"),
+            bin(
+              "/",
+              call(ref("sum"), [call(attr(ref("line"), "get"), [ref("period")])]),
+              ref("period")
+            )
+          ),
+          forStmt("i", call(ref("range"), [bin("+", unary("-", ref("period")), lit(1)), lit(0)]), [
+            assign(
+              ref("result"),
+              bin(
+                "/",
+                bin(
+                  "+",
+                  bin("*", ref("result"), bin("-", ref("period"), lit(1))),
+                  sub(ref("line"), ref("i"))
+                ),
+                ref("period")
+              )
+            ),
+          ]),
+          ret(ref("result")),
+        ]
+      );
     case "sum":
-      btFuncName = "SumN";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [ret(call(ref("sum"), [call(attr(ref("line"), "get"), [ref("period")])]))]
+      );
     case "max":
-      btFuncName = "Highest";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [ret(call(ref("max"), [call(attr(ref("line"), "get"), [ref("period")])]))]
+      );
     case "min":
-      btFuncName = "Lowest";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [ret(call(ref("min"), [call(attr(ref("line"), "get"), [ref("period")])]))]
+      );
     case "std":
-      btFuncName = "StdDev";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(
+            ref("mean"),
+            bin(
+              "/",
+              call(ref("sum"), [call(attr(ref("line"), "get"), [ref("period")])]),
+              ref("period")
+            )
+          ),
+          ret(
+            bin(
+              "**",
+              bin(
+                "/",
+                call(ref("sum"), [
+                  forExpr(
+                    call(attr(ref("line"), "get"), [ref("period")]),
+                    "x",
+                    bin("**", bin("-", ref("x"), ref("mean")), lit(2))
+                  ),
+                ]),
+                ref("period")
+              ),
+              lit(0.5)
+            )
+          ),
+        ]
+      );
     case "median":
-      btFuncName = "Median";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(
+            ref("sorted_window"),
+            call(ref("sorted"), [call(attr(ref("line"), "get"), [ref("period")])])
+          ), // sorted_window = sorted(line[-period:])
+          assign(ref("mid"), bin("//", ref("period"), lit(2))),
+          iff(
+            bin("%", ref("period"), lit(2)),
+            [
+              ret(
+                bin(
+                  "/",
+                  bin(
+                    "+",
+                    sub(ref("sorted_window"), bin("-", ref("mid"), lit(1))),
+                    sub(ref("sorted_window"), ref("mid"))
+                  ),
+                  lit(2)
+                )
+              ),
+            ],
+            [ret(sub(ref("sorted_window"), ref("mid")))]
+          ),
+        ]
+      );
     case "mean_absolute_deviation":
-      btFuncName = "MAD";
-      break;
-    default:
-      btFuncName = "UnknownAgg";
-      break;
+      return fn(
+        `_${method}`,
+        ["self", "line", "period"],
+        [
+          assign(
+            ref("mean"),
+            bin(
+              "/",
+              call(ref("sum"), [call(attr(ref("line"), "get"), [ref("period")])]),
+              ref("period")
+            )
+          ),
+          ret(
+            bin(
+              "/",
+              call(ref("sum"), [
+                forExpr(
+                  call(attr(ref("line"), "get"), [ref("period")]),
+                  "x",
+                  bin("|", bin("-", ref("x"), ref("mean")), lit(0))
+                ),
+              ]),
+              ref("period")
+            )
+          ),
+        ]
+      );
   }
 
-  return call(attr(ref("bt.ind"), btFuncName), [source, period]);
+  throw new Error(`Unsupported aggregation type: ${method}`);
 }
 type EmitMode = "scalar" | "array";
 
@@ -67,8 +258,8 @@ export function emitPyExpr(
       return mode === "scalar" ? sub(base, lit(shift)) : base;
     }
     case "variable_ref": {
-      const base = attr(ref("self"), expr.name);
-      return mode === "scalar" ? sub(base, lit(shift)) : base;
+      const base = attr(ref("self.lines"), `_${expr.name}`);
+      return mode === "scalar" ? sub(base, lit(-shift)) : base;
     }
     case "unary":
       return unary(expr.operator, emitPyExpr(expr.operand, mode, shift));
@@ -80,37 +271,49 @@ export function emitPyExpr(
       );
     case "price_ref": {
       const base = attr(ref("self.data"), expr.source);
-      return mode === "scalar" ? sub(base, lit(shift)) : base;
+      return mode === "scalar" ? sub(base, lit(-shift)) : base;
     }
     case "bar_shift": {
       const base = emitPyExpr(expr.source, "array");
-      if (expr.shiftBar) {
-        if (mode === "scalar") {
-          return sub(
-            base,
-            bin("+", emitPyExpr(expr.shiftBar, "scalar"), lit(shift)),
-            expr.fallback ? emitPyExpr(expr.fallback, "scalar", shift) : undefined
-          );
+      const shiftBar = expr.shiftBar ? emitPyExpr(expr.shiftBar, "scalar") : lit(0);
+      if (mode === "scalar") {
+        const fallback = expr.fallback ? emitPyExpr(expr.fallback, "scalar") : undefined;
+        if (shiftBar.type === "literal" && shiftBar.value === 0) {
+          if (fallback) {
+            return ternary(
+              cmp(call(ref("len"), [base]), [">"], [lit(shift)]),
+              sub(base, lit(-shift)),
+              fallback
+            );
+          } else {
+            return sub(base, lit(-shift));
+          }
         } else {
-          return call(ref("bt.LineDelay"), [
-            base,
-            bin("+", emitPyExpr(expr.shiftBar, "scalar"), lit(shift)),
-          ]);
+          if (fallback) {
+            return ternary(
+              cmp(call(ref("len"), [base]), [">"], [bin("+", shiftBar, lit(shift))]),
+              sub(base, unary("-", bin("+", shiftBar, lit(shift)))),
+              fallback
+            );
+          } else {
+            return sub(base, unary("-", bin("+", shiftBar, lit(shift))));
+          }
         }
       }
-      if (mode === "scalar") {
-        return sub(
-          base,
-          lit(shift),
-          expr.fallback ? emitPyExpr(expr.fallback, "scalar", shift) : undefined
-        );
+      if (shiftBar.type === "literal" && shiftBar.value === 0) {
+        return base;
+      } else {
+        return call(base, [bin("+", shiftBar, lit(shift))]);
       }
-      return base;
     }
     case "aggregation": {
+      const methodName = `_` + expr.method.toLowerCase(); // e.g., "_sma"
       const source = emitPyExpr(expr.source, "array");
       const period = emitPyExpr(expr.period, "scalar");
-      return emitAggregation(expr.method, source, period);
+      return call(attr(ref("self"), methodName), [
+        shift > 0 ? call(attr(source, "get"), [period, lit(shift)]) : source,
+        period,
+      ]);
     }
     case "aggregation_type_value":
       return lit(expr.method);
@@ -139,12 +342,10 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
       );
     }
     case "cross": {
-      const left = emitPyExpr(expr.left, "array");
-      const right = emitPyExpr(expr.right, "array");
-      const l_curr = sub(left, lit(0));
-      const l_prev = sub(left, lit(1));
-      const r_curr = sub(right, lit(0));
-      const r_prev = sub(right, lit(1));
+      const l_curr = emitPyExpr(expr.left, "scalar", 0);
+      const l_prev = emitPyExpr(expr.left, "scalar", 1);
+      const r_curr = emitPyExpr(expr.right, "scalar", 0);
+      const r_prev = emitPyExpr(expr.right, "scalar", 1);
       return expr.direction === "cross_over"
         ? and(bin("<", l_prev, r_prev), bin(">", l_curr, r_curr))
         : and(bin(">", l_prev, r_prev), bin("<", l_curr, r_curr));
@@ -152,10 +353,13 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
     case "state": {
       const conds: PyExpression[] = [];
       const sign = expr.state === "rising" ? ">" : "<";
-      const varName = emitPyExpr(expr.operand);
       for (let i = 0; i < Math.abs(expr.consecutiveBars || 1); i++) {
         conds.push(
-          bin(sign, sub(varName, lit(shift + i), lit(0)), sub(varName, lit(shift + i + 1), lit(0)))
+          bin(
+            sign,
+            emitPyExpr(expr.operand, "scalar", shift + i),
+            emitPyExpr(expr.operand, "scalar", shift + i + 1)
+          )
         );
       }
       return and(...conds);
@@ -203,8 +407,4 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
     default:
       throw new Error(`Unsupported IR condition type: ${(expr as { type: string }).type}`);
   }
-}
-
-export function emitVariableAssign(v: IRVariable): PyStatement {
-  return assign(attr(ref("self"), v.name), emitPyExpr(v.expression));
 }

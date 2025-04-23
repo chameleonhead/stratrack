@@ -1,8 +1,7 @@
-// tests/emitter.test.ts
 import { describe, it, expect } from "vitest";
-import { IRExpression, IRCondition, IRVariable } from "../../ir/ast";
-import { lit, sub, attr, ref, bin, cmp, assign, call } from "../helper";
-import { emitPyExpr, emitPyCondExpr, emitVariableAssign } from "./emitExpr";
+import { IRExpression, IRCondition } from "../../ir/ast";
+import { lit, sub, attr, ref, bin, cmp, call, unary } from "../helper";
+import { emitPyExpr, emitPyCondExpr } from "./emitExpr";
 import { PyBinaryOp, PyCompare, PyLogicalOp } from "../ast";
 
 describe("emitPyExpr", () => {
@@ -13,7 +12,7 @@ describe("emitPyExpr", () => {
 
   it("emits a scalar variable reference", () => {
     const expr: IRExpression = { type: "variable_ref", name: "myVar" };
-    expect(emitPyExpr(expr, "scalar")).toEqual(sub(attr(ref("self"), "myVar"), lit(0)));
+    expect(emitPyExpr(expr, "scalar")).toEqual(sub(attr(ref("self.lines"), "_myVar"), lit(0)));
   });
 
   it("emits a price_ref as array", () => {
@@ -39,7 +38,7 @@ describe("emitPyExpr", () => {
     };
 
     const result = emitPyExpr(expr, "scalar");
-    expect(result).toEqual(sub(attr(ref("self.data"), "close"), lit(2)));
+    expect(result).toEqual(sub(attr(ref("self.data"), "close"), unary("-", lit(2))));
   });
 
   it("emits scalar bar_shift with additional shift", () => {
@@ -50,7 +49,9 @@ describe("emitPyExpr", () => {
     };
 
     const result = emitPyExpr(expr, "scalar", 1);
-    expect(result).toEqual(sub(attr(ref("self.data"), "close"), bin("+", lit(1), lit(1))));
+    expect(result).toEqual(
+      sub(attr(ref("self.data"), "close"), unary("-", bin("+", lit(1), lit(1))))
+    );
   });
 
   it("emits array bar_shift with constant shift", () => {
@@ -61,9 +62,7 @@ describe("emitPyExpr", () => {
     };
 
     const result = emitPyExpr(expr, "array");
-    expect(result).toEqual(
-      call(ref("bt.LineDelay"), [attr(ref("self.data"), "high"), bin("+", lit(3), lit(0))])
-    );
+    expect(result).toEqual(call(attr(ref("self.data"), "high"), [lit(3)]));
   });
 
   it("emits array bar_shift with non-zero outer shift", () => {
@@ -74,9 +73,7 @@ describe("emitPyExpr", () => {
     };
 
     const result = emitPyExpr(expr, "array", 2);
-    expect(result).toEqual(
-      call(ref("bt.LineDelay"), [attr(ref("self.data"), "low"), bin("+", lit(2), lit(2))])
-    );
+    expect(result).toEqual(call(attr(ref("self.data"), "low"), [bin("+", lit(2), lit(2))]));
   });
 
   it("emits scalar bar_shift with no shiftBar (defaults to shift only)", () => {
@@ -86,7 +83,7 @@ describe("emitPyExpr", () => {
     };
 
     const result = emitPyExpr(expr, "scalar", 2);
-    expect(result).toEqual(sub(attr(ref("self.data"), "close"), lit(2)));
+    expect(result).toEqual(sub(attr(ref("self.data"), "close"), unary("-", lit(2))));
   });
 
   it("emits array bar_shift with no shiftBar (identity)", () => {
@@ -111,8 +108,7 @@ describe("emitPyExpr", () => {
 
     const result = emitPyExpr(expr, "array", 1);
     expect(result).toEqual(
-      call(ref("bt.LineDelay"), [
-        attr(ref("self.data"), "volume"),
+      call(attr(ref("self.data"), "volume"), [
         bin("+", attr(ref("self.params"), "shiftPeriod"), lit(1)),
       ])
     );
@@ -130,7 +126,10 @@ describe("emitPyExpr", () => {
 
     const result = emitPyExpr(expr, "scalar", 1);
     expect(result).toEqual(
-      sub(attr(ref("self.data"), "close"), bin("+", attr(ref("self.params"), "offset"), lit(1)))
+      sub(
+        attr(ref("self.data"), "close"),
+        unary("-", bin("+", attr(ref("self.params"), "offset"), lit(1)))
+      )
     );
   });
 });
@@ -190,7 +189,6 @@ describe("emitPyCondExpr", () => {
     expect(expr.operator).toBe("and");
     expect(expr.conditions.length).toBe(2);
     expr.conditions.forEach((e) => expect(e).toMatchObject({ type: "binary", operator: ">" }));
-    console.log(expr);
     expect((expr.conditions[0] as PyBinaryOp).left).toEqual({
       type: "subscript",
       value: { type: "attribute", object: { type: "variable", name: "self.data" }, attr: "close" },
@@ -245,9 +243,9 @@ describe("emitPyCondExpr", () => {
     expect((expr.conditions[0] as PyCompare).left).toEqual({
       type: "subscript",
       value: {
-        attr: "value1",
+        attr: "_value1",
         object: {
-          name: "self",
+          name: "self.lines",
           type: "variable",
         },
         type: "attribute",
@@ -260,16 +258,20 @@ describe("emitPyCondExpr", () => {
     expect((expr.conditions[1] as PyCompare).left).toEqual({
       type: "subscript",
       value: {
-        attr: "value1",
+        attr: "_value1",
         object: {
-          name: "self",
+          name: "self.lines",
           type: "variable",
         },
         type: "attribute",
       },
       index: {
-        type: "literal",
-        value: 1,
+        type: "unary",
+        operator: "-",
+        operand: {
+          type: "literal",
+          value: 1,
+        },
       },
     });
   });
@@ -344,15 +346,5 @@ describe("emitPyCondExpr", () => {
     expect(expr.type).toBe("logical");
     expect(expr.operator).toBe("or");
     expect(expr.conditions.length).toBe(2);
-  });
-});
-
-describe("emitVariableAssign", () => {
-  it("emits a variable assignment", () => {
-    const variable: IRVariable = {
-      name: "myVar",
-      expression: { type: "constant", value: 100 },
-    };
-    expect(emitVariableAssign(variable)).toEqual(assign(attr(ref("self"), "myVar"), lit(100)));
   });
 });
