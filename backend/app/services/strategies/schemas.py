@@ -11,6 +11,7 @@ class StrategySummary(BaseModel):
     id: uuid.UUID
     name: str
     latestVersion: int
+    latestVersionId: uuid.UUID
     createdAt: datetime
     updatedAt: datetime
 

@@ -26,6 +26,7 @@ def get_strategies(db: Session = Depends(get_db)):
             id=s.id,
             name=s.name,
             latestVersion=s.versions[-1].version_number,
+            latestVersionId=s.versions[-1].id,
             createdAt=s.created_at,
             updatedAt=s.updated_at,
         )
@@ -41,6 +42,7 @@ def post_strategy(data: StrategyCreateRequest, db: Session = Depends(get_db)):
         name=strategy.name,
         description=strategy.description,
         latestVersion=version.version_number,
+        latestVersionId=version.id,
         createdAt=strategy.created_at,
         updatedAt=strategy.updated_at,
         tags=[t.name for t in strategy.tags],
