@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -15,7 +15,7 @@ class BacktestStatus(str, Enum):
 
 class BacktestRequest(BaseModel):
     strategyVersionId: uuid.UUID
-    parameters: Optional[dict] = None
+    parameters: dict | None = None
     dataSourceId: uuid.UUID
     timeframe: str
     startTime: datetime
@@ -32,13 +32,13 @@ class BacktestRunResponse(BaseModel):
     strategyVersionId: uuid.UUID
     status: BacktestStatus
     startedAt: datetime
-    completedAt: Optional[datetime]
-    errorMessage: Optional[str]
-    parameters: Optional[dict]
+    completedAt: datetime | None
+    errorMessage: str | None
+    parameters: dict | None
     dataSourceId: uuid.UUID
     timeframe: str
     startTime: datetime
     endTime: datetime
-    resultSummary: Optional[Any]
-    log: Optional[Any]
-    chartData: Optional[Any]
+    resultSummary: Any | None
+    log: Any | None
+    chartData: Any | None

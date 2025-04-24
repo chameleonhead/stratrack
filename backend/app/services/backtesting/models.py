@@ -2,12 +2,10 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, Column, DateTime, Enum, ForeignKey, String
+from sqlalchemy import JSON, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 
 from app.db.base import Base
-from app.services.strategies.models import StrategyVersion
 
 
 class BacktestStatus(str, enum.Enum):

@@ -3,7 +3,9 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from .models import BacktestRun, StrategyVersion
+from app.services.strategies.models import StrategyVersion
+
+from .models import BacktestRun
 from .schemas import BacktestRequest, BacktestStatus
 
 
