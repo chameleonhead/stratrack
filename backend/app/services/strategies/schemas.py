@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import Any
-import uuid
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel
 
 
 class StrategySummary(BaseModel):
@@ -18,14 +18,14 @@ class StrategySummary(BaseModel):
 class StrategyCreateRequest(BaseModel):
     name: str
     description: str | None = None
-    tags: list[str] = None
+    tags: list[str]
     template: dict[str, Any]
 
 
 class StrategyDetail(StrategySummary):
     description: str | None = None
-    tags: list[str] = None
-    template: dict[str, Any | None]
+    tags: list[str]
+    template: dict[str, Any]
 
 
 class StrategyVersionSummary(BaseModel):
@@ -41,4 +41,4 @@ class StrategyVersionCreateRequest(BaseModel):
 
 
 class StrategyVersionDetail(StrategyVersionSummary):
-    template: dict[str, Any | None] = None
+    template: dict[str, Any]

@@ -1,6 +1,8 @@
-from .session import engine
-from .base import Base
 import app.services.strategies.models  # noqa: F401
+
+from .base import Base
+from .session import engine
+
 
 def init_db():
     Base.metadata.create_all(bind=engine)

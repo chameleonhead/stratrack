@@ -18,7 +18,6 @@ from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
-
 strategy_tags = Table(
     "strategy_tags",
     Base.metadata,

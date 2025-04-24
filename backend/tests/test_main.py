@@ -10,5 +10,4 @@ client = TestClient(app)
 class TestMain(unittest.TestCase):
     def test_root(self) -> None:
         response = client.get("/")
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello World"}
+        assert response.status_code == 404

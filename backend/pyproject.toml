@@ -41,7 +41,7 @@ profile = "black"
 line-length = 300
 target-version = "py311"
 lint.select = ["E", "F", "I", "B", "UP"]
-lint.ignore = ["E501"]
+lint.ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.11"
