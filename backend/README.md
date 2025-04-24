@@ -30,7 +30,7 @@ pyenv install 3.11.8
 pyenv local 3.11.8
 ```
 
-# Poetry のインストール
+## Poetry のインストール
 
 以下のコマンドを実行し、poetry をインストールする。
 
@@ -50,7 +50,7 @@ export PATH="$HOME/.local/bin:$PATH"
 exec "$SHELL"
 ```
 
-## アプリの実行
+# アプリの実行
 
 以下のコマンドを実行し、アプリを起動する。
 
@@ -76,4 +76,11 @@ poetry run mypy .
 
 ```
 poetry run pytest
+```
+
+
+# コード生成
+
+```
+poetry run python -m fastapi_code_generator --input openapi.yaml --output app
 ```
