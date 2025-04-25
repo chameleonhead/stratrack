@@ -22,7 +22,7 @@ class DataSourceRead(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ---------- ImportHistory ----------
@@ -36,7 +36,7 @@ class ImportHistoryRead(BaseModel):
     message: str | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DataChunkCreate(BaseModel):
@@ -70,7 +70,7 @@ class DataChunkRead(BaseModel):
     imported_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DataChunkUpdate(BaseModel):

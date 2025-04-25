@@ -103,7 +103,7 @@ def list_data_chunks(
     db: Session = Depends(get_db),
 ):
     query = db.query(DataChunk).filter(
-        DataChunk.data_source_id == data_source_id, DataChunk.is_active == True
+        DataChunk.data_source_id == data_source_id, DataChunk.is_active.is_(True)
     )
     if start:
         query = query.filter(DataChunk.end_at >= start)

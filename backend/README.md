@@ -77,10 +77,3 @@ poetry run mypy .
 ```
 poetry run pytest
 ```
-
-
-# コード生成
-
-```
-poetry run python -m fastapi_code_generator --input openapi.yaml --output app
-```

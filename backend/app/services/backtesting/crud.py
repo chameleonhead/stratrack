@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.services.strategies.models import StrategyVersion
+from app.workers.task_queue import enqueue_backtest
 
 from .models import BacktestRun
 from .schemas import BacktestRequest, BacktestStatus
@@ -35,7 +36,7 @@ def create_backtest_run(request_data: BacktestRequest, db: Session) -> BacktestR
     db.refresh(bt)
 
     # 非同期処理を実行するならここでキューに追加する処理（Celery / Azure Queue など）
-    # enqueue_backtest_run(bt.id)
+    enqueue_backtest(bt.id)
 
     return bt
 

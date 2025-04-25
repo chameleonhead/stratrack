@@ -1,0 +1,88 @@
+import json
+import subprocess
+import tempfile
+import traceback
+from pathlib import Path
+
+import pandas as pd
+
+from app.db.session import get_db
+from app.services.backtesting.models import BacktestRun
+from app.services.backtesting.schemas import BacktestStatus
+from app.services.strategies.models import StrategyVersion
+
+# from app.services.data_streaming_client import fetch_ohlcv_data  # ← 後で実装
+
+
+def write_json(obj: dict | list, path: Path):
+    with open(path, "w") as f:
+        json.dump(obj, f, indent=2, ensure_ascii=False)
+
+
+def write_dataframe(df: pd.DataFrame, path: Path):
+    df.to_csv(path, index=True)
+
+
+def execute_backtest(backtest_id: str):
+    db = get_db()
+
+    bt: BacktestRun = db.query(BacktestRun).filter_by(id=backtest_id).first()
+    if not bt:
+        print(f"[Executor] Backtest {backtest_id} not found")
+        return
+
+    strategy_version: StrategyVersion = bt.strategy_version
+    if not strategy_version or not strategy_version.generated_code:
+        bt.status = BacktestStatus.failed
+        bt.error_message = "No strategy code found"
+        db.commit()
+        return
+
+    try:
+        print(f"[Executor] Starting backtest: {backtest_id}")
+        bt.status = BacktestStatus.running
+        db.commit()
+
+        # 一時作業用ディレクトリ作成
+        work_dir = Path(tempfile.mkdtemp(prefix="bt_"))
+
+        # 入力ファイルを書き出し
+        code_path = work_dir / "strategy.py"
+        code_path.write_text(strategy_version.generated_code, encoding="utf-8")
+
+        params = bt.parameters or {}
+        params["initial_cash"] = params.get("initial_cash", 100000)
+        write_json(params, work_dir / "params.json")
+
+        # データ取得 (tick → OHLC変換済みのDataFrameを想定)
+        df = fetch_ohlcv_data(
+            data_source_id=bt.data_source_id,
+            timeframe=bt.timeframe,
+            start=bt.start_time,
+            end=bt.end_time,
+        )
+        write_dataframe(df, work_dir / "data.csv")
+
+        # 実行
+        result = subprocess.run(
+            ["python", str(code_path), "--input-dir", str(work_dir)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        if result.returncode != 0:
+            bt.status = BacktestStatus.failed
+            bt.error_message = f"Execution failed: {result.stderr}"
+        else:
+            bt.status = BacktestStatus.success
+            bt.result_summary = json.load(open(work_dir / "result.json"))
+            bt.log = json.load(open(work_dir / "trades.json"))
+            bt.chart_data = json.load(open(work_dir / "chart_data.json"))
+
+        db.commit()
+
+    except Exception as e:
+        bt.status = BacktestStatus.failed
+        bt.error_message = f"Exception: {str(e)}\n{traceback.format_exc()}"
+        db.commit()

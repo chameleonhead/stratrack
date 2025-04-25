@@ -27,7 +27,7 @@ def get_chunks_by_timerange(db: Session, data_source_id, start, end) -> list[Dat
             DataChunk.data_source_id == data_source_id,
             DataChunk.start_at <= end,
             DataChunk.end_at >= start,
-            DataChunk.is_active == True,
+            DataChunk.is_active.is_(True),
         )
         .order_by(DataChunk.priority.desc())
         .all()
