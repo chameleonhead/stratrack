@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 class BlobStorageException(Exception):
@@ -9,9 +10,10 @@ class BlobStorageClient:
     def read_blob(self, container_name: str, blob_name: str) -> str:
         raise NotImplementedError()
 
-    def upload_blob(
-        self, container_name: str, blob_name: str, data: bytes
-    ) -> tuple[str, int]:
+    def upload_file(self, local_path: str, container_name: str, blob_name: str) -> int:
+        raise NotImplementedError()
+
+    def upload_blob(self, container_name: str, blob_name: str, data: bytes) -> int:
         raise NotImplementedError()
 
 
@@ -27,6 +29,17 @@ class LocalBlobStorageClient(BlobStorageClient):
                 encoding="utf-8",
             ) as f:
                 return f.read()
+        except Exception as e:
+            raise BlobStorageException(e) from e
+
+    def upload_file(self, local_path: str, container_name: str, blob_name: str) -> int:
+        try:
+            path = os.path.join(self._base_path, container_name.lstrip("/"), blob_name)
+            os.makedirs(os.path.dirname(path))
+            with open(path, "wb") as rf:
+                with open(local_path, "rb") as lf:
+                    shutil.copyfileobj(lf, rf)
+            return os.path.getsize(local_path)
         except Exception as e:
             raise BlobStorageException(e) from e
 

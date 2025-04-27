@@ -21,7 +21,7 @@ class DataSourceRead(BaseModel):
     createdAt: datetime
 
 
-class ImportHistoryRead(BaseModel):
+class UploadHistoryRead(BaseModel):
     id: UUID
     dataSourceId: UUID
     importedAt: datetime
@@ -43,13 +43,13 @@ class ImportRequest(BaseModel):
 class DataChunkRead(BaseModel):
     id: UUID
     dataSourceId: UUID
-    importHistoryId: UUID
+    uploadHistoryId: UUID
     startAt: datetime
     endAt: datetime
     fileSize: int
     isActive: bool
     priority: int
-    importedAt: datetime
+    uploadedAt: datetime
 
 
 class DataChunkUpdate(BaseModel):

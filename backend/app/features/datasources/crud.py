@@ -1,13 +1,32 @@
 from sqlalchemy.orm import Session
 
-from .models import DataChunk, ImportHistory
-from .schemas import DataChunkCreate, ImportHistoryCreate
+from .models import DataChunk, DataSource, UploadHistory
+from .schemas import DataChunkCreate, DataSourceCreate
 
 
-def create_import_history(db: Session, data: ImportHistoryCreate) -> ImportHistory:
-    history = ImportHistory(**data.dict())
+def create_data_source(db: Session, data: DataSourceCreate) -> DataSource:
+    ds = DataSource(
+        name=data.name,
+        symbol=data.symbol,
+        timeframe=data.timeframe,
+        source_type=data.sourceType,
+        description=data.description,
+    )
+    db.add(ds)
+    db.flush()
+    db.refresh(ds)
+    return ds
+
+
+def create_upload_history(
+    db: Session, data_source_id: str, message: str
+) -> UploadHistory:
+    history = UploadHistory(
+        data_source_id=data_source_id,
+        message=message,
+    )
     db.add(history)
-    db.commit()
+    db.flush()
     db.refresh(history)
     return history
 
@@ -20,7 +39,7 @@ def create_data_chunk(db: Session, data: DataChunkCreate) -> DataChunk:
         file_size=data.fileSize,
     )
     db.add(chunk)
-    db.commit()
+    db.flush()
     db.refresh(chunk)
     return chunk
 

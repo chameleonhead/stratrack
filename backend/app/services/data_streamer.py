@@ -28,5 +28,5 @@ def stream_data_chunks(
     )
 
     for chunk in chunks:
-        content = blob_client.read_blob(chunk.container_name, chunk.blob_name)
+        content = blob_client.read_blob(chunk.blob_url, chunk.blob_name)
         yield content

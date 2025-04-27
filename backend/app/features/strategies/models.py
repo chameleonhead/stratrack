@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 
 from sqlalchemy import (
     JSON,
-    UUID,
     Boolean,
     Column,
     DateTime,
@@ -14,7 +15,8 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -31,11 +33,12 @@ strategy_tags = Table(
 class Tag(Base):
     __tablename__ = "tags"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, unique=True, nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    strategies = relationship(
-        "Strategy",
+    strategies: Mapped[list["Strategy"]] = relationship(
         secondary=strategy_tags,
         back_populates="tags",
     )
@@ -44,17 +47,23 @@ class Tag(Base):
 class Strategy(Base):
     __tablename__ = "strategies"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=True)  # 認証実装時に利用
-    name = Column(String, nullable=False)
-    description = Column(Text)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    deleted = Column(Boolean, default=False)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, onupdate=datetime.now
+    )
+    deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    versions = relationship("StrategyVersion", back_populates="strategy")
+    versions: Mapped[list["StrategyVersion"]] = relationship(back_populates="strategy")
 
-    tags = relationship("Tag", secondary=strategy_tags, back_populates="strategies")
+    tags: Mapped[list["Tag"]] = relationship(
+        secondary=strategy_tags, back_populates="strategies"
+    )
 
 
 class StrategyVersion(Base):
@@ -63,14 +72,16 @@ class StrategyVersion(Base):
         UniqueConstraint("strategy_id", "version_number", name="uix_strategy_version"),
     )
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    strategy_id = Column(
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("strategies.id"), nullable=False
     )
-    version_number = Column(Integer, nullable=False)
-    template_json = Column(JSON, nullable=False)
-    generated_code = Column(Text)
-    message = Column(Text)
-    created_at = Column(DateTime, default=datetime.now)
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    template_json: Mapped[dict] = mapped_column(JSON, nullable=False)
+    generated_code: Mapped[str | None] = mapped_column(Text, nullable=True)
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
-    strategy = relationship("Strategy", back_populates="versions")
+    strategy: Mapped["Strategy"] = relationship(back_populates="versions")
