@@ -2,9 +2,12 @@ from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.services.data_streamer import stream_data_chunks
+from app.services.storage import BlobStorageClient, get_blob_client
 
 from .models import DataChunk, DataSource, ImportHistory
 from .schemas import (
@@ -110,6 +113,18 @@ def list_data_chunks(
     if end:
         query = query.filter(DataChunk.start_at <= end)
     return query.order_by(DataChunk.priority.desc()).all()
+
+
+@router.get("/data-sources/{data_source_id}/stream")
+def stream_data(
+    data_source_id: UUID,
+    start: datetime,
+    end: datetime,
+    db: Session = Depends(get_db),
+    blob_client: BlobStorageClient = Depends(get_blob_client),
+):
+    generator = stream_data_chunks(db, data_source_id, start, end, blob_client)
+    return StreamingResponse(generator, media_type="text/plain")
 
 
 @router.patch("/data-chunks/{chunk_id}", response_model=DataChunkRead)

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 
 class DataSourceCreate(BaseModel):
+    name: str
     symbol: str
     timeframe: str
     source_type: str

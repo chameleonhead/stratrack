@@ -87,6 +87,46 @@ class TestDataSourceRoutes(unittest.TestCase):
         self.assertEqual(chunk_resp.status_code, 200)
         self.assertTrue(len(chunk_resp.json()) >= 1)
 
+    def test_stream_data_from_chunks(self):
+        ds_resp = client.post(
+            "/data-sources/data-sources",
+            json={
+                "name": "Test Data Source",
+                "symbol": self.symbol,
+                "timeframe": self.timeframe,
+                "source_type": self.source_type,
+                "description": self.description,
+            },
+        )
+        self.assertEqual(ds_resp.status_code, 201)
+        data_source_id = ds_resp.json()["id"]
+
+        start = datetime.now().isoformat()
+        end = (datetime.now() + timedelta(minutes=5)).isoformat()
+        import_resp = client.post(
+            f"/data-sources/data-sources/{data_source_id}/import",
+            json={
+                "status": "success",
+                "message": "stream test",
+                "chunks": [
+                    {
+                        "start_at": start,
+                        "end_at": end,
+                        "blob_path": "./blob/test_stream.parquet",
+                        "file_size": 2048,
+                    }
+                ],
+            },
+        )
+        self.assertEqual(import_resp.status_code, 201)
+
+        stream_resp = client.get(
+            f"/data-sources/data-sources/{data_source_id}/stream",
+            params={"start": start, "end": end},
+        )
+        self.assertEqual(stream_resp.status_code, 200)
+        self.assertTrue(stream_resp.text)
+
 
 if __name__ == "__main__":
     unittest.main()

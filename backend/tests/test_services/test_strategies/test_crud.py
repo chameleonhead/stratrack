@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
-from app.services.strategies import crud
+from app.features.strategies import crud
 
 
 class TestCrudStrategy(unittest.TestCase):

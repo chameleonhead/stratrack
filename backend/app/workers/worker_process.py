@@ -9,11 +9,11 @@ def run_worker(queue: Queue):
     set_task_queue(queue)
     print("[Worker] Started.")
     while True:
-        task = dequeue_backtest()
-        if task:
-            print(f"[Worker] Executing: {task}")
+        task_id = dequeue_backtest()
+        if task_id:
+            print(f"[Worker] Executing: {task_id}")
             try:
-                execute_backtest(task)
+                execute_backtest(task_id)
             except Exception as e:
                 print(f"[Worker] Error: {e}")
         else:

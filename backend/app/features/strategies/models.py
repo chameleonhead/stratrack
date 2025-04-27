@@ -69,6 +69,7 @@ class StrategyVersion(Base):
     )
     version_number = Column(Integer, nullable=False)
     template_json = Column(JSON, nullable=False)
+    generated_code = Column(Text)
     message = Column(Text)
     created_at = Column(DateTime, default=datetime.now)
 

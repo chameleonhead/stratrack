@@ -4,9 +4,9 @@ from multiprocessing import Process, Queue
 from fastapi import FastAPI
 
 from app.db.init_db import init_db
-from app.services.backtesting.main import app as backtesting_app
-from app.services.datasources.main import app as datasources_app
-from app.services.strategies.main import app as strategies_app
+from app.features.backtesting.main import app as backtesting_app
+from app.features.datasources.main import app as datasources_app
+from app.features.strategies.main import app as strategies_app
 from app.workers.task_queue import set_task_queue
 from app.workers.worker_process import run_worker
 

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.services.strategies.models import StrategyVersion
+from app.features.strategies.models import StrategyVersion
 from app.workers.task_queue import enqueue_backtest
 
 from .models import BacktestRun
