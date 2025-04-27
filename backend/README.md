@@ -3,7 +3,7 @@
 
 ## Pyenv のインストール
 
-以下のコマンドを実行し、Pyenv をインストールする。
+以下のコマンドを実行し、Pyenv をインストールする。(Windows の場合は miniconda 等を使うのが良い。)
 
 ```
 curl https://pyenv.run | bash
