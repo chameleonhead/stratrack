@@ -21,12 +21,14 @@ class StrategyCreateRequest(BaseModel):
     description: str | None = None
     tags: list[str]
     template: dict[str, Any]
+    genereatedCode: str | None = None
 
 
 class StrategyDetail(StrategySummary):
     description: str | None = None
     tags: list[str]
     template: dict[str, Any]
+    genereatedCode: str | None = None
 
 
 class StrategyVersionSummary(BaseModel):
@@ -39,6 +41,7 @@ class StrategyVersionSummary(BaseModel):
 class StrategyVersionCreateRequest(BaseModel):
     message: str | None = None
     template: dict[str, Any]
+    genereatedCode: str | None = None
 
 
 class StrategyVersionDetail(StrategyVersionSummary):

@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from multiprocessing import Process, Queue
 
@@ -13,6 +14,10 @@ from app.workers.worker_process import run_worker
 # グローバルでプロセス・キューを持つ
 task_queue = Queue()
 worker_process: Process | None = None
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+)
 
 
 @asynccontextmanager
@@ -28,16 +33,16 @@ async def lifespan(app: FastAPI):
     # ワーカープロセス起動
     worker_process = Process(target=run_worker, args=(task_queue,))
     worker_process.start()
-    print("[Main] Worker process started.")
+    logger.info("[Main] Worker process started.")
 
     yield
 
     # アプリ終了時にプロセス終了
     if worker_process is not None:
-        print("[Main] Terminating worker process...")
+        logger.info("[Main] Terminating worker process...")
         worker_process.terminate()
         worker_process.join()
-        print("[Main] Worker process stopped.")
+        logger.info("[Main] Worker process stopped.")
 
 
 # FastAPIアプリ定義

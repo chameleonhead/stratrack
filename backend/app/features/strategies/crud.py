@@ -63,6 +63,7 @@ def create_strategy_version(
     strategy_id: uuid.UUID,
     version_number: int,
     template: dict,
+    generated_code: str | None,
     message: str | None,
     db: Session,
 ) -> StrategyVersion:
@@ -70,6 +71,7 @@ def create_strategy_version(
         strategy_id=strategy_id,
         version_number=version_number,
         template_json=template,
+        generated_code=generated_code,
         message=message,
     )
     db.add(version)

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import JSON, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from app.db.base import Base
 
@@ -42,3 +43,9 @@ class BacktestRun(Base):
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    strategy_version = relationship(
+        "StrategyVersion",
+        foreign_keys=[strategy_version_id],
+        primaryjoin="BacktestRun.strategy_version_id == StrategyVersion.id",
+    )

@@ -13,7 +13,6 @@ class TestCrudStrategy(unittest.TestCase):
         cls.engine = create_engine(
             "sqlite:///:memory:",
             connect_args={"check_same_thread": False},
-            echo=True,
         )
         cls.SessionLocal = sessionmaker(
             bind=cls.engine,

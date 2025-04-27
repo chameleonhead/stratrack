@@ -42,16 +42,9 @@ class DataSource(Base):
     )
     description: Mapped[str] = mapped_column(String, nullable=True)
 
-    # 現在の最新のチャートファイルのパス（Blob URIなど）
-    current_blob_path: Mapped[str] = mapped_column(String, nullable=True)
-
-    # データの期間
-    start_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    end_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=datetime.now, onupdate=datetime.now
     )
 
     data_chunks = relationship(
@@ -72,7 +65,7 @@ class ImportHistory(Base):
     data_source_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("data_sources.id"), nullable=False
     )
-    imported_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    imported_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     status: Mapped[str] = mapped_column(
         String, default="success"
     )  # success / failed / partial
@@ -102,13 +95,14 @@ class DataChunk(Base):
 
     start_at: Mapped[datetime]
     end_at: Mapped[datetime]
-    blob_path: Mapped[str]
+    container_name: Mapped[str]
+    blob_name: Mapped[str]
     file_size: Mapped[int] = mapped_column(Integer)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     priority: Mapped[int] = mapped_column(Integer, default=0)
 
-    imported_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    imported_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     data_source = relationship("DataSource", back_populates="data_chunks")
     import_history = relationship("ImportHistory", back_populates="chunks")

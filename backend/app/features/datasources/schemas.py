@@ -3,14 +3,12 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-# ---------- DataSource ----------
-
 
 class DataSourceCreate(BaseModel):
     name: str
     symbol: str
     timeframe: str
-    source_type: str
+    sourceType: str
     description: str | None = None
 
 
@@ -18,62 +16,42 @@ class DataSourceRead(BaseModel):
     id: UUID
     symbol: str
     timeframe: str
-    source_type: str
+    sourceType: str
     description: str | None
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# ---------- ImportHistory ----------
+    createdAt: datetime
 
 
 class ImportHistoryRead(BaseModel):
     id: UUID
-    data_source_id: UUID
-    imported_at: datetime
+    dataSourceId: UUID
+    importedAt: datetime
     status: str
     message: str | None
 
-    class Config:
-        from_attributes = True
-
 
 class DataChunkCreate(BaseModel):
-    start_at: datetime
-    end_at: datetime
-    blob_path: str
-    file_size: int
-    priority: int = 0
-    is_active: bool = True
+    startAt: datetime
+    endAt: datetime
+    data: str
 
 
 class ImportRequest(BaseModel):
-    status: str = "success"
     message: str | None = None
     chunks: list[DataChunkCreate]
 
 
-# ---------- DataChunk ----------
-
-
 class DataChunkRead(BaseModel):
     id: UUID
-    data_source_id: UUID
-    import_history_id: UUID
-    start_at: datetime
-    end_at: datetime
-    blob_path: str
-    file_size: int
-    is_active: bool
+    dataSourceId: UUID
+    importHistoryId: UUID
+    startAt: datetime
+    endAt: datetime
+    fileSize: int
+    isActive: bool
     priority: int
-    imported_at: datetime
-
-    class Config:
-        from_attributes = True
+    importedAt: datetime
 
 
 class DataChunkUpdate(BaseModel):
-    is_active: bool | None = None
+    isActive: bool | None = None
     priority: int | None = None

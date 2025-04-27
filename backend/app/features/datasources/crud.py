@@ -13,7 +13,12 @@ def create_import_history(db: Session, data: ImportHistoryCreate) -> ImportHisto
 
 
 def create_data_chunk(db: Session, data: DataChunkCreate) -> DataChunk:
-    chunk = DataChunk(**data.dict())
+    chunk = DataChunk(
+        start_at=data.startAt,
+        end_at=data.endAt,
+        blob_path=data.blobPath,
+        file_size=data.fileSize,
+    )
     db.add(chunk)
     db.commit()
     db.refresh(chunk)

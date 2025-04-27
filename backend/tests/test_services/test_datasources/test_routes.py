@@ -1,3 +1,4 @@
+import base64
 import unittest
 from datetime import datetime, timedelta
 
@@ -20,9 +21,10 @@ class TestDataSourceRoutes(unittest.TestCase):
         response = client.post(
             "/data-sources/data-sources",
             json={
+                "name": "Test Data Source",
                 "symbol": self.symbol,
                 "timeframe": self.timeframe,
-                "source_type": self.source_type,
+                "sourceType": self.source_type,
                 "description": self.description,
             },
         )
@@ -44,9 +46,10 @@ class TestDataSourceRoutes(unittest.TestCase):
         ds_resp = client.post(
             "/data-sources/data-sources",
             json={
+                "name": "Test Data Source",
                 "symbol": self.symbol,
                 "timeframe": self.timeframe,
-                "source_type": self.source_type,
+                "sourceType": self.source_type,
                 "description": self.description,
             },
         )
@@ -60,14 +63,12 @@ class TestDataSourceRoutes(unittest.TestCase):
         import_resp = client.post(
             f"/data-sources/data-sources/{data_source_id}/import",
             json={
-                "status": "success",
                 "message": "test import",
                 "chunks": [
                     {
-                        "start_at": start,
-                        "end_at": end,
-                        "blob_path": "/blob/test.parquet",
-                        "file_size": 1024,
+                        "startAt": start,
+                        "endAt": end,
+                        "data": base64.b64encode(b"test data").decode("utf-8"),
                     }
                 ],
             },
@@ -94,7 +95,7 @@ class TestDataSourceRoutes(unittest.TestCase):
                 "name": "Test Data Source",
                 "symbol": self.symbol,
                 "timeframe": self.timeframe,
-                "source_type": self.source_type,
+                "sourceType": self.source_type,
                 "description": self.description,
             },
         )
@@ -106,14 +107,12 @@ class TestDataSourceRoutes(unittest.TestCase):
         import_resp = client.post(
             f"/data-sources/data-sources/{data_source_id}/import",
             json={
-                "status": "success",
                 "message": "stream test",
                 "chunks": [
                     {
-                        "start_at": start,
-                        "end_at": end,
-                        "blob_path": "./blob/test_stream.parquet",
-                        "file_size": 2048,
+                        "startAt": start,
+                        "endAt": end,
+                        "data": base64.b64encode(b"test data").decode("utf-8"),
                     }
                 ],
             },

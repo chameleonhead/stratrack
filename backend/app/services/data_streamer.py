@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Iterator
 from uuid import UUID
+
+from sqlalchemy.orm import Session
+
 from app.features.datasources.models import DataChunk
 from app.services.storage import BlobStorageClient
-from sqlalchemy.orm import Session
 
 
 def stream_data_chunks(
@@ -26,5 +28,5 @@ def stream_data_chunks(
     )
 
     for chunk in chunks:
-        content = blob_client.read_blob(chunk.blob_path)
+        content = blob_client.read_blob(chunk.container_name, chunk.blob_name)
         yield content

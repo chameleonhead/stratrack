@@ -1,4 +1,5 @@
 import json
+import logging
 import subprocess
 import tempfile
 import traceback
@@ -11,8 +12,6 @@ from app.features.backtesting.models import BacktestRun
 from app.features.backtesting.schemas import BacktestStatus
 from app.features.strategies.models import StrategyVersion
 
-# from app.features.data_streaming_client import fetch_ohlcv_data  # ← 後で実装
-
 
 def write_json(obj: dict | list, path: Path):
     with open(path, "w") as f:
@@ -23,12 +22,12 @@ def write_dataframe(df: pd.DataFrame, path: Path):
     df.to_csv(path, index=True)
 
 
-def execute_backtest(backtest_id: str):
-    db = get_db()
+def execute_backtest(backtest_id: str, logger: logging.Logger):
+    db = next(get_db())
 
     run: BacktestRun = db.query(BacktestRun).filter_by(id=backtest_id).first()
     if not run:
-        print(f"[Executor] Backtest {backtest_id} not found")
+        logger.info(f"[Executor] Backtest {backtest_id} not found")
         return
 
     strategy_version: StrategyVersion = run.strategy_version
@@ -39,7 +38,7 @@ def execute_backtest(backtest_id: str):
         return
 
     try:
-        print(f"[Executor] Starting backtest: {backtest_id}")
+        logger.info(f"[Executor] Starting backtest: {backtest_id}")
         run.status = BacktestStatus.running
         db.commit()
 

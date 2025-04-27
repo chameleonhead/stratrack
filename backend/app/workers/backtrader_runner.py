@@ -18,7 +18,7 @@ class MyStrategy(bt.Strategy):
 
 # モック用OHLCデータの作成
 def load_mock_data():
-    now = datetime.utcnow()
+    now = datetime.now()
     index = pd.date_range(now, periods=30, freq="1min")
     df = pd.DataFrame(
         {
