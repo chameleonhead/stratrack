@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterator
 from uuid import UUID
 
 from sqlalchemy.orm import Session

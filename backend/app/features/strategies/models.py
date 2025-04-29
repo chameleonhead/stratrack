@@ -38,7 +38,7 @@ class Tag(Base):
     )
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    strategies: Mapped[list["Strategy"]] = relationship(
+    strategies: Mapped[list[Strategy]] = relationship(
         secondary=strategy_tags,
         back_populates="tags",
     )
@@ -59,9 +59,9 @@ class Strategy(Base):
     )
     deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    versions: Mapped[list["StrategyVersion"]] = relationship(back_populates="strategy")
+    versions: Mapped[list[StrategyVersion]] = relationship(back_populates="strategy")
 
-    tags: Mapped[list["Tag"]] = relationship(
+    tags: Mapped[list[Tag]] = relationship(
         secondary=strategy_tags, back_populates="strategies"
     )
 
@@ -84,4 +84,4 @@ class StrategyVersion(Base):
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
-    strategy: Mapped["Strategy"] = relationship(back_populates="versions")
+    strategy: Mapped[Strategy] = relationship(back_populates="versions")

@@ -53,7 +53,7 @@ class BacktestRun(Base):
         DateTime, default=datetime.now, onupdate=datetime.now
     )
 
-    strategy_version: Mapped["StrategyVersion"] = relationship(
+    strategy_version: Mapped[StrategyVersion] = relationship(
         "StrategyVersion",
         foreign_keys=[strategy_version_id],
         primaryjoin="BacktestRun.strategy_version_id == StrategyVersion.id",

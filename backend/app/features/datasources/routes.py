@@ -72,7 +72,7 @@ def parse_uploaded_file(file_path: str, file_type: str) -> list[dict]:
         "mt4_csv",
         "generic_csv_or_json",
     }:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             for line in f:
                 parts = line.strip().split(",")
                 # 仮に [timestamp, open, high, low, close, volume] など
