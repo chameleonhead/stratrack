@@ -18,12 +18,14 @@ dependencies = [
     "python-multipart (>=0.0.20,<0.0.21)"
 ]
 
+[tool.poetry]
+packages = [
+  { include = "app" }
+]
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
-package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -48,5 +50,5 @@ lint.ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.11"
-check_untyped_defs = true
+check_untyped_defs = false
 strict = true

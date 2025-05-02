@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from multiprocessing import Process, Queue
 
@@ -13,16 +14,17 @@ from app.workers.task_queue import set_task_queue
 from app.workers.worker_process import run_worker
 
 # グローバルでプロセス・キューを持つ
-task_queue = Queue()
+task_queue: Queue[str] = Queue()
 worker_process: Process | None = None
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     global worker_process
 
     # DB初期化
@@ -47,7 +49,8 @@ async def lifespan(app: FastAPI):
 
 
 # FastAPIアプリ定義
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 # 各サブアプリのマウント
 app.mount("/strategies", strategies_app)

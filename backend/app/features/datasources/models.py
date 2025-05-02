@@ -41,6 +41,7 @@ class DataSource(Base):
     symbol: Mapped[str] = mapped_column(String, nullable=False)
     timeframe: Mapped[str] = mapped_column(String, nullable=False)
     source_type: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     chunks = relationship(
@@ -109,7 +110,7 @@ class UploadHistory(Base):
         ForeignKey("data_sources.id"), nullable=False
     )
     uploaded_by: Mapped[str] = mapped_column(String, nullable=False)
-    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     file_name: Mapped[str] = mapped_column(String, nullable=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 

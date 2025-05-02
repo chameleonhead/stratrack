@@ -123,14 +123,14 @@ def split_into_chunks(
 
 
 def save_chunks_to_storage(
-    db,
+    db: Session,
     chunks: list[list[dict]],
-    data_source_id,
-    upload_history_id,
+    data_source_id: UUID,
+    upload_history_id: UUID,
     blob_client: BlobStorageClient,
-):
+) -> None:
     """チャンクをBlob保存＆DB登録"""
-    for idx, chunk_records in enumerate(chunks):
+    for chunk_records in chunks:
         if not chunk_records:
             continue
 
@@ -173,37 +173,39 @@ def save_chunks_to_storage(
 
 
 @router.get("/data-sources", response_model=list[DataSourceRead])
-def list_data_sources(db: Session = Depends(get_db)):
+def list_data_sources(db: Session = Depends(get_db)) -> list[DataSourceRead]:
     return [
         DataSourceRead(
             id=ds.id,
+            name=ds.name,
             symbol=ds.symbol,
             timeframe=ds.timeframe,
             sourceType=ds.source_type,
             description=ds.description,
-            createdAt=ds.created_at,
         )
         for ds in db.query(DataSource).all()
     ]
 
 
 @router.post("/data-sources", response_model=DataSourceRead, status_code=201)
-def create_data_source(data: DataSourceCreate, db: Session = Depends(get_db)):
+def create_data_source(
+    data: DataSourceCreate, db: Session = Depends(get_db)
+) -> DataSourceRead:
     ds = crud.create_data_source(db, data)
     db.commit()
     db.refresh(ds)
     return DataSourceRead(
         id=ds.id,
+        name=ds.name,
         symbol=ds.symbol,
         timeframe=ds.timeframe,
         sourceType=ds.source_type,
         description=ds.description,
-        createdAt=ds.created_at,
     )
 
 
 @router.get("/data-sources/{data_source_id}", response_model=DataSourceRead)
-def get_data_source(data_source_id: UUID, db: Session = Depends(get_db)):
+def get_data_source(data_source_id: UUID, db: Session = Depends()):
     ds = db.query(DataSource).filter(DataSource.id == data_source_id).first()
     if not ds:
         raise HTTPException(status_code=404, detail="DataSource not found")

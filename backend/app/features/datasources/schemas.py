@@ -14,11 +14,11 @@ class DataSourceCreate(BaseModel):
 
 class DataSourceRead(BaseModel):
     id: UUID
+    name: str
     symbol: str
     timeframe: str
     sourceType: str
     description: str | None
-    createdAt: datetime
 
 
 class UploadHistoryRead(BaseModel):

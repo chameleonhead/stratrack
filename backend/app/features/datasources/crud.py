@@ -1,6 +1,10 @@
+import base64
+import uuid
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 
-from .models import DataChunk, DataSource, UploadHistory
+from .models import DataChunk, DataFormat, DataSource, UploadHistory
 from .schemas import DataChunkCreate, DataSourceCreate
 
 
@@ -11,6 +15,7 @@ def create_data_source(db: Session, data: DataSourceCreate) -> DataSource:
         timeframe=data.timeframe,
         source_type=data.sourceType,
         description=data.description,
+        is_active=True,
     )
     db.add(ds)
     db.flush()
@@ -31,12 +36,19 @@ def create_upload_history(
     return history
 
 
-def create_data_chunk(db: Session, data: DataChunkCreate) -> DataChunk:
+def create_data_chunk(
+    db: Session, data: DataChunkCreate, data_source_id: uuid.UUID
+) -> DataChunk:
+    byte_data = base64.b64decode(data.data.encode()).decode()
     chunk = DataChunk(
+        data_source_id=data_source_id,
         start_at=data.startAt,
         end_at=data.endAt,
-        blob_path=data.blobPath,
-        file_size=data.fileSize,
+        version=1,
+        is_complete=True,
+        completeness_ratio=1,
+        format=DataFormat.tick,
+        data=byte_data,
     )
     db.add(chunk)
     db.flush()
@@ -44,15 +56,20 @@ def create_data_chunk(db: Session, data: DataChunkCreate) -> DataChunk:
     return chunk
 
 
-def get_chunks_by_timerange(db: Session, data_source_id, start, end) -> list[DataChunk]:
+def get_chunks_by_timerange(
+    db: Session,
+    data_source_id: str,
+    start: datetime,
+    end: datetime,
+) -> list[DataChunk]:
     return (
         db.query(DataChunk)
         .filter(
             DataChunk.data_source_id == data_source_id,
-            DataChunk.start_at <= end,
-            DataChunk.end_at >= start,
+            DataChunk.start_time <= end,
+            DataChunk.end_time >= start,
             DataChunk.is_active.is_(True),
         )
-        .order_by(DataChunk.priority.desc())
+        .order_by(DataChunk.start_time.desc())
         .all()
     )
