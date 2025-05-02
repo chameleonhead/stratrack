@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -19,6 +19,12 @@ class DataSourceRead(BaseModel):
     timeframe: str
     sourceType: str
     description: str | None
+
+
+class DataSourceScheduleUpdateRequest(BaseModel):
+    enabled: bool
+    interval_type: str
+    run_at: time
 
 
 class UploadHistoryRead(BaseModel):

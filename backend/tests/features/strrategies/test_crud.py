@@ -1,6 +1,7 @@
+from typing import Any
 import unittest
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
@@ -8,8 +9,11 @@ from app.features.strategies import crud
 
 
 class TestCrudStrategy(unittest.TestCase):
+    engine: Engine
+    SessionLocal: Any
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         cls.engine = create_engine(
             "sqlite:///:memory:",
             connect_args={"check_same_thread": False},
@@ -19,19 +23,19 @@ class TestCrudStrategy(unittest.TestCase):
         )
         Base.metadata.create_all(bind=cls.engine)
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.db = self.SessionLocal()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.db.rollback()
         self.db.close()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         Base.metadata.drop_all(bind=cls.engine)
         cls.engine.dispose()
 
-    def test_create_and_get_strategy(self):
+    def test_create_and_get_strategy(self) -> None:
         strategy = crud.create_strategy(
             name="UnitTest Strategy",
             description="desc",
@@ -41,6 +45,8 @@ class TestCrudStrategy(unittest.TestCase):
         self.db.commit()
 
         fetched = crud.get_strategy_by_id(strategy.id, self.db)
+        if not fetched:
+            raise Exception()
         self.assertIsNotNone(fetched)
         self.assertEqual(fetched.name, "UnitTest Strategy")
         self.assertEqual(len(fetched.tags), 2)
