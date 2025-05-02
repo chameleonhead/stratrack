@@ -36,14 +36,15 @@ pytest = "^8.3.5"
 pytest-asyncio = "^0.26.0"
 
 [tool.black]
-line-length = 88
+line-length = 120
 target-version = ["py311"]
 
 [tool.isort]
+line_length = 120
 profile = "black"
 
 [tool.ruff]
-line-length = 300
+line-length = 120
 target-version = "py311"
 lint.select = ["E", "F", "I", "B", "UP"]
 lint.ignore = ["E501", "B008"]
