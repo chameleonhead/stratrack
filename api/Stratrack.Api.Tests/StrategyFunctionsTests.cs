@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
+using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
 using WorkerHttpFake;
 
@@ -15,7 +16,7 @@ public class StrategyFunctionsTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddStratrack();
+        services.AddStratrack<StratrackDbContextProvider>();
         services.AddSingleton<StrategyFunctions>();
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider;

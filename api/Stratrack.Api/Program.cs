@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stratrack.Api.Domain;
+using Stratrack.Api.Infrastructure;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -18,6 +19,6 @@ builder.Services
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.PropertyNameCaseInsensitive = true;
     })
-    .AddStratrack();
+    .AddStratrack<StratrackDbContextProvider>();
 
 builder.Build().Run();
