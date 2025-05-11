@@ -1,6 +1,8 @@
-namespace Stratrack.Api.Models;
+﻿using EventFlow.Commands;
 
-public class StrategyUpdateRequest
+namespace Stratrack.Api.Domain.Strategies.Commands;
+
+public class StrategyUpdateCommand(StrategyId aggregateId) : Command<StrategyAggregate, StrategyId>(aggregateId)
 {
     public string Name { get; set; } = "";
     public string? Description { get; set; }

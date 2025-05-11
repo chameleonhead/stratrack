@@ -4,6 +4,6 @@ public class StrategyVersionSummary
 {
     public Guid Id { get; set; }
     public int Version { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? Message { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public Guid VersionId { get; set; }
 }

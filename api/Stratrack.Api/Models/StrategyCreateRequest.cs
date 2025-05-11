@@ -6,5 +6,5 @@ public class StrategyCreateRequest
     public string? Description { get; set; }
     public List<string> Tags { get; set; } = [];
     public Dictionary<string, object> Template { get; set; } = [];
-    public string? GenereatedCode { get; set; }
+    public string? GeneratedCode { get; set; }
 }

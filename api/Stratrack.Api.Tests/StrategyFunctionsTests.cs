@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Models;
 using WorkerHttpFake;
@@ -14,6 +15,7 @@ public class StrategyFunctionsTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddStratrack();
         services.AddSingleton<StrategyFunctions>();
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider;
@@ -27,7 +29,7 @@ public class StrategyFunctionsTests
             .WithBody(JsonSerializer.Serialize(request))
             .Build();
 
-        var createResponse = await function.PostStrategy(createRequest);
+        var createResponse = await function.PostStrategy(createRequest, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, createResponse.StatusCode);
         var strategy = await createResponse.ReadAsJsonAsync<StrategyDetail>();
         return strategy.Id.ToString();
@@ -46,7 +48,7 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.GetStrategies(request);
+        var response = await function.GetStrategies(request, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
@@ -72,13 +74,13 @@ public class StrategyFunctionsTests
                     Template = new Dictionary<string, object>() {
                         {"Key1", "Value1"},
                     },
-                    GenereatedCode = "generated code",
+                    GeneratedCode = "generated code",
                 }
             ))
             .Build();
 
         // Act
-        var response = await function.PostStrategy(request);
+        var response = await function.PostStrategy(request, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
@@ -100,7 +102,7 @@ public class StrategyFunctionsTests
             Template = new Dictionary<string, object>() {
                 {"Key1", "Value1"},
             },
-            GenereatedCode = "generated code",
+            GeneratedCode = "generated code",
         });
 
         var request = new HttpRequestDataBuilder()
@@ -109,12 +111,12 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.GetStrategyDetail(request, id);
+        var response = await function.GetStrategyDetail(request, id, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>();
-        Assert.AreEqual("", obj.Name); // TODO: 未実装
+        Assert.AreEqual("Strategy 1", obj.Name);
     }
 
     [TestMethod]
@@ -131,7 +133,7 @@ public class StrategyFunctionsTests
             Template = new Dictionary<string, object>() {
                 {"Key1", "Value1"},
             },
-            GenereatedCode = "generated code",
+            GeneratedCode = "generated code",
         });
 
         var request = new HttpRequestDataBuilder()
@@ -144,16 +146,16 @@ public class StrategyFunctionsTests
                 Template = new Dictionary<string, object>() {
                     {"Key1", "Value1 Edited"}
                 },
-                GenereatedCode = "generated code edited",
+                GeneratedCode = "generated code edited",
             }))
             .Build();
 
         // Act
-        var response = await function.PutStrategy(request, id);
+        var response = await function.PutStrategy(request, id, CancellationToken.None);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>();
-        Assert.AreEqual("", obj.Name); // TODO: 未実装
+        Assert.AreEqual("Strategy 1 Edited", obj.Name);
     }
 }

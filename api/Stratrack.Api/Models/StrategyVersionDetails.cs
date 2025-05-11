@@ -6,6 +6,6 @@ public class StrategyVersionDetail
     public int Version { get; set; }
     public string? Message { get; set; }
     public Dictionary<string, object> Template { get; set; } = [];
-    public string? GenereatedCode { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public string? GeneratedCode { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
