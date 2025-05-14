@@ -32,7 +32,7 @@ public class StrategyFunctionsTests
 
         var createResponse = await function.PostStrategy(createRequest, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, createResponse.StatusCode);
-        var strategy = await createResponse.ReadAsJsonAsync<StrategyDetail>();
+        var strategy = await createResponse.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         return strategy.Id.ToString();
     }
 
@@ -49,11 +49,11 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.GetStrategies(request, CancellationToken.None);
+        var response = await function.GetStrategies(request, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        CollectionAssert.AreEqual(new List<StrategySummary>(), await response.ReadAsJsonAsync<List<StrategySummary>>());
+        CollectionAssert.AreEqual(new List<StrategySummary>(), await response.ReadAsJsonAsync<List<StrategySummary>>().ConfigureAwait(false));
     }
 
     [TestMethod]
@@ -81,11 +81,11 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.PostStrategy(request, CancellationToken.None);
+        var response = await function.PostStrategy(request, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-        var obj = await response.ReadAsJsonAsync<StrategyDetail>();
+        var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1", obj.Name);
     }
 
@@ -104,7 +104,7 @@ public class StrategyFunctionsTests
                 {"Key1", "Value1"},
             },
             GeneratedCode = "generated code",
-        });
+        }).ConfigureAwait(false);
 
         var request = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/strategies/{id}")
@@ -112,11 +112,11 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.GetStrategyDetail(request, id, CancellationToken.None);
+        var response = await function.GetStrategyDetail(request, id, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var obj = await response.ReadAsJsonAsync<StrategyDetail>();
+        var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1", obj.Name);
     }
 
@@ -135,7 +135,7 @@ public class StrategyFunctionsTests
                 {"Key1", "Value1"},
             },
             GeneratedCode = "generated code",
-        });
+        }).ConfigureAwait(false);
 
         var request = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/strategies/{id}")
@@ -152,11 +152,11 @@ public class StrategyFunctionsTests
             .Build();
 
         // Act
-        var response = await function.PutStrategy(request, id, CancellationToken.None);
+        var response = await function.PutStrategy(request, id, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var obj = await response.ReadAsJsonAsync<StrategyDetail>();
+        var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1 Edited", obj.Name);
     }
 }

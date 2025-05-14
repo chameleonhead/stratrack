@@ -15,6 +15,6 @@ public class StrategyVersionReadModelSearchQueryHandler(IDbContextProvider<Strat
             queriable = queriable.Where(strategy => strategy.StrategyIdGuid == query.StrategyId);
         }
 
-        return await queriable.ToListAsync();
+        return await queriable.ToListAsync().ConfigureAwait(false);
     }
 }

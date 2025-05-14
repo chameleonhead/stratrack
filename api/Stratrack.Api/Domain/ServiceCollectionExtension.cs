@@ -16,9 +16,9 @@ public static class ServiceCollectionExtension
     {
         return services.AddEventFlow(ef =>
         {
-            ef.AddCommands(typeof(StrategyCreateCommand), typeof(StrategyUpdateCommand))
-                .AddCommandHandlers(typeof(StrategyCreateCommandHandler), typeof(StrategyUpdateCommandHandler))
-                .AddEvents(typeof(StrategyCreatedEvent), typeof(StrategyUpdatedEvent), typeof(StrategyVersionAddedEvent));
+            ef.AddCommands(typeof(StrategyCreateCommand), typeof(StrategyUpdateCommand), typeof(StrategyDeleteCommand))
+                .AddCommandHandlers(typeof(StrategyCreateCommandHandler), typeof(StrategyUpdateCommandHandler), typeof(StrategyDeleteCommandHandler))
+                .AddEvents(typeof(StrategyCreatedEvent), typeof(StrategyUpdatedEvent), typeof(StrategyVersionAddedEvent), typeof(StrategyDeletedEvent));
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
             ef.AddDbContextProvider<StratrackDbContext, TDbContextProvider>();

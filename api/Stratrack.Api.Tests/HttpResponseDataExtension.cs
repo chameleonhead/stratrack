@@ -12,14 +12,14 @@ public static class HttpResponseDataExtention
     {
         response.Body.Position = 0;
         using var reader = new StreamReader(response.Body, Encoding.UTF8);
-        var responseBody = await reader.ReadToEndAsync();
+        var responseBody = await reader.ReadToEndAsync().ConfigureAwait(false);
         return responseBody;
     }
     public static async Task<T> ReadAsJsonAsync<T>(this HttpResponseData response)
     {
         response.Body.Position = 0;
         using var reader = new StreamReader(response.Body, Encoding.UTF8);
-        var responseBody = await reader.ReadToEndAsync();
+        var responseBody = await reader.ReadToEndAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<T>(responseBody)!;
     }
 }

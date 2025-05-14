@@ -5,8 +5,11 @@ namespace Stratrack.Api.Domain.Strategies;
 
 public class StrategyAggregate(StrategyId id) : AggregateRoot<StrategyAggregate, StrategyId>(id),
     IEmit<StrategyCreatedEvent>,
-    IEmit<StrategyUpdatedEvent>
+    IEmit<StrategyUpdatedEvent>,
+    IEmit<StrategyDeletedEvent>
 {
+    private bool isDeleted = false;
+
     public string StrategyName { get; private set; } = "";
     public string? Description { get; private set; }
     public List<string> Tags { get; private set; } = [];
@@ -27,6 +30,15 @@ public class StrategyAggregate(StrategyId id) : AggregateRoot<StrategyAggregate,
             return;
         }
         Emit(new StrategyUpdatedEvent(Id, name, description, tags));
+    }
+
+    public void Delete()
+    {
+        if (isDeleted == true)
+        {
+            return;
+        }
+        Emit(new StrategyDeletedEvent(Id));
     }
 
     public void Update(Dictionary<string, object> template, string? generatedCode)
@@ -57,5 +69,10 @@ public class StrategyAggregate(StrategyId id) : AggregateRoot<StrategyAggregate,
         LatestVersion = aggregateEvent.Version;
         Template = aggregateEvent.Template;
         GeneratedCode = aggregateEvent.GeneratedCode;
+    }
+
+    public void Apply(StrategyDeletedEvent aggregateEvent)
+    {
+        isDeleted = true;
     }
 }
