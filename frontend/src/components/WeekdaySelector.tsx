@@ -54,8 +54,8 @@ export default function WeekdaySelector({
   );
 
   return (
-    <div id={uniqueId} className={cn("w-full space-y-1", className)}>
-      {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
+    <div id={uniqueId} className={cn("fieldset", className)}>
+      {label && <p className="fieldset-legend">{label}</p>}
       <div className="flex gap-4">
         {weekdays.map((day) => (
           <button
@@ -64,17 +64,17 @@ export default function WeekdaySelector({
             name={name}
             onClick={() => toggleDay(day.value)}
             className={cn(
-              "flex-grow py-2 px-2 rounded text-sm font-medium border transition select-none",
+              "btn grow",
               localValue.includes(day.value)
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                ? "btn-primary"
+                : ""
             )}
           >
             {day.label}
           </button>
         ))}
       </div>
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

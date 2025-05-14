@@ -62,29 +62,25 @@ function TagInput({
   };
 
   return (
-    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
-      <label htmlFor={uniqueId} className="block text-sm font-medium text-gray-700">
+    <div className={cn(fullWidth ? "fieldset" : "")}>
+      <label htmlFor={uniqueId} className={cn(fullWidth ? "fieldset-legend" : "label block")}>
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 
       <div
-        className={cn(
-          "flex flex-wrap gap-2 p-2 border rounded min-h-[44px]",
-          error ? "border-red-500 ring-red-500" : "border-gray-300",
-          "focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
-        )}
+        className={cn("input", error ? "input-error" : "")}
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag) => (
           <span
             key={tag}
-            className="flex items-center bg-blue-100 text-blue-800 text-sm px-2 rounded-full"
+            className="badge badge-primary"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="ml-1 text-xs text-blue-500 hover:text-blue-700"
+              className="text"
               aria-label={`Remove ${tag}`}
             >
               ×
@@ -102,7 +98,7 @@ function TagInput({
           className="flex-1 min-w-[100px] border-none focus:outline-none text-sm"
         />
       </div>
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

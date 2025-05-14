@@ -48,28 +48,34 @@ function TimeRangePicker({
   );
 
   return (
-    <div id={id} className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
-      {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
+    <div id={id} className={cn(fullWidth ? "fieldset" : "")}>
+      {label && (
+        <label className={cn(fullWidth ? "fieldset-legend" : "label block")}>{label}</label>
+      )}
       <div className={cn(fullWidth ? "flex" : "inline-flex", "gap-3")}>
-        <TimePicker
-          label="開始"
-          name={`${name}[from]`}
-          value={localValueFromTime}
-          onChange={setLocalValueFromTime}
-          required={required}
-          fullWidth={fullWidth}
-        />
-        <TimePicker
-          label="終了"
-          name={`${name}[to]`}
-          value={localValueToTime}
-          onChange={setLocalValueToTime}
-          required={required}
-          fullWidth={fullWidth}
-        />
+        <div className="grow min-w-30">
+          <TimePicker
+            label="開始"
+            name={`${name}[from]`}
+            value={localValueFromTime}
+            onChange={setLocalValueFromTime}
+            required={required}
+            fullWidth={fullWidth}
+          />
+        </div>
+        <div className="grow min-w-30">
+          <TimePicker
+            label="終了"
+            name={`${name}[to]`}
+            value={localValueToTime}
+            onChange={setLocalValueToTime}
+            required={required}
+            fullWidth={fullWidth}
+          />
+        </div>
       </div>
       {(error?.from || error?.to) && (
-        <p className="text-sm text-red-600 font-medium">
+        <p className="text-sm text-error">
           {error?.from}
           {error?.to}
         </p>

@@ -37,9 +37,9 @@ function RadioGroup({
   const [localValue, setLocalValue] = useLocalValue(defaultValue || "", value, onChange);
 
   return (
-    <div id={uniqueId} className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
+    <div id={uniqueId} className={cn(fullWidth ? "fieldset" : "")}>
       {label && (
-        <p className="text-sm font-semibold text-gray-800" aria-labelledby={uniqueId}>
+        <p className={cn(fullWidth ? "fieldset-legend" : "label block")}>
           {label}
         </p>
       )}
@@ -56,18 +56,18 @@ function RadioGroup({
                 checked={localValue === opt.value}
                 onChange={() => setLocalValue(opt.value)}
                 className={cn(
-                  "h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500",
-                  error ? "border-red-500 focus:ring-red-500" : ""
+                  "radio",
+                  error ? "radio-error" : ""
                 )}
               />
-              <label htmlFor={id} className="text-sm text-gray-800 cursor-pointer">
+              <label htmlFor={id} className="label">
                 {opt.label}
               </label>
             </div>
           );
         })}
       </div>
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

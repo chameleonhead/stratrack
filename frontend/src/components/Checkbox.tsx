@@ -36,14 +36,14 @@ function Checkbox({ label, id, name, value, onChange, checked, error, className 
         checked={localValue}
         onChange={handleChange}
         className={cn(
-          "h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition",
-          error ? "border-red-500 ring-red-500 focus:ring-red-500" : ""
+          "checkbox",
+          error ? "checkbox-error" : ""
         )}
       />
-      <label htmlFor={uniqueId} className="text-sm text-gray-800 select-none cursor-pointer">
+      <label htmlFor={uniqueId} className="label">
         {label}
       </label>
-      {error && <p className="text-sm text-red-600 font-medium ml-2">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

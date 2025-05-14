@@ -40,8 +40,10 @@ function CheckboxGroup({
   };
 
   return (
-    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
-      {label && <p className="text-sm font-semibold text-gray-800">{label}</p>}
+    <div className={cn(fullWidth ? "fieldset" : "")}>
+      {label && (
+        <label className={cn(fullWidth ? "fieldset-legend" : "label block")}>{label}</label>
+      )}
       <div
         className={cn(
           "flex flex-wrap",
@@ -58,7 +60,7 @@ function CheckboxGroup({
           />
         ))}
       </div>
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

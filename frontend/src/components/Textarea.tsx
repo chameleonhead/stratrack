@@ -40,9 +40,9 @@ function Textarea({
   );
 
   return (
-    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
+    <div className={cn(fullWidth ? "fieldset" : "")}>
       {label && (
-        <label htmlFor={uniqueId} className="block text-sm font-semibold text-gray-800">
+        <label htmlFor={uniqueId} className={cn(fullWidth ? "fieldset-legend" : "label block")}>
           {label}
         </label>
       )}
@@ -56,13 +56,11 @@ function Textarea({
         onChange={handleChange}
         className={cn(
           fullWidth ? "w-full" : null,
-          "px-2 py-2 rounded border text-sm transition-all duration-150 resize-y",
-          "bg-white text-gray-900 placeholder-gray-400",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          error ? "border-red-500 ring-red-500 focus:ring-red-500" : "border-gray-300"
+          "textarea",
+          error ? "textarea-error" : ""
         )}
       />
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

@@ -42,9 +42,9 @@ export default function TimePicker({
   );
 
   return (
-    <div className={cn(fullWidth ? "w-full" : null, "space-y-1")}>
+    <div className={cn(fullWidth ? "fieldset" : "")}>
       {label && (
-        <label htmlFor={uniqueId} className="block text-sm font-semibold text-gray-800">
+        <label htmlFor={uniqueId} className={cn(fullWidth ? "fieldset-legend" : "label block")}>
           {label}
         </label>
       )}
@@ -57,15 +57,9 @@ export default function TimePicker({
         required={required}
         step={step}
         placeholder={placeholder}
-        className={cn(
-          fullWidth ? "w-full" : null,
-          "px-4 py-2 rounded-lg border text-sm transition-all duration-150",
-          "bg-white text-gray-900",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          error ? "border-red-500 ring-red-500 focus:ring-red-500" : "border-gray-300"
-        )}
+        className={cn(fullWidth ? "w-full" : null, "input", error ? "input-error" : "")}
       />
-      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }
