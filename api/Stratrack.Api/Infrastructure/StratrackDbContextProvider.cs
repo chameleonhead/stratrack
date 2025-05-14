@@ -10,7 +10,11 @@ public class StratrackDbContextProvider : IDbContextProvider<StratrackDbContext>
 
     public StratrackDbContextProvider()
     {
-        var msSqlConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings:StratrackDb");
+        var msSqlConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings:SqlConnectionString");
+        if (string.IsNullOrEmpty(msSqlConnectionString))
+        {
+            msSqlConnectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_SqlConnectionString");
+        }
         if (string.IsNullOrEmpty(msSqlConnectionString))
         {
             _options = new DbContextOptionsBuilder<StratrackDbContext>()
