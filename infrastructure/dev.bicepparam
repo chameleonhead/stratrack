@@ -1,5 +1,7 @@
 using './main.bicep'
 
+param logAnalyticsName = 'stratrack-dev-loganalytics'
+param applicationInsightsName = 'stratrack-dev-ai'
 param storageAccountName = 'stratrackdevstorage'
 param sqlServerName = 'stratrack-dev-sql'
 param sqlDatabaseName = 'stratrack-dev-db'

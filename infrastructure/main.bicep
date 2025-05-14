@@ -1,6 +1,12 @@
 @description('The location for all resources.')
 param location string = resourceGroup().location
 
+@description('Name of the log analytics workspace')
+param logAnalyticsName string
+
+@description('Name of application insights')
+param applicationInsightsName string
+
 @description('Name of the storage account')
 param storageAccountName string
 
@@ -23,6 +29,30 @@ param functionAppName string
 
 @description('Name of the Static Web App')
 param staticWebAppName string
+
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: logAnalyticsName
+  location: location
+  properties: any({
+    retentionInDays: 30
+    features: {
+      searchVersion: 1
+    }
+    sku: {
+      name: 'PerGB2018'
+    }
+  })
+}
+
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: applicationInsightsName
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageAccountName
@@ -106,10 +136,30 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
     serverFarmId: functionAppPlan.id
     httpsOnly: true
     siteConfig: {
+      windowsFxVersion: 'DOTNETCORE|8.0'
       appSettings: [
         {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet-isolated'
+        }
+        {
           name: 'AzureWebJobsStorage'
-          value: storageAccount.properties.primaryEndpoints.blob
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${listKeys(storageAccountName, storageAccount.apiVersion).keys[0].value}'
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: applicationInsights.properties.ConnectionString
+        }
+      ]
+      connectionStrings: [
+        {
+          name: 'SqlConnectionString'
+          connectionString: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Persist Security Info=False;User ID=${sqlAdminUser};Password=${sqlAdminPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+          type: 'SQLAzure'
         }
       ]
     }

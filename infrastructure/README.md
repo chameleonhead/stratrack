@@ -5,4 +5,6 @@
 ```zsh
 az group create --name stratrack-dev --location japaneast
 az deployment group create --resource-group stratrack-dev --template-file infrastructure/main.bicep --parameters infrastructure/dev.bicepparam
+cd api/Stratrack.Api
+func azure functionapp publish stratrack-dev-func --build local
 ```
