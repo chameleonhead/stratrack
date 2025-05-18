@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import Button from "./Button";
+import { Link } from "react-router-dom";
 
 const menuItems = [
   { label: "ダッシュボード", path: "/" },
@@ -11,20 +10,16 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
-  const navigate = useNavigate();
   return (
-    <aside className="w-64 bg-gray-900 text-white h-screen p-4">
-      <h1 className="text-xl font-bold mb-6">Stratrack</h1>
-      <nav className="space-y-2">
+    <nav className="navbar">
+      <ul className="menu min-h-full w-80 p-4">
         {menuItems.map((item) => (
-          <div key={item.path} className="flex items-center">
-            <Button onClick={() => navigate(item.path)} fullWidth>
-              {item.label}
-            </Button>
-          </div>
+          <li key={item.path} className="hover:bg-gray-700">
+            <Link to={item.path}>{item.label}</Link>
+          </li>
         ))}
-      </nav>
-    </aside>
+      </ul>
+    </nav>
   );
 };
 

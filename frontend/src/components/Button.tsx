@@ -4,7 +4,7 @@ import { cn } from "../utils";
 export type ButtonProps = {
   children: ReactNode;
   type?: "button" | "submit" | "reset";
-  variant?: "primary" | "secondary" | "outline" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "link" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   disabled?: boolean;
@@ -12,12 +12,12 @@ export type ButtonProps = {
   onClick: () => void;
 };
 
-const baseStyles =
-  "btn";
+const baseStyles = "btn";
 
 const variantStyles: Record<string, string> = {
   primary: "btn-primary",
   secondary: "btn-secondary",
+  link: "btn-link",
   outline: "btn-outline",
   danger: "btn-error",
 };
