@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/Button";
 import Tab from "../../components/Tab";
 
@@ -8,7 +8,7 @@ const Dashboard = () => {
     <div className="p-6 space-y-6">
       <header className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">ダッシュボード</h2>
-        <Button onClick={() => navigate("/strategies/new")}>＋ 新規戦略作成</Button>
+        <Button onClick={() => navigate("/strategies-new")}>＋ 新規戦略作成</Button>
       </header>
 
       <section>
@@ -19,9 +19,12 @@ const Dashboard = () => {
             <div key={i} className="rounded-xl border p-4 shadow">
               <h4 className="font-bold">戦略 {i}</h4>
               <p className="text-sm text-gray-600">説明文をここに表示</p>
-              <Button size="sm" onClick={() => (location.href = `/strategies/${i}`)}>
+              <Link
+                to={`/strategies/${i}`}
+                className="mt-2 bg-primary text-primary-content py-1 px-3 rounded"
+              >
                 開く
-              </Button>
+              </Link>
             </div>
           ))}
         </div>

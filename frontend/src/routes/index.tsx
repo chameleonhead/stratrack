@@ -1,6 +1,7 @@
 import Layout from "../components/SidebarLayout";
 import Dashboard from "./dashboard";
 import Strategies from "./strategies";
+import StrategyDetails from "./strategies/show";
 import NewStrategy from "./strategies/new";
 import Backtest from "./backtesting";
 import DataSources from "./datasources";
@@ -13,7 +14,8 @@ export const routes = [
     children: [
       { index: true, element: <Dashboard /> },
       { path: "strategies", element: <Strategies /> },
-      { path: "strategies/new", element: <NewStrategy /> },
+      { path: "strategies/:strategyId", element: <StrategyDetails /> },
+      { path: "strategies-new", element: <NewStrategy /> },
       { path: "backtest", element: <Backtest /> },
       { path: "data-sources", element: <DataSources /> },
       { path: "settings", element: <Settings /> },

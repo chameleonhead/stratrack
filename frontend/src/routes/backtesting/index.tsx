@@ -1,8 +1,30 @@
+import { Link } from "react-router-dom";
+
 const Backtest = () => {
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">バックテスト</h1>
-      <p>バックテストの実行画面をここに表示します。</p>
+    <div className="p-6 space-y-6">
+      <header className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">バックテスト</h2>
+      </header>
+
+      <section>
+        <h3 className="text-lg font-semibold mb-2">バックテスト結果</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* サンプルカード */}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-xl border p-4 shadow">
+              <h4 className="font-bold">バックテスト {i}</h4>
+              <p className="text-sm text-gray-600">説明文をここに表示</p>
+              <Link
+                to={`/backtest/${i}`}
+                className="mt-2 bg-primary text-primary-content py-1 px-3 rounded"
+              >
+                詳細
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

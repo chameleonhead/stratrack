@@ -1,8 +1,8 @@
-const NewStrategy = () => {
+const StrategyDetails = () => {
   return (
     <div className="p-6 space-y-6">
       <header className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">戦略新規作成</h2>
+        <h2 className="text-2xl font-bold">詳細</h2>
       </header>
 
       <section>
@@ -32,4 +32,4 @@ const NewStrategy = () => {
   );
 };
 
-export default NewStrategy;
+export default StrategyDetails;
