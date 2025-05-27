@@ -29,8 +29,6 @@ export type Strategy = {
   createdAt?: string;
   /** 戦略の更新日時 */
   updatedAt?: string;
-  /** 戦略の作成者 */
-  author?: string;
   /** 戦略テンプレートの内容 */
   template: StrategyTemplate;
 };
