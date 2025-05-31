@@ -259,7 +259,10 @@ export function emitPyExpr(
     }
     case "variable_ref": {
       const base = attr(ref("self.lines"), `_${expr.name}`);
-      return mode === "scalar" ? sub(base, lit(-shift)) : base;
+      // shiftが0ならlit(0)を使う
+      return mode === "scalar"
+        ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift)))
+        : base;
     }
     case "unary":
       return unary(expr.operator, emitPyExpr(expr.operand, mode, shift));
@@ -271,33 +274,37 @@ export function emitPyExpr(
       );
     case "price_ref": {
       const base = attr(ref("self.data"), expr.source);
-      return mode === "scalar" ? sub(base, lit(-shift)) : base;
+      return mode === "scalar"
+        ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift)))
+        : base;
     }
     case "bar_shift": {
       const base = emitPyExpr(expr.source, "array");
       const shiftBar = expr.shiftBar ? emitPyExpr(expr.shiftBar, "scalar") : lit(0);
       if (mode === "scalar") {
         const fallback = expr.fallback ? emitPyExpr(expr.fallback, "scalar") : undefined;
-        if (shiftBar.type === "literal" && shiftBar.value === 0) {
-          if (fallback) {
-            return ternary(
-              cmp(call(ref("len"), [base]), [">"], [lit(shift)]),
-              sub(base, lit(-shift)),
-              fallback
-            );
-          } else {
-            return sub(base, lit(-shift));
-          }
+        // shiftBar + shift の合成
+        let totalShift: PyExpression;
+        if (shiftBar.type === "literal" && shift === 0) {
+          totalShift = shiftBar;
+        } else if (shiftBar.type === "literal" && shiftBar.value === 0) {
+          totalShift = shift === 0 ? lit(0) : lit(shift);
+        } else if (shift === 0) {
+          totalShift = shiftBar;
         } else {
-          if (fallback) {
-            return ternary(
-              cmp(call(ref("len"), [base]), [">"], [bin("+", shiftBar, lit(shift))]),
-              sub(base, unary("-", bin("+", shiftBar, lit(shift)))),
-              fallback
-            );
-          } else {
-            return sub(base, unary("-", bin("+", shiftBar, lit(shift))));
-          }
+          totalShift = bin("+", shiftBar, lit(shift));
+        }
+        const indexExpr = (totalShift.type === "literal" && totalShift.value === 0)
+          ? lit(0)
+          : unary("-", totalShift);
+        if (fallback) {
+          return ternary(
+            cmp(call(ref("len"), [base]), [">"], [totalShift]),
+            sub(base, indexExpr),
+            fallback
+          );
+        } else {
+          return sub(base, indexExpr);
         }
       }
       if (shiftBar.type === "literal" && shiftBar.value === 0) {

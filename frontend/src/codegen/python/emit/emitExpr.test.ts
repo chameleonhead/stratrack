@@ -192,14 +192,12 @@ describe("emitPyCondExpr", () => {
     expect((expr.conditions[0] as PyBinaryOp).left).toEqual({
       type: "subscript",
       value: { type: "attribute", object: { type: "variable", name: "self.data" }, attr: "close" },
-      index: { type: "literal", value: 1 },
-      fallback: { type: "literal", value: 0 },
+      index: unary("-", lit(1)),
     });
     expect((expr.conditions[0] as PyBinaryOp).right).toEqual({
       type: "subscript",
       value: { type: "attribute", object: { type: "variable", name: "self.data" }, attr: "close" },
-      index: { type: "literal", value: 2 },
-      fallback: { type: "literal", value: 0 },
+      index: unary("-", lit(2)),
     });
   });
 
@@ -250,10 +248,7 @@ describe("emitPyCondExpr", () => {
         },
         type: "attribute",
       },
-      index: {
-        type: "literal",
-        value: 0,
-      },
+      index: { type: "literal", value: 0 },
     });
     expect((expr.conditions[1] as PyCompare).left).toEqual({
       type: "subscript",
@@ -265,14 +260,7 @@ describe("emitPyCondExpr", () => {
         },
         type: "attribute",
       },
-      index: {
-        type: "unary",
-        operator: "-",
-        operand: {
-          type: "literal",
-          value: 1,
-        },
-      },
+      index: unary("-", lit(1)),
     });
   });
 
