@@ -20,7 +20,7 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<StrategySummary>))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Unauthorized, Description = "Not authorized")]
-    public async Task<HttpResponseData> GetStrategies([HttpTrigger(AuthorizationLevel.Function, "get", Route = "api/strategies")] HttpRequestData req, CancellationToken token)
+    public async Task<HttpResponseData> GetStrategies([HttpTrigger(AuthorizationLevel.Function, "get", Route = "strategies")] HttpRequestData req, CancellationToken token)
     {
         var results = await queryProcessor.ProcessAsync(new StrategyReadModelSearchQuery(), token).ConfigureAwait(false);
         var response = req.CreateResponse(HttpStatusCode.OK);
