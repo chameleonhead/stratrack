@@ -90,6 +90,25 @@ public class StrategyFunctionsTests
     }
 
     [TestMethod]
+    public async Task PostStrategy_Returns422WhenNameEmpty()
+    {
+        var serviceProvider = CreateProvider();
+        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/strategies")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new StrategyCreateRequest()
+            {
+                Name = string.Empty,
+            }))
+            .Build();
+
+        var response = await function.PostStrategy(request, CancellationToken.None).ConfigureAwait(false);
+        Assert.AreEqual(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task PostStrategy_SavesTemplate()
     {
         var serviceProvider = CreateProvider();
