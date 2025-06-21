@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import Input from "../../../components/Input";
 import TagInput from "../../../components/TagInput";
 import Textarea from "../../../components/Textarea";
@@ -10,6 +10,7 @@ export type BasicInfoProps = {
 };
 
 function BasicInfo({ value, onChange }: BasicInfoProps) {
+  const tags = useMemo(() => value.tags ?? [], [value.tags]);
   return (
     <section id="basic-info" className="space-y-4">
       <h2>基本情報</h2>
@@ -58,7 +59,7 @@ function BasicInfo({ value, onChange }: BasicInfoProps) {
       />
       <TagInput
         label="タグ"
-        value={value.tags || []}
+        value={tags}
         onChange={useCallback(
           (newvalue: string[]) => {
             if (onChange) {
