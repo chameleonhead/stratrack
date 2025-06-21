@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from "react";
+import { useMemo } from "react";
 import CodeEditor from "../../components/CodeEditor";
 import { useLocalValue } from "../../hooks/useLocalValue";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
@@ -6,6 +6,14 @@ import { renderStrategyCode } from "../../codegen/generators/strategyCodeRendere
 import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
 import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
+import Tab from "../../components/Tab";
+
+const DEFAULT_TEMPLATE: StrategyTemplate = {
+  variables: [],
+  entry: [],
+  exit: [],
+  riskManagement: { type: "percentage", percent: 100 },
+};
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -15,37 +23,57 @@ export type StrategyEditorProps = {
 function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   const indicators = useIndicatorList();
   const [localValue, setLocalValue] = useLocalValue(
-    {
-      template: {
-        variables: [],
-        entry: [],
-        exit: [],
-        riskManagement: { type: "percentage", percent: 100 },
-      } as StrategyTemplate,
-    } as Partial<Strategy>,
+    { template: DEFAULT_TEMPLATE } as Partial<Strategy>,
     value,
     onChange
   );
+
+  const template = useMemo(
+    () => ({ ...DEFAULT_TEMPLATE, ...localValue.template }),
+    [localValue.template]
+  );
+
   return (
     <div className="grid space-y-4">
       <BasicInfo value={localValue} onChange={setLocalValue} />
-      <StrategyTemplateEditor value={localValue} onChange={setLocalValue} />
-      <Suspense fallback={<div className="text-red-500">エラーが発生しました。</div>}>
-        <CodeEditor
-          language="python"
-          value={useMemo(
-            () => renderStrategyCode("python", localValue.template as StrategyTemplate, indicators),
-            [localValue, indicators]
-          )}
-        />
-        <CodeEditor
-          language="mql4"
-          value={useMemo(
-            () => renderStrategyCode("mql4", localValue.template as StrategyTemplate, indicators),
-            [localValue, indicators]
-          )}
-        />
-      </Suspense>
+      <StrategyTemplateEditor
+        value={localValue.template}
+        onChange={(template) =>
+          setLocalValue({ ...localValue, template: template as StrategyTemplate })
+        }
+      />
+      <Tab
+        tabs={[
+          {
+            id: "python",
+            label: "Python",
+            content: (
+              <CodeEditor
+                language="python"
+                value={useMemo(
+                  () => renderStrategyCode("python", template, indicators),
+                  [template, indicators]
+                )}
+                readOnly
+              />
+            ),
+          },
+          {
+            id: "mql4",
+            label: "MQL4",
+            content: (
+              <CodeEditor
+                language="mql4"
+                value={useMemo(
+                  () => renderStrategyCode("mql4", template, indicators),
+                  [template, indicators]
+                )}
+                readOnly
+              />
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

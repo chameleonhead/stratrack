@@ -10,18 +10,18 @@ import MultiPosition from "../sections/MultiPosition";
 import VariableProvider from "./VariableProvider";
 import Tab from "../../../components/Tab";
 import { useLocalValue } from "../../../hooks/useLocalValue";
-import { Strategy, StrategyTemplate } from "../../../codegen/dsl/strategy";
+import { StrategyTemplate } from "../../../codegen/dsl/strategy";
 
 export type StrategyTemplateEditorProps = {
-  value?: Partial<Strategy>;
-  onChange: (value: Partial<Strategy>) => void;
+  value?: Partial<StrategyTemplate>;
+  onChange: (value: Partial<StrategyTemplate>) => void;
 };
 
 function StrategyTemplateEditor({ value, onChange }: StrategyTemplateEditorProps) {
-  const [localValue, setLocalValue] = useLocalValue<Partial<Strategy>>({}, value, onChange);
+  const [localValue, setLocalValue] = useLocalValue<Partial<StrategyTemplate>>({}, value, onChange);
   const template = useMemo(() => {
     return (
-      localValue.template ||
+      localValue ||
       ({
         variables: [],
         entry: [],
@@ -33,8 +33,8 @@ function StrategyTemplateEditor({ value, onChange }: StrategyTemplateEditorProps
     (newvalue: Partial<StrategyTemplate>) => {
       setLocalValue({
         ...localValue,
-        template: { ...localValue.template, ...newvalue } as StrategyTemplate,
-      });
+        ...newvalue,
+      } as StrategyTemplate);
     },
     [setLocalValue, localValue]
   );

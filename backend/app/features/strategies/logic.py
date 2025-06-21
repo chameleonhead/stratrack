@@ -18,7 +18,7 @@ def create_strategy_with_first_version(data: StrategyCreateRequest, db: Session)
             strategy_id=strategy.id,
             version_number=1,
             template=data.template,
-            generated_code=data.genereatedCode,
+            generated_code=data.generatedCode,
             message=None,
             db=db,
         )
@@ -44,7 +44,7 @@ def create_new_strategy_version(
             strategy_id=strategy_id,
             version_number=next_version,
             template=data.template,
-            generated_code=data.genereatedCode,
+            generated_code=data.generatedCode,
             message=data.message,
             db=db,
         )

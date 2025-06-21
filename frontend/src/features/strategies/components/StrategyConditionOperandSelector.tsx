@@ -1,5 +1,6 @@
 import Select from "../../../components/Select";
 import NumberInput from "../../../components/NumberInput";
+import ShiftBarsEditor from "./ShiftBarsEditor";
 import { useVariables } from "./useVariables";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { ConditionOperand } from "../../../codegen/dsl/common";
@@ -165,10 +166,6 @@ function ScalarVariableConditionOperandSelector({
     Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "variable" }
   >;
-  const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
-    { type: "constant" }
-  >;
   return (
     <div className="flex space-x-2">
       <Select
@@ -186,13 +183,12 @@ function ScalarVariableConditionOperandSelector({
           label: `${v.name} ${v.description ? `(${v.description})` : ""}`,
         }))}
       />
-      <NumberInput
-        placeholder="シフト数"
-        value={shiftbars?.value}
+      <ShiftBarsEditor
+        value={value?.shiftBars}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars: val,
           })
         }
       />
@@ -244,10 +240,6 @@ function ScalarPriceConditionOperandSelector({
     Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "price" }
   >;
-  const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
-    { type: "constant" }
-  >;
   return (
     <div className="flex space-x-2">
       <Select
@@ -262,13 +254,12 @@ function ScalarPriceConditionOperandSelector({
         }
         options={PRICE_OPTIONS}
       />
-      <NumberInput
-        placeholder="シフト数"
-        value={shiftbars?.value}
+      <ShiftBarsEditor
+        value={value?.shiftBars}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars: val,
           })
         }
       />
