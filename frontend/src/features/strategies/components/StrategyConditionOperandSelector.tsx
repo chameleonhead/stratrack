@@ -166,10 +166,6 @@ function ScalarVariableConditionOperandSelector({
     Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "variable" }
   >;
-  const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
-    { type: "constant" }
-  >;
   return (
     <div className="flex space-x-2">
       <Select
@@ -243,10 +239,6 @@ function ScalarPriceConditionOperandSelector({
   const source = value?.source as Extract<
     Extract<ConditionOperand, { type: "bar_shift" }>["source"],
     { type: "price" }
-  >;
-  const shiftbars = value?.shiftBars as Extract<
-    Extract<ConditionOperand, { type: "bar_shift" }>["shiftBars"],
-    { type: "constant" }
   >;
   return (
     <div className="flex space-x-2">
