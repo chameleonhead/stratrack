@@ -1,6 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using EventFlow;
+using EventFlow.Queries;
 using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
@@ -207,5 +210,29 @@ public class StrategyFunctionsTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1 Edited", obj.Name);
+    }
+
+    [TestMethod]
+    public async Task PostStrategy_ReturnsInternalServerError_WhenCommandBusFails()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<ICommandBus, FailingCommandBus>();
+        services.AddSingleton<IQueryProcessor>(new Mock<IQueryProcessor>().Object);
+        services.AddSingleton<StrategyFunctions>();
+        var provider = services.BuildServiceProvider();
+        var function = provider.GetRequiredService<StrategyFunctions>();
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/strategies")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new StrategyCreateRequest { Name = "x" }))
+            .Build();
+
+        var response = await function.PostStrategy(request, CancellationToken.None).ConfigureAwait(false);
+
+        Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+        var body = await response.ReadAsJsonAsync<Dictionary<string, string>>().ConfigureAwait(false);
+        Assert.AreEqual("Internal server error", body["error"]);
     }
 }

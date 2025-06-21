@@ -10,10 +10,11 @@ using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Queries;
 using Stratrack.Api.Models;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Stratrack.Api.Functions;
 
-public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor)
+public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, ILogger<StrategyFunctions> logger)
 {
     [Function("GetStrategies")]
     [OpenApiOperation(operationId: "get_strategies", tags: ["Strategies"])]
@@ -53,14 +54,24 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         }
 
         var id = StrategyId.New;
-        await commandBus.PublishAsync(new StrategyCreateCommand(id)
+        try
         {
-            Name = body.Name,
-            Description = body.Description,
-            Tags = body.Tags,
-            Template = body.Template,
-            GeneratedCode = body.GeneratedCode,
-        }, token).ConfigureAwait(false);
+            await commandBus.PublishAsync(new StrategyCreateCommand(id)
+            {
+                Name = body.Name,
+                Description = body.Description,
+                Tags = body.Tags,
+                Template = body.Template,
+                GeneratedCode = body.GeneratedCode,
+            }, token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to publish StrategyCreateCommand");
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await errorResponse.WriteAsJsonAsync(new { error = "Internal server error" }, token).ConfigureAwait(false);
+            return errorResponse;
+        }
 
         var response = req.CreateResponse(HttpStatusCode.Created);
         response.Headers.Add("Location", new Uri(req.Url, $"/api/strategies/{id.GetGuid()}").ToString());
@@ -112,14 +123,24 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
-        await commandBus.PublishAsync(new StrategyUpdateCommand(id)
+        try
         {
-            Name = body.Name,
-            Description = body.Description,
-            Tags = body.Tags,
-            Template = body.Template,
-            GeneratedCode = body.GeneratedCode,
-        }, token).ConfigureAwait(false);
+            await commandBus.PublishAsync(new StrategyUpdateCommand(id)
+            {
+                Name = body.Name,
+                Description = body.Description,
+                Tags = body.Tags,
+                Template = body.Template,
+                GeneratedCode = body.GeneratedCode,
+            }, token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to publish StrategyUpdateCommand");
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await errorResponse.WriteAsJsonAsync(new { error = "Internal server error" }, token).ConfigureAwait(false);
+            return errorResponse;
+        }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
         var result = await QueryStrategyDetail(StrategyId.With(Guid.Parse(strategyId)), token).ConfigureAwait(false);
@@ -193,7 +214,17 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
-        await commandBus.PublishAsync(new StrategyDeleteCommand(id), token).ConfigureAwait(false);
+        try
+        {
+            await commandBus.PublishAsync(new StrategyDeleteCommand(id), token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to publish StrategyDeleteCommand");
+            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await errorResponse.WriteAsJsonAsync(new { error = "Internal server error" }, token).ConfigureAwait(false);
+            return errorResponse;
+        }
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
 
