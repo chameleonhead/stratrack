@@ -18,10 +18,10 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   const { value: localValue, setValue, update } = useStrategyEditorStore();
 
   useEffect(() => {
-    if (value) {
-      setValue({ ...value });
+    if (value && value !== localValue) {
+      setValue(value);
     }
-  }, [value, setValue]);
+  }, [value, localValue, setValue]);
 
   useEffect(() => {
     if (onChange) {
