@@ -20,3 +20,9 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 ## frontend プロジェクト
 
 vite + React のプロジェクトです。
+
+### フロントエンドの開発ガイド
+
+1. `npm run format` で Prettier を適用してください。
+2. `npm run lint` と `npm run test` を実行し、エラーが無いことを確認してください。
+3. コミットメッセージは `feat:` `fix:` `chore:` などの prefix を付けてください。
