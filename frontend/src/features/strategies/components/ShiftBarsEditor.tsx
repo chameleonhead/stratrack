@@ -18,7 +18,7 @@ const TYPE_OPTIONS = [
 
 const ShiftBarsEditor: React.FC<ShiftBarsEditorProps> = ({ value, onChange, label }) => {
   const variables = useVariables();
-  const [local, setLocal] = useLocalValue<PermanentVariableExpression>(
+  const [local, setLocalValue] = useLocalValue<PermanentVariableExpression>(
     { type: "constant", value: 0 },
     value,
     onChange
@@ -34,9 +34,9 @@ const ShiftBarsEditor: React.FC<ShiftBarsEditorProps> = ({ value, onChange, labe
           onChange={(val) => {
             const type = val as PermanentVariableExpression["type"] | "variable";
             if (type === "constant") {
-              setLocal({ type: "constant", value: 0 });
+              setLocalValue({ type: "constant", value: 0 });
             } else {
-              setLocal({ type: "variable", name: "" } as PermanentVariableExpression);
+              setLocalValue({ type: "variable", name: "" } as PermanentVariableExpression);
             }
           }}
           options={TYPE_OPTIONS}
@@ -49,7 +49,7 @@ const ShiftBarsEditor: React.FC<ShiftBarsEditorProps> = ({ value, onChange, labe
             placeholder="シフト数"
             value={local.value}
             onChange={(val) =>
-              setLocal(
+              setLocalValue(
                 val === null ? { type: "constant", value: 0 } : { type: "constant", value: val }
               )
             }
@@ -60,7 +60,7 @@ const ShiftBarsEditor: React.FC<ShiftBarsEditorProps> = ({ value, onChange, labe
             fullWidth
             value={local.name}
             onChange={(val) =>
-              setLocal({ type: "variable", name: val })
+              setLocalValue({ type: "variable", name: val })
             }
             options={variables.map((v) => ({
               value: v.name,

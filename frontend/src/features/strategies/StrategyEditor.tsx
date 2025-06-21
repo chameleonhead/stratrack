@@ -1,19 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import CodeEditor from "../../components/CodeEditor";
-import { useLocalValue } from "../../hooks/useLocalValue";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
 import { renderStrategyCode } from "../../codegen/generators/strategyCodeRenderer";
 import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
 import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
 import Tab from "../../components/Tab";
-
-const DEFAULT_TEMPLATE: StrategyTemplate = {
-  variables: [],
-  entry: [],
-  exit: [],
-  riskManagement: { type: "percentage", percent: 100 },
-};
+import { DEFAULT_TEMPLATE, createStrategyEditorStore } from "./store/strategyEditorStore";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -22,11 +15,23 @@ export type StrategyEditorProps = {
 
 function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   const indicators = useIndicatorList();
-  const [localValue, setLocalValue] = useLocalValue(
-    { template: DEFAULT_TEMPLATE } as Partial<Strategy>,
-    value,
-    onChange
-  );
+  const storeRef = useRef(createStrategyEditorStore(value));
+  const useStore = storeRef.current;
+  const localValue = useStore((s) => s.value);
+  const setValue = useStore((s) => s.setValue);
+  const update = useStore((s) => s.update);
+
+  useEffect(() => {
+    if (value && value !== localValue) {
+      setValue(value);
+    }
+  }, [value, localValue, setValue]);
+
+  useEffect(() => {
+    if (onChange) {
+      onChange(localValue);
+    }
+  }, [localValue, onChange]);
 
   const template = useMemo(
     () => ({ ...DEFAULT_TEMPLATE, ...localValue.template }),
@@ -35,12 +40,10 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
 
   return (
     <div className="grid space-y-4">
-      <BasicInfo value={localValue} onChange={setLocalValue} />
+      <BasicInfo value={localValue} onChange={update} />
       <StrategyTemplateEditor
         value={localValue.template}
-        onChange={(template) =>
-          setLocalValue({ ...localValue, template: template as StrategyTemplate })
-        }
+        onChange={(template) => update({ template: template as StrategyTemplate })}
       />
       <Tab
         tabs={[

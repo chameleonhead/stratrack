@@ -124,20 +124,20 @@ function StrategyConditionBuilder({
       {useMemo(() => {
         switch (condition.type) {
           case "comparison":
-            return <StrategyComparisonConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyComparisonConditionSelector value={condition} onChange={setCondition} />;
           case "cross":
-            return <StrategyCrossConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyCrossConditionSelector value={condition} onChange={setCondition} />;
           case "state":
-            return <StrategyStateConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyStateConditionSelector value={condition} onChange={setCondition} />;
           case "continue":
-            return <StrategyContinueConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyContinueConditionSelector value={condition} onChange={setCondition} />;
           case "change":
-            return <StrategyChangeConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyChangeConditionSelector value={condition} onChange={setCondition} />;
           case "group":
-            return <StrategyGroupConditionSelector value={condition} onChange={onChange} />;
+            return <StrategyGroupConditionSelector value={condition} onChange={setCondition} />;
         }
         return null;
-      }, [condition, onChange])}
+      }, [condition, setCondition])}
     </div>
   );
 }
