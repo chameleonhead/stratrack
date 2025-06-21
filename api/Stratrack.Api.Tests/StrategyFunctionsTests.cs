@@ -90,6 +90,55 @@ public class StrategyFunctionsTests
     }
 
     [TestMethod]
+    public async Task PostStrategy_SavesTemplate()
+    {
+        var serviceProvider = CreateProvider();
+        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
+
+        var requestBody = new StrategyCreateRequest()
+        {
+            Name = "With Template",
+            Description = "desc",
+            Tags = [],
+            Template = new Dictionary<string, object>()
+            {
+                { "foo", 1 }
+            },
+            GeneratedCode = "code",
+        };
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/strategies")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(requestBody))
+            .Build();
+
+        var response = await function.PostStrategy(request, CancellationToken.None)
+            .ConfigureAwait(false);
+
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+        var detail = await response.ReadAsJsonAsync<StrategyDetail>()
+            .ConfigureAwait(false);
+        Assert.IsTrue(detail.Template.ContainsKey("foo"));
+
+        var getRequest = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/strategies/{detail.Id}")
+            .WithMethod(HttpMethod.Get)
+            .Build();
+
+        var getResponse = await function.GetStrategyDetail(
+            getRequest,
+            detail.Id.ToString(),
+            CancellationToken.None
+        ).ConfigureAwait(false);
+
+        Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
+        var fetched = await getResponse.ReadAsJsonAsync<StrategyDetail>()
+            .ConfigureAwait(false);
+        Assert.IsTrue(fetched.Template.ContainsKey("foo"));
+    }
+
+    [TestMethod]
     public async Task GetStrategyDetail_ReturnsExpectedResponse()
     {
         // Arrange
