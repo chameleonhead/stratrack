@@ -17,7 +17,7 @@ export function useLocalValue<T>(
             ? (setStateAction as (prev: T) => T)(current)
             : setStateAction;
 
-        if (onChange) {
+        if (onChange && newValue !== current) {
           onChange(newValue);
         }
 
@@ -28,10 +28,10 @@ export function useLocalValue<T>(
   );
 
   useEffect(() => {
-    if (isControlled) {
+    if (isControlled && value !== localValue) {
       setLocalValue(value as T);
     }
-  }, [isControlled, value]);
+  }, [isControlled, value, localValue]);
 
   return [localValue, updateValue];
 }
