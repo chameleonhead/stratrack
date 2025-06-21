@@ -9,6 +9,7 @@ using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Queries;
 using Stratrack.Api.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Microsoft.Extensions.Logging;
 
@@ -51,6 +52,14 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         if (body == null)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+        }
+
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(body, new ValidationContext(body), validationResults, true))
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+            await errorResponse.WriteAsJsonAsync(validationResults, token).ConfigureAwait(false);
+            return errorResponse;
         }
 
         var id = StrategyId.New;
@@ -115,6 +124,13 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         if (body == null)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+        }
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(body, new ValidationContext(body), validationResults, true))
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+            await errorResponse.WriteAsJsonAsync(validationResults, token).ConfigureAwait(false);
+            return errorResponse;
         }
         var id = StrategyId.With(Guid.Parse(strategyId));
         var target = await QueryStrategyDetail(StrategyId.With(Guid.Parse(strategyId)), token).ConfigureAwait(false);

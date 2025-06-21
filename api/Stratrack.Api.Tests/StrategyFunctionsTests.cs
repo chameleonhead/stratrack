@@ -93,6 +93,25 @@ public class StrategyFunctionsTests
     }
 
     [TestMethod]
+    public async Task PostStrategy_Returns422WhenNameEmpty()
+    {
+        var serviceProvider = CreateProvider();
+        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/strategies")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new StrategyCreateRequest()
+            {
+                Name = string.Empty,
+            }))
+            .Build();
+
+        var response = await function.PostStrategy(request, CancellationToken.None).ConfigureAwait(false);
+        Assert.AreEqual(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task PostStrategy_SavesTemplate()
     {
         var serviceProvider = CreateProvider();
@@ -234,5 +253,27 @@ public class StrategyFunctionsTests
         Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
         var body = await response.ReadAsJsonAsync<Dictionary<string, string>>().ConfigureAwait(false);
         Assert.AreEqual("Internal server error", body["error"]);
+    }
+
+    public async Task PutStrategy_Returns422WhenNameEmpty()
+    {
+        var serviceProvider = CreateProvider();
+        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
+        var id = await CreateStrategyAsync(function, new StrategyCreateRequest()
+        {
+            Name = "name",
+        }).ConfigureAwait(false);
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/strategies/{id}")
+            .WithMethod(HttpMethod.Put)
+            .WithBody(JsonSerializer.Serialize(new StrategyUpdateRequest()
+            {
+                Name = string.Empty,
+            }))
+            .Build();
+
+        var response = await function.PutStrategy(request, id, CancellationToken.None).ConfigureAwait(false);
+        Assert.AreEqual(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 }
