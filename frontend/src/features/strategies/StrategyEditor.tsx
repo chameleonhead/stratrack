@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import CodeEditor from "../../components/CodeEditor";
 import StrategyTemplateEditor from "./components/StrategyTemplateEditor";
 import { renderStrategyCode } from "../../codegen/generators/strategyCodeRenderer";
@@ -6,7 +6,7 @@ import BasicInfo from "./sections/BasicInfo";
 import { useIndicatorList } from "../indicators/IndicatorProvider";
 import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
 import Tab from "../../components/Tab";
-import { DEFAULT_TEMPLATE, useStrategyEditorStore } from "./store/strategyEditorStore";
+import { DEFAULT_TEMPLATE, createStrategyEditorStore } from "./store/strategyEditorStore";
 
 export type StrategyEditorProps = {
   value?: Partial<Strategy>;
@@ -15,7 +15,11 @@ export type StrategyEditorProps = {
 
 function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   const indicators = useIndicatorList();
-  const { value: localValue, setValue, update } = useStrategyEditorStore();
+  const storeRef = useRef(createStrategyEditorStore(value));
+  const useStore = storeRef.current;
+  const localValue = useStore((s) => s.value);
+  const setValue = useStore((s) => s.setValue);
+  const update = useStore((s) => s.update);
 
   useEffect(() => {
     if (value && value !== localValue) {

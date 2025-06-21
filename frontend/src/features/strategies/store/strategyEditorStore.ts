@@ -14,8 +14,10 @@ export interface StrategyEditorState {
   update: (changes: Partial<Strategy>) => void;
 }
 
-export const useStrategyEditorStore = create<StrategyEditorState>((set) => ({
-  value: { template: DEFAULT_TEMPLATE } as Partial<Strategy>,
-  setValue: (value) => set({ value }),
-  update: (changes) => set((state) => ({ value: { ...state.value, ...changes } })),
-}));
+export function createStrategyEditorStore(initial?: Partial<Strategy>) {
+  return create<StrategyEditorState>((set) => ({
+    value: initial ?? ({ template: DEFAULT_TEMPLATE } as Partial<Strategy>),
+    setValue: (value) => set({ value }),
+    update: (changes) => set((state) => ({ value: { ...state.value, ...changes } })),
+  }));
+}
