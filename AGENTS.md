@@ -12,6 +12,7 @@ FX の戦略を開発するためのアプリケーションです。
 ## api プロジェクト
 
 C# & Azure Functions のアプリケーションです。backend/ の代わりに開発を進めています。
+開発や修正を行った際は `dotnet test api/stratrack-backend.sln -c Release` を実行し、テストが成功することを確認してください。
 
 ## backend プロジェクト
 

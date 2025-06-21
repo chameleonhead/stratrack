@@ -114,6 +114,13 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
         }
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(body, new ValidationContext(body), validationResults, true))
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+            await errorResponse.WriteAsJsonAsync(validationResults, token).ConfigureAwait(false);
+            return errorResponse;
+        }
         var id = StrategyId.With(Guid.Parse(strategyId));
         var target = await QueryStrategyDetail(StrategyId.With(Guid.Parse(strategyId)), token).ConfigureAwait(false);
         if (target == null)

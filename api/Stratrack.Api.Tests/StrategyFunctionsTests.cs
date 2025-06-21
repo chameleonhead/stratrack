@@ -227,4 +227,27 @@ public class StrategyFunctionsTests
         var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1 Edited", obj.Name);
     }
+
+    [TestMethod]
+    public async Task PutStrategy_Returns422WhenNameEmpty()
+    {
+        var serviceProvider = CreateProvider();
+        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
+        var id = await CreateStrategyAsync(function, new StrategyCreateRequest()
+        {
+            Name = "name",
+        }).ConfigureAwait(false);
+
+        var request = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/strategies/{id}")
+            .WithMethod(HttpMethod.Put)
+            .WithBody(JsonSerializer.Serialize(new StrategyUpdateRequest()
+            {
+                Name = string.Empty,
+            }))
+            .Build();
+
+        var response = await function.PutStrategy(request, id, CancellationToken.None).ConfigureAwait(false);
+        Assert.AreEqual(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
 }
