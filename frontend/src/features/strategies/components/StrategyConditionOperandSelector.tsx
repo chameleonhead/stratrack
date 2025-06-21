@@ -1,5 +1,6 @@
 import Select from "../../../components/Select";
 import NumberInput from "../../../components/NumberInput";
+import ShiftBarsEditor from "./ShiftBarsEditor";
 import { useVariables } from "./useVariables";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { ConditionOperand } from "../../../codegen/dsl/common";
@@ -186,13 +187,12 @@ function ScalarVariableConditionOperandSelector({
           label: `${v.name} ${v.description ? `(${v.description})` : ""}`,
         }))}
       />
-      <NumberInput
-        placeholder="シフト数"
-        value={shiftbars?.value}
+      <ShiftBarsEditor
+        value={value?.shiftBars}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars: val,
           })
         }
       />
@@ -262,13 +262,12 @@ function ScalarPriceConditionOperandSelector({
         }
         options={PRICE_OPTIONS}
       />
-      <NumberInput
-        placeholder="シフト数"
-        value={shiftbars?.value}
+      <ShiftBarsEditor
+        value={value?.shiftBars}
         onChange={(val) =>
           onChange({
             ...value,
-            shiftBars: val === null ? undefined : { type: "constant", value: val },
+            shiftBars: val,
           })
         }
       />

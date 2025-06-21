@@ -15,7 +15,10 @@ export type ConstantExpression = {
   value: number;
 };
 
-export type PermanentVariableExpression = ConstantExpression | ParamReferenceExpression;
+export type PermanentVariableExpression =
+  | ConstantExpression
+  | ParamReferenceExpression
+  | VariableReferenceExpression;
 
 export type ParamReferenceExpression = {
   type: "param";

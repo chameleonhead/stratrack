@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import Select from "../../../components/Select";
 import NumberInput from "../../../components/NumberInput";
 import Input from "../../../components/Input";
+import ShiftBarsEditor from "./ShiftBarsEditor";
 import { StrategyVariableExpression } from "../../../codegen/dsl/strategy";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { useVariables } from "./useVariables";
@@ -145,15 +146,13 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
               label: `${v.name}${v.description ? ` (${v.description})` : ""}`,
             }))}
           />
-          <NumberInput
-            fullWidth
+          <ShiftBarsEditor
             label="シフト数"
-            value={(expr.shiftBars as any)?.value ?? null}
+            value={expr.shiftBars}
             onChange={(val) =>
               setExpr({
                 ...expr,
-                shiftBars:
-                  val === null ? undefined : { type: "constant", value: val },
+                shiftBars: val,
               })
             }
           />
@@ -171,15 +170,13 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
             }
             options={PRICE_OPTIONS}
           />
-          <NumberInput
-            fullWidth
+          <ShiftBarsEditor
             label="シフト数"
-            value={(expr.shiftBars as any)?.value ?? null}
+            value={expr.shiftBars}
             onChange={(val) =>
               setExpr({
                 ...expr,
-                shiftBars:
-                  val === null ? undefined : { type: "constant", value: val },
+                shiftBars: val,
               })
             }
           />
