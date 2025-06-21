@@ -36,7 +36,12 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   return (
     <div className="grid space-y-4">
       <BasicInfo value={localValue} onChange={setLocalValue} />
-      <StrategyTemplateEditor value={localValue} onChange={setLocalValue} />
+      <StrategyTemplateEditor
+        value={localValue.template}
+        onChange={(template) =>
+          setLocalValue({ ...localValue, template: template as StrategyTemplate })
+        }
+      />
       <Tab
         tabs={[
           {

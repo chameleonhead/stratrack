@@ -7,22 +7,16 @@ describe("createStrategy", () => {
       ok: true,
       json: async () => ({ id: "1" }),
     });
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     global.fetch = fetchMock;
 
-    class FakeJsonElement {
-      constructor(public v: number) {}
-      toJSON() {
-        return { ValueKind: "", v: this.v };
-      }
-    }
-
-    const template = { foo: new FakeJsonElement(2) } as any;
+    const template = { foo: [] };
 
     await createStrategy({ name: "s", template });
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.template.foo.ValueKind).toBeUndefined();
-    expect(body.template.foo.v).toBe(2);
+    expect(body.template.foo).toEqual([]);
   });
 });

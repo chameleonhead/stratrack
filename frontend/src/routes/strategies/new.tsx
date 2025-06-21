@@ -6,10 +6,17 @@ import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
 import { renderStrategyCode } from "../../codegen/generators/strategyCodeRenderer";
 import { useIndicatorList } from "../../features/indicators/IndicatorProvider";
 
+const DEFAULT_TEMPLATE: StrategyTemplate = {
+  variables: [],
+  entry: [],
+  exit: [],
+  riskManagement: { type: "percentage", percent: 100 },
+};
+
 const NewStrategy = () => {
   const navigate = useNavigate();
   const indicators = useIndicatorList();
-  const [strategy, setStrategy] = useState<Partial<Strategy>>({});
+  const [strategy, setStrategy] = useState<Partial<Strategy>>({ template: DEFAULT_TEMPLATE });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -41,10 +48,7 @@ const NewStrategy = () => {
         <h3 className="text-lg font-semibold mb-2">戦略の詳細を入力してください</h3>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <StrategyEditor value={strategy} onChange={setStrategy} />
-          <button
-            type="submit"
-            className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"
-          >
+          <button type="submit" className="mt-4 bg-primary text-primary-content py-2 px-4 rounded">
             作成
           </button>
         </form>
