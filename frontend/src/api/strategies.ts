@@ -46,11 +46,19 @@ export async function getStrategy(id: string): Promise<StrategyDetail> {
   return res.json();
 }
 
+function toPlain<T>(value: T): T {
+  try {
+    return structuredClone(value);
+  } catch {
+    return JSON.parse(JSON.stringify(value));
+  }
+}
+
 export async function createStrategy(data: NewStrategyRequest) {
   const res = await fetch(`${API_BASE_URL}/api/strategies`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(toPlain(data)),
   });
   if (!res.ok) {
     throw new Error(`Failed to create strategy: ${res.status}`);
