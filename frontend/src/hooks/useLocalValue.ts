@@ -2,42 +2,36 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "reac
 
 export function useLocalValue<T>(
   defaultValue: T,
-  value?: T | undefined,
+  value?: T,
   onChange?: (value: T) => void
 ): [T, Dispatch<SetStateAction<T>>] {
   const [localValue, setLocalValue] = useState<T>(value ?? defaultValue);
-  const isValueUndefined = typeof value === "undefined";
+  const isControlled = typeof value !== "undefined";
 
   const updateValue = useCallback(
     (setStateAction: SetStateAction<T>) => {
-      const promise = new Promise<T>((resolve) => {
-        setLocalValue((prevState) => {
-          const newValue =
-            typeof setStateAction === "function"
-              ? (setStateAction as (prevState: T) => T)(prevState)
-              : setStateAction;
-          resolve(newValue);
-          if (isValueUndefined) {
-            return newValue;
-          } else {
-            return prevState;
-          }
-        });
+      setLocalValue((prevState) => {
+        const current = isControlled ? (value as T) : prevState;
+        const newValue =
+          typeof setStateAction === "function"
+            ? (setStateAction as (prev: T) => T)(current)
+            : setStateAction;
+
+        if (onChange) {
+          onChange(newValue);
+        }
+
+        return isControlled ? prevState : newValue;
       });
-      if (onChange) {
-        promise.then(onChange);
-      }
     },
-    [onChange, isValueUndefined]
+    [isControlled, onChange, value]
   );
 
   useEffect(() => {
-    if (typeof value !== "undefined") {
-      if (value !== localValue) {
-        setLocalValue(value);
-      }
+    if (isControlled) {
+      setLocalValue(value as T);
     }
-  }, [value, localValue]);
+  }, [isControlled, value]);
 
   return [localValue, updateValue];
 }
