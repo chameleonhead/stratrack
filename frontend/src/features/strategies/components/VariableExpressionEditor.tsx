@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import Select from "../../../components/Select";
+import NumberInput from "../../../components/NumberInput";
+import Input from "../../../components/Input";
 import { StrategyVariableExpression } from "../../../codegen/dsl/strategy";
+import { useLocalValue } from "../../../hooks/useLocalValue";
+import { useVariables } from "./useVariables";
+import { useIndicatorList } from "../../indicators/IndicatorProvider";
+import StrategyConditionBuilder from "./StrategyConditionBuilder";
 
 export type VariableExpressionEditorProps = {
   name?: string;
@@ -9,13 +15,35 @@ export type VariableExpressionEditorProps = {
 };
 
 const EXPRESSION_TYPES = [
-  { value: "price", label: "価格" },
-  { value: "indicator", label: "インジケーター" },
   { value: "constant", label: "定数" },
-  { value: "variable", label: "変数" },
+  { value: "bar_shift", label: "変数" },
+  { value: "scalar_price", label: "価格" },
+  { value: "indicator", label: "インジケーター" },
   { value: "binary_op", label: "計算式（四則演算）" },
   { value: "unary_op", label: "単項演算" },
   { value: "ternary", label: "三項演算（if文）" },
+];
+
+const PRICE_OPTIONS = [
+  { value: "open", label: "始値" },
+  { value: "high", label: "高値" },
+  { value: "low", label: "安値" },
+  { value: "close", label: "終値" },
+  { value: "volume", label: "出来高" },
+];
+
+const BINARY_OPERATORS = [
+  { value: "+", label: "+" },
+  { value: "-", label: "-" },
+  { value: "*", label: "*" },
+  { value: "/", label: "/" },
+  { value: "max", label: "max" },
+  { value: "min", label: "min" },
+];
+
+const UNARY_OPERATORS = [
+  { value: "-", label: "-" },
+  { value: "abs", label: "abs" },
 ];
 
 const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
@@ -23,29 +51,33 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
   value,
   onChange,
 }) => {
-  const [type, setType] = useState<StrategyVariableExpression["type"]>(value?.type ?? "constant");
+  const variables = useVariables();
+  const indicators = useIndicatorList();
+  const [expr, setExpr] = useLocalValue<StrategyVariableExpression>(
+    { type: "constant", value: 0 },
+    value,
+    onChange
+  );
 
   const handleTypeChange = (t: StrategyVariableExpression["type"]) => {
-    setType(t);
-    // 初期値を入れる（必要に応じて変更）
     switch (t) {
       case "constant":
-        onChange({ type: "constant", value: 0 });
+        setExpr({ type: "constant", value: 0 });
         break;
       case "bar_shift":
-        onChange({
+        setExpr({
           type: "bar_shift",
           source: { type: "variable", name: "" },
         });
         break;
       case "scalar_price":
-        onChange({ type: "scalar_price", source: "close" });
+        setExpr({ type: "scalar_price", source: "close" });
         break;
       case "indicator":
-        onChange({ type: "indicator", name: "", params: [], lineName: "" });
+        setExpr({ type: "indicator", name: "", params: [], lineName: "" });
         break;
       case "binary_op":
-        onChange({
+        setExpr({
           type: "binary_op",
           operator: "+",
           left: { type: "constant", value: 0 },
@@ -53,14 +85,14 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
         });
         break;
       case "unary_op":
-        onChange({
+        setExpr({
           type: "unary_op",
           operator: "-",
           operand: { type: "constant", value: 0 },
         });
         break;
       case "ternary":
-        onChange({
+        setExpr({
           type: "ternary",
           condition: {
             type: "comparison",
@@ -80,13 +112,182 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
       <Select
         label="式の種類"
         name={`${name}.type`}
-        value={type}
+        value={expr.type}
         onChange={(val) => handleTypeChange(val as StrategyVariableExpression["type"])}
         options={EXPRESSION_TYPES}
       />
 
-      {/* TODO: 各種入力フィールドを条件ごとに分けて表示 */}
-      <pre className="text-xs bg-gray-100 p-2 rounded">{JSON.stringify(value, null, 2)}</pre>
+      {expr.type === "constant" && (
+        <NumberInput
+          fullWidth
+          label="値"
+          value={expr.value}
+          onChange={(val) =>
+            setExpr({ type: "constant", value: val ?? 0 })
+          }
+        />
+      )}
+
+      {expr.type === "bar_shift" && (
+        <div className="space-y-2">
+          <Select
+            fullWidth
+            label="変数"
+            value={expr.source.type === "variable" ? expr.source.name : ""}
+            onChange={(val) =>
+              setExpr({
+                ...expr,
+                source: { type: "variable", name: val },
+              })
+            }
+            options={variables.map((v) => ({
+              value: v.name,
+              label: `${v.name}${v.description ? ` (${v.description})` : ""}`,
+            }))}
+          />
+          <NumberInput
+            fullWidth
+            label="シフト数"
+            value={(expr.shiftBars as any)?.value ?? null}
+            onChange={(val) =>
+              setExpr({
+                ...expr,
+                shiftBars:
+                  val === null ? undefined : { type: "constant", value: val },
+              })
+            }
+          />
+        </div>
+      )}
+
+      {expr.type === "scalar_price" && (
+        <div className="space-y-2">
+          <Select
+            fullWidth
+            label="価格"
+            value={expr.source}
+            onChange={(val) =>
+              setExpr({ ...expr, source: val as typeof expr.source })
+            }
+            options={PRICE_OPTIONS}
+          />
+          <NumberInput
+            fullWidth
+            label="シフト数"
+            value={(expr.shiftBars as any)?.value ?? null}
+            onChange={(val) =>
+              setExpr({
+                ...expr,
+                shiftBars:
+                  val === null ? undefined : { type: "constant", value: val },
+              })
+            }
+          />
+        </div>
+      )}
+
+      {expr.type === "indicator" && (
+        <div className="space-y-2">
+          <Select
+            fullWidth
+            label="インジケーター"
+            value={expr.name}
+            onChange={(val) =>
+              setExpr({ ...expr, name: val })
+            }
+            options={indicators.map((i) => ({ value: i.name, label: i.label }))}
+          />
+          <Select
+            fullWidth
+            label="ライン"
+            value={expr.lineName}
+            onChange={(val) =>
+              setExpr({ ...expr, lineName: val })
+            }
+            options={useMemo(() => {
+              const indicator = indicators.find((i) => i.name === expr.name);
+              return (indicator?.lines || []).map((l) => ({
+                value: l.name,
+                label: l.label,
+              }));
+            }, [indicators, expr.name])}
+          />
+        </div>
+      )}
+
+      {expr.type === "binary_op" && (
+        <div className="space-y-2 border p-2 rounded">
+          <Select
+            fullWidth
+            label="演算子"
+            value={expr.operator}
+            onChange={(val) =>
+              setExpr({ ...expr, operator: val as typeof expr.operator })
+            }
+            options={BINARY_OPERATORS}
+          />
+          <VariableExpressionEditor
+            name={`${name}.left`}
+            value={expr.left}
+            onChange={(val) =>
+              setExpr({ ...expr, left: val as any })
+            }
+          />
+          <VariableExpressionEditor
+            name={`${name}.right`}
+            value={expr.right}
+            onChange={(val) =>
+              setExpr({ ...expr, right: val as any })
+            }
+          />
+        </div>
+      )}
+
+      {expr.type === "unary_op" && (
+        <div className="space-y-2 border p-2 rounded">
+          <Select
+            fullWidth
+            label="演算子"
+            value={expr.operator}
+            onChange={(val) =>
+              setExpr({ ...expr, operator: val as typeof expr.operator })
+            }
+            options={UNARY_OPERATORS}
+          />
+          <VariableExpressionEditor
+            name={`${name}.operand`}
+            value={expr.operand}
+            onChange={(val) =>
+              setExpr({ ...expr, operand: val as any })
+            }
+          />
+        </div>
+      )}
+
+      {expr.type === "ternary" && (
+        <div className="space-y-2 border p-2 rounded">
+          <StrategyConditionBuilder
+            value={expr.condition}
+            onChange={(val) =>
+              setExpr({ ...expr, condition: val as any })
+            }
+          />
+          <VariableExpressionEditor
+            name={`${name}.trueExpr`}
+            value={expr.trueExpr}
+            onChange={(val) =>
+              setExpr({ ...expr, trueExpr: val as any })
+            }
+          />
+          <VariableExpressionEditor
+            name={`${name}.falseExpr`}
+            value={expr.falseExpr}
+            onChange={(val) =>
+              setExpr({ ...expr, falseExpr: val as any })
+            }
+          />
+        </div>
+      )}
     </div>
   );
 };
