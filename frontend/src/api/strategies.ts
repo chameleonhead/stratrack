@@ -29,9 +29,14 @@ export type StrategyDetail = {
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_KEY = import.meta.env.VITE_API_KEY ?? "";
 
 export async function listStrategies(): Promise<StrategySummary[]> {
-  const res = await fetch(`${API_BASE_URL}/api/strategies`);
+  const res = await fetch(`${API_BASE_URL}/api/strategies`, {
+    headers: {
+      "x-functions-key": API_KEY,
+    },
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch strategies: ${res.status}`);
   }
@@ -39,7 +44,11 @@ export async function listStrategies(): Promise<StrategySummary[]> {
 }
 
 export async function getStrategy(id: string): Promise<StrategyDetail> {
-  const res = await fetch(`${API_BASE_URL}/api/strategies/${id}`);
+  const res = await fetch(`${API_BASE_URL}/api/strategies/${id}`, {
+    headers: {
+      "x-functions-key": API_KEY,
+    },
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch strategy: ${res.status}`);
   }
@@ -57,7 +66,7 @@ function toPlain<T>(value: T): T {
 export async function createStrategy(data: NewStrategyRequest) {
   const res = await fetch(`${API_BASE_URL}/api/strategies`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-functions-key": API_KEY },
     body: JSON.stringify(toPlain(data)),
   });
   if (!res.ok) {

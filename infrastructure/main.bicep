@@ -145,6 +145,11 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
     serverFarmId: functionAppPlan.id
     httpsOnly: true
     siteConfig: {
+      cors: {
+        allowedOrigins: [
+          'https://${staticWebApp.properties.defaultHostname}'
+        ]
+      }
       windowsFxVersion: 'DOTNETCORE|8.0'
       appSettings: [
         {
