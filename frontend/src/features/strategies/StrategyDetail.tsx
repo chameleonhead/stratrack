@@ -32,7 +32,7 @@ export default function StrategyDetail({ strategy }: StrategyDetailProps) {
 
       <section>
         <h3 className="text-lg font-semibold mb-2">テンプレート</h3>
-        <pre className="bg-gray-100 p-4 rounded overflow-auto whitespace-pre-wrap">
+        <pre className="bg-gray-100 text-black p-2 rounded overflow-auto whitespace-pre-wrap">
           {JSON.stringify(strategy.template, null, 2)}
         </pre>
       </section>
