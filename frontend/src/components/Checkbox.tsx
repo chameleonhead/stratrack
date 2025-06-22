@@ -35,10 +35,7 @@ function Checkbox({ label, id, name, value, onChange, checked, error, className 
         type="checkbox"
         checked={localValue}
         onChange={handleChange}
-        className={cn(
-          "checkbox",
-          error ? "checkbox-error" : ""
-        )}
+        className={cn("checkbox", error ? "checkbox-error" : "")}
       />
       <label htmlFor={uniqueId} className="label">
         {label}

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 import StrategyTemplateEditor from "./StrategyTemplateEditor";
 
@@ -13,4 +13,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("tab", { name: "エントリー戦略" }));
+    await expect(canvas.getByRole("tab", { name: "エントリー戦略" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+  },
 };

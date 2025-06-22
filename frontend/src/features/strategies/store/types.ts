@@ -17,14 +17,12 @@ export type StrategyDraft = {
   conflict: boolean;
 };
 
-export type SaveStatus = 'idle' | 'pending' | 'success' | 'error' | 'conflict';
-export type SyncStatus = 'online' | 'offline' | 'syncing' | 'queued';
+export type SaveStatus = "idle" | "pending" | "success" | "error" | "conflict";
+export type SyncStatus = "online" | "offline" | "syncing" | "queued";
 
-export type SyncJobType =
-  | 'upload-local-changes'
-  | 'merge-remote-data';
+export type SyncJobType = "upload-local-changes" | "merge-remote-data";
 
-export type SyncJobStatus = 'pending' | 'running' | 'completed' | 'failed';
+export type SyncJobStatus = "pending" | "running" | "completed" | "failed";
 
 export type SyncJob = {
   id: string;
@@ -60,11 +58,11 @@ export type UseStrategyStore = {
 
   // ジョブ管理（バックテストなし）
   syncJobs: SyncJob[];
-  addSyncJob: (job: Omit<SyncJob, 'id' | 'lastUpdated'>) => void;
+  addSyncJob: (job: Omit<SyncJob, "id" | "lastUpdated">) => void;
   updateSyncJobStatus: (jobId: string, status: SyncJobStatus, error?: string) => void;
   clearCompletedJobs: () => void;
 
   // キャッシュ操作
   loadFromCache: () => Promise<void>;
   persistToCache: () => Promise<void>;
-}
+};

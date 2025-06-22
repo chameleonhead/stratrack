@@ -42,7 +42,9 @@ export default function DatePicker({
 
   return (
     <div className={cn(fullWidth ? "fieldset" : "")}>
-      {label && <label className={cn(fullWidth ? "fieldset-legend" : "label block")}>{label}</label>}
+      {label && (
+        <label className={cn(fullWidth ? "fieldset-legend" : "label block")}>{label}</label>
+      )}
       <input
         type="date"
         id={uniqueId}
@@ -51,11 +53,8 @@ export default function DatePicker({
         onChange={handleChange}
         required={required}
         placeholder={placeholder}
-        className={cn(
-          fullWidth ? "w-full" : null,
-          "input",
-          error ? "input-error" : ""
-        )}
+        className={cn(fullWidth ? "w-full" : null, "input", error ? "input-error" : "")}
+        role="textbox"
       />
       {error && <p className="text-sm text-error">{error}</p>}
     </div>

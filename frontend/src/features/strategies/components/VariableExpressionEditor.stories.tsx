@@ -1,7 +1,7 @@
 import VariableExpressionEditor from "./VariableExpressionEditor";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import VariableProvider from "./VariableProvider";
 import { ConditionOperand } from "../../../codegen/dsl/common";
 
@@ -23,6 +23,11 @@ export const ConstantOperand: Story = {
       value: 100,
     },
   } satisfies { value: ConditionOperand },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(canvas.getByLabelText("値"), "1");
+    await expect(args.onChange).toHaveBeenCalled();
+  },
 };
 
 export const VariablesOperand: Story = {

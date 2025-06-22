@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import Select from "./Select";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -22,6 +22,11 @@ export const Basic: Story = {
   args: {
     label: "通貨",
     placeholder: "通貨を選択してください",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.selectOptions(canvas.getByRole("combobox"), "usd");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

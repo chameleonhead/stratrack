@@ -1,6 +1,6 @@
 import CheckboxGroup from "./CheckboxGroup";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 const meta: Meta<typeof CheckboxGroup> = {
   component: CheckboxGroup,
@@ -22,6 +22,11 @@ export const Vertical: Story = {
   args: {
     label: "通知設定",
     defaultValue: [],
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("メール通知"));
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

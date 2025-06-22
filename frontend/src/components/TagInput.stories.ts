@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import TagInput from "./TagInput";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -18,6 +18,12 @@ export const Basic: Story = {
     label: "タグ",
     name: "tags",
     placeholder: "タグを追加",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole("textbox");
+    await userEvent.type(input, "tagA{enter}");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

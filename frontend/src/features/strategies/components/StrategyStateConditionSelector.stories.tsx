@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import StrategyStateConditionSelector from "./StrategyStateConditionSelector";
 import VariableProvider from "./VariableProvider";
 
@@ -20,4 +20,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.selectOptions(canvas.getByLabelText("状態"), "rising");
+    await expect(args.onChange).toHaveBeenCalled();
+  },
+};

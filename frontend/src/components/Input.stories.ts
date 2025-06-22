@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import Input from "./Input";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -17,6 +17,12 @@ export const Basic: Story = {
   args: {
     label: "入力",
     placeholder: "値を入力",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("入力");
+    await userEvent.type(input, "test");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

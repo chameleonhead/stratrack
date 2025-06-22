@@ -72,10 +72,7 @@ function TagInput({
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag) => (
-          <span
-            key={tag}
-            className="badge badge-primary"
-          >
+          <span key={tag} className="badge badge-primary">
             {tag}
             <button
               type="button"

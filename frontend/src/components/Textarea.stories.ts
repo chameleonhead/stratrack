@@ -1,4 +1,4 @@
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import Textarea from "./Textarea";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -17,6 +17,12 @@ export const Basic: Story = {
   args: {
     label: "自己紹介",
     placeholder: "あなたの自己紹介を書いてください",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const textarea = canvas.getByLabelText("自己紹介");
+    await userEvent.type(textarea, "こんにちは");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

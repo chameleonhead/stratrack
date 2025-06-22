@@ -5,7 +5,7 @@ export function useLocalValue<T>(
   value?: T,
   onChange?: (value: T) => void
 ): [T, Dispatch<SetStateAction<T>>] {
-  const [localValue, setLocalValue] = useState<T>(value ?? defaultValue);
+  const [localValue, setLocalValue] = useState<T>(value || defaultValue);
   const isControlled = typeof value !== "undefined";
 
   const updateValue = useCallback(
@@ -28,10 +28,10 @@ export function useLocalValue<T>(
   );
 
   useEffect(() => {
-    if (isControlled && value !== localValue) {
-      setLocalValue(value as T);
+    if (isControlled && value) {
+      setLocalValue(prevState => prevState !== value ? value : prevState);
     }
-  }, [isControlled, value, localValue]);
+  }, [isControlled, value]);
 
   return [localValue, updateValue];
 }

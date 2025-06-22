@@ -59,9 +59,7 @@ const ShiftBarsEditor: React.FC<ShiftBarsEditorProps> = ({ value, onChange, labe
           <Select
             fullWidth
             value={local.name}
-            onChange={(val) =>
-              setLocalValue({ type: "variable", name: val })
-            }
+            onChange={(val) => setLocalValue({ type: "variable", name: val })}
             options={variables.map((v) => ({
               value: v.name,
               label: `${v.name}${v.description ? ` (${v.description})` : ""}`,

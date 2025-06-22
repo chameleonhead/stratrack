@@ -7,9 +7,7 @@ describe("createStrategy", () => {
       ok: true,
       json: async () => ({ id: "1" }),
     });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     const template = { foo: [] };
 
