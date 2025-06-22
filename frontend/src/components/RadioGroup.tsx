@@ -38,11 +38,7 @@ function RadioGroup({
 
   return (
     <div id={uniqueId} className={cn(fullWidth ? "fieldset" : "")}>
-      {label && (
-        <p className={cn(fullWidth ? "fieldset-legend" : "label block")}>
-          {label}
-        </p>
-      )}
+      {label && <p className={cn(fullWidth ? "fieldset-legend" : "label block")}>{label}</p>}
       <div className={cn("flex", direction === "vertical" ? "flex-col gap-2" : "flex-row gap-4")}>
         {options.map((opt) => {
           const id = `${name}-${opt.value}`;
@@ -55,10 +51,7 @@ function RadioGroup({
                 value={opt.value}
                 checked={localValue === opt.value}
                 onChange={() => setLocalValue(opt.value)}
-                className={cn(
-                  "radio",
-                  error ? "radio-error" : ""
-                )}
+                className={cn("radio", error ? "radio-error" : "")}
               />
               <label htmlFor={id} className="label">
                 {opt.label}

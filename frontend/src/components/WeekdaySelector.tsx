@@ -63,12 +63,7 @@ export default function WeekdaySelector({
             type="button"
             name={name}
             onClick={() => toggleDay(day.value)}
-            className={cn(
-              "btn grow",
-              localValue.includes(day.value)
-                ? "btn-primary"
-                : ""
-            )}
+            className={cn("btn grow", localValue.includes(day.value) ? "btn-primary" : "")}
           >
             {day.label}
           </button>

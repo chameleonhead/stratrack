@@ -28,7 +28,7 @@ export type StrategyDetail = {
   updatedAt: string;
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export async function listStrategies(): Promise<StrategySummary[]> {
   const res = await fetch(`${API_BASE_URL}/api/strategies`);
@@ -56,8 +56,8 @@ function toPlain<T>(value: T): T {
 
 export async function createStrategy(data: NewStrategyRequest) {
   const res = await fetch(`${API_BASE_URL}/api/strategies`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPlain(data)),
   });
   if (!res.ok) {

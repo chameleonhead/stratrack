@@ -124,7 +124,9 @@ function StrategyConditionBuilder({
       {useMemo(() => {
         switch (condition.type) {
           case "comparison":
-            return <StrategyComparisonConditionSelector value={condition} onChange={setCondition} />;
+            return (
+              <StrategyComparisonConditionSelector value={condition} onChange={setCondition} />
+            );
           case "cross":
             return <StrategyCrossConditionSelector value={condition} onChange={setCondition} />;
           case "state":

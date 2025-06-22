@@ -260,9 +260,7 @@ export function emitPyExpr(
     case "variable_ref": {
       const base = attr(ref("self.lines"), `_${expr.name}`);
       // shiftが0ならlit(0)を使う
-      return mode === "scalar"
-        ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift)))
-        : base;
+      return mode === "scalar" ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift))) : base;
     }
     case "unary":
       return unary(expr.operator, emitPyExpr(expr.operand, mode, shift));
@@ -274,9 +272,7 @@ export function emitPyExpr(
       );
     case "price_ref": {
       const base = attr(ref("self.data"), expr.source);
-      return mode === "scalar"
-        ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift)))
-        : base;
+      return mode === "scalar" ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift))) : base;
     }
     case "bar_shift": {
       const base = emitPyExpr(expr.source, "array");
@@ -294,9 +290,8 @@ export function emitPyExpr(
         } else {
           totalShift = bin("+", shiftBar, lit(shift));
         }
-        const indexExpr = (totalShift.type === "literal" && totalShift.value === 0)
-          ? lit(0)
-          : unary("-", totalShift);
+        const indexExpr =
+          totalShift.type === "literal" && totalShift.value === 0 ? lit(0) : unary("-", totalShift);
         if (fallback) {
           return ternary(
             cmp(call(ref("len"), [base]), [">"], [totalShift]),

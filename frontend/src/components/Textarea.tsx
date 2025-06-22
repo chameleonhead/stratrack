@@ -54,11 +54,7 @@ function Textarea({
         required={required}
         value={localValue}
         onChange={handleChange}
-        className={cn(
-          fullWidth ? "w-full" : null,
-          "textarea",
-          error ? "textarea-error" : ""
-        )}
+        className={cn(fullWidth ? "w-full" : null, "textarea", error ? "textarea-error" : "")}
       />
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
