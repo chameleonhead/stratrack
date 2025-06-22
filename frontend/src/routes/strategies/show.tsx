@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getStrategy, StrategyDetail } from "../../api/strategies";
+import StrategyDetailView from "../../features/strategies/StrategyDetail";
 
 const StrategyDetails = () => {
   const { strategyId } = useParams<{ strategyId: string }>();
@@ -20,14 +21,7 @@ const StrategyDetails = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{strategy.name}</h2>
-      </header>
-
-      <section>
-        <h3 className="text-lg font-semibold mb-2">説明</h3>
-        <p className="whitespace-pre-wrap">{strategy.description ?? "(なし)"}</p>
-      </section>
+      <StrategyDetailView strategy={strategy} />
     </div>
   );
 };
