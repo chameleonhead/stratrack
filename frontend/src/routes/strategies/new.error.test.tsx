@@ -29,7 +29,7 @@ describe("NewStrategy", () => {
 
     const form = div.querySelector("form")!;
     await act(async () => {
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      form.requestSubmit();
     });
 
     expect(div.querySelector(".text-error")?.textContent).toBe("failed");
