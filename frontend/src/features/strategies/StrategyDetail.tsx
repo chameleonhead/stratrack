@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import CodeEditor from "../../components/CodeEditor";
 import type { StrategyDetail as StrategyDetailType } from "../../api/strategies";
 
@@ -10,6 +11,9 @@ export default function StrategyDetail({ strategy }: StrategyDetailProps) {
     <div className="space-y-6">
       <header className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">{strategy.name}</h2>
+        <Link to={`/strategies/${strategy.id}/edit`} className="btn btn-sm btn-primary">
+          編集
+        </Link>
       </header>
 
       <section>

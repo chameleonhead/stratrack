@@ -74,3 +74,17 @@ export async function createStrategy(data: NewStrategyRequest) {
   }
   return res.json();
 }
+
+export type UpdateStrategyRequest = NewStrategyRequest;
+
+export async function updateStrategy(id: string, data: UpdateStrategyRequest) {
+  const res = await fetch(`${API_BASE_URL}/api/strategies/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "x-functions-key": API_KEY },
+    body: JSON.stringify(toPlain(data)),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to update strategy: ${res.status}`);
+  }
+  return res.json();
+}

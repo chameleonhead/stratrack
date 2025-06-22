@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { MemoryRouter } from "react-router-dom";
 import StrategyDetail from "./StrategyDetail";
 
 const meta = {
   component: StrategyDetail,
+  render: (args) => (
+    <MemoryRouter>
+      <StrategyDetail {...args} />
+    </MemoryRouter>
+  ),
   args: {
     strategy: {
       id: "1",
