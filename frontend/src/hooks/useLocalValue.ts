@@ -1,37 +1,30 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 
 export function useLocalValue<T>(
   defaultValue: T,
   value?: T,
   onChange?: (value: T) => void
 ): [T, Dispatch<SetStateAction<T>>] {
-  const [localValue, setLocalValue] = useState<T>(value || defaultValue);
+  const [internalValue, setInternalValue] = useState<T>(defaultValue);
+
   const isControlled = typeof value !== "undefined";
+  const currentValue = isControlled ? (value as T) : internalValue;
 
   const updateValue = useCallback(
-    (setStateAction: SetStateAction<T>) => {
-      setLocalValue((prevState) => {
-        const current = isControlled ? (value as T) : prevState;
-        const newValue =
-          typeof setStateAction === "function"
-            ? (setStateAction as (prev: T) => T)(current)
-            : setStateAction;
+    (action: SetStateAction<T>) => {
+      const newValue =
+        typeof action === "function" ? (action as (prev: T) => T)(currentValue) : action;
 
-        if (onChange && newValue !== current) {
-          onChange(newValue);
-        }
+      if (!isControlled) {
+        setInternalValue(newValue);
+      }
 
-        return isControlled ? prevState : newValue;
-      });
+      if (onChange && newValue !== currentValue) {
+        onChange(newValue);
+      }
     },
-    [isControlled, onChange, value]
+    [currentValue, isControlled, onChange]
   );
 
-  useEffect(() => {
-    if (isControlled && value) {
-      setLocalValue(prevState => prevState !== value ? value : prevState);
-    }
-  }, [isControlled, value]);
-
-  return [localValue, updateValue];
+  return [currentValue, updateValue];
 }

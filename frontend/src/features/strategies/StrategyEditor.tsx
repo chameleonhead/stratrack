@@ -21,11 +21,13 @@ function StrategyEditor({ value, onChange }: StrategyEditorProps) {
   const setValue = useStore((s) => s.setValue);
   const update = useStore((s) => s.update);
 
+  // initialize store value from prop when the component mounts or when the
+  // provided value changes from the outside
   useEffect(() => {
-    if (value && value !== localValue) {
+    if (value) {
       setValue(value);
     }
-  }, [value, localValue, setValue]);
+  }, [value, setValue]);
 
   useEffect(() => {
     if (onChange) {
