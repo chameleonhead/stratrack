@@ -27,3 +27,4 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 4. React コンポーネントを追加・変更した場合は Storybook 用の `*.stories.tsx` ファイルを作成してください。
 5. ピュアなコードのテストをするときは vitest を使い、コンポーネントのテストをするときは storybook の play 関数を使用してください。
 6. play 関数を利用する際はモックを利用せず、できる限り msw で対応してください。
+7. Storybook 用のテストヘルパーは `@storybook/testing-library` ではなく、`storybook/test` を使用してください。

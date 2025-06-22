@@ -1,7 +1,7 @@
 import StrategyConditionOperandSelector from "./StrategyConditionOperandSelector";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 import VariableProvider from "./VariableProvider";
 
 const meta: Meta<typeof StrategyConditionOperandSelector> = {
@@ -52,6 +52,11 @@ export const ConstantOperand: Story = {
       type: "constant",
       value: 100,
     },
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(canvas.getByPlaceholderText("定数（数値）"), "5");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 
