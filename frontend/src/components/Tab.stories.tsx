@@ -1,6 +1,6 @@
 import Tab from "./Tab";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 const meta: Meta<typeof Tab> = {
   component: Tab,
@@ -30,7 +30,14 @@ export default meta;
 
 type Story = StoryObj<typeof Tab>;
 
-export const Basic: Story = {};
+export const Basic: Story = {
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const tab = canvas.getByRole("tab", { name: "履歴" });
+    await userEvent.click(tab);
+    await expect(args.onSelectedIndexChnage).toHaveBeenCalled();
+  },
+};
 
 export const Controlled: Story = {
   args: {

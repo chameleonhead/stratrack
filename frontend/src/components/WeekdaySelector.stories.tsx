@@ -1,6 +1,6 @@
 import WeekdaySelector from "./WeekdaySelector";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 const meta: Meta<typeof WeekdaySelector> = {
   component: WeekdaySelector,
@@ -16,6 +16,11 @@ type Story = StoryObj<typeof WeekdaySelector>;
 export const Basic: Story = {
   args: {
     label: "曜日",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("checkbox", { name: "月" }));
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

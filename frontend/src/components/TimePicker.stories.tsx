@@ -1,6 +1,6 @@
 import TimePicker from "./TimePicker";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 const meta: Meta<typeof TimePicker> = {
   component: TimePicker,
@@ -17,6 +17,12 @@ export const Basic: Story = {
   args: {
     label: "開始時間",
     placeholder: "HH:mm",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("開始時間");
+    await userEvent.type(input, "09:00");
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 

@@ -1,6 +1,6 @@
 import RadioGroup from "./RadioGroup";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { fn, userEvent, within, expect } from "storybook/test";
 
 const meta: Meta<typeof RadioGroup> = {
   component: RadioGroup,
@@ -21,6 +21,11 @@ type Story = StoryObj<typeof RadioGroup>;
 export const Vertical: Story = {
   args: {
     label: "性別",
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("男"));
+    await expect(args.onChange).toHaveBeenCalled();
   },
 };
 
