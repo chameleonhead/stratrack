@@ -1,7 +1,7 @@
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes";
 import App from "./App";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const router = createMemoryRouter(routes);
 

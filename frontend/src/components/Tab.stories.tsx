@@ -1,6 +1,6 @@
 import Tab from "./Tab";
-import type { Meta, StoryObj } from "@storybook/react";
-import { fn } from "@storybook/test";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 
 const meta: Meta<typeof Tab> = {
   component: Tab,

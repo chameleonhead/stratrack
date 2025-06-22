@@ -1,6 +1,6 @@
-import { fn } from "@storybook/test";
+import { fn } from "storybook/test";
 import TagInput from "./TagInput";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta<typeof TagInput> = {
   component: TagInput,

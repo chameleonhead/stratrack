@@ -1,6 +1,6 @@
-import { fn } from "@storybook/test";
+import { fn } from "storybook/test";
 import Textarea from "./Textarea";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta<typeof Textarea> = {
   component: Textarea,
