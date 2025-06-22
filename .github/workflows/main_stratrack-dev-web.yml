@@ -17,12 +17,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to Azure Static Web Apps
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_WATER }}
-          action: "upload"
-          app_location: "frontend"
-          app_build_command: "npm run build"
-          output_location: "dist"
-          production_branch: "main"
+          node-version: 20
+
+      - name: npm ci and build
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+      - name: Deploy to Static Web App
+        run: |
+          npm i -g @azure/static-web-apps-cli
+          swa deploy ./frontend/dist/ --env production --deployment-token ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_WATER }}
