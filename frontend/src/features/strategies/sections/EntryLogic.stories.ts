@@ -16,7 +16,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "条件を追加" }));
+    await userEvent.click(canvas.getAllByRole("button", { name: "条件を追加" })[0]);
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

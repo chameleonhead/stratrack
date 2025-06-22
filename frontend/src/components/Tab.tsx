@@ -40,6 +40,7 @@ export default function Tab({ tabs, selectedIndex, onSelectedIndexChnage }: TabP
                   )}
                   onClick={() => setLocalValue(i)}
                   aria-disabled={tab.disabled}
+                  aria-selected={localValue === i}
                 >
                   {tab.label}
                 </a>

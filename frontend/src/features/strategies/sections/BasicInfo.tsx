@@ -1,57 +1,52 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import Input from "../../../components/Input";
 import TagInput from "../../../components/TagInput";
 import Textarea from "../../../components/Textarea";
 import { Strategy } from "../../../codegen/dsl/strategy";
+import { useLocalValue } from "../../../hooks/useLocalValue";
 
 export type BasicInfoProps = {
-  value: Partial<Strategy>;
+  value?: Partial<Strategy>;
   onChange?: (value: Partial<Strategy>) => void;
 };
 
 function BasicInfo({ value, onChange }: BasicInfoProps) {
-  const tags = useMemo(() => value.tags ?? [], [value.tags]);
+  const [localValue, setLocalValue] = useLocalValue({ tags: [] }, value, onChange);
   return (
     <section id="basic-info" className="space-y-4">
       <h2>基本情報</h2>
       <Input
         label="戦略名"
-        value={value.name || ""}
+        value={localValue.name || ""}
         onChange={useCallback(
           (newvalue: string) => {
-            if (onChange) {
-              onChange({ ...value, name: newvalue });
-            }
+            setLocalValue((currentValue) => ({ ...currentValue, name: newvalue }));
           },
-          [onChange, value]
+          [setLocalValue]
         )}
         required
         fullWidth
       />
       <Input
         label="戦略名（英語名）"
-        value={value.nameEn || ""}
+        value={localValue.nameEn || ""}
         onChange={useCallback(
           (newvalue: string) => {
-            if (onChange) {
-              onChange({ ...value, nameEn: newvalue });
-            }
+            setLocalValue((currentValue) => ({ ...currentValue, nameEn: newvalue }));
           },
-          [onChange, value]
+          [setLocalValue]
         )}
         required
         fullWidth
       />
       <Textarea
         label="説明"
-        value={value.description || ""}
+        value={localValue.description || ""}
         onChange={useCallback(
           (newvalue: string) => {
-            if (onChange) {
-              onChange({ ...value, description: newvalue });
-            }
+            setLocalValue((currentValue) => ({ ...currentValue, description: newvalue }));
           },
-          [onChange, value]
+          [setLocalValue]
         )}
         name="description"
         rows={3}
@@ -59,14 +54,12 @@ function BasicInfo({ value, onChange }: BasicInfoProps) {
       />
       <TagInput
         label="タグ"
-        value={tags}
+        value={localValue.tags}
         onChange={useCallback(
           (newvalue: string[]) => {
-            if (onChange) {
-              onChange({ ...value, tags: newvalue });
-            }
+            setLocalValue((currentValue) => ({ ...currentValue, tags: newvalue }));
           },
-          [onChange, value]
+          [setLocalValue]
         )}
         name="tags"
         fullWidth

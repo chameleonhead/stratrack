@@ -6,7 +6,6 @@ import { Weekday } from "../codegen/dsl/strategy";
 export type WeekdaySelectorProps = {
   label?: string;
   id?: string;
-  name?: string;
   defaultValue?: Weekday[];
   value?: Weekday[];
   onChange?: (selected: string[]) => void;
@@ -28,7 +27,6 @@ const defaultWeekdays: { label: string; value: Weekday }[] = [
 export default function WeekdaySelector({
   label,
   id,
-  name,
   defaultValue,
   value,
   onChange,
@@ -61,9 +59,10 @@ export default function WeekdaySelector({
           <button
             key={day.value}
             type="button"
-            name={name}
             onClick={() => toggleDay(day.value)}
             className={cn("btn grow", localValue.includes(day.value) ? "btn-primary" : "")}
+            role="checkbox"
+            aria-label={day.label}
           >
             {day.label}
           </button>

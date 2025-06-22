@@ -23,7 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.selectOptions(canvas.getByRole("combobox"), "cross");
+    await userEvent.selectOptions(canvas.getAllByRole("combobox")[0], "cross");
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

@@ -1,6 +1,6 @@
 import DatePicker from "./DatePicker";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn, userEvent, within, expect } from "storybook/test";
+import { fn, userEvent, within, expect, waitFor } from "storybook/test";
 
 const meta: Meta<typeof DatePicker> = {
   component: DatePicker,
@@ -20,8 +20,8 @@ export const Basic: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("textbox"));
-    await userEvent.type(canvas.getByRole("textbox"), "2025-01-01");
+    const input = await waitFor(() => canvas.getByRole("textbox"));
+    await userEvent.type(input, "2025-01-01");
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

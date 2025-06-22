@@ -1,6 +1,6 @@
 import CodeEditor from "./CodeEditor";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn, userEvent, within, expect } from "storybook/test";
+import { fn, userEvent, within, expect, waitFor } from "storybook/test";
 
 const meta: Meta<typeof CodeEditor> = {
   component: CodeEditor,
@@ -20,7 +20,9 @@ export const Editable: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const textarea = canvas.getByRole("textbox");
-    await userEvent.type(textarea, "\nprint('done')");
+    textarea.focus();
+    await waitFor(() => expect(textarea).toHaveFocus());
+    await userEvent.type(textarea, "print('done')\n");
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

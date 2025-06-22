@@ -54,6 +54,7 @@ export default function DatePicker({
         required={required}
         placeholder={placeholder}
         className={cn(fullWidth ? "w-full" : null, "input", error ? "input-error" : "")}
+        role="textbox"
       />
       {error && <p className="text-sm text-error">{error}</p>}
     </div>

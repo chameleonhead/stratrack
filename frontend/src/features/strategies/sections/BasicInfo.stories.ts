@@ -6,7 +6,6 @@ import BasicInfo from "./BasicInfo";
 const meta = {
   component: BasicInfo,
   args: {
-    value: {},
     onChange: fn(),
   },
 } satisfies Meta<typeof BasicInfo>;

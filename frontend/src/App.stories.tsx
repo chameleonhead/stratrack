@@ -23,6 +23,6 @@ type Story = StoryObj<typeof App>;
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText("ダッシュボード")).toBeInTheDocument();
+    await expect(canvas.getAllByText("ダッシュボード")[0]).toBeInTheDocument();
   },
 };
