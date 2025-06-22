@@ -28,3 +28,4 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 5. ピュアなコードのテストをするときは vitest を使い、コンポーネントのテストをするときは storybook の play 関数を使用してください。
 6. play 関数を利用する際はモックを利用せず、できる限り msw で対応してください。
 7. Storybook 用のテストヘルパーは `@storybook/testing-library` ではなく、`storybook/test` を使用してください。
+8. ビルドが通ることを確認するため、`npm run build` を実行してください。

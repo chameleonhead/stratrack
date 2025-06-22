@@ -23,10 +23,11 @@ export function visitScalarExpression(expr: ScalarExpression, visitor: Visitor) 
       break;
     case "bar_shift":
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
-      if (expr.shiftBars) visitScalarExpression(expr.shiftBars, visitor);
+      if (expr.shiftBars) visitor(expr.shiftBars);
       break;
     case "scalar_price":
       if (expr.fallback) visitScalarExpression(expr.fallback, visitor);
+      if (expr.shiftBars) visitor(expr.shiftBars);
       break;
   }
 }

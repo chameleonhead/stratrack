@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import Select from "../../../components/Select";
 import NumberInput from "../../../components/NumberInput";
 import ShiftBarsEditor from "./ShiftBarsEditor";
-import { StrategyVariableExpression } from "../../../codegen/dsl/strategy";
+import { StrategyVariableExpression, StrategyCondition } from "../../../codegen/dsl/strategy";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { useVariables } from "./useVariables";
 import { useIndicatorList } from "../../indicators/IndicatorProvider";
@@ -59,13 +59,14 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
     onChange
   );
 
+  const indicatorName = expr.type === "indicator" ? expr.name : "";
   const lineOptions = useMemo(() => {
-    const indicator = indicators.find((i) => i.name === expr.name);
+    const indicator = indicators.find((i) => i.name === indicatorName);
     return (indicator?.lines || []).map((l) => ({
       value: l.name,
       label: l.label,
     }));
-  }, [indicators, expr.name]);
+  }, [indicators, indicatorName]);
 
   const handleTypeChange = (t: StrategyVariableExpression["type"]) => {
     switch (t) {
@@ -130,9 +131,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
           fullWidth
           label="値"
           value={expr.value}
-          onChange={(val) =>
-            setExpr({ type: "constant", value: val ?? 0 })
-          }
+          onChange={(val) => setExpr({ type: "constant", value: val ?? 0 })}
         />
       )}
 
@@ -172,9 +171,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
             fullWidth
             label="価格"
             value={expr.source}
-            onChange={(val) =>
-              setExpr({ ...expr, source: val as typeof expr.source })
-            }
+            onChange={(val) => setExpr({ ...expr, source: val as typeof expr.source })}
             options={PRICE_OPTIONS}
           />
           <ShiftBarsEditor
@@ -196,18 +193,14 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
             fullWidth
             label="インジケーター"
             value={expr.name}
-            onChange={(val) =>
-              setExpr({ ...expr, name: val })
-            }
+            onChange={(val) => setExpr({ ...expr, name: val })}
             options={indicators.map((i) => ({ value: i.name, label: i.label }))}
           />
           <Select
             fullWidth
             label="ライン"
             value={expr.lineName}
-            onChange={(val) =>
-              setExpr({ ...expr, lineName: val })
-            }
+            onChange={(val) => setExpr({ ...expr, lineName: val })}
             options={lineOptions}
           />
         </div>
@@ -219,26 +212,30 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
             fullWidth
             label="演算子"
             value={expr.operator}
-            onChange={(val) =>
-              setExpr({ ...expr, operator: val as typeof expr.operator })
-            }
+            onChange={(val) => setExpr({ ...expr, operator: val as typeof expr.operator })}
             options={BINARY_OPERATORS}
           />
           <VariableExpressionEditor
             name={`${name}.left`}
-            value={expr.left}
+            value={expr.left as unknown as StrategyVariableExpression}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, left: val });
+                setExpr({
+                  ...expr,
+                  left: val as unknown as StrategyVariableExpression,
+                });
               }
             }}
           />
           <VariableExpressionEditor
             name={`${name}.right`}
-            value={expr.right}
+            value={expr.right as unknown as StrategyVariableExpression}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, right: val });
+                setExpr({
+                  ...expr,
+                  right: val as unknown as StrategyVariableExpression,
+                });
               }
             }}
           />
@@ -251,17 +248,18 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
             fullWidth
             label="演算子"
             value={expr.operator}
-            onChange={(val) =>
-              setExpr({ ...expr, operator: val as typeof expr.operator })
-            }
+            onChange={(val) => setExpr({ ...expr, operator: val as typeof expr.operator })}
             options={UNARY_OPERATORS}
           />
           <VariableExpressionEditor
             name={`${name}.operand`}
-            value={expr.operand}
+            value={expr.operand as unknown as StrategyVariableExpression}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, operand: val });
+                setExpr({
+                  ...expr,
+                  operand: val as unknown as StrategyVariableExpression,
+                });
               }
             }}
           />
@@ -271,28 +269,37 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
       {expr.type === "ternary" && (
         <div className="space-y-2 border p-2 rounded">
           <StrategyConditionBuilder
-            value={expr.condition}
+            value={expr.condition as unknown as StrategyCondition}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, condition: val });
+                setExpr({
+                  ...expr,
+                  condition: val as StrategyCondition,
+                });
               }
             }}
           />
           <VariableExpressionEditor
             name={`${name}.trueExpr`}
-            value={expr.trueExpr}
+            value={expr.trueExpr as unknown as StrategyVariableExpression}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, trueExpr: val });
+                setExpr({
+                  ...expr,
+                  trueExpr: val as unknown as StrategyVariableExpression,
+                });
               }
             }}
           />
           <VariableExpressionEditor
             name={`${name}.falseExpr`}
-            value={expr.falseExpr}
+            value={expr.falseExpr as unknown as StrategyVariableExpression}
             onChange={(val) => {
               if (val) {
-                setExpr({ ...expr, falseExpr: val });
+                setExpr({
+                  ...expr,
+                  falseExpr: val as unknown as StrategyVariableExpression,
+                });
               }
             }}
           />
