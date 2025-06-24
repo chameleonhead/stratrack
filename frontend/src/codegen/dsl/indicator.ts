@@ -8,8 +8,8 @@ import {
   ScalarExpression,
   SourceExpression,
   VariableReferenceExpression,
+  VariableDataType,
 } from "./common";
-import { VariableDataType } from "./strategy";
 
 export type Indicator = {
   name: string;

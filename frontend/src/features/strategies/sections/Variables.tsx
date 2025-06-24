@@ -5,8 +5,8 @@ import {
   StrategyTemplate,
   StrategyVariableDefinition,
   StrategyVariableExpression,
-  VariableDataType,
 } from "../../../codegen/dsl/strategy";
+import { VariableDataType } from "../../../codegen/dsl/common";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
 

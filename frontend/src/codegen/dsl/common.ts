@@ -8,6 +8,8 @@ export type ScalarExpression =
   | ScalarUnaryOperationExpression
   | ScalarBinaryOperationExpression
   | ScalarTernaryExpression;
+
+export type VariableDataType = "scalar" | "array" | "parameter";
 export type BarExpression = PriceExpression | SourceExpression | VariableReferenceExpression;
 
 export type ConstantExpression = {

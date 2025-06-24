@@ -38,11 +38,13 @@ import { StrategyVariableDefinition } from "../dsl/strategy";
 type IndicatorContext = {
   map: Map<string, string>;
   currentDefinition?: IndicatorDefinition;
+  variableTimeframes: Map<string, string | undefined>;
 };
 
 export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
   const indicatorContext = {
     map: new Map(),
+    variableTimeframes: new Map<string, string | undefined>(),
   } as IndicatorContext;
 
   const indicatorInstances: IRIndicatorInstance[] = ctx.indicatorInstances.map(
@@ -64,6 +66,9 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
 
   const indicatorDefs: IRIndicatorDefinition[] = ctx.indicatorDefinitions.map(
     (definition, index) => {
+      indicatorContext.variableTimeframes = new Map(
+        definition.indicator.template.variables.map((v) => [v.name, v.timeframe])
+      );
       const irVars = definition.indicator.template.variables.map((v) => {
         indicatorContext.currentDefinition = definition;
         return mapIndicatorVariable(v, indicatorContext);
@@ -97,6 +102,10 @@ export function buildIRFromAnalysis(ctx: StrategyAnalysisContext): IRProgram {
   );
 
   delete indicatorContext.currentDefinition;
+  indicatorContext.variableTimeframes = new Map(
+    (ctx.strategy.variables ?? []).map((v) => [v.name, v.timeframe])
+  );
+
   const strategy: IRStrategy = {
     name: "Generated",
     variables: ctx.strategy.variables?.map((v) => mapStrategyVariable(v, indicatorContext)) ?? [],
@@ -178,13 +187,25 @@ function mapExpression(
     case "source":
       return { type: "source_param_ref", name: expr.name } satisfies IRSourceParamRef;
     case "price":
-      return { type: "price_ref", source: expr.source } satisfies IRPriceRef;
+      return {
+        type: "price_ref",
+        source: expr.source,
+        timeframe: expr.timeframe,
+      } satisfies IRPriceRef;
     case "param":
       return { type: "constant_param_ref", name: expr.name } satisfies IRConstantParamRef;
     case "variable":
-      return { type: "variable_ref", name: expr.name } satisfies IRVariableRef;
+      return {
+        type: "variable_ref",
+        name: expr.name,
+        timeframe: indicatorContext.variableTimeframes.get(expr.name),
+      } satisfies IRVariableRef;
     case "scalar_price": {
-      const ref = { type: "price_ref", source: expr.source } as IRPriceRef;
+      const ref = {
+        type: "price_ref",
+        source: expr.source,
+        timeframe: expr.timeframe,
+      } as IRPriceRef;
       const shiftBar = expr.shiftBars
         ? mapExpression(expr.shiftBars, indicatorContext)
         : ({ type: "constant", value: 0 } as IRExpression);
@@ -196,6 +217,7 @@ function mapExpression(
         source: ref,
         shiftBar,
         fallback,
+        timeframe: ref.timeframe,
       } satisfies IRBarShift;
     }
     case "bar_shift": {
@@ -211,6 +233,7 @@ function mapExpression(
         source: ref,
         shiftBar,
         fallback,
+        timeframe: "timeframe" in ref ? (ref as IRPriceRef | IRVariableRef).timeframe : undefined,
       } satisfies IRBarShift;
     }
     case "indicator":

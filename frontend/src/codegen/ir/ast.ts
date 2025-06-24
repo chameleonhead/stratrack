@@ -161,11 +161,13 @@ export type IRTernaryOp = {
 export type IRPriceRef = {
   type: "price_ref";
   source: string;
+  timeframe?: string;
 };
 
 export type IRVariableRef = {
   type: "variable_ref";
   name: string;
+  timeframe?: string;
 };
 
 export type IRConstantParamRef = {
@@ -183,4 +185,5 @@ export type IRBarShift = {
   source: IRVariableRef | IRPriceRef | IRSourceParamRef;
   shiftBar?: IRExpression;
   fallback?: IRExpression;
+  timeframe?: string;
 };
