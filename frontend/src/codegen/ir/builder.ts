@@ -125,6 +125,8 @@ function mapStrategyVariable(
 ): IRVariable {
   return {
     name: v.name,
+    dataType: v.dataType,
+    timeframe: v.timeframe,
     expression: mapExpression(v.expression, indicatorContext),
     invalidPeriod: v.invalidPeriod ? mapExpression(v.invalidPeriod, indicatorContext) : undefined,
     fallback: v.fallback ? mapExpression(v.fallback, indicatorContext) : undefined,
@@ -137,6 +139,8 @@ function mapIndicatorVariable(
 ): IRVariable {
   return {
     name: v.name,
+    dataType: v.dataType,
+    timeframe: v.timeframe,
     expression: mapExpression(v.expression, indicatorContext),
     invalidPeriod: v.invalidPeriod ? mapExpression(v.invalidPeriod, indicatorContext) : undefined,
     fallback: v.fallback ? mapExpression(v.fallback, indicatorContext) : undefined,

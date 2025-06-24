@@ -33,6 +33,7 @@ export type VariableReferenceExpression = {
 export type PriceExpression = {
   type: "price";
   source: "open" | "high" | "close" | "low" | "tick_volume" | "volume";
+  timeframe?: string;
 };
 
 export type SourceExpression = {
@@ -54,6 +55,7 @@ export type ScalarPriceExpression = {
     | "weighted"
     | "tick_volume"
     | "volume";
+  timeframe?: string;
   shiftBars?: PermanentVariableExpression;
   fallback?: ScalarExpression;
 };

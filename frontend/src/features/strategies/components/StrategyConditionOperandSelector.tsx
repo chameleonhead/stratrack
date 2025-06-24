@@ -205,7 +205,7 @@ function ArrayVariableConditionOperandSelector({
   value,
   onChange,
 }: ArrayVariableConditionOperandSelectorProps) {
-  const variables = useVariables().filter((v) => v.expression.type !== "constant");
+  const variables = useVariables().filter((v) => v.dataType === "array");
   return (
     <Select
       fullWidth

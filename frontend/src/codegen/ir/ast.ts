@@ -40,6 +40,8 @@ export type IRIndicatorParamValue = {
 
 export type IRVariable = {
   name: string;
+  dataType?: "scalar" | "array" | "parameter";
+  timeframe?: string;
   expression: IRExpression;
   invalidPeriod?: IRExpression;
   fallback?: IRExpression;

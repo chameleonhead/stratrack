@@ -1,9 +1,11 @@
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
+import Select from "../../../components/Select";
 import {
   StrategyTemplate,
   StrategyVariableDefinition,
   StrategyVariableExpression,
+  VariableDataType,
 } from "../../../codegen/dsl/strategy";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
@@ -20,12 +22,32 @@ function Variables({ value, onChange }: VariablesProps) {
     onChange
   );
 
+  const DATA_TYPE_OPTIONS = [
+    { value: "scalar", label: "スカラー" },
+    { value: "array", label: "配列" },
+    { value: "parameter", label: "パラメーター" },
+  ];
+
+  const TIMEFRAME_OPTIONS = [
+    { value: "1m", label: "1分" },
+    { value: "5m", label: "5分" },
+    { value: "15m", label: "15分" },
+    { value: "1h", label: "1時間" },
+    { value: "4h", label: "4時間" },
+    { value: "1d", label: "1日" },
+  ];
+
   const handleAdd = () => {
     setLocalValue({
       ...localValue,
       variables: [
         ...(localValue.variables || []),
-        { name: "", expression: { type: "constant", value: 0 } },
+        {
+          name: "",
+          dataType: "scalar" as VariableDataType,
+          timeframe: undefined,
+          expression: { type: "constant", value: 0 },
+        },
       ],
     });
   };
@@ -53,6 +75,32 @@ function Variables({ value, onChange }: VariablesProps) {
             }
             required
           />
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              fullWidth
+              label="データ型"
+              value={variable.dataType || "scalar"}
+              onChange={(val) =>
+                handleUpdate(index, {
+                  ...variable,
+                  dataType: val as VariableDataType,
+                })
+              }
+              options={DATA_TYPE_OPTIONS}
+            />
+            <Select
+              fullWidth
+              label="時間足"
+              value={variable.timeframe || ""}
+              onChange={(val) =>
+                handleUpdate(index, {
+                  ...variable,
+                  timeframe: val || undefined,
+                })
+              }
+              options={[{ value: "", label: "---" }, ...TIMEFRAME_OPTIONS]}
+            />
+          </div>
           <VariableExpressionEditor
             value={variable.expression}
             onChange={(value) =>
