@@ -24,9 +24,9 @@ function Variables({ value, onChange }: VariablesProps) {
   );
 
   const DATA_TYPE_OPTIONS = [
-    { value: "scalar", label: "スカラー" },
-    { value: "array", label: "配列" },
-    { value: "parameter", label: "パラメーター" },
+    { value: "string", label: "文字列" },
+    { value: "number", label: "数値" },
+    { value: "series", label: "数値配列" },
     { value: "timeframe", label: "時間足" },
   ];
 
@@ -37,7 +37,7 @@ function Variables({ value, onChange }: VariablesProps) {
         ...(localValue.variables || []),
         {
           name: "",
-          dataType: "scalar" as VariableDataType,
+          dataType: "number" as VariableDataType,
           timeframe: undefined,
           expression: { type: "constant", value: 0 },
         },
@@ -72,7 +72,7 @@ function Variables({ value, onChange }: VariablesProps) {
             <Select
               fullWidth
               label="データ型"
-              value={variable.dataType || "scalar"}
+              value={variable.dataType || "number"}
               onChange={(val) =>
                 handleUpdate(index, {
                   ...variable,

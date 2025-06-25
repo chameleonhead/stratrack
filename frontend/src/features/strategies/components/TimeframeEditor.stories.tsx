@@ -37,3 +37,9 @@ export const Variable: Story = {
     value: { type: "variable", name: "tfVar" },
   },
 };
+
+export const Higher: Story = {
+  args: {
+    value: { type: "higher_timeframe", level: 1 },
+  },
+};

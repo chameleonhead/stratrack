@@ -205,7 +205,7 @@ function ArrayVariableConditionOperandSelector({
   value,
   onChange,
 }: ArrayVariableConditionOperandSelectorProps) {
-  const variables = useVariables().filter((v) => v.dataType === "array");
+  const variables = useVariables().filter((v) => v.dataType === "series");
   return (
     <Select
       fullWidth

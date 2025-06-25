@@ -1,5 +1,6 @@
 import React from "react";
 import Select from "../../../components/Select";
+import NumberInput from "../../../components/NumberInput";
 import { TimeframeExpression } from "../../../codegen/dsl/common";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { useVariables } from "./useVariables";
@@ -13,6 +14,7 @@ export type TimeframeEditorProps = {
 const TYPE_OPTIONS = [
   { value: "constant", label: "固定" },
   { value: "variable", label: "変数" },
+  { value: "higher_timeframe", label: "上位足" },
 ];
 
 const TIMEFRAME_OPTIONS = [
@@ -43,8 +45,10 @@ const TimeframeEditor: React.FC<TimeframeEditorProps> = ({ value, onChange, labe
             const type = val as TimeframeExpression["type"];
             if (type === "constant") {
               setLocalValue({ type: "constant", value: "1m" });
-            } else {
+            } else if (type === "variable") {
               setLocalValue({ type: "variable", name: variables[0]?.name || "" });
+            } else {
+              setLocalValue({ type: "higher_timeframe", level: 1 });
             }
           }}
           options={TYPE_OPTIONS}
@@ -68,6 +72,14 @@ const TimeframeEditor: React.FC<TimeframeEditorProps> = ({ value, onChange, labe
               value: v.name,
               label: `${v.name}${v.description ? ` (${v.description})` : ""}`,
             }))}
+          />
+        )}
+        {local.type === "higher_timeframe" && (
+          <NumberInput
+            fullWidth
+            value={local.level}
+            onChange={(val) => setLocalValue({ type: "higher_timeframe", level: val || 1 })}
+            label="上位足"
           />
         )}
       </div>
