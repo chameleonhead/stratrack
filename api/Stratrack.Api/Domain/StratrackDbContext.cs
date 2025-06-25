@@ -1,5 +1,6 @@
 ﻿using EventFlow.EntityFramework.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
 using System.Text.Json;
 
@@ -14,6 +15,8 @@ public class StratrackDbContext : DbContext
 
     public DbSet<StrategyReadModel> Strategies { get; set; }
     public DbSet<StrategyVersionReadModel> StrategyVersions { get; set; }
+
+    public DbSet<DataSourceReadModel> DataSources { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

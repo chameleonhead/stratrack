@@ -1,13 +1,14 @@
-using System.Net;
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using EventFlow;
 using EventFlow.Queries;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
+using System.Net;
+using System.Text.Json;
 using WorkerHttpFake;
 
 namespace Stratrack.Api.Tests;
@@ -18,6 +19,7 @@ public class StrategyFunctionsTests
     private static ServiceProvider CreateProvider()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<InMemoryDatabaseRoot>();
         services.AddLogging();
         services.AddStratrack<StratrackDbContextProvider>();
         services.AddSingleton<StrategyFunctions>();
@@ -43,7 +45,7 @@ public class StrategyFunctionsTests
     public async Task GetStrategies_ReturnsExpectedResponse()
     {
         // Arrange
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
 
         var request = new HttpRequestDataBuilder()
@@ -63,7 +65,7 @@ public class StrategyFunctionsTests
     public async Task PostStrategy_ReturnsExpectedResponse()
     {
         // Arrange
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
 
         var request = new HttpRequestDataBuilder()
@@ -95,7 +97,7 @@ public class StrategyFunctionsTests
     [TestMethod]
     public async Task PostStrategy_Returns422WhenNameEmpty()
     {
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
 
         var request = new HttpRequestDataBuilder()
@@ -114,7 +116,7 @@ public class StrategyFunctionsTests
     [TestMethod]
     public async Task PostStrategy_SavesTemplate()
     {
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
 
         var requestBody = new StrategyCreateRequest()
@@ -164,7 +166,7 @@ public class StrategyFunctionsTests
     public async Task GetStrategyDetail_ReturnsExpectedResponse()
     {
         // Arrange
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
         var id = await CreateStrategyAsync(function, new StrategyCreateRequest()
         {
@@ -195,7 +197,7 @@ public class StrategyFunctionsTests
     public async Task PutStrategy_ReturnsExpectedResponse()
     {
         // Arrange
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
         var id = await CreateStrategyAsync(function, new StrategyCreateRequest()
         {
@@ -239,7 +241,7 @@ public class StrategyFunctionsTests
         services.AddSingleton<ICommandBus, FailingCommandBus>();
         services.AddSingleton<IQueryProcessor>(new Mock<IQueryProcessor>().Object);
         services.AddSingleton<StrategyFunctions>();
-        var provider = services.BuildServiceProvider();
+        using var provider = services.BuildServiceProvider();
         var function = provider.GetRequiredService<StrategyFunctions>();
 
         var request = new HttpRequestDataBuilder()
@@ -257,7 +259,7 @@ public class StrategyFunctionsTests
 
     public async Task PutStrategy_Returns422WhenNameEmpty()
     {
-        var serviceProvider = CreateProvider();
+        using var serviceProvider = CreateProvider();
         var function = serviceProvider.GetRequiredService<StrategyFunctions>();
         var id = await CreateStrategyAsync(function, new StrategyCreateRequest()
         {

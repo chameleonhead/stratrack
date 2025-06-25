@@ -9,6 +9,6 @@ public class StrategyReadModelSearchQueryHandler(IDbContextProvider<StratrackDbC
     public async Task<IReadOnlyCollection<StrategyReadModel>> ExecuteQueryAsync(StrategyReadModelSearchQuery query, CancellationToken cancellationToken)
     {
         using var context = dbContextProvider.CreateContext();
-        return await context.Strategies.ToListAsync().ConfigureAwait(false);
+        return await context.Strategies.ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 }
