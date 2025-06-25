@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Stratrack.Api.Models;
 
 public class StrategyDetail
@@ -8,7 +10,7 @@ public class StrategyDetail
     public string Name { get; set; } = "";
     public string? Description { get; set; }
     public List<string> Tags { get; set; } = [];
-    public Dictionary<string, object> Template { get; set; } = [];
+    public JsonElement? Template { get; set; }
     public string? GeneratedCode { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

@@ -82,7 +82,7 @@ public class StrategyFunctionsTests
                     Tags = ["tag1", "tag2"],
                     Template = new Dictionary<string, object>() {
                         {"Key1", "Value1"},
-                    },
+                    }.ToJsonElement(),
                     GeneratedCode = "generated code",
                 }
             ))
@@ -95,6 +95,12 @@ public class StrategyFunctionsTests
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1", obj.Name);
+        Assert.AreEqual("Description", obj.Description);
+        CollectionAssert.AreEqual(new string[] { "tag1", "tag2" }, obj.Tags);
+        Assert.AreEqual(new Dictionary<string, object>() {
+            {"Key1", "Value1"},
+        }.ToJsonElement().ToString(), obj.Template.ToString());
+        Assert.AreEqual("generated code", obj.GeneratedCode);
     }
 
     [TestMethod]
@@ -117,55 +123,6 @@ public class StrategyFunctionsTests
     }
 
     [TestMethod]
-    public async Task PostStrategy_SavesTemplate()
-    {
-        using var serviceProvider = CreateProvider();
-        var function = serviceProvider.GetRequiredService<StrategyFunctions>();
-
-        var requestBody = new StrategyCreateRequest()
-        {
-            Name = "With Template",
-            Description = "desc",
-            Tags = [],
-            Template = new Dictionary<string, object>()
-            {
-                { "foo", 1 }
-            },
-            GeneratedCode = "code",
-        };
-
-        var request = new HttpRequestDataBuilder()
-            .WithUrl("http://localhost/api/strategies")
-            .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(requestBody))
-            .Build();
-
-        var response = await function.PostStrategy(request, CancellationToken.None)
-            .ConfigureAwait(false);
-
-        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-        var detail = await response.ReadAsJsonAsync<StrategyDetail>()
-            .ConfigureAwait(false);
-        Assert.IsTrue(detail.Template.ContainsKey("foo"));
-
-        var getRequest = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/strategies/{detail.Id}")
-            .WithMethod(HttpMethod.Get)
-            .Build();
-
-        var getResponse = await function.GetStrategyDetail(
-            getRequest,
-            detail.Id.ToString(),
-            CancellationToken.None
-        ).ConfigureAwait(false);
-
-        Assert.AreEqual(HttpStatusCode.OK, getResponse.StatusCode);
-        var fetched = await getResponse.ReadAsJsonAsync<StrategyDetail>()
-            .ConfigureAwait(false);
-        Assert.IsTrue(fetched.Template.ContainsKey("foo"));
-    }
-
-    [TestMethod]
     public async Task GetStrategyDetail_ReturnsExpectedResponse()
     {
         // Arrange
@@ -178,7 +135,7 @@ public class StrategyFunctionsTests
             Tags = ["tag1", "tag2"],
             Template = new Dictionary<string, object>() {
                 {"Key1", "Value1"},
-            },
+            }.ToJsonElement(),
             GeneratedCode = "generated code",
         }).ConfigureAwait(false);
 
@@ -194,6 +151,12 @@ public class StrategyFunctionsTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1", obj.Name);
+        Assert.AreEqual("Description", obj.Description);
+        CollectionAssert.AreEqual(new string[] { "tag1", "tag2" }, obj.Tags);
+        Assert.AreEqual(new Dictionary<string, object>() {
+            {"Key1", "Value1"},
+        }.ToJsonElement().ToString(), obj.Template.ToString());
+        Assert.AreEqual("generated code", obj.GeneratedCode);
     }
 
     [TestMethod]
@@ -209,7 +172,7 @@ public class StrategyFunctionsTests
             Tags = ["tag1", "tag2"],
             Template = new Dictionary<string, object>() {
                 {"Key1", "Value1"},
-            },
+            }.ToJsonElement(),
             GeneratedCode = "generated code",
         }).ConfigureAwait(false);
 
@@ -222,7 +185,7 @@ public class StrategyFunctionsTests
                 Description = "Description Edited",
                 Template = new Dictionary<string, object>() {
                     {"Key1", "Value1 Edited"}
-                },
+                }.ToJsonElement(),
                 GeneratedCode = "generated code edited",
             }))
             .Build();
@@ -234,6 +197,12 @@ public class StrategyFunctionsTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<StrategyDetail>().ConfigureAwait(false);
         Assert.AreEqual("Strategy 1 Edited", obj.Name);
+        Assert.AreEqual("Description Edited", obj.Description);
+        CollectionAssert.AreEqual(new string[] {}, obj.Tags);
+        Assert.AreEqual(new Dictionary<string, object>() {
+            {"Key1", "Value1 Edited"},
+        }.ToJsonElement().ToString(), obj.Template.ToString());
+        Assert.AreEqual("generated code edited", obj.GeneratedCode);
     }
 
     [TestMethod]
@@ -260,6 +229,7 @@ public class StrategyFunctionsTests
         Assert.AreEqual("Internal server error", body["error"]);
     }
 
+    [TestMethod]
     public async Task PutStrategy_Returns422WhenNameEmpty()
     {
         using var serviceProvider = CreateProvider();

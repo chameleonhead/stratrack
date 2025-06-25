@@ -11,7 +11,7 @@ public class StrategyVersionReadModel : IReadModel,
     public Guid StrategyIdGuid { get; set; } = Guid.Empty;
     public Guid StrategyVersionIdGuid { get; set; } = Guid.Empty;
     public int Version { get; set; } = 0;
-    public Dictionary<string, object> Template { get; set; } = [];
+    public string? Template { get; set; }
     public string? GeneratedCode { get; set; } = null;
     public DateTimeOffset CreatedAt { get; set; }
 

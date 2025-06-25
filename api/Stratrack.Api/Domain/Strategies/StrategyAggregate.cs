@@ -14,10 +14,10 @@ public class StrategyAggregate(StrategyId id) : AggregateRoot<StrategyAggregate,
     public string? Description { get; private set; }
     public List<string> Tags { get; private set; } = [];
     public int? LatestVersion { get; private set; }
-    public Dictionary<string, object> Template { get; private set; } = [];
+    public string? Template { get; private set; }
     public string? GeneratedCode { get; private set; }
 
-    public void Create(string name, string? description, List<string> tags, Dictionary<string, object> template, string? generatedCode)
+    public void Create(string name, string? description, List<string> tags, string? template, string? generatedCode)
     {
         Emit(new StrategyCreatedEvent(Id, name, description, tags));
         Emit(new StrategyVersionAddedEvent(Id, LatestVersion ?? 1, template, generatedCode));
@@ -41,7 +41,7 @@ public class StrategyAggregate(StrategyId id) : AggregateRoot<StrategyAggregate,
         Emit(new StrategyDeletedEvent(Id));
     }
 
-    public void Update(Dictionary<string, object> template, string? generatedCode)
+    public void Update(string? template, string? generatedCode)
     {
         if (GeneratedCode == generatedCode)
         {

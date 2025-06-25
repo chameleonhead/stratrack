@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
@@ -11,7 +12,7 @@ using Stratrack.Api.Domain.Strategies.Queries;
 using Stratrack.Api.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Stratrack.Api.Functions;
 
@@ -48,14 +49,14 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
     public async Task<HttpResponseData> PostStrategy([HttpTrigger(AuthorizationLevel.Function, "post", Route = "strategies")] HttpRequestData req, CancellationToken token)
     {
-        var body = await req.ReadFromJsonAsync<StrategyCreateRequest>(token).ConfigureAwait(false);
-        if (body == null)
+        var bodyObj = await req.ReadFromJsonAsync<StrategyCreateRequest>().ConfigureAwait(false);
+        if (bodyObj == null)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
         }
 
         var validationResults = new List<ValidationResult>();
-        if (!Validator.TryValidateObject(body, new ValidationContext(body), validationResults, true))
+        if (!Validator.TryValidateObject(bodyObj, new ValidationContext(bodyObj), validationResults, true))
         {
             var errorResponse = req.CreateResponse(HttpStatusCode.UnprocessableEntity);
             await errorResponse.WriteAsJsonAsync(validationResults, token).ConfigureAwait(false);
@@ -67,11 +68,11 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         {
             await commandBus.PublishAsync(new StrategyCreateCommand(id)
             {
-                Name = body.Name,
-                Description = body.Description,
-                Tags = body.Tags,
-                Template = body.Template,
-                GeneratedCode = body.GeneratedCode,
+                Name = bodyObj.Name,
+                Description = bodyObj.Description,
+                Tags = bodyObj.Tags,
+                Template = bodyObj.Template.ToString(),
+                GeneratedCode = bodyObj.GeneratedCode,
             }, token).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -146,7 +147,7 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
                 Name = body.Name,
                 Description = body.Description,
                 Tags = body.Tags,
-                Template = body.Template,
+                Template = body.Template.ToString(),
                 GeneratedCode = body.GeneratedCode,
             }, token).ConfigureAwait(false);
         }
@@ -259,7 +260,7 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
             Name = result.Name,
             Description = result.Description,
             Tags = result.Tags,
-            Template = result.Template,
+            Template = result.Template == null ? null : JsonSerializer.Deserialize<JsonElement>(result.Template),
             GeneratedCode = result.GeneratedCode,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,
@@ -277,7 +278,7 @@ public class StrategyFunctions(ICommandBus commandBus, IQueryProcessor queryProc
         {
             Id = result.StrategyIdGuid,
             Version = result.Version,
-            Template = result.Template,
+            Template = result.Template == null ? null : JsonSerializer.Deserialize<JsonElement>(result.Template),
             GeneratedCode = result.GeneratedCode,
             CreatedAt = result.CreatedAt,
         };

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Stratrack.Api.Models;
 
@@ -9,6 +10,6 @@ public class StrategyCreateRequest
     public string Name { get; set; } = "";
     public string? Description { get; set; }
     public List<string> Tags { get; set; } = [];
-    public Dictionary<string, object> Template { get; set; } = [];
+    public JsonElement Template { get; set; } = JsonSerializer.Deserialize<JsonElement>("{}");
     public string? GeneratedCode { get; set; }
 }
