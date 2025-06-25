@@ -10,6 +10,8 @@ import {
   ScalarPriceExpression,
   SourceExpression,
   VariableReferenceExpression,
+  VariableDataType,
+  TimeframeExpression,
 } from "./common";
 
 export type Strategy = {
@@ -54,8 +56,13 @@ export type StrategyTemplate = {
 };
 
 // 変数定義: 変数名とその値を表す型定義
+
 export type StrategyVariableDefinition = {
   name: string; // 変数名（例: rsi_avg）
+  /** データ型 */
+  dataType?: VariableDataType;
+  /** 参照する時間足 */
+  timeframe?: TimeframeExpression;
   expression: StrategyVariableExpression; // RSIやMACDなどの指標オペランド（再帰可能）
   invalidPeriod?: ScalarExpression;
   fallback?: ScalarExpression;
