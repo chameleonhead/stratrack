@@ -38,10 +38,15 @@ export type IRIndicatorParamValue = {
   value: IRExpression;
 };
 
+export type IRTimeframeExpression =
+  | { type: "constant"; value: string }
+  | IRVariableRef
+  | IRConstantParamRef;
+
 export type IRVariable = {
   name: string;
-  dataType?: "scalar" | "array" | "parameter";
-  timeframe?: string;
+  dataType?: "scalar" | "array" | "parameter" | "timeframe";
+  timeframe?: IRTimeframeExpression;
   expression: IRExpression;
   invalidPeriod?: IRExpression;
   fallback?: IRExpression;
@@ -161,13 +166,13 @@ export type IRTernaryOp = {
 export type IRPriceRef = {
   type: "price_ref";
   source: string;
-  timeframe?: string;
+  timeframe?: IRTimeframeExpression;
 };
 
 export type IRVariableRef = {
   type: "variable_ref";
   name: string;
-  timeframe?: string;
+  timeframe?: IRTimeframeExpression;
 };
 
 export type IRConstantParamRef = {
@@ -185,5 +190,5 @@ export type IRBarShift = {
   source: IRVariableRef | IRPriceRef | IRSourceParamRef;
   shiftBar?: IRExpression;
   fallback?: IRExpression;
-  timeframe?: string;
+  timeframe?: IRTimeframeExpression;
 };

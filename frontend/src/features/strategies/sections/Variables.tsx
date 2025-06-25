@@ -1,12 +1,13 @@
 import Button from "../../../components/Button";
 import Input from "../../../components/Input";
 import Select from "../../../components/Select";
+import TimeframeEditor from "../components/TimeframeEditor";
 import {
   StrategyTemplate,
   StrategyVariableDefinition,
   StrategyVariableExpression,
 } from "../../../codegen/dsl/strategy";
-import { VariableDataType } from "../../../codegen/dsl/common";
+import { VariableDataType, TimeframeExpression } from "../../../codegen/dsl/common";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import VariableExpressionEditor from "../components/VariableExpressionEditor";
 
@@ -26,15 +27,7 @@ function Variables({ value, onChange }: VariablesProps) {
     { value: "scalar", label: "スカラー" },
     { value: "array", label: "配列" },
     { value: "parameter", label: "パラメーター" },
-  ];
-
-  const TIMEFRAME_OPTIONS = [
-    { value: "1m", label: "1分" },
-    { value: "5m", label: "5分" },
-    { value: "15m", label: "15分" },
-    { value: "1h", label: "1時間" },
-    { value: "4h", label: "4時間" },
-    { value: "1d", label: "1日" },
+    { value: "timeframe", label: "時間足" },
   ];
 
   const handleAdd = () => {
@@ -88,17 +81,15 @@ function Variables({ value, onChange }: VariablesProps) {
               }
               options={DATA_TYPE_OPTIONS}
             />
-            <Select
-              fullWidth
+            <TimeframeEditor
               label="時間足"
-              value={variable.timeframe || ""}
+              value={variable.timeframe as TimeframeExpression}
               onChange={(val) =>
                 handleUpdate(index, {
                   ...variable,
-                  timeframe: val || undefined,
+                  timeframe: val,
                 })
               }
-              options={[{ value: "", label: "---" }, ...TIMEFRAME_OPTIONS]}
             />
           </div>
           <VariableExpressionEditor

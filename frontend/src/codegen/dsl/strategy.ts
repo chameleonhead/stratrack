@@ -11,6 +11,7 @@ import {
   SourceExpression,
   VariableReferenceExpression,
   VariableDataType,
+  TimeframeExpression,
 } from "./common";
 
 export type Strategy = {
@@ -61,7 +62,7 @@ export type StrategyVariableDefinition = {
   /** データ型 */
   dataType?: VariableDataType;
   /** 参照する時間足 */
-  timeframe?: string;
+  timeframe?: TimeframeExpression;
   expression: StrategyVariableExpression; // RSIやMACDなどの指標オペランド（再帰可能）
   invalidPeriod?: ScalarExpression;
   fallback?: ScalarExpression;

@@ -9,6 +9,7 @@ import {
   SourceExpression,
   VariableReferenceExpression,
   VariableDataType,
+  TimeframeExpression,
 } from "./common";
 
 export type Indicator = {
@@ -80,7 +81,7 @@ export type ExportLine = {
 export type IndicatorVariableDefinition = {
   name: string;
   dataType?: VariableDataType;
-  timeframe?: string;
+  timeframe?: TimeframeExpression;
   expression: IndicatorVariableExpression;
   invalidPeriod?: ScalarExpression;
   fallback?: ScalarExpression;

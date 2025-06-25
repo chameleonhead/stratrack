@@ -9,7 +9,7 @@ export type ScalarExpression =
   | ScalarBinaryOperationExpression
   | ScalarTernaryExpression;
 
-export type VariableDataType = "scalar" | "array" | "parameter";
+export type VariableDataType = "scalar" | "array" | "parameter" | "timeframe";
 export type BarExpression = PriceExpression | SourceExpression | VariableReferenceExpression;
 
 export type ConstantExpression = {
@@ -32,10 +32,15 @@ export type VariableReferenceExpression = {
   name: string;
 };
 
+export type TimeframeExpression =
+  | { type: "constant"; value: string }
+  | ParamReferenceExpression
+  | VariableReferenceExpression;
+
 export type PriceExpression = {
   type: "price";
   source: "open" | "high" | "close" | "low" | "tick_volume" | "volume";
-  timeframe?: string;
+  timeframe?: TimeframeExpression;
 };
 
 export type SourceExpression = {
@@ -57,7 +62,7 @@ export type ScalarPriceExpression = {
     | "weighted"
     | "tick_volume"
     | "volume";
-  timeframe?: string;
+  timeframe?: TimeframeExpression;
   shiftBars?: PermanentVariableExpression;
   fallback?: ScalarExpression;
 };
