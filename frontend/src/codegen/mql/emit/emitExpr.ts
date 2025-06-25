@@ -1,4 +1,4 @@
-import { IRCondition, IRExpression } from "../../ir/ast";
+import { IRCondition, IRExpression, IRTimeframeExpression } from "../../ir/ast";
 import {
   access,
   and,
@@ -14,6 +14,13 @@ import {
   unary,
 } from "../helper";
 import { MqlExpr } from "../ast";
+import {
+  resolveTimeframeExpression,
+  timeframeToMinutes,
+  timeframeToPeriod,
+} from "../../utils/timeframe";
+
+export const BASE_TIMEFRAME = "1m";
 
 export function emitMqlExprFromIR(
   context: "strategy" | "indicator",
@@ -31,30 +38,43 @@ export function emitMqlExprFromIR(
       }
     case "source_param_ref":
       return ref(expr.name);
-    case "variable_ref":
-      if (context === "strategy") {
-        return ref(expr.name);
-      } else {
-        return member(ref("this"), expr.name);
-      }
-    case "price_ref":
-      switch (expr.source) {
-        case "open":
-          return ref("Open");
-        case "high":
-          return ref("High");
-        case "low":
-          return ref("Low");
-        case "close":
-          return ref("Close");
-        case "volume":
-          return ref("Volume");
-        case "tick_volume":
-          return ref("Volume");
-        default:
-          throw new Error(`Unknown price source: ${expr.source}`);
-      }
+    case "variable_ref": {
+      const tf = resolveTimeframeExpression(
+        expr.timeframe as IRTimeframeExpression,
+        BASE_TIMEFRAME
+      );
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(BASE_TIMEFRAME);
+      const index = shift ? binary("/", shift, lit(ratio)) : lit(0);
+      const base = context === "strategy" ? ref(expr.name) : member(ref("this"), expr.name);
+      return access(base, unary("-", index), false, undefined);
+    }
+    case "price_ref": {
+      const tf = resolveTimeframeExpression(
+        expr.timeframe as IRTimeframeExpression,
+        BASE_TIMEFRAME
+      );
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(BASE_TIMEFRAME);
+      const index = shift ? binary("/", shift, lit(ratio)) : lit(0);
+      const period = timeframeToPeriod(tf);
+      const priceFnMap: Record<string, string> = {
+        open: "iOpen",
+        high: "iHigh",
+        low: "iLow",
+        close: "iClose",
+        volume: "iVolume",
+        tick_volume: "iVolume",
+      };
+      const fnName = priceFnMap[expr.source];
+      return fnName
+        ? call(fnName, [lit("Symbol()"), ref(period), index])
+        : ref(expr.source === "ask" ? "Ask" : "Bid");
+    }
     case "bar_shift": {
+      const tf = resolveTimeframeExpression(
+        expr.timeframe as IRTimeframeExpression,
+        BASE_TIMEFRAME
+      );
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(BASE_TIMEFRAME);
       const shiftBars =
         typeof expr.shiftBar === "undefined"
           ? lit(0)
@@ -63,7 +83,8 @@ export function emitMqlExprFromIR(
         typeof expr.fallback === "undefined"
           ? lit(0)
           : emitMqlExprFromIR(context, expr.fallback, shift);
-      const index = typeof shift === "undefined" ? shiftBars : binary("+", shiftBars, shift);
+      const total = typeof shift === "undefined" ? shiftBars : binary("+", shiftBars, shift);
+      const index = ratio === 1 ? total : binary("/", total, lit(ratio));
       const isSafe = index.type === "literal" && index.value === "0";
       if (expr.source.type === "price_ref") {
         switch (expr.source.source) {

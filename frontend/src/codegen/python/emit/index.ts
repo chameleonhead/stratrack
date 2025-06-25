@@ -3,6 +3,7 @@ import { PyModule, PyStatement } from "../ast";
 import { assign, attr, bin, call, comment, forStmt, imp, lit, mod, ref, stmt } from "../helper";
 import { emitBtIndicatorFromIR } from "./emitIndicator";
 import { emitBtStrategyFromIR } from "./emitStrategy";
+import { BASE_TIMEFRAME } from "./emitExpr";
 
 export function emitBtProgramFromIR(program: IRProgram): PyModule {
   const indicators = program.indicatorDefs.map((i) => emitBtIndicatorFromIR(i));
@@ -13,7 +14,12 @@ export function emitBtProgramFromIR(program: IRProgram): PyModule {
     comment("Create a cerebro entity"),
     assign(ref("cerebro"), call(ref("bt.Cerebro"), [])),
     comment("Add a strategy"),
-    stmt(call(attr(ref("cerebro"), "addstrategy"), [ref(strategy.name)])),
+    stmt(
+      call(attr(ref("cerebro"), "addstrategy"), [
+        ref(strategy.name),
+        ref(`base_timeframe='${BASE_TIMEFRAME}'`),
+      ])
+    ),
     comment("data is relative to the script location"),
     assign(
       ref("modpath"),

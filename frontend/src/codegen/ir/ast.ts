@@ -40,12 +40,13 @@ export type IRIndicatorParamValue = {
 
 export type IRTimeframeExpression =
   | { type: "constant"; value: string }
+  | { type: "higher_timeframe"; level: number }
   | IRVariableRef
   | IRConstantParamRef;
 
 export type IRVariable = {
   name: string;
-  dataType?: "scalar" | "array" | "parameter" | "timeframe";
+  dataType?: "string" | "number" | "series" | "timeframe";
   timeframe?: IRTimeframeExpression;
   expression: IRExpression;
   invalidPeriod?: IRExpression;

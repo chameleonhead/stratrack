@@ -182,6 +182,8 @@ function mapTimeframeExpression(
   switch (tf.type) {
     case "constant":
       return { type: "constant", value: tf.value };
+    case "higher_timeframe":
+      return { type: "higher_timeframe", level: tf.level };
     case "param":
       return { type: "constant_param_ref", name: tf.name };
     case "variable":

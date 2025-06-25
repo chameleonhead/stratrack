@@ -9,7 +9,7 @@ export type ScalarExpression =
   | ScalarBinaryOperationExpression
   | ScalarTernaryExpression;
 
-export type VariableDataType = "scalar" | "array" | "parameter" | "timeframe";
+export type VariableDataType = "string" | "number" | "series" | "timeframe";
 export type BarExpression = PriceExpression | SourceExpression | VariableReferenceExpression;
 
 export type ConstantExpression = {
@@ -34,6 +34,7 @@ export type VariableReferenceExpression = {
 
 export type TimeframeExpression =
   | { type: "constant"; value: string }
+  | { type: "higher_timeframe"; level: number }
   | ParamReferenceExpression
   | VariableReferenceExpression;
 
