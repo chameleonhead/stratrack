@@ -1,5 +1,5 @@
 import { AggregationType } from "../../dsl/common";
-import { IRExpression, IRCondition } from "../../ir/ast";
+import { IRExpression, IRCondition, IRTimeframeExpression } from "../../ir/ast";
 import { PyExpression, PyFunction } from "../ast";
 import {
   call,
@@ -20,6 +20,9 @@ import {
   forExpr,
   iff,
 } from "../helper";
+import { resolveTimeframeExpression, timeframeToMinutes } from "../../utils/timeframe";
+
+export const BASE_TIMEFRAME = "1m";
 
 export function emitAggregationMethod(method: AggregationType): PyFunction {
   switch (method) {
@@ -246,7 +249,8 @@ type EmitMode = "scalar" | "array";
 export function emitPyExpr(
   expr: IRExpression,
   mode: EmitMode = "array",
-  shift: number = 0
+  shift: number = 0,
+  baseTf: string = BASE_TIMEFRAME
 ): PyExpression {
   switch (expr.type) {
     case "constant":
@@ -258,25 +262,36 @@ export function emitPyExpr(
       return mode === "scalar" ? sub(base, lit(shift)) : base;
     }
     case "variable_ref": {
+      const tf = resolveTimeframeExpression(expr.timeframe as IRTimeframeExpression, baseTf);
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(baseTf);
+      const adjShift = ratio === 1 ? lit(shift) : bin("//", lit(shift), lit(ratio));
       const base = attr(ref("self.lines"), `_${expr.name}`);
-      // shiftが0ならlit(0)を使う
-      return mode === "scalar" ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift))) : base;
+      return mode === "scalar" ? sub(base, unary("-", adjShift)) : base;
     }
     case "unary":
-      return unary(expr.operator, emitPyExpr(expr.operand, mode, shift));
+      return unary(expr.operator, emitPyExpr(expr.operand, mode, shift, baseTf));
     case "binary":
       return bin(
         expr.operator,
-        emitPyExpr(expr.left, mode, shift),
-        emitPyExpr(expr.right, mode, shift)
+        emitPyExpr(expr.left, mode, shift, baseTf),
+        emitPyExpr(expr.right, mode, shift, baseTf)
       );
     case "price_ref": {
+      const tf = resolveTimeframeExpression(expr.timeframe as IRTimeframeExpression, baseTf);
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(baseTf);
+      const adjShift = ratio === 1 ? lit(shift) : bin("//", lit(shift), lit(ratio));
       const base = attr(ref("self.data"), expr.source);
-      return mode === "scalar" ? sub(base, shift === 0 ? lit(0) : unary("-", lit(shift))) : base;
+      return mode === "scalar"
+        ? sub(base, unary("-", adjShift))
+        : adjShift.type === "literal" && adjShift.value === 0
+          ? base
+          : call(base, [adjShift]);
     }
     case "bar_shift": {
-      const base = emitPyExpr(expr.source, "array");
-      const shiftBar = expr.shiftBar ? emitPyExpr(expr.shiftBar, "scalar") : lit(0);
+      const tf = resolveTimeframeExpression(expr.timeframe as IRTimeframeExpression, baseTf);
+      const base = emitPyExpr(expr.source, "array", 0, tf);
+      const shiftBar = expr.shiftBar ? emitPyExpr(expr.shiftBar, "scalar", 0, baseTf) : lit(0);
+      const ratio = timeframeToMinutes(tf) / timeframeToMinutes(baseTf);
       if (mode === "scalar") {
         const fallback = expr.fallback ? emitPyExpr(expr.fallback, "scalar") : undefined;
         // shiftBar + shift の合成
@@ -290,8 +305,9 @@ export function emitPyExpr(
         } else {
           totalShift = bin("+", shiftBar, lit(shift));
         }
+        const adjusted = ratio === 1 ? totalShift : bin("//", totalShift, lit(ratio));
         const indexExpr =
-          totalShift.type === "literal" && totalShift.value === 0 ? lit(0) : unary("-", totalShift);
+          adjusted.type === "literal" && adjusted.value === 0 ? lit(0) : unary("-", adjusted);
         if (fallback) {
           return ternary(
             cmp(call(ref("len"), [base]), [">"], [totalShift]),
@@ -302,16 +318,17 @@ export function emitPyExpr(
           return sub(base, indexExpr);
         }
       }
-      if (shiftBar.type === "literal" && shiftBar.value === 0) {
-        return base;
-      } else {
-        return call(base, [bin("+", shiftBar, lit(shift))]);
-      }
+      const total =
+        shiftBar.type === "literal" && shiftBar.value === 0
+          ? lit(shift)
+          : bin("+", shiftBar, lit(shift));
+      const adjusted = ratio === 1 ? total : bin("//", total, lit(ratio));
+      return adjusted.type === "literal" && adjusted.value === 0 ? base : call(base, [adjusted]);
     }
     case "aggregation": {
-      const methodName = `_` + expr.method.toLowerCase(); // e.g., "_sma"
-      const source = emitPyExpr(expr.source, "array");
-      const period = emitPyExpr(expr.period, "scalar");
+      const methodName = `_` + expr.method.toLowerCase();
+      const source = emitPyExpr(expr.source, "array", 0, baseTf);
+      const period = emitPyExpr(expr.period, "scalar", 0, baseTf);
       return call(attr(ref("self"), methodName), [
         shift > 0 ? call(attr(source, "get"), [period, lit(shift)]) : source,
         period,
@@ -325,29 +342,33 @@ export function emitPyExpr(
     }
     case "ternary":
       return ternary(
-        emitPyCondExpr(expr.condition),
-        emitPyExpr(expr.trueExpr, mode, shift),
-        emitPyExpr(expr.falseExpr, mode, shift)
+        emitPyCondExpr(expr.condition, 0),
+        emitPyExpr(expr.trueExpr, mode, shift, baseTf),
+        emitPyExpr(expr.falseExpr, mode, shift, baseTf)
       );
     default:
       throw new Error(`Unsupported IR condition type: ${(expr as { type: string }).type}`);
   }
 }
 
-export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpression {
+export function emitPyCondExpr(
+  expr: IRCondition,
+  shift: number = 0,
+  baseTf: string = BASE_TIMEFRAME
+): PyExpression {
   switch (expr.type) {
     case "comparison": {
       return cmp(
-        emitPyExpr(expr.left, "scalar", shift),
+        emitPyExpr(expr.left, "scalar", shift, baseTf),
         [expr.operator],
-        [emitPyExpr(expr.right, "scalar", shift)]
+        [emitPyExpr(expr.right, "scalar", shift, baseTf)]
       );
     }
     case "cross": {
-      const l_curr = emitPyExpr(expr.left, "scalar", 0);
-      const l_prev = emitPyExpr(expr.left, "scalar", 1);
-      const r_curr = emitPyExpr(expr.right, "scalar", 0);
-      const r_prev = emitPyExpr(expr.right, "scalar", 1);
+      const l_curr = emitPyExpr(expr.left, "scalar", 0, baseTf);
+      const l_prev = emitPyExpr(expr.left, "scalar", 1, baseTf);
+      const r_curr = emitPyExpr(expr.right, "scalar", 0, baseTf);
+      const r_prev = emitPyExpr(expr.right, "scalar", 1, baseTf);
       return expr.direction === "cross_over"
         ? and(bin("<", l_prev, r_prev), bin(">", l_curr, r_curr))
         : and(bin(">", l_prev, r_prev), bin("<", l_curr, r_curr));
@@ -359,8 +380,8 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
         conds.push(
           bin(
             sign,
-            emitPyExpr(expr.operand, "scalar", shift + i),
-            emitPyExpr(expr.operand, "scalar", shift + i + 1)
+            emitPyExpr(expr.operand, "scalar", shift + i, baseTf),
+            emitPyExpr(expr.operand, "scalar", shift + i + 1, baseTf)
           )
         );
       }
@@ -373,19 +394,21 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
       const totalPeriods = preconditionBars + confirmationBars;
       for (let i = 0; i < preconditionBars; i++) {
         if (expr.change === "to_true") {
-          conds.push(unary("!", emitPyCondExpr(expr.condition, shift + (totalPeriods - i))));
+          conds.push(
+            unary("!", emitPyCondExpr(expr.condition, shift + (totalPeriods - i), baseTf))
+          );
         } else {
-          conds.push(emitPyCondExpr(expr.condition, shift + (totalPeriods - i)));
+          conds.push(emitPyCondExpr(expr.condition, shift + (totalPeriods - i), baseTf));
         }
       }
       for (let i = 0; i < confirmationBars; i++) {
         if (expr.change === "to_true") {
-          conds.push(emitPyCondExpr(expr.condition, shift + (totalPeriods - i)));
+          conds.push(emitPyCondExpr(expr.condition, shift + (totalPeriods - i), baseTf));
         } else {
           conds.push(
             unary(
               "!",
-              emitPyCondExpr(expr.condition, shift + (totalPeriods - preconditionBars - i))
+              emitPyCondExpr(expr.condition, shift + (totalPeriods - preconditionBars - i), baseTf)
             )
           );
         }
@@ -395,16 +418,16 @@ export function emitPyCondExpr(expr: IRCondition, shift: number = 0): PyExpressi
     case "continue": {
       const conds = [];
       for (let i = 0; i < Math.abs(expr.consecutiveBars || 2); i++) {
-        const condition = emitPyCondExpr(expr.condition, shift + i);
+        const condition = emitPyCondExpr(expr.condition, shift + i, baseTf);
         conds.push(condition);
       }
       return expr.continue === "true" ? and(...conds) : and(...conds.map((c) => unary("!", c)));
     }
     case "group":
       if (expr.operator === "and") {
-        return and(...expr.conditions.map((c) => emitPyCondExpr(c, shift)));
+        return and(...expr.conditions.map((c) => emitPyCondExpr(c, shift, baseTf)));
       } else {
-        return or(...expr.conditions.map((c) => emitPyCondExpr(c, shift)));
+        return or(...expr.conditions.map((c) => emitPyCondExpr(c, shift, baseTf)));
       }
     default:
       throw new Error(`Unsupported IR condition type: ${(expr as { type: string }).type}`);
