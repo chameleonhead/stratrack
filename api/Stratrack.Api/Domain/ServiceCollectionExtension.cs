@@ -20,22 +20,39 @@ public static class ServiceCollectionExtension
     {
         return services.AddEventFlow(ef =>
         {
-            ef.AddCommands(typeof(StrategyCreateCommand), typeof(StrategyUpdateCommand), typeof(StrategyDeleteCommand))
-                .AddCommandHandlers(typeof(StrategyCreateCommandHandler), typeof(StrategyUpdateCommandHandler), typeof(StrategyDeleteCommandHandler))
-                .AddEvents(typeof(StrategyCreatedEvent), typeof(StrategyUpdatedEvent), typeof(StrategyVersionAddedEvent), typeof(StrategyDeletedEvent));
+            ef.AddCommands(
+                typeof(StrategyCreateCommand),
+                typeof(StrategyUpdateCommand),
+                typeof(StrategyDeleteCommand),
+                typeof(DataSourceCreateCommand),
+                typeof(DataSourceUpdateCommand),
+                typeof(DataSourceDeleteCommand)
+            ).AddCommandHandlers(
+                typeof(StrategyCreateCommandHandler),
+                typeof(StrategyUpdateCommandHandler),
+                typeof(StrategyDeleteCommandHandler),
+                typeof(DataSourceCreateCommandHandler),
+                typeof(DataSourceUpdateCommandHandler),
+                typeof(DataSourceDeleteCommandHandler)
+            ).AddEvents(
+                typeof(StrategyCreatedEvent),
+                typeof(StrategyUpdatedEvent),
+                typeof(StrategyVersionAddedEvent),
+                typeof(StrategyDeletedEvent),
+                typeof(DataSourceCreatedEvent),
+                typeof(DataSourceUpdatedEvent),
+                typeof(DataSourceDeletedEvent)
+            );
+
+            ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
             ef.UseEntityFrameworkEventStore<StratrackDbContext>();
             ef.AddDbContextProvider<StratrackDbContext, TDbContextProvider>();
-            ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
 
             ef.UseEntityFrameworkReadModel<StrategyReadModel, StratrackDbContext>();
-            ef.RegisterServices(services => services.AddSingleton<StrategyVersionReadModelLocator>());
             ef.UseEntityFrameworkReadModel<StrategyVersionReadModel, StratrackDbContext, StrategyVersionReadModelLocator>();
+            ef.RegisterServices(services => services.AddSingleton<StrategyVersionReadModelLocator>());
             ef.AddQueryHandlers(typeof(StrategyReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(StrategyVersionReadModelSearchQueryHandler));
-
-            ef.AddCommands(typeof(DataSourceCreateCommand), typeof(DataSourceUpdateCommand), typeof(DataSourceDeleteCommand))
-                .AddCommandHandlers(typeof(DataSourceCreateCommandHandler), typeof(DataSourceUpdateCommandHandler), typeof(DataSourceDeleteCommandHandler))
-                .AddEvents(typeof(DataSourceCreatedEvent), typeof(DataSourceUpdatedEvent), typeof(DataSourceDeletedEvent));
 
             ef.UseEntityFrameworkReadModel<DataSourceReadModel, StratrackDbContext>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));

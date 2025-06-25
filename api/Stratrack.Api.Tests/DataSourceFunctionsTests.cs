@@ -1,6 +1,6 @@
 using EventFlow;
+using EventFlow.EntityFramework;
 using EventFlow.Queries;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Stratrack.Api.Domain;
@@ -19,11 +19,14 @@ public class DataSourceFunctionsTests
     private static ServiceProvider CreateProvider()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<InMemoryDatabaseRoot>();
         services.AddLogging();
         services.AddStratrack<StratrackDbContextProvider>();
         services.AddSingleton<DataSourceFunctions>();
         var serviceProvider = services.BuildServiceProvider();
+        using var context = serviceProvider
+            .GetRequiredService<IDbContextProvider<StratrackDbContext>>()
+            .CreateContext();
+        context.Database.EnsureDeleted();
         return serviceProvider;
     }
 
