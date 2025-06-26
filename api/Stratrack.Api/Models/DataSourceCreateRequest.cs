@@ -7,5 +7,11 @@ public class DataSourceCreateRequest
     [Required]
     [MinLength(1)]
     public string Name { get; set; } = "";
+    [Required]
+    public string Symbol { get; set; } = "";
+    [Required]
+    public string Timeframe { get; set; } = "";
+    [Required]
+    public string SourceType { get; set; } = "";
     public string? Description { get; set; }
 }

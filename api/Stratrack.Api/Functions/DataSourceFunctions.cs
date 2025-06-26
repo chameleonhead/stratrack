@@ -66,6 +66,9 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             await commandBus.PublishAsync(new DataSourceCreateCommand(id)
             {
                 Name = body.Name,
+                Symbol = body.Symbol,
+                Timeframe = body.Timeframe,
+                SourceType = body.SourceType,
                 Description = body.Description,
             }, token).ConfigureAwait(false);
         }
@@ -200,6 +203,9 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
         {
             Id = result.DataSourceId,
             Name = result.Name,
+            Symbol = result.Symbol,
+            Timeframe = result.Timeframe,
+            SourceType = result.SourceType,
             Description = result.Description,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,

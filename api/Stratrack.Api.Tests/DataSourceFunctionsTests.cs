@@ -79,6 +79,9 @@ public class DataSourceFunctionsTests
                 new DataSourceCreateRequest()
                 {
                     Name = "DataSource 1",
+                    Symbol = "EURUSD",
+                    Timeframe = "H1",
+                    SourceType = "ducascopy",
                     Description = "Description",
                 }
             ))
@@ -91,6 +94,9 @@ public class DataSourceFunctionsTests
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         var obj = await response.ReadAsJsonAsync<DataSourceDetail>().ConfigureAwait(false);
         Assert.AreEqual("DataSource 1", obj.Name);
+        Assert.AreEqual("EURUSD", obj.Symbol);
+        Assert.AreEqual("H1", obj.Timeframe);
+        Assert.AreEqual("ducascopy", obj.SourceType);
         Assert.AreEqual("Description", obj.Description);
     }
 

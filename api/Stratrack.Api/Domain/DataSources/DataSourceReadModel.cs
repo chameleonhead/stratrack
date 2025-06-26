@@ -12,6 +12,9 @@ public class DataSourceReadModel : IReadModel,
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
     public string Name { get; set; } = "";
+    public string Symbol { get; set; } = "";
+    public string Timeframe { get; set; } = "";
+    public string SourceType { get; set; } = "";
     public string? Description { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -22,6 +25,9 @@ public class DataSourceReadModel : IReadModel,
         Id = context.ReadModelId;
         DataSourceId = domainEvent.AggregateIdentity.GetGuid();
         Name = dataSourceCreatedEvent.Name;
+        Symbol = dataSourceCreatedEvent.Symbol;
+        Timeframe = dataSourceCreatedEvent.Timeframe;
+        SourceType = dataSourceCreatedEvent.SourceType;
         Description = dataSourceCreatedEvent.Description;
         CreatedAt = domainEvent.Timestamp;
         UpdatedAt = domainEvent.Timestamp;

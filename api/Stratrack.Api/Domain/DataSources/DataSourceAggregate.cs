@@ -9,13 +9,33 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     IEmit<DataSourceDeletedEvent>
 {
     private bool isDeleted = false;
-
     public string DataSourceName { get; private set; } = "";
     public string? Description { get; private set; }
+    public string Symbol { get; private set; } = "";
+    public string Timeframe { get; private set; } = "";
+    /// <summary>
+    /// ducascopy, mt4
+    /// </summary>
+    public string SourceType { get; private set; } = "";
 
-    public void Create(string name, string? description)
+    public void Create(string name, string symbol, string timeframe, string sourceType, string? description)
     {
-        Emit(new DataSourceCreatedEvent(Id, name, description));
+        if (isDeleted == true)
+        {
+            return;
+        }
+        if (DataSourceName == name
+            && Symbol == symbol
+            && Timeframe == timeframe
+            && SourceType == sourceType
+            && Description == description)
+        {
+            return;
+        }
+
+        // Assuming that the symbol, timeframe, and sourceType are not stored in this aggregate.
+        // If they are needed, they should be added as properties and handled accordingly.
+        Emit(new DataSourceCreatedEvent(Id, name, symbol, timeframe, sourceType, description));
     }
 
     public void Update(string name, string? description)
@@ -39,6 +59,9 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     public void Apply(DataSourceCreatedEvent aggregateEvent)
     {
         DataSourceName = aggregateEvent.Name;
+        Symbol = aggregateEvent.Symbol;
+        Timeframe = aggregateEvent.Timeframe;
+        SourceType = aggregateEvent.SourceType;
         Description = aggregateEvent.Description;
     }
 
