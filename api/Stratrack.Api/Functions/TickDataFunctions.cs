@@ -5,7 +5,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Stratrack.Api.Domain;
-using Stratrack.Api.Domain.DataChunks;
+using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Models;
 using EventFlow.EntityFramework;
@@ -15,8 +15,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stratrack.Api.Functions;
 
-public class TickDataFunctions(IDbContextProvider<StratrackDbContext> dbContextProvider, ILogger<TickDataFunctions> logger)
+public class TickDataFunctions(
+    IDbContextProvider<StratrackDbContext> dbContextProvider,
+    IBlobStorage blobStorage,
+    ILogger<TickDataFunctions> logger)
 {
+    private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
+    private readonly IBlobStorage _blobStorage = blobStorage;
+    private readonly ILogger<TickDataFunctions> _logger = logger;
     [Function("UploadTickChunk")]
     [OpenApiOperation(operationId: "upload_tick_chunk", tags: ["TickData"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
@@ -44,21 +50,18 @@ public class TickDataFunctions(IDbContextProvider<StratrackDbContext> dbContextP
         }
 
         var dsId = Guid.Parse(dataSourceId);
-        using var context = dbContextProvider.CreateContext();
+        using var context = _dbContextProvider.CreateContext();
         var dataSource = await context.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId, token).ConfigureAwait(false);
         if (dataSource == null)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
-        var blob = new BlobEntity
-        {
-            Id = Guid.NewGuid(),
-            FileName = body.FileName ?? $"{body.StartTime:yyyyMMddHH}.csv",
-            ContentType = "text/csv",
-            Data = Convert.FromBase64String(body.Base64Data)
-        };
-        context.Blobs.Add(blob);
+        var blob = await _blobStorage.SaveAsync(
+            body.FileName ?? $"{body.StartTime:yyyyMMddHH}.csv",
+            "text/csv",
+            Convert.FromBase64String(body.Base64Data),
+            token).ConfigureAwait(false);
 
         var chunk = new DataChunk
         {

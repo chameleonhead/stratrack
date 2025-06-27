@@ -1,7 +1,6 @@
 using Stratrack.Api.Domain.Blobs;
-using Stratrack.Api.Domain.DataSources;
 
-namespace Stratrack.Api.Domain.DataChunks;
+namespace Stratrack.Api.Domain.DataSources;
 
 public class DataChunk
 {

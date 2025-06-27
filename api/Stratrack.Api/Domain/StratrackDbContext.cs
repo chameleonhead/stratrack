@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Blobs;
-using Stratrack.Api.Domain.DataChunks;
 
 namespace Stratrack.Api.Domain;
 

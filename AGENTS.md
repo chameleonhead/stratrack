@@ -35,3 +35,5 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - Dukascopy の tick データは `data-sources/{id}/ticks` でアップロードできます。
 - アップロードデータは 1 時間単位の CSV を base64 文字列として受け取り、`Blob` テーブルに保存します。
 - `data_chunk` テーブルは `data_source_id`, `start_time`, `end_time`, `blob_id` を管理し、データ本体と切り離して扱います。
+- チャンク情報はデータソースドメインで管理し、`DataChunk` エンティティを `DataSources` フォルダに配置してください。
+- Blob 保存処理は `IBlobStorage` インターフェイス経由で実装し、デフォルトではデータベースに保存します。
