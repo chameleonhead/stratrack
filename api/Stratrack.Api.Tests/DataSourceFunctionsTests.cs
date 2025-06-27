@@ -128,6 +128,9 @@ public class DataSourceFunctionsTests
         var id = await CreateDataSourceAsync(function, new DataSourceCreateRequest()
         {
             Name = "DataSource 1",
+            Symbol = "EURUSD",
+            Timeframe = "H1",
+            SourceType = "dukascopy",
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -155,6 +158,9 @@ public class DataSourceFunctionsTests
         var id = await CreateDataSourceAsync(function, new DataSourceCreateRequest()
         {
             Name = "DataSource 1",
+            Symbol = "EURUSD",
+            Timeframe = "H1",
+            SourceType = "dukascopy",
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -192,7 +198,12 @@ public class DataSourceFunctionsTests
         var request = new HttpRequestDataBuilder()
             .WithUrl("http://localhost/api/data-sources")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new DataSourceCreateRequest { Name = "x" }))
+            .WithBody(JsonSerializer.Serialize(new DataSourceCreateRequest {
+                Name = "x",
+                Symbol = "EURUSD",
+                Timeframe = "H1",
+                SourceType = "dukascopy"
+            }))
             .Build();
 
         var response = await function.PostDataSource(request, CancellationToken.None).ConfigureAwait(false);
@@ -209,6 +220,9 @@ public class DataSourceFunctionsTests
         var id = await CreateDataSourceAsync(function, new DataSourceCreateRequest()
         {
             Name = "name",
+            Symbol = "EURUSD",
+            Timeframe = "H1",
+            SourceType = "dukascopy",
         }).ConfigureAwait(false);
 
         var request = new HttpRequestDataBuilder()

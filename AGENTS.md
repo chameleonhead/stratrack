@@ -29,3 +29,9 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 6. play 関数を利用する際はモックを利用せず、できる限り msw で対応してください。
 7. Storybook 用のテストヘルパーは `@storybook/testing-library` ではなく、`storybook/test` を使用してください。Storybook 9 以降は `storybook` パッケージに統合されています。
 8. ビルドが通ることを確認するため、`npm run build` を実行してください。
+
+## データソース管理について
+
+- Dukascopy の tick データは `data-sources/{id}/ticks` でアップロードできます。
+- アップロードデータは 1 時間単位の CSV を base64 文字列として受け取り、`Blob` テーブルに保存します。
+- `data_chunk` テーブルは `data_source_id`, `start_time`, `end_time`, `blob_id` を管理し、データ本体と切り離して扱います。
