@@ -18,7 +18,7 @@ public class DataSourceReadModel : IReadModel,
     public string? Description { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
-    public List<DataChunk> DataChunks { get; set; } = [];
+    public List<DataChunkEntity> DataChunks { get; set; } = [];
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent> domainEvent, CancellationToken cancellationToken)
     {

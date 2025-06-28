@@ -34,4 +34,4 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 
 - API は Azure Functions と EventFlow を利用した CQRS / Event Sourcing 構成です。
 - データアクセスには Entity Framework Core を用い、テストは MSTest ベースで記述します。
-- C# コードでは `async`/`await` を用いた非同期処理を基本とし、`var` は使用せず型を明示してください。
+- C# コードでは `async`/`await` を用いた非同期処理を基本とし、ローカル変数には `var` を使用してください。

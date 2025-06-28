@@ -18,7 +18,7 @@ public class StratrackDbContext : DbContext
 
     public DbSet<DataSourceReadModel> DataSources { get; set; }
     public DbSet<BlobEntity> Blobs { get; set; }
-    public DbSet<DataChunk> DataChunks { get; set; }
+    public DbSet<DataChunkEntity> DataChunks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -2,7 +2,7 @@ using Stratrack.Api.Domain.Blobs;
 
 namespace Stratrack.Api.Domain.DataSources;
 
-public class DataChunk
+public class DataChunkEntity
 {
     public Guid Id { get; set; }
     public Guid DataSourceId { get; set; }

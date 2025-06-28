@@ -4,5 +4,5 @@ namespace Stratrack.Api.Domain.DataSources.Services;
 
 public interface IDataChunkRegistrar
 {
-    Task<DataChunk> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token);
+    Task<DataChunkEntity> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token);
 }

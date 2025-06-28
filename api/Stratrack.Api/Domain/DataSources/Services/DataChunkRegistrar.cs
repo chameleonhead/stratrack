@@ -9,7 +9,7 @@ public class DataChunkRegistrar(IDbContextProvider<StratrackDbContext> provider)
 {
     private readonly IDbContextProvider<StratrackDbContext> _provider = provider;
 
-    public async Task<DataChunk> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token)
+    public async Task<DataChunkEntity> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token)
     {
         using var context = _provider.CreateContext();
         var chunk = await context.DataChunks
@@ -17,7 +17,7 @@ public class DataChunkRegistrar(IDbContextProvider<StratrackDbContext> provider)
             .ConfigureAwait(false);
         if (chunk == null)
         {
-            chunk = new DataChunk
+            chunk = new DataChunkEntity
             {
                 Id = Guid.NewGuid(),
                 DataSourceId = dataSourceId,
