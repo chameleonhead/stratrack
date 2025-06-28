@@ -29,3 +29,10 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 6. play 関数を利用する際はモックを利用せず、できる限り msw で対応してください。
 7. Storybook 用のテストヘルパーは `@storybook/testing-library` ではなく、`storybook/test` を使用してください。Storybook 9 以降は `storybook` パッケージに統合されています。
 8. ビルドが通ることを確認するため、`npm run build` を実行してください。
+
+## コーディングスタイルと使用ライブラリ
+
+- API は Azure Functions と EventFlow を利用した CQRS / Event Sourcing 構成です。
+- データアクセスには Entity Framework Core を用い、テストは MSTest ベースで記述します。
+- C# コードでは `async`/`await` を用いた非同期処理を基本とし、ローカル変数には `var` を使用してください。
+- ReadModel を直接編集せず、状態変更が必要な場合は Command・CommandHandler・Aggregate を通じて処理してください。

@@ -1,13 +1,18 @@
 ﻿using EventFlow.Aggregates;
 using EventFlow.ReadStores;
 using Stratrack.Api.Domain.DataSources.Events;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stratrack.Api.Domain.DataSources;
 
 public class DataSourceReadModel : IReadModel,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUpdatedEvent>,
-    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkDeletedEvent>
 {
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
@@ -18,6 +23,7 @@ public class DataSourceReadModel : IReadModel,
     public string? Description { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
+    public List<DataChunkRef> DataChunks { get; set; } = [];
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent> domainEvent, CancellationToken cancellationToken)
     {
@@ -50,4 +56,37 @@ public class DataSourceReadModel : IReadModel,
         context.MarkForDeletion();
         return Task.CompletedTask;
     }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        var e = domainEvent.AggregateEvent;
+        var chunk = DataChunks.FirstOrDefault(c => c.ChunkId == e.ChunkId);
+        if (chunk == null)
+        {
+            DataChunks.Add(new DataChunkRef { ChunkId = e.ChunkId, BlobId = e.BlobId });
+        }
+        else
+        {
+            chunk.BlobId = e.BlobId;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataChunkDeletedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        var chunk = DataChunks.FirstOrDefault(c => c.ChunkId == domainEvent.AggregateEvent.ChunkId);
+        if (chunk != null)
+        {
+            DataChunks.Remove(chunk);
+        }
+        return Task.CompletedTask;
+    }
+}
+
+[NotMapped]
+public class DataChunkRef
+{
+    [Key]
+    public Guid ChunkId { get; set; }
+    public Guid BlobId { get; set; }
 }
