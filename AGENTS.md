@@ -30,10 +30,8 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 7. Storybook 用のテストヘルパーは `@storybook/testing-library` ではなく、`storybook/test` を使用してください。Storybook 9 以降は `storybook` パッケージに統合されています。
 8. ビルドが通ることを確認するため、`npm run build` を実行してください。
 
-## データソース管理について
+## コーディングスタイルと使用ライブラリ
 
-- Dukascopy の tick データは `data-sources/{id}/ticks` でアップロードできます。
-- アップロードデータは 1 時間単位の CSV を base64 文字列として受け取り、`Blob` テーブルに保存します。
-- `data_chunk` テーブルは `data_source_id`, `start_time`, `end_time`, `blob_id` を管理し、データ本体と切り離して扱います。
-- チャンク情報はデータソースドメインで管理し、`DataChunk` エンティティを `DataSources` フォルダに配置してください。
-- Blob 保存処理は `IBlobStorage` インターフェイス経由で実装し、デフォルトではデータベースに保存します。
+- API は Azure Functions と EventFlow を利用した CQRS / Event Sourcing 構成です。
+- データアクセスには Entity Framework Core を用い、テストは MSTest ベースで記述します。
+- C# コードでは `async`/`await` を用いた非同期処理を基本とし、`var` は使用せず型を明示してください。
