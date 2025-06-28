@@ -9,7 +9,8 @@ public class DataSourceReadModel : IReadModel,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUpdatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>,
-    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent>
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkDeletedEvent>
 {
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
@@ -75,6 +76,16 @@ public class DataSourceReadModel : IReadModel,
             chunk.BlobId = e.BlobId;
             chunk.StartTime = e.StartTime;
             chunk.EndTime = e.EndTime;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataChunkDeletedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        var chunk = DataChunks.FirstOrDefault(c => c.Id == domainEvent.AggregateEvent.ChunkId);
+        if (chunk != null)
+        {
+            DataChunks.Remove(chunk);
         }
         return Task.CompletedTask;
     }

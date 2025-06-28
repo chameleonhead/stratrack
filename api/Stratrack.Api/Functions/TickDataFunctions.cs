@@ -61,7 +61,7 @@ public class TickDataFunctions(
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
-        var blob = await _blobStorage.SaveAsync(
+        var blobId = await _blobStorage.SaveAsync(
             body.FileName ?? $"{body.StartTime:yyyyMMddHH}.csv",
             "text/csv",
             Convert.FromBase64String(body.Base64Data),
@@ -69,11 +69,47 @@ public class TickDataFunctions(
 
         await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(dataSource.DataSourceId))
         {
-            BlobId = blob.Id,
+            BlobId = blobId,
             StartTime = body.StartTime,
             EndTime = body.EndTime,
         }, token).ConfigureAwait(false);
 
         return req.CreateResponse(HttpStatusCode.Created);
+    }
+
+    [Function("DeleteTickChunks")]
+    [OpenApiOperation(operationId: "delete_tick_chunks", tags: ["TickData"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
+    [OpenApiParameter(name: "startTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
+    [OpenApiParameter(name: "endTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NoContent, Description = "No content")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
+    public async Task<HttpResponseData> DeleteTickChunks(
+        [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "data-sources/{dataSourceId}/ticks")] HttpRequestData req,
+        string dataSourceId,
+        CancellationToken token)
+    {
+        var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
+        var startStr = query.Get("startTime");
+        var endStr = query.Get("endTime");
+        DateTimeOffset? start = startStr != null ? DateTimeOffset.Parse(startStr) : null;
+        DateTimeOffset? end = endStr != null ? DateTimeOffset.Parse(endStr) : null;
+
+        var dsId = Guid.Parse(dataSourceId);
+        using var context = _dbContextProvider.CreateContext();
+        var dataSource = await context.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId, token).ConfigureAwait(false);
+        if (dataSource == null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        await _commandBus.PublishAsync(new DataChunkDeleteCommand(DataSourceId.With(dsId))
+        {
+            StartTime = start,
+            EndTime = end,
+        }, token).ConfigureAwait(false);
+
+        return req.CreateResponse(HttpStatusCode.NoContent);
     }
 }

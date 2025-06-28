@@ -7,7 +7,8 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     IEmit<DataSourceCreatedEvent>,
     IEmit<DataSourceUpdatedEvent>,
     IEmit<DataSourceDeletedEvent>,
-    IEmit<DataChunkRegisteredEvent>
+    IEmit<DataChunkRegisteredEvent>,
+    IEmit<DataChunkDeletedEvent>
 {
     private bool isDeleted = false;
     public string DataSourceName { get; private set; } = "";
@@ -83,6 +84,15 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     }
 
     public void Apply(DataChunkRegisteredEvent aggregateEvent)
+    {
+    }
+
+    public void DeleteDataChunk(Guid chunkId)
+    {
+        Emit(new DataChunkDeletedEvent(chunkId));
+    }
+
+    public void Apply(DataChunkDeletedEvent aggregateEvent)
     {
     }
 }

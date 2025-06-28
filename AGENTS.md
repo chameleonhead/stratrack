@@ -35,3 +35,4 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - API は Azure Functions と EventFlow を利用した CQRS / Event Sourcing 構成です。
 - データアクセスには Entity Framework Core を用い、テストは MSTest ベースで記述します。
 - C# コードでは `async`/`await` を用いた非同期処理を基本とし、ローカル変数には `var` を使用してください。
+- ReadModel を直接編集せず、状態変更が必要な場合は Command・CommandHandler・Aggregate を通じて処理してください。

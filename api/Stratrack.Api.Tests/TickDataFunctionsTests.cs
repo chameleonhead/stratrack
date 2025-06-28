@@ -69,7 +69,6 @@ public class TickDataFunctionsTests
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         using var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
         Assert.AreEqual(1, ctx.DataChunks.Count());
-        Assert.AreEqual(1, ctx.Blobs.Count());
     }
 
     [TestMethod]
@@ -109,6 +108,81 @@ public class TickDataFunctionsTests
 
         using var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
         Assert.AreEqual(1, ctx.DataChunks.Count());
-        Assert.AreEqual(2, ctx.Blobs.Count());
+    }
+
+    [TestMethod]
+    public async Task DeleteTickChunks_ByRange_RemovesChunks()
+    {
+        using var provider = CreateProvider();
+        var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
+        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var dsId = await CreateDataSourceAsync(dsFunc);
+
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
+        var req1 = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            {
+                StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
+                EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
+                Base64Data = data
+            }))
+            .Build();
+        await tickFunc.PostTickChunk(req1, dsId, CancellationToken.None);
+
+        var req2 = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            {
+                StartTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
+                EndTime = new DateTimeOffset(2024,1,1,2,0,0,TimeSpan.Zero),
+                Base64Data = data
+            }))
+            .Build();
+        await tickFunc.PostTickChunk(req2, dsId, CancellationToken.None);
+
+        var delReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks?startTime=2024-01-01T00:30:00Z&endTime=2024-01-01T00:59:00Z")
+            .WithMethod(HttpMethod.Delete)
+            .Build();
+        var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
+
+        using var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
+        Assert.AreEqual(1, ctx.DataChunks.Count());
+    }
+
+    [TestMethod]
+    public async Task DeleteTickChunks_DeleteAll_RemovesAll()
+    {
+        using var provider = CreateProvider();
+        var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
+        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var dsId = await CreateDataSourceAsync(dsFunc);
+
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
+        var req1 = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            {
+                StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
+                EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
+                Base64Data = data
+            }))
+            .Build();
+        await tickFunc.PostTickChunk(req1, dsId, CancellationToken.None);
+
+        var delReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithMethod(HttpMethod.Delete)
+            .Build();
+        var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
+
+        using var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
+        Assert.AreEqual(0, ctx.DataChunks.Count());
     }
 }

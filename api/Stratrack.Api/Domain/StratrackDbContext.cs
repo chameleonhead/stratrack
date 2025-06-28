@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
-using Stratrack.Api.Domain.Blobs;
 
 namespace Stratrack.Api.Domain;
 
@@ -17,7 +16,6 @@ public class StratrackDbContext : DbContext
     public DbSet<StrategyVersionReadModel> StrategyVersions { get; set; }
 
     public DbSet<DataSourceReadModel> DataSources { get; set; }
-    public DbSet<BlobEntity> Blobs { get; set; }
     public DbSet<DataChunkEntity> DataChunks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

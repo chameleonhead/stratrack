@@ -30,7 +30,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceCreateCommand),
                 typeof(DataSourceUpdateCommand),
                 typeof(DataSourceDeleteCommand),
-                typeof(DataChunkRegisterCommand)
+                typeof(DataChunkRegisterCommand),
+                typeof(DataChunkDeleteCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -38,7 +39,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceCreateCommandHandler),
                 typeof(DataSourceUpdateCommandHandler),
                 typeof(DataSourceDeleteCommandHandler),
-                typeof(DataChunkRegisterCommandHandler)
+                typeof(DataChunkRegisterCommandHandler),
+                typeof(DataChunkDeleteCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -47,7 +49,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceCreatedEvent),
                 typeof(DataSourceUpdatedEvent),
                 typeof(DataSourceDeletedEvent),
-                typeof(DataChunkRegisteredEvent)
+                typeof(DataChunkRegisteredEvent),
+                typeof(DataChunkDeletedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
@@ -66,6 +69,7 @@ public static class ServiceCollectionExtension
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
                 s.AddSingleton<IDataChunkRegistrar, DataChunkRegistrar>();
+                s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
             });
         });
     }

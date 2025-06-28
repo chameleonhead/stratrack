@@ -1,25 +1,21 @@
-using EventFlow.EntityFramework;
-using Stratrack.Api.Domain;
 using Stratrack.Api.Domain.Blobs;
+using System.Collections.Concurrent;
 
 namespace Stratrack.Api.Infrastructure;
 
-public class DatabaseBlobStorage(IDbContextProvider<StratrackDbContext> provider) : IBlobStorage
+public class DatabaseBlobStorage : IBlobStorage
 {
-    private readonly IDbContextProvider<StratrackDbContext> _provider = provider;
-
-    public async Task<BlobEntity> SaveAsync(string fileName, string contentType, byte[] data, CancellationToken token)
+    private readonly ConcurrentDictionary<Guid, byte[]> _store = new();
+    public Task<Guid> SaveAsync(string fileName, string contentType, byte[] data, CancellationToken token)
     {
-        using var context = _provider.CreateContext();
-        var blob = new BlobEntity
-        {
-            Id = Guid.NewGuid(),
-            FileName = fileName,
-            ContentType = contentType,
-            Data = data
-        };
-        context.Blobs.Add(blob);
-        await context.SaveChangesAsync(token).ConfigureAwait(false);
-        return blob;
+        var id = Guid.NewGuid();
+        _store[id] = data;
+        return Task.FromResult(id);
+    }
+
+    public Task DeleteAsync(Guid blobId, CancellationToken token)
+    {
+        _store.TryRemove(blobId, out _);
+        return Task.CompletedTask;
     }
 }
