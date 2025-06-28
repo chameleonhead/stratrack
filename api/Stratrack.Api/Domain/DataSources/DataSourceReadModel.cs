@@ -1,13 +1,15 @@
 ﻿using EventFlow.Aggregates;
 using EventFlow.ReadStores;
 using Stratrack.Api.Domain.DataSources.Events;
+using System.Linq;
 
 namespace Stratrack.Api.Domain.DataSources;
 
 public class DataSourceReadModel : IReadModel,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUpdatedEvent>,
-    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent>
 {
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
@@ -49,6 +51,31 @@ public class DataSourceReadModel : IReadModel,
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent> domainEvent, CancellationToken cancellationToken)
     {
         context.MarkForDeletion();
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        var e = domainEvent.AggregateEvent;
+        var chunk = DataChunks.FirstOrDefault(c => c.Id == e.ChunkId);
+        if (chunk == null)
+        {
+            chunk = new DataChunkEntity
+            {
+                Id = e.ChunkId,
+                DataSourceId = DataSourceId,
+                BlobId = e.BlobId,
+                StartTime = e.StartTime,
+                EndTime = e.EndTime
+            };
+            DataChunks.Add(chunk);
+        }
+        else
+        {
+            chunk.BlobId = e.BlobId;
+            chunk.StartTime = e.StartTime;
+            chunk.EndTime = e.EndTime;
+        }
         return Task.CompletedTask;
     }
 }

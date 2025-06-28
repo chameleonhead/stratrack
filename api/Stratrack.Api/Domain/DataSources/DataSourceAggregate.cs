@@ -6,7 +6,8 @@ namespace Stratrack.Api.Domain.DataSources;
 public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggregate, DataSourceId>(id),
     IEmit<DataSourceCreatedEvent>,
     IEmit<DataSourceUpdatedEvent>,
-    IEmit<DataSourceDeletedEvent>
+    IEmit<DataSourceDeletedEvent>,
+    IEmit<DataChunkRegisteredEvent>
 {
     private bool isDeleted = false;
     public string DataSourceName { get; private set; } = "";
@@ -74,5 +75,14 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     public void Apply(DataSourceDeletedEvent aggregateEvent)
     {
         isDeleted = true;
+    }
+
+    public void RegisterDataChunk(Guid chunkId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        Emit(new DataChunkRegisteredEvent(chunkId, blobId, startTime, endTime));
+    }
+
+    public void Apply(DataChunkRegisteredEvent aggregateEvent)
+    {
     }
 }

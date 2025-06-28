@@ -29,14 +29,16 @@ public static class ServiceCollectionExtension
                 typeof(StrategyDeleteCommand),
                 typeof(DataSourceCreateCommand),
                 typeof(DataSourceUpdateCommand),
-                typeof(DataSourceDeleteCommand)
+                typeof(DataSourceDeleteCommand),
+                typeof(DataChunkRegisterCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
                 typeof(StrategyDeleteCommandHandler),
                 typeof(DataSourceCreateCommandHandler),
                 typeof(DataSourceUpdateCommandHandler),
-                typeof(DataSourceDeleteCommandHandler)
+                typeof(DataSourceDeleteCommandHandler),
+                typeof(DataChunkRegisterCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -44,7 +46,8 @@ public static class ServiceCollectionExtension
                 typeof(StrategyDeletedEvent),
                 typeof(DataSourceCreatedEvent),
                 typeof(DataSourceUpdatedEvent),
-                typeof(DataSourceDeletedEvent)
+                typeof(DataSourceDeletedEvent),
+                typeof(DataChunkRegisteredEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);

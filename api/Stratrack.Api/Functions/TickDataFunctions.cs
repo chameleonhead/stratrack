@@ -7,7 +7,8 @@ using Microsoft.OpenApi.Models;
 using Stratrack.Api.Domain;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Blobs;
-using Stratrack.Api.Domain.DataSources.Services;
+using Stratrack.Api.Domain.DataSources.Commands;
+using EventFlow;
 using Stratrack.Api.Models;
 using EventFlow.EntityFramework;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,12 @@ namespace Stratrack.Api.Functions;
 public class TickDataFunctions(
     IDbContextProvider<StratrackDbContext> dbContextProvider,
     IBlobStorage blobStorage,
-    IDataChunkRegistrar chunkRegistrar,
+    ICommandBus commandBus,
     ILogger<TickDataFunctions> logger)
 {
     private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
     private readonly IBlobStorage _blobStorage = blobStorage;
-    private readonly IDataChunkRegistrar _chunkRegistrar = chunkRegistrar;
+    private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<TickDataFunctions> _logger = logger;
     [Function("UploadTickChunk")]
     [OpenApiOperation(operationId: "upload_tick_chunk", tags: ["TickData"])]
@@ -66,12 +67,12 @@ public class TickDataFunctions(
             Convert.FromBase64String(body.Base64Data),
             token).ConfigureAwait(false);
 
-        await _chunkRegistrar.RegisterAsync(
-            dataSource.DataSourceId,
-            blob.Id,
-            body.StartTime,
-            body.EndTime,
-            token).ConfigureAwait(false);
+        await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(dataSource.DataSourceId))
+        {
+            BlobId = blob.Id,
+            StartTime = body.StartTime,
+            EndTime = body.EndTime,
+        }, token).ConfigureAwait(false);
 
         return req.CreateResponse(HttpStatusCode.Created);
     }
