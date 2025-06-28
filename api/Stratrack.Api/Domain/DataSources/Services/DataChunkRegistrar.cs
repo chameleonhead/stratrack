@@ -1,40 +1,13 @@
-using EventFlow.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-using Stratrack.Api.Domain.DataSources;
-using Stratrack.Api.Domain;
+using Stratrack.Api.Domain.DataSources.Services;
 
 namespace Stratrack.Api.Domain.DataSources.Services;
 
-public class DataChunkRegistrar(IDbContextProvider<StratrackDbContext> provider) : IDataChunkRegistrar
+public class DataChunkRegistrar(IDataChunkStore store) : IDataChunkRegistrar
 {
-    private readonly IDbContextProvider<StratrackDbContext> _provider = provider;
+    private readonly IDataChunkStore _store = store;
 
-    public async Task<DataChunkEntity> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token)
+    public Task<DataChunk> RegisterAsync(Guid dataSourceId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken token)
     {
-        using var context = _provider.CreateContext();
-        var chunk = await context.DataChunks
-            .FirstOrDefaultAsync(c => c.DataSourceId == dataSourceId && c.StartTime < endTime && c.EndTime > startTime, token)
-            .ConfigureAwait(false);
-        if (chunk == null)
-        {
-            chunk = new DataChunkEntity
-            {
-                Id = Guid.NewGuid(),
-                DataSourceId = dataSourceId,
-                BlobId = blobId,
-                StartTime = startTime,
-                EndTime = endTime
-            };
-            context.DataChunks.Add(chunk);
-        }
-        else
-        {
-            chunk.BlobId = blobId;
-            chunk.StartTime = startTime;
-            chunk.EndTime = endTime;
-        }
-
-        await context.SaveChangesAsync(token).ConfigureAwait(false);
-        return chunk;
+        return _store.UpsertAsync(dataSourceId, blobId, startTime, endTime, token);
     }
 }

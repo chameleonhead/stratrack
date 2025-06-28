@@ -68,6 +68,7 @@ public static class ServiceCollectionExtension
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
+                s.AddSingleton<IDataChunkStore, InMemoryDataChunkStore>();
                 s.AddSingleton<IDataChunkRegistrar, DataChunkRegistrar>();
                 s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
             });
