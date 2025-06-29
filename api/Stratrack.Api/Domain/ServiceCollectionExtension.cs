@@ -10,6 +10,10 @@ using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Domain.DataSources.Services;
 using Stratrack.Api.Domain.Dukascopy;
+using Stratrack.Api.Domain.Dukascopy.Jobs;
+using Stratrack.Api.Domain.Dukascopy.Jobs.Commands;
+using Stratrack.Api.Domain.Dukascopy.Jobs.Events;
+using Stratrack.Api.Domain.Dukascopy.Jobs.Queries;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Events;
@@ -32,7 +36,9 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceUpdateCommand),
                 typeof(DataSourceDeleteCommand),
                 typeof(DataChunkRegisterCommand),
-                typeof(DataChunkDeleteCommand)
+                typeof(DataChunkDeleteCommand),
+                typeof(DukascopyJobStartCommand),
+                typeof(DukascopyJobStopCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -41,7 +47,9 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceUpdateCommandHandler),
                 typeof(DataSourceDeleteCommandHandler),
                 typeof(DataChunkRegisterCommandHandler),
-                typeof(DataChunkDeleteCommandHandler)
+                typeof(DataChunkDeleteCommandHandler),
+                typeof(DukascopyJobStartCommandHandler),
+                typeof(DukascopyJobStopCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -51,7 +59,9 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceUpdatedEvent),
                 typeof(DataSourceDeletedEvent),
                 typeof(DataChunkRegisteredEvent),
-                typeof(DataChunkDeletedEvent)
+                typeof(DataChunkDeletedEvent),
+                typeof(DukascopyJobStartedEvent),
+                typeof(DukascopyJobStoppedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
@@ -65,7 +75,9 @@ public static class ServiceCollectionExtension
             ef.AddQueryHandlers(typeof(StrategyVersionReadModelSearchQueryHandler));
 
             ef.UseEntityFrameworkReadModel<DataSourceReadModel, StratrackDbContext>();
+            ef.UseEntityFrameworkReadModel<DukascopyJobReadModel, StratrackDbContext>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
@@ -74,7 +86,7 @@ public static class ServiceCollectionExtension
                 s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
                 s.AddSingleton<IDukascopyJobControl, DukascopyJobControl>();
                 s.AddSingleton<IDukascopyClient, StubDukascopyClient>();
-                s.AddHostedService<DukascopyFetchService>();
+                s.AddSingleton<DukascopyFetchService>();
             });
         });
     }

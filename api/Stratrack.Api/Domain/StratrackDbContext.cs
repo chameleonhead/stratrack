@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
+using Stratrack.Api.Domain.Dukascopy.Jobs;
 
 namespace Stratrack.Api.Domain;
 
@@ -16,6 +17,7 @@ public class StratrackDbContext : DbContext
     public DbSet<StrategyVersionReadModel> StrategyVersions { get; set; }
 
     public DbSet<DataSourceReadModel> DataSources { get; set; }
+    public DbSet<DukascopyJobReadModel> DukascopyJobs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +28,10 @@ public class StratrackDbContext : DbContext
             entity.HasKey(m => m.Id);
         });
         modelBuilder.Entity<StrategyVersionReadModel>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+        });
+        modelBuilder.Entity<DukascopyJobReadModel>(entity =>
         {
             entity.HasKey(m => m.Id);
         });

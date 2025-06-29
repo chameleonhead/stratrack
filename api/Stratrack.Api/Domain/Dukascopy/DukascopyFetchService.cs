@@ -1,7 +1,6 @@
 using EventFlow;
 using EventFlow.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
@@ -11,16 +10,14 @@ using Stratrack.Api.Domain.DataSources.Services;
 namespace Stratrack.Api.Domain.Dukascopy;
 
 public class DukascopyFetchService(
-    IDukascopyJobControl control,
     IDukascopyClient client,
     IDbContextProvider<StratrackDbContext> dbContextProvider,
     IBlobStorage blobStorage,
     IDataChunkStore chunkStore,
     ICommandBus commandBus,
     ILogger<DukascopyFetchService> logger
-) : BackgroundService
+)
 {
-    private readonly IDukascopyJobControl _control = control;
     private readonly IDukascopyClient _client = client;
     private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
     private readonly IBlobStorage _blobStorage = blobStorage;
@@ -28,33 +25,22 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task FetchAsync(CancellationToken token)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            if (!_control.IsRunning)
+            using var context = _dbContextProvider.CreateContext();
+            var sources = await context.DataSources
+                .Where(d => d.SourceType == "dukascopy" && d.Timeframe == "tick")
+                .ToListAsync(token).ConfigureAwait(false);
+            foreach (var ds in sources)
             {
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken).ConfigureAwait(false);
-                continue;
+                await ProcessSourceAsync(ds, token).ConfigureAwait(false);
             }
-
-            try
-            {
-                using var context = _dbContextProvider.CreateContext();
-                var sources = await context.DataSources
-                    .Where(d => d.SourceType == "dukascopy" && d.Timeframe == "tick")
-                    .ToListAsync(stoppingToken).ConfigureAwait(false);
-                foreach (var ds in sources)
-                {
-                    await ProcessSourceAsync(ds, stoppingToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to process dukascopy fetch");
-            }
-
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process dukascopy fetch");
         }
     }
 

@@ -5,6 +5,7 @@ using Stratrack.Api.Infrastructure;
 using EventFlow.EntityFramework;
 using System.Net;
 using WorkerHttpFake;
+using System.Threading;
 
 namespace Stratrack.Api.Tests;
 
@@ -33,14 +34,14 @@ public class DukascopyJobFunctionsTests
             .WithUrl("http://localhost/api/dukascopy-job/start")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var startRes = await func.StartJob(startReq);
+        var startRes = await func.StartJob(startReq, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
 
         var stopReq = new HttpRequestDataBuilder()
             .WithUrl("http://localhost/api/dukascopy-job/stop")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var stopRes = await func.StopJob(stopReq);
+        var stopRes = await func.StopJob(stopReq, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
     }
 }
