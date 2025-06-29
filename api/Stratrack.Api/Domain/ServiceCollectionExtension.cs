@@ -9,6 +9,7 @@ using Stratrack.Api.Domain.DataSources.Queries;
 using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Domain.DataSources.Services;
+using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Events;
@@ -71,6 +72,9 @@ public static class ServiceCollectionExtension
                 s.AddSingleton<IDataChunkStore, InMemoryDataChunkStore>();
                 s.AddSingleton<IDataChunkRegistrar, DataChunkRegistrar>();
                 s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
+                s.AddSingleton<IDukascopyJobControl, DukascopyJobControl>();
+                s.AddSingleton<IDukascopyClient, StubDukascopyClient>();
+                s.AddHostedService<DukascopyFetchService>();
             });
         });
     }
