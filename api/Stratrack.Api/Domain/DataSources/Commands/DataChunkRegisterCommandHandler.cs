@@ -1,19 +1,16 @@
 using EventFlow.Commands;
-using Stratrack.Api.Domain.DataSources.Services;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stratrack.Api.Domain.DataSources.Commands;
 
-public class DataChunkRegisterCommandHandler(IDataChunkRegistrar registrar) : CommandHandler<DataSourceAggregate, DataSourceId, DataChunkRegisterCommand>
+public class DataChunkRegisterCommandHandler : CommandHandler<DataSourceAggregate, DataSourceId, DataChunkRegisterCommand>
 {
-    private readonly IDataChunkRegistrar _registrar = registrar;
-    public override async Task ExecuteAsync(DataSourceAggregate aggregate, DataChunkRegisterCommand command, CancellationToken cancellationToken)
+    public override Task ExecuteAsync(DataSourceAggregate aggregate, DataChunkRegisterCommand command, CancellationToken cancellationToken)
     {
-        var chunk = await _registrar.RegisterAsync(
-            aggregate.Id.GetGuid(),
-            command.BlobId,
-            command.StartTime,
-            command.EndTime,
-            cancellationToken).ConfigureAwait(false);
-        aggregate.RegisterDataChunk(chunk.Id, command.BlobId, command.StartTime, command.EndTime);
+        var chunkId = command.DataChunkId == Guid.Empty ? Guid.NewGuid() : command.DataChunkId;
+        aggregate.RegisterDataChunk(chunkId, command.BlobId, command.StartTime, command.EndTime);
+        return Task.CompletedTask;
     }
 }

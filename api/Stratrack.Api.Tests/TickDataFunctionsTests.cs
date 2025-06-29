@@ -5,7 +5,7 @@ using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
-using Stratrack.Api.Domain.DataSources.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -68,9 +68,11 @@ public class TickDataFunctionsTests
             .Build();
         var response = await tickFunc.PostTickChunk(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
-        var store = provider.GetRequiredService<IDataChunkStore>();
-        var chunks = await store.GetChunksAsync(Guid.Parse(dsId), CancellationToken.None);
-        Assert.AreEqual(1, chunks.Count);
+        using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var chunks = await context.DataChunks.Where(c => c.DataSourceId == Guid.Parse(dsId)).ToListAsync();
+            Assert.AreEqual(1, chunks.Count);
+        }
     }
 
     [TestMethod]
@@ -108,9 +110,11 @@ public class TickDataFunctionsTests
         var res2 = await tickFunc.PostTickChunk(req2, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, res2.StatusCode);
 
-        var store = provider.GetRequiredService<IDataChunkStore>();
-        var chunks = await store.GetChunksAsync(Guid.Parse(dsId), CancellationToken.None);
-        Assert.AreEqual(1, chunks.Count);
+        using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var chunks = await context.DataChunks.Where(c => c.DataSourceId == Guid.Parse(dsId)).ToListAsync();
+            Assert.AreEqual(1, chunks.Count);
+        }
     }
 
     [TestMethod]
@@ -153,9 +157,11 @@ public class TickDataFunctionsTests
         var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
 
-        var store = provider.GetRequiredService<IDataChunkStore>();
-        var chunks = await store.GetChunksAsync(Guid.Parse(dsId), CancellationToken.None);
-        Assert.AreEqual(1, chunks.Count);
+        using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var chunks = await context.DataChunks.Where(c => c.DataSourceId == Guid.Parse(dsId)).ToListAsync();
+            Assert.AreEqual(1, chunks.Count);
+        }
     }
 
     [TestMethod]
@@ -186,8 +192,10 @@ public class TickDataFunctionsTests
         var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
 
-        var store = provider.GetRequiredService<IDataChunkStore>();
-        var chunks = await store.GetChunksAsync(Guid.Parse(dsId), CancellationToken.None);
-        Assert.AreEqual(0, chunks.Count);
+        using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var chunks = await context.DataChunks.Where(c => c.DataSourceId == Guid.Parse(dsId)).ToListAsync();
+            Assert.AreEqual(0, chunks.Count);
+        }
     }
 }
