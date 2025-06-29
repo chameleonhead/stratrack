@@ -5,11 +5,14 @@ namespace Stratrack.Api.Domain.Dukascopy;
 
 public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJobAggregate, DukascopyJobId>(id),
     IEmit<DukascopyJobCreatedEvent>,
+    IEmit<DukascopyJobStartedEvent>,
+    IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>
 {
     public string Symbol { get; private set; } = "";
     public DateTimeOffset StartTime { get; private set; }
     public bool IsDeleted { get; private set; }
+    public bool IsRunning { get; private set; }
 
     public void Create(string symbol, DateTimeOffset startTime)
     {
@@ -19,6 +22,22 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
 
         Emit(new DukascopyJobCreatedEvent(symbol, startTime));
+    }
+
+    public void Start()
+    {
+        if (!IsDeleted && !IsRunning)
+        {
+            Emit(new DukascopyJobStartedEvent());
+        }
+    }
+
+    public void Stop()
+    {
+        if (!IsDeleted && IsRunning)
+        {
+            Emit(new DukascopyJobStoppedEvent());
+        }
     }
 
     public void Delete()
@@ -34,6 +53,17 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         Symbol = aggregateEvent.Symbol;
         StartTime = aggregateEvent.StartTime;
         IsDeleted = false;
+        IsRunning = false;
+    }
+
+    public void Apply(DukascopyJobStartedEvent aggregateEvent)
+    {
+        IsRunning = true;
+    }
+
+    public void Apply(DukascopyJobStoppedEvent aggregateEvent)
+    {
+        IsRunning = false;
     }
 
     public void Apply(DukascopyJobDeletedEvent aggregateEvent)

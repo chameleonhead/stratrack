@@ -38,6 +38,28 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
         return res;
     }
 
+    [Function("StartDukascopyJob")]
+    [OpenApiOperation(operationId: "start_dukascopy_job", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Started")]
+    public async Task<HttpResponseData> StartJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/start")] HttpRequestData req, Guid id, CancellationToken token)
+    {
+        await _commandBus.PublishAsync(new DukascopyJobStartCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
+        var res = req.CreateResponse(HttpStatusCode.Accepted);
+        return res;
+    }
+
+    [Function("StopDukascopyJob")]
+    [OpenApiOperation(operationId: "stop_dukascopy_job", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Stopped")]
+    public async Task<HttpResponseData> StopJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/stop")] HttpRequestData req, Guid id, CancellationToken token)
+    {
+        await _commandBus.PublishAsync(new DukascopyJobStopCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
+        var res = req.CreateResponse(HttpStatusCode.Accepted);
+        return res;
+    }
+
     [Function("DeleteDukascopyJob")]
     [OpenApiOperation(operationId: "delete_dukascopy_job", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
@@ -53,7 +75,7 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     public async Task RunJob([TimerTrigger("0 0 */12 * * *")] string timerInfo, CancellationToken token)
     {
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        foreach (var job in jobs.Where(j => !j.IsDeleted))
+        foreach (var job in jobs.Where(j => !j.IsDeleted && j.IsRunning))
         {
             await _fetchService.FetchAsync(job.Symbol, job.StartTime, token).ConfigureAwait(false);
         }

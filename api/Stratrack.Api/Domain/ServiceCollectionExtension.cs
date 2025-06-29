@@ -37,6 +37,8 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisterCommand),
                 typeof(DataChunkDeleteCommand),
                 typeof(DukascopyJobCreateCommand),
+                typeof(DukascopyJobStartCommand),
+                typeof(DukascopyJobStopCommand),
                 typeof(DukascopyJobDeleteCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
@@ -48,6 +50,8 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisterCommandHandler),
                 typeof(DataChunkDeleteCommandHandler),
                 typeof(DukascopyJobCreateCommandHandler),
+                typeof(DukascopyJobStartCommandHandler),
+                typeof(DukascopyJobStopCommandHandler),
                 typeof(DukascopyJobDeleteCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
@@ -60,6 +64,8 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisteredEvent),
                 typeof(DataChunkDeletedEvent),
                 typeof(DukascopyJobCreatedEvent),
+                typeof(DukascopyJobStartedEvent),
+                typeof(DukascopyJobStoppedEvent),
                 typeof(DukascopyJobDeletedEvent)
             );
 
@@ -83,7 +89,6 @@ public static class ServiceCollectionExtension
                 s.AddSingleton<IDataChunkStore, InMemoryDataChunkStore>();
                 s.AddSingleton<IDataChunkRegistrar, DataChunkRegistrar>();
                 s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
-                s.AddSingleton<IDukascopyJobControl, DukascopyJobControl>();
                 s.AddSingleton<IDukascopyClient, StubDukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
             });

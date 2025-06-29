@@ -40,6 +40,20 @@ public class DukascopyJobFunctionsTests
         var result = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
         var id = Guid.Parse(result["id"].ToString()!);
 
+        var startReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}/start")
+            .WithMethod(HttpMethod.Post)
+            .Build();
+        var startRes = await func.StartJob(startReq, id, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
+
+        var stopReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}/stop")
+            .WithMethod(HttpMethod.Post)
+            .Build();
+        var stopRes = await func.StopJob(stopReq, id, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
+
         var deleteReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}")
             .WithMethod(HttpMethod.Delete)
