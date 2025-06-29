@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
-using Stratrack.Api.Domain.Dukascopy.Jobs;
+using Stratrack.Api.Domain.Dukascopy;
 
 namespace Stratrack.Api.Domain;
 

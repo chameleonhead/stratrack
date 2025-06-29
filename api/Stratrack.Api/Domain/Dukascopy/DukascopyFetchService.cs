@@ -25,17 +25,17 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
-    public async Task FetchAsync(CancellationToken token)
+    public async Task FetchAsync(string symbol, DateTimeOffset startTime, CancellationToken token)
     {
         try
         {
             using var context = _dbContextProvider.CreateContext();
             var sources = await context.DataSources
-                .Where(d => d.SourceType == "dukascopy" && d.Timeframe == "tick")
+                .Where(d => d.SourceType == "dukascopy" && d.Timeframe == "tick" && d.Symbol == symbol)
                 .ToListAsync(token).ConfigureAwait(false);
             foreach (var ds in sources)
             {
-                await ProcessSourceAsync(ds, token).ConfigureAwait(false);
+                await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
@@ -44,10 +44,10 @@ public class DukascopyFetchService(
         }
     }
 
-    private async Task ProcessSourceAsync(DataSourceReadModel ds, CancellationToken token)
+    private async Task ProcessSourceAsync(DataSourceReadModel ds, DateTimeOffset startTime, CancellationToken token)
     {
         var chunks = await _chunkStore.GetChunksAsync(ds.DataSourceId, token).ConfigureAwait(false);
-        var lastEnd = chunks.OrderBy(c => c.EndTime).LastOrDefault()?.EndTime ?? DateTimeOffset.UtcNow.AddHours(-1);
+        var lastEnd = chunks.OrderBy(c => c.EndTime).LastOrDefault()?.EndTime ?? startTime;
         var current = lastEnd;
         while (current < DateTimeOffset.UtcNow)
         {

@@ -10,10 +10,9 @@ using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Domain.DataSources.Services;
 using Stratrack.Api.Domain.Dukascopy;
-using Stratrack.Api.Domain.Dukascopy.Jobs;
-using Stratrack.Api.Domain.Dukascopy.Jobs.Commands;
-using Stratrack.Api.Domain.Dukascopy.Jobs.Events;
-using Stratrack.Api.Domain.Dukascopy.Jobs.Queries;
+using Stratrack.Api.Domain.Dukascopy.Commands;
+using Stratrack.Api.Domain.Dukascopy.Events;
+using Stratrack.Api.Domain.Dukascopy.Queries;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Events;
@@ -37,8 +36,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceDeleteCommand),
                 typeof(DataChunkRegisterCommand),
                 typeof(DataChunkDeleteCommand),
-                typeof(DukascopyJobStartCommand),
-                typeof(DukascopyJobStopCommand)
+                typeof(DukascopyJobCreateCommand),
+                typeof(DukascopyJobDeleteCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -48,8 +47,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceDeleteCommandHandler),
                 typeof(DataChunkRegisterCommandHandler),
                 typeof(DataChunkDeleteCommandHandler),
-                typeof(DukascopyJobStartCommandHandler),
-                typeof(DukascopyJobStopCommandHandler)
+                typeof(DukascopyJobCreateCommandHandler),
+                typeof(DukascopyJobDeleteCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -60,8 +59,8 @@ public static class ServiceCollectionExtension
                 typeof(DataSourceDeletedEvent),
                 typeof(DataChunkRegisteredEvent),
                 typeof(DataChunkDeletedEvent),
-                typeof(DukascopyJobStartedEvent),
-                typeof(DukascopyJobStoppedEvent)
+                typeof(DukascopyJobCreatedEvent),
+                typeof(DukascopyJobDeletedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);

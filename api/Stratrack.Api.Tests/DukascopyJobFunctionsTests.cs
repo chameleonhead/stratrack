@@ -25,24 +25,27 @@ public class DukascopyJobFunctionsTests
     }
 
     [TestMethod]
-    public async Task StartStopJob_ReturnsAccepted()
+    public async Task CreateDeleteJob_ReturnsAccepted()
     {
         using var provider = CreateProvider();
         var func = provider.GetRequiredService<DukascopyJobFunctions>();
 
-        var startReq = new HttpRequestDataBuilder()
-            .WithUrl("http://localhost/api/dukascopy-job/start")
+        var createReq = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/dukascopy-job")
             .WithMethod(HttpMethod.Post)
+            .WithBody(System.Text.Json.JsonSerializer.Serialize(new { symbol = "EURUSD", startTime = DateTimeOffset.UtcNow }))
             .Build();
-        var startRes = await func.StartJob(startReq, CancellationToken.None);
-        Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
+        var createRes = await func.CreateJob(createReq, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Accepted, createRes.StatusCode);
+        var result = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
+        var id = Guid.Parse(result["id"].ToString()!);
 
-        var stopReq = new HttpRequestDataBuilder()
-            .WithUrl("http://localhost/api/dukascopy-job/stop")
-            .WithMethod(HttpMethod.Post)
+        var deleteReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}")
+            .WithMethod(HttpMethod.Delete)
             .Build();
-        var stopRes = await func.StopJob(stopReq, CancellationToken.None);
-        Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
+        var deleteRes = await func.DeleteJob(deleteReq, id, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Accepted, deleteRes.StatusCode);
     }
 }
 

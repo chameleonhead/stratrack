@@ -2,7 +2,7 @@ using EventFlow.EntityFramework;
 using EventFlow.Queries;
 using Microsoft.EntityFrameworkCore;
 
-namespace Stratrack.Api.Domain.Dukascopy.Jobs.Queries;
+namespace Stratrack.Api.Domain.Dukascopy.Queries;
 
 public class DukascopyJobReadModelSearchQueryHandler(IDbContextProvider<StratrackDbContext> dbContextProvider) : IQueryHandler<DukascopyJobReadModelSearchQuery, IReadOnlyCollection<DukascopyJobReadModel>>
 {
