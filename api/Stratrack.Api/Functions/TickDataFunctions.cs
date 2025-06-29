@@ -8,22 +8,24 @@ using Stratrack.Api.Domain;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Domain.DataSources.Commands;
+using Stratrack.Api.Domain.DataSources.Queries;
 using EventFlow;
 using Stratrack.Api.Models;
-using EventFlow.EntityFramework;
-using Microsoft.EntityFrameworkCore;
+using EventFlow.Queries;
+using System;
+using System.Linq;
 using System.Net;
 using System.ComponentModel.DataAnnotations;
 
 namespace Stratrack.Api.Functions;
 
 public class TickDataFunctions(
-    IDbContextProvider<StratrackDbContext> dbContextProvider,
+    IQueryProcessor queryProcessor,
     IBlobStorage blobStorage,
     ICommandBus commandBus,
     ILogger<TickDataFunctions> logger)
 {
-    private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
+    private readonly IQueryProcessor _queryProcessor = queryProcessor;
     private readonly IBlobStorage _blobStorage = blobStorage;
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<TickDataFunctions> _logger = logger;
@@ -54,8 +56,8 @@ public class TickDataFunctions(
         }
 
         var dsId = Guid.Parse(dataSourceId);
-        using var context = _dbContextProvider.CreateContext();
-        var dataSource = await context.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId, token).ConfigureAwait(false);
+        var dataSources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
+        var dataSource = dataSources.FirstOrDefault(d => d.DataSourceId == dsId);
         if (dataSource == null)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
@@ -67,8 +69,12 @@ public class TickDataFunctions(
             Convert.FromBase64String(body.Base64Data),
             token).ConfigureAwait(false);
 
+        var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dataSource.DataSourceId), token).ConfigureAwait(false);
+        var overlap = chunks.FirstOrDefault(c => c.StartTime < body.EndTime && c.EndTime > body.StartTime);
+        var chunkId = overlap?.DataChunkId ?? Guid.NewGuid();
         await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(dataSource.DataSourceId))
         {
+            DataChunkId = chunkId,
             BlobId = blobId,
             StartTime = body.StartTime,
             EndTime = body.EndTime,
@@ -97,18 +103,31 @@ public class TickDataFunctions(
         DateTimeOffset? end = endStr != null ? DateTimeOffset.Parse(endStr) : null;
 
         var dsId = Guid.Parse(dataSourceId);
-        using var context = _dbContextProvider.CreateContext();
-        var dataSource = await context.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId, token).ConfigureAwait(false);
+        var dataSources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
+        var dataSource = dataSources.FirstOrDefault(d => d.DataSourceId == dsId);
         if (dataSource == null)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
-        await _commandBus.PublishAsync(new DataChunkDeleteCommand(DataSourceId.With(dsId))
+        var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dsId), token).ConfigureAwait(false);
+        var target = chunks.AsEnumerable();
+        if (start.HasValue && end.HasValue)
         {
-            StartTime = start,
-            EndTime = end,
-        }, token).ConfigureAwait(false);
+            target = target.Where(c => c.StartTime < end && c.EndTime > start);
+        }
+        var chunkIds = target.Select(c => c.DataChunkId).ToList();
+        foreach (var chunk in chunks.Where(c => chunkIds.Contains(c.DataChunkId)))
+        {
+            await _blobStorage.DeleteAsync(chunk.BlobId, token).ConfigureAwait(false);
+        }
+        if (chunkIds.Count > 0)
+        {
+            await _commandBus.PublishAsync(new DataChunkDeleteCommand(DataSourceId.With(dsId))
+            {
+                DataChunkIds = chunkIds
+            }, token).ConfigureAwait(false);
+        }
 
         return req.CreateResponse(HttpStatusCode.NoContent);
     }
