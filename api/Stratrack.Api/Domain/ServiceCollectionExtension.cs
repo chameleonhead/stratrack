@@ -88,7 +88,7 @@ public static class ServiceCollectionExtension
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
                 s.AddSingleton<DataChunkReadModelLocator>();
-                s.AddSingleton<IDukascopyClient, StubDukascopyClient>();
+                s.AddSingleton<IDukascopyClient, DukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
             });
         });
