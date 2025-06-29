@@ -8,7 +8,6 @@ using Stratrack.Api.Domain.DataSources.Events;
 using Stratrack.Api.Domain.DataSources.Queries;
 using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Infrastructure;
-using Stratrack.Api.Domain.DataSources.Services;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Events;
@@ -80,15 +79,15 @@ public static class ServiceCollectionExtension
             ef.AddQueryHandlers(typeof(StrategyVersionReadModelSearchQueryHandler));
 
             ef.UseEntityFrameworkReadModel<DataSourceReadModel, StratrackDbContext>();
+            ef.UseEntityFrameworkReadModel<DataChunkReadModel, StratrackDbContext, DataChunkReadModelLocator>();
             ef.UseEntityFrameworkReadModel<DukascopyJobReadModel, StratrackDbContext>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DataChunkReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
-                s.AddSingleton<IDataChunkStore, InMemoryDataChunkStore>();
-                s.AddSingleton<IDataChunkRegistrar, DataChunkRegistrar>();
-                s.AddSingleton<IDataChunkRemover, DataChunkRemover>();
+                s.AddSingleton<DataChunkReadModelLocator>();
                 s.AddSingleton<IDukascopyClient, StubDukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
             });

@@ -18,6 +18,7 @@ public class StratrackDbContext : DbContext
 
     public DbSet<DataSourceReadModel> DataSources { get; set; }
     public DbSet<DukascopyJobReadModel> DukascopyJobs { get; set; }
+    public DbSet<DataChunkReadModel> DataChunks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +33,10 @@ public class StratrackDbContext : DbContext
             entity.HasKey(m => m.Id);
         });
         modelBuilder.Entity<DukascopyJobReadModel>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+        });
+        modelBuilder.Entity<DataChunkReadModel>(entity =>
         {
             entity.HasKey(m => m.Id);
         });

@@ -1,21 +1,28 @@
 using EventFlow.Commands;
-using Stratrack.Api.Domain.DataSources.Services;
+using EventFlow.EntityFramework;
+using Microsoft.EntityFrameworkCore;
+using Stratrack.Api.Domain.Blobs;
+using System.Linq;
 
 namespace Stratrack.Api.Domain.DataSources.Commands;
 
-public class DataChunkDeleteCommandHandler(IDataChunkRemover remover) : CommandHandler<DataSourceAggregate, DataSourceId, DataChunkDeleteCommand>
+public class DataChunkDeleteCommandHandler(IDbContextProvider<StratrackDbContext> dbContextProvider, IBlobStorage blobStorage) : CommandHandler<DataSourceAggregate, DataSourceId, DataChunkDeleteCommand>
 {
-    private readonly IDataChunkRemover _remover = remover;
+    private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
+    private readonly IBlobStorage _blobStorage = blobStorage;
     public override async Task ExecuteAsync(DataSourceAggregate aggregate, DataChunkDeleteCommand command, CancellationToken cancellationToken)
     {
-        var ids = await _remover.DeleteAsync(
-            aggregate.Id.GetGuid(),
-            command.StartTime,
-            command.EndTime,
-            cancellationToken).ConfigureAwait(false);
-        foreach (var id in ids)
+        using var context = _dbContextProvider.CreateContext();
+        var query = context.DataChunks.Where(c => c.DataSourceId == aggregate.Id.GetGuid());
+        if (command.StartTime.HasValue && command.EndTime.HasValue)
         {
-            aggregate.DeleteDataChunk(id);
+            query = query.Where(c => c.StartTime < command.EndTime && c.EndTime > command.StartTime);
+        }
+        var chunks = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var chunk in chunks)
+        {
+            await _blobStorage.DeleteAsync(chunk.BlobId, cancellationToken).ConfigureAwait(false);
+            aggregate.DeleteDataChunk(chunk.DataChunkId);
         }
     }
 }

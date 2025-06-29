@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.Blobs;
-using Stratrack.Api.Domain.DataSources.Services;
 
 namespace Stratrack.Api.Domain.Dukascopy;
 
@@ -13,7 +12,6 @@ public class DukascopyFetchService(
     IDukascopyClient client,
     IDbContextProvider<StratrackDbContext> dbContextProvider,
     IBlobStorage blobStorage,
-    IDataChunkStore chunkStore,
     ICommandBus commandBus,
     ILogger<DukascopyFetchService> logger
 )
@@ -21,7 +19,6 @@ public class DukascopyFetchService(
     private readonly IDukascopyClient _client = client;
     private readonly IDbContextProvider<StratrackDbContext> _dbContextProvider = dbContextProvider;
     private readonly IBlobStorage _blobStorage = blobStorage;
-    private readonly IDataChunkStore _chunkStore = chunkStore;
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
@@ -46,8 +43,16 @@ public class DukascopyFetchService(
 
     private async Task ProcessSourceAsync(DataSourceReadModel ds, DateTimeOffset startTime, CancellationToken token)
     {
-        var chunks = await _chunkStore.GetChunksAsync(ds.DataSourceId, token).ConfigureAwait(false);
-        var lastEnd = chunks.OrderBy(c => c.EndTime).LastOrDefault()?.EndTime ?? startTime;
+        DateTimeOffset lastEnd;
+        using (var context = _dbContextProvider.CreateContext())
+        {
+            var lastChunk = await context.DataChunks
+                .Where(c => c.DataSourceId == ds.DataSourceId)
+                .OrderBy(c => c.EndTime)
+                .LastOrDefaultAsync(token)
+                .ConfigureAwait(false);
+            lastEnd = lastChunk?.EndTime ?? startTime;
+        }
         var current = lastEnd;
         while (current < DateTimeOffset.UtcNow)
         {
