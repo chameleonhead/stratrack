@@ -6,6 +6,8 @@ import EditStrategy from "./strategies/edit";
 import NewStrategy from "./strategies/new";
 import Backtest from "./backtesting";
 import DataSources from "./datasources";
+import NewDataSource from "./datasources/new";
+import EditDataSource from "./datasources/edit";
 import Settings from "./settings";
 
 export const routes = [
@@ -20,6 +22,8 @@ export const routes = [
       { path: "strategies-new", element: <NewStrategy /> },
       { path: "backtest", element: <Backtest /> },
       { path: "data-sources", element: <DataSources /> },
+      { path: "data-sources/new", element: <NewDataSource /> },
+      { path: "data-sources/:dataSourceId/edit", element: <EditDataSource /> },
       { path: "settings", element: <Settings /> },
     ],
   },
