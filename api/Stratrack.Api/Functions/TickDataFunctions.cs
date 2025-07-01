@@ -16,6 +16,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace Stratrack.Api.Functions;
 
@@ -79,6 +80,72 @@ public class TickDataFunctions(
             StartTime = body.StartTime,
             EndTime = body.EndTime,
         }, token).ConfigureAwait(false);
+
+        return req.CreateResponse(HttpStatusCode.Created);
+    }
+
+    [Function("UploadTickFile")]
+    [OpenApiOperation(operationId: "upload_tick_file", tags: ["TickData"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
+    [OpenApiRequestBody("application/json", typeof(TickFileUploadRequest))]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Created, Description = "Created")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
+    public async Task<HttpResponseData> PostTickFile(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "data-sources/{dataSourceId}/ticks/file")] HttpRequestData req,
+        string dataSourceId,
+        CancellationToken token)
+    {
+        var body = await req.ReadFromJsonAsync<TickFileUploadRequest>(cancellationToken: token).ConfigureAwait(false);
+        if (body == null)
+        {
+            return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+        }
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(body, new ValidationContext(body), validationResults, true))
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+            await errorResponse.WriteAsJsonAsync(validationResults, token).ConfigureAwait(false);
+            return errorResponse;
+        }
+
+        var dsId = Guid.Parse(dataSourceId);
+        var dataSources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
+        var dataSource = dataSources.FirstOrDefault(d => d.DataSourceId == dsId);
+        if (dataSource == null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        var csv = Encoding.UTF8.GetString(Convert.FromBase64String(body.Base64Data));
+        var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length <= 1)
+        {
+            return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+        }
+        var header = lines[0];
+        var entries = lines.Skip(1)
+            .Select(l => (Line: l, Time: DateTimeOffset.Parse(l.Split(',')[0])))
+            .GroupBy(t => new DateTimeOffset(t.Time.Year, t.Time.Month, t.Time.Day, t.Time.Hour, 0, 0, t.Time.Offset));
+
+        var existing = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dsId), token).ConfigureAwait(false);
+        foreach (var g in entries)
+        {
+            var chunkLines = string.Join('\n', new[] { header }.Concat(g.Select(e => e.Line))) + "\n";
+            var blobId = await _blobStorage.SaveAsync($"{dataSource.Symbol}_{g.Key:yyyyMMddHH}.csv", "text/csv", Encoding.UTF8.GetBytes(chunkLines), token).ConfigureAwait(false);
+            var start = g.Key;
+            var end = g.Key.AddHours(1);
+            var overlap = existing.FirstOrDefault(c => c.StartTime < end && c.EndTime > start);
+            var chunkId = overlap?.DataChunkId ?? Guid.NewGuid();
+            await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(dsId))
+            {
+                DataChunkId = chunkId,
+                BlobId = blobId,
+                StartTime = start,
+                EndTime = end,
+            }, token).ConfigureAwait(false);
+        }
 
         return req.CreateResponse(HttpStatusCode.Created);
     }

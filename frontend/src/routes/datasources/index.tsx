@@ -26,9 +26,14 @@ const DataSources = () => {
           {dataSources.map((ds) => (
             <div key={ds.id} className="rounded-xl border p-4 shadow">
               <h4 className="font-bold">{ds.name}</h4>
-              <Link to={`/data-sources/${ds.id}/edit`} className="mt-2 btn btn-sm btn-primary">
-                編集
-              </Link>
+              <div className="mt-2 space-x-2">
+                <Link to={`/data-sources/${ds.id}/edit`} className="btn btn-sm btn-primary">
+                  編集
+                </Link>
+                <Link to={`/data-sources/${ds.id}/upload`} className="btn btn-sm btn-secondary">
+                  アップロード
+                </Link>
+              </div>
             </div>
           ))}
           {dataSources.length === 0 && (
