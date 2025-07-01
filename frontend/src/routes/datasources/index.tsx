@@ -33,6 +33,9 @@ const DataSources = () => {
                 <Link to={`/data-sources/${ds.id}/upload`} className="btn btn-sm btn-secondary">
                   アップロード
                 </Link>
+                <Link to={`/data-sources/${ds.id}/chart`} className="btn btn-sm btn-outline">
+                  チャート
+                </Link>
               </div>
             </div>
           ))}
