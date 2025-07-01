@@ -13,6 +13,12 @@ public class DatabaseBlobStorage : IBlobStorage
         return Task.FromResult(id);
     }
 
+    public Task<byte[]> GetAsync(Guid blobId, CancellationToken token)
+    {
+        _store.TryGetValue(blobId, out var data);
+        return Task.FromResult(data ?? Array.Empty<byte>());
+    }
+
     public Task DeleteAsync(Guid blobId, CancellationToken token)
     {
         _store.TryRemove(blobId, out _);
