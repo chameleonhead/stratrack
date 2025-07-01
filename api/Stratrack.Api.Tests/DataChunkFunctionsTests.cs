@@ -14,7 +14,7 @@ using WorkerHttpFake;
 namespace Stratrack.Api.Tests;
 
 [TestClass]
-public class TickDataFunctionsTests
+public class DataChunkFunctionsTests
 {
     private static ServiceProvider CreateProvider()
     {
@@ -22,7 +22,7 @@ public class TickDataFunctionsTests
         services.AddLogging();
         services.AddStratrack<StratrackDbContextProvider>();
         services.AddSingleton<DataSourceFunctions>();
-        services.AddSingleton<TickDataFunctions>();
+        services.AddSingleton<DataChunkFunctions>();
         var provider = services.BuildServiceProvider();
         using var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
         ctx.Database.EnsureDeleted();
@@ -48,16 +48,16 @@ public class TickDataFunctionsTests
     }
 
     [TestMethod]
-    public async Task PostTickChunk_ReturnsCreated()
+    public async Task PostDataChunk_ReturnsCreated()
     {
         using var provider = CreateProvider();
         var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
-        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
         var dsId = await CreateDataSourceAsync(dsFunc);
 
         var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
         var req = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -66,7 +66,7 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        var response = await tickFunc.PostTickChunk(req, dsId, CancellationToken.None);
+        var response = await chunkFunc.PostDataChunk(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
         using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
@@ -76,16 +76,16 @@ public class TickDataFunctionsTests
     }
 
     [TestMethod]
-    public async Task PostTickChunk_UpdatesExistingWhenOverlap()
+    public async Task PostDataChunk_UpdatesExistingWhenOverlap()
     {
         using var provider = CreateProvider();
         var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
-        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
         var dsId = await CreateDataSourceAsync(dsFunc);
 
         var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
         var req1 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -94,11 +94,11 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        var res1 = await tickFunc.PostTickChunk(req1, dsId, CancellationToken.None);
+        var res1 = await chunkFunc.PostDataChunk(req1, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, res1.StatusCode);
 
         var req2 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -107,7 +107,7 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        var res2 = await tickFunc.PostTickChunk(req2, dsId, CancellationToken.None);
+        var res2 = await chunkFunc.PostDataChunk(req2, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, res2.StatusCode);
 
         using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
@@ -118,16 +118,16 @@ public class TickDataFunctionsTests
     }
 
     [TestMethod]
-    public async Task DeleteTickChunks_ByRange_RemovesChunks()
+    public async Task DeleteDataChunks_ByRange_RemovesChunks()
     {
         using var provider = CreateProvider();
         var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
-        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
         var dsId = await CreateDataSourceAsync(dsFunc);
 
         var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
         var req1 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -136,10 +136,10 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        await tickFunc.PostTickChunk(req1, dsId, CancellationToken.None);
+        await chunkFunc.PostDataChunk(req1, dsId, CancellationToken.None);
 
         var req2 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -148,13 +148,13 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        await tickFunc.PostTickChunk(req2, dsId, CancellationToken.None);
+        await chunkFunc.PostDataChunk(req2, dsId, CancellationToken.None);
 
         var delReq = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks?startTime=2024-01-01T00:30:00Z&endTime=2024-01-01T00:59:00Z")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks?startTime=2024-01-01T00:30:00Z&endTime=2024-01-01T00:59:00Z")
             .WithMethod(HttpMethod.Delete)
             .Build();
-        var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
+        var delRes = await chunkFunc.DeleteDataChunks(delReq, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
 
         using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
@@ -165,16 +165,16 @@ public class TickDataFunctionsTests
     }
 
     [TestMethod]
-    public async Task DeleteTickChunks_DeleteAll_RemovesAll()
+    public async Task DeleteDataChunks_DeleteAll_RemovesAll()
     {
         using var provider = CreateProvider();
         var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
-        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
         var dsId = await CreateDataSourceAsync(dsFunc);
 
         var data = Convert.ToBase64String(Encoding.UTF8.GetBytes("time,bid,ask\n"));
         var req1 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
             {
@@ -183,13 +183,13 @@ public class TickDataFunctionsTests
                 Base64Data = data
             }))
             .Build();
-        await tickFunc.PostTickChunk(req1, dsId, CancellationToken.None);
+        await chunkFunc.PostDataChunk(req1, dsId, CancellationToken.None);
 
         var delReq = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Delete)
             .Build();
-        var delRes = await tickFunc.DeleteTickChunks(delReq, dsId, CancellationToken.None);
+        var delRes = await chunkFunc.DeleteDataChunks(delReq, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.NoContent, delRes.StatusCode);
 
         using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
@@ -200,17 +200,17 @@ public class TickDataFunctionsTests
     }
 
     [TestMethod]
-    public async Task PostTickFile_SplitsIntoChunks()
+    public async Task PostDataFile_SplitsIntoChunks()
     {
         using var provider = CreateProvider();
         var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
-        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
         var dsId = await CreateDataSourceAsync(dsFunc);
 
         var csv = "time,bid,ask\n2024-01-01T00:00:00Z,1,1\n2024-01-01T01:00:00Z,1,1\n";
         var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(csv));
         var req = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks/file")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
             {
@@ -219,7 +219,7 @@ public class TickDataFunctionsTests
             }))
             .Build();
 
-        var res = await tickFunc.PostTickFile(req, dsId, CancellationToken.None);
+        var res = await chunkFunc.PostDataFile(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Created, res.StatusCode);
 
         using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
