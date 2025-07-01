@@ -1,14 +1,14 @@
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import type { Meta, StoryObj } from "@storybook/react";
-import UploadTickFile from "./upload";
+import UploadDataFile from "./upload";
 
-const router = createMemoryRouter([{ path: "/", element: <UploadTickFile /> }]);
+const router = createMemoryRouter([{ path: "/", element: <UploadDataFile /> }]);
 
 const meta = {
-  component: UploadTickFile,
+  component: UploadDataFile,
   render: () => <RouterProvider router={router} />,
   parameters: { layout: "fullscreen" },
-} satisfies Meta<typeof UploadTickFile>;
+} satisfies Meta<typeof UploadDataFile>;
 
 export default meta;
 

@@ -20,26 +20,26 @@ using System.Text;
 
 namespace Stratrack.Api.Functions;
 
-public class TickDataFunctions(
+public class DataChunkFunctions(
     IQueryProcessor queryProcessor,
     IBlobStorage blobStorage,
     ICommandBus commandBus,
-    ILogger<TickDataFunctions> logger)
+    ILogger<DataChunkFunctions> logger)
 {
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
     private readonly IBlobStorage _blobStorage = blobStorage;
     private readonly ICommandBus _commandBus = commandBus;
-    private readonly ILogger<TickDataFunctions> _logger = logger;
-    [Function("UploadTickChunk")]
-    [OpenApiOperation(operationId: "upload_tick_chunk", tags: ["TickData"])]
+    private readonly ILogger<DataChunkFunctions> _logger = logger;
+    [Function("UploadDataChunk")]
+    [OpenApiOperation(operationId: "upload_data_chunk", tags: ["DataChunks"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
     [OpenApiRequestBody("application/json", typeof(TickChunkUploadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Created, Description = "Created")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
-    public async Task<HttpResponseData> PostTickChunk(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "data-sources/{dataSourceId}/ticks")] HttpRequestData req,
+    public async Task<HttpResponseData> PostDataChunk(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "data-sources/{dataSourceId}/chunks")] HttpRequestData req,
         string dataSourceId,
         CancellationToken token)
     {
@@ -84,16 +84,16 @@ public class TickDataFunctions(
         return req.CreateResponse(HttpStatusCode.Created);
     }
 
-    [Function("UploadTickFile")]
-    [OpenApiOperation(operationId: "upload_tick_file", tags: ["TickData"])]
+    [Function("UploadDataFile")]
+    [OpenApiOperation(operationId: "upload_data_file", tags: ["DataChunks"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
     [OpenApiRequestBody("application/json", typeof(TickFileUploadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Created, Description = "Created")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
-    public async Task<HttpResponseData> PostTickFile(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "data-sources/{dataSourceId}/ticks/file")] HttpRequestData req,
+    public async Task<HttpResponseData> PostDataFile(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "data-sources/{dataSourceId}/file")] HttpRequestData req,
         string dataSourceId,
         CancellationToken token)
     {
@@ -150,16 +150,16 @@ public class TickDataFunctions(
         return req.CreateResponse(HttpStatusCode.Created);
     }
 
-    [Function("DeleteTickChunks")]
-    [OpenApiOperation(operationId: "delete_tick_chunks", tags: ["TickData"])]
+    [Function("DeleteDataChunks")]
+    [OpenApiOperation(operationId: "delete_data_chunks", tags: ["DataChunks"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
     [OpenApiParameter(name: "startTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
     [OpenApiParameter(name: "endTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NoContent, Description = "No content")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
-    public async Task<HttpResponseData> DeleteTickChunks(
-        [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "data-sources/{dataSourceId}/ticks")] HttpRequestData req,
+    public async Task<HttpResponseData> DeleteDataChunks(
+        [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "data-sources/{dataSourceId}/chunks")] HttpRequestData req,
         string dataSourceId,
         CancellationToken token)
     {

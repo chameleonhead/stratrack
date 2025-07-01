@@ -1,8 +1,8 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { uploadTickFile } from "../../api/ticks";
+import { uploadDataFile } from "../../api/data";
 
-const UploadTickFile = () => {
+const UploadDataFile = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -15,7 +15,7 @@ const UploadTickFile = () => {
     setIsSubmitting(true);
     setError(null);
     try {
-      await uploadTickFile(dataSourceId, file);
+      await uploadDataFile(dataSourceId, file);
       navigate("/data-sources");
     } catch (err) {
       setError((err as Error).message);
@@ -42,4 +42,4 @@ const UploadTickFile = () => {
   );
 };
 
-export default UploadTickFile;
+export default UploadDataFile;
