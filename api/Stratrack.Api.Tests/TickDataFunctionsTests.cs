@@ -198,4 +198,34 @@ public class TickDataFunctionsTests
             Assert.AreEqual(0, chunks.Count);
         }
     }
+
+    [TestMethod]
+    public async Task PostTickFile_SplitsIntoChunks()
+    {
+        using var provider = CreateProvider();
+        var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
+        var tickFunc = provider.GetRequiredService<TickDataFunctions>();
+        var dsId = await CreateDataSourceAsync(dsFunc);
+
+        var csv = "time,bid,ask\n2024-01-01T00:00:00Z,1,1\n2024-01-01T01:00:00Z,1,1\n";
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(csv));
+        var req = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/ticks/file")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            {
+                FileName = "ticks.csv",
+                Base64Data = data
+            }))
+            .Build();
+
+        var res = await tickFunc.PostTickFile(req, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Created, res.StatusCode);
+
+        using (var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var chunks = await context.DataChunks.Where(c => c.DataSourceId == Guid.Parse(dsId)).ToListAsync();
+            Assert.AreEqual(2, chunks.Count);
+        }
+    }
 }
