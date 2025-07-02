@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import Input from "../../components/Input";
+import Select from "../../components/Select";
 import Textarea from "../../components/Textarea";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
@@ -16,6 +17,18 @@ export type DataSourceFormProps = {
   onChange?: (value: DataSourceFormValue) => void;
   hideSourceFields?: boolean;
 };
+
+const TIMEFRAME_OPTIONS = [
+  { value: "tick", label: "ティック" },
+  { value: "5m", label: "5分足" },
+];
+
+const SOURCE_TYPE_OPTIONS = [
+  { value: "dukascopy", label: "Dukascopy" },
+  { value: "mt4", label: "MT4" },
+  { value: "mt5", label: "MT5" },
+  { value: "custom_upload", label: "カスタムアップロード" },
+];
 
 function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourceFormProps) {
   const [localValue, setLocalValue] = useLocalValue<DataSourceFormValue>({}, value, onChange);
@@ -59,18 +72,22 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             required
             fullWidth
           />
-          <Input
+          <Select
             label="時間足"
             value={localValue.timeframe || ""}
             onChange={handleTimeframeChange}
+            options={TIMEFRAME_OPTIONS}
             required
+            allowEmpty={false}
             fullWidth
           />
-          <Input
+          <Select
             label="ソース種別"
             value={localValue.sourceType || ""}
             onChange={handleSourceTypeChange}
+            options={SOURCE_TYPE_OPTIONS}
             required
+            allowEmpty={false}
             fullWidth
           />
         </>
