@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Dukascopy;
+using Stratrack.Api.Domain.Blobs;
 
 namespace Stratrack.Api.Domain;
 
@@ -19,6 +20,7 @@ public class StratrackDbContext : DbContext
     public DbSet<DataSourceReadModel> DataSources { get; set; }
     public DbSet<DukascopyJobReadModel> DukascopyJobs { get; set; }
     public DbSet<DataChunkReadModel> DataChunks { get; set; }
+    public DbSet<BlobData> Blobs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +41,10 @@ public class StratrackDbContext : DbContext
         modelBuilder.Entity<DataChunkReadModel>(entity =>
         {
             entity.HasKey(m => m.Id);
+        });
+        modelBuilder.Entity<BlobData>(entity =>
+        {
+            entity.HasKey(b => b.Id);
         });
     }
 }

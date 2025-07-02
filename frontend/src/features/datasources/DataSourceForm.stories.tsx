@@ -16,6 +16,8 @@ export const Default: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     await userEvent.type(canvas.getByLabelText("名称"), "test");
+    await userEvent.selectOptions(canvas.getByLabelText("時間足"), "tick");
+    await userEvent.selectOptions(canvas.getByLabelText("ソース種別"), "dukascopy");
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

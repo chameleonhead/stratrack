@@ -29,3 +29,21 @@ export async function uploadDataFile(dataSourceId: string, file: File) {
   }
   return res;
 }
+
+export async function getDataStream(
+  dataSourceId: string,
+  startTime: string,
+  endTime: string
+): Promise<string> {
+  const params = new URLSearchParams({ startTime, endTime });
+  const res = await fetch(
+    `${API_BASE_URL}/api/data-sources/${dataSourceId}/stream?${params.toString()}`,
+    {
+      headers: { "x-functions-key": API_KEY },
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch data stream: ${res.status}`);
+  }
+  return res.text();
+}
