@@ -9,6 +9,7 @@ using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.DataSources.Queries;
+using Stratrack.Api.Infrastructure;
 using EventFlow;
 using Stratrack.Api.Models;
 using EventFlow.Queries;
@@ -16,7 +17,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace Stratrack.Api.Functions;
 
@@ -24,11 +24,13 @@ public class DataChunkFunctions(
     IQueryProcessor queryProcessor,
     IBlobStorage blobStorage,
     ICommandBus commandBus,
+    CsvChunkService chunkService,
     ILogger<DataChunkFunctions> logger)
 {
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
     private readonly IBlobStorage _blobStorage = blobStorage;
     private readonly ICommandBus _commandBus = commandBus;
+    private readonly CsvChunkService _chunkService = chunkService;
     private readonly ILogger<DataChunkFunctions> _logger = logger;
     [Function("UploadDataChunk")]
     [OpenApiOperation(operationId: "upload_data_chunk", tags: ["DataChunks"])]
@@ -118,33 +120,10 @@ public class DataChunkFunctions(
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
-        var csv = Encoding.UTF8.GetString(Convert.FromBase64String(body.Base64Data));
-        var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length <= 1)
+        var success = await _chunkService.ProcessAsync(dataSource, body.Base64Data, token).ConfigureAwait(false);
+        if (!success)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
-        }
-        var header = lines[0];
-        var entries = lines.Skip(1)
-            .Select(l => (Line: l, Time: DateTimeOffset.Parse(l.Split(',')[0])))
-            .GroupBy(t => new DateTimeOffset(t.Time.Year, t.Time.Month, t.Time.Day, t.Time.Hour, 0, 0, t.Time.Offset));
-
-        var existing = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dsId), token).ConfigureAwait(false);
-        foreach (var g in entries)
-        {
-            var chunkLines = string.Join('\n', new[] { header }.Concat(g.Select(e => e.Line))) + "\n";
-            var blobId = await _blobStorage.SaveAsync($"{dataSource.Symbol}_{g.Key:yyyyMMddHH}.csv", "text/csv", Encoding.UTF8.GetBytes(chunkLines), token).ConfigureAwait(false);
-            var start = g.Key;
-            var end = g.Key.AddHours(1);
-            var overlap = existing.FirstOrDefault(c => c.StartTime < end && c.EndTime > start);
-            var chunkId = overlap?.DataChunkId ?? Guid.NewGuid();
-            await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(dsId))
-            {
-                DataChunkId = chunkId,
-                BlobId = blobId,
-                StartTime = start,
-                EndTime = end,
-            }, token).ConfigureAwait(false);
         }
 
         return req.CreateResponse(HttpStatusCode.Created);

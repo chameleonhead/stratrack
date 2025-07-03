@@ -15,12 +15,9 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     public string? Description { get; private set; }
     public string Symbol { get; private set; } = "";
     public string Timeframe { get; private set; } = "";
-    /// <summary>
-    /// ducascopy, mt4
-    /// </summary>
-    public string SourceType { get; private set; } = "";
+    public List<string> Fields { get; private set; } = [];
 
-    public void Create(string name, string symbol, string timeframe, string sourceType, string? description)
+    public void Create(string name, string symbol, string timeframe, IEnumerable<string> fields, string? description)
     {
         if (isDeleted == true)
         {
@@ -29,7 +26,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
         if (DataSourceName == name
             && Symbol == symbol
             && Timeframe == timeframe
-            && SourceType == sourceType
+            && Fields.SequenceEqual(fields)
             && Description == description)
         {
             return;
@@ -37,7 +34,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
 
         // Assuming that the symbol, timeframe, and sourceType are not stored in this aggregate.
         // If they are needed, they should be added as properties and handled accordingly.
-        Emit(new DataSourceCreatedEvent(Id, name, symbol, timeframe, sourceType, description));
+        Emit(new DataSourceCreatedEvent(Id, name, symbol, timeframe, fields.ToList(), description));
     }
 
     public void Update(string name, string? description)
@@ -63,7 +60,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
         DataSourceName = aggregateEvent.Name;
         Symbol = aggregateEvent.Symbol;
         Timeframe = aggregateEvent.Timeframe;
-        SourceType = aggregateEvent.SourceType;
+        Fields = aggregateEvent.Fields.ToList();
         Description = aggregateEvent.Description;
     }
 
