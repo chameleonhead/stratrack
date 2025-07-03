@@ -11,7 +11,12 @@ const NewDataSource = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!dataSource.name || !dataSource.symbol || !dataSource.timeframe || !dataSource.sourceType) {
+    if (
+      !dataSource.name ||
+      !dataSource.symbol ||
+      !dataSource.timeframe ||
+      !dataSource.fields?.length
+    ) {
       return;
     }
     setIsSubmitting(true);

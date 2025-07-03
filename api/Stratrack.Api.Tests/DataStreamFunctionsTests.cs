@@ -39,7 +39,7 @@ public class DataStreamFunctionsTests
                 Name = "ds",
                 Symbol = "EURUSD",
                 Timeframe = "tick",
-                SourceType = "dukascopy"
+                Fields = new List<string>{"bid","ask"}
             }))
             .Build();
         var res = await func.PostDataSource(req, CancellationToken.None);

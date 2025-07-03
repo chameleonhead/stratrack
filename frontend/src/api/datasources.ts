@@ -2,7 +2,7 @@ export type NewDataSourceRequest = {
   name: string;
   symbol: string;
   timeframe: string;
-  sourceType: string;
+  fields: string[];
   description?: string;
 };
 
@@ -18,7 +18,7 @@ export type DataSourceDetail = {
   name: string;
   symbol: string;
   timeframe: string;
-  sourceType: string;
+  fields: string[];
   description?: string;
   createdAt: string;
   updatedAt: string;

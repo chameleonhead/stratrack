@@ -12,7 +12,7 @@ describe("createDataSource", () => {
       name: "ds",
       symbol: "EURUSD",
       timeframe: "1m",
-      sourceType: "dukascopy",
+      fields: ["bid", "ask"],
     };
 
     await createDataSource(data);

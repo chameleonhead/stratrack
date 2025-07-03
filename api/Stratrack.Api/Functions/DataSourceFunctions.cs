@@ -68,7 +68,7 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
                 Name = body.Name,
                 Symbol = body.Symbol,
                 Timeframe = body.Timeframe,
-                SourceType = body.SourceType,
+                Fields = body.Fields ?? new List<string>(),
                 Description = body.Description,
             }, token).ConfigureAwait(false);
         }
@@ -205,7 +205,7 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             Name = result.Name,
             Symbol = result.Symbol,
             Timeframe = result.Timeframe,
-            SourceType = result.SourceType,
+            Fields = result.Fields.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
             Description = result.Description,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,

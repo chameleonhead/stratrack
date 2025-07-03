@@ -90,6 +90,7 @@ public static class ServiceCollectionExtension
                 s.AddSingleton<DataChunkReadModelLocator>();
                 s.AddSingleton<IDukascopyClient, DukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
+                s.AddSingleton<CsvChunkService>();
             });
         });
     }

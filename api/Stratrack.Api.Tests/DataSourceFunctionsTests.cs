@@ -81,7 +81,7 @@ public class DataSourceFunctionsTests
                     Name = "DataSource 1",
                     Symbol = "EURUSD",
                     Timeframe = "H1",
-                    SourceType = "ducascopy",
+                    Fields = new List<string>{"bid","ask"},
                     Description = "Description",
                 }
             ))
@@ -96,7 +96,7 @@ public class DataSourceFunctionsTests
         Assert.AreEqual("DataSource 1", obj.Name);
         Assert.AreEqual("EURUSD", obj.Symbol);
         Assert.AreEqual("H1", obj.Timeframe);
-        Assert.AreEqual("ducascopy", obj.SourceType);
+        CollectionAssert.AreEqual(new List<string>{"bid","ask"}, obj.Fields);
         Assert.AreEqual("Description", obj.Description);
     }
 
@@ -130,7 +130,7 @@ public class DataSourceFunctionsTests
             Name = "DataSource 1",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            SourceType = "dukascopy",
+            Fields = new List<string>{"bid","ask"},
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -160,7 +160,7 @@ public class DataSourceFunctionsTests
             Name = "DataSource 1",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            SourceType = "dukascopy",
+            Fields = new List<string>{"bid","ask"},
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -202,7 +202,7 @@ public class DataSourceFunctionsTests
                 Name = "x",
                 Symbol = "EURUSD",
                 Timeframe = "H1",
-                SourceType = "dukascopy"
+                Fields = new List<string>{"bid","ask"}
             }))
             .Build();
 
@@ -222,7 +222,7 @@ public class DataSourceFunctionsTests
             Name = "name",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            SourceType = "dukascopy",
+            Fields = new List<string>{"bid","ask"},
         }).ConfigureAwait(false);
 
         var request = new HttpRequestDataBuilder()

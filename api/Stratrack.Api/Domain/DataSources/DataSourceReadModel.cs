@@ -17,7 +17,7 @@ public class DataSourceReadModel : IReadModel,
     public string Name { get; set; } = "";
     public string Symbol { get; set; } = "";
     public string Timeframe { get; set; } = "";
-    public string SourceType { get; set; } = "";
+    public string Fields { get; set; } = "";
     public string? Description { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -30,7 +30,7 @@ public class DataSourceReadModel : IReadModel,
         Name = dataSourceCreatedEvent.Name;
         Symbol = dataSourceCreatedEvent.Symbol;
         Timeframe = dataSourceCreatedEvent.Timeframe;
-        SourceType = dataSourceCreatedEvent.SourceType;
+        Fields = string.Join(',', dataSourceCreatedEvent.Fields);
         Description = dataSourceCreatedEvent.Description;
         CreatedAt = domainEvent.Timestamp;
         UpdatedAt = domainEvent.Timestamp;

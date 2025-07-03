@@ -2,13 +2,14 @@ import { useCallback } from "react";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
 import Textarea from "../../components/Textarea";
+import Checkbox from "../../components/Checkbox";
 import { useLocalValue } from "../../hooks/useLocalValue";
 
 export type DataSourceFormValue = {
   name?: string;
   symbol?: string;
   timeframe?: string;
-  sourceType?: string;
+  fields?: string[];
   description?: string;
 };
 
@@ -23,11 +24,14 @@ const TIMEFRAME_OPTIONS = [
   { value: "5m", label: "5分足" },
 ];
 
-const SOURCE_TYPE_OPTIONS = [
-  { value: "dukascopy", label: "Dukascopy" },
-  { value: "mt4", label: "MT4" },
-  { value: "mt5", label: "MT5" },
-  { value: "custom_upload", label: "カスタムアップロード" },
+const FIELD_OPTIONS = [
+  { value: "bid", label: "Bid" },
+  { value: "ask", label: "Ask" },
+  { value: "open", label: "Open" },
+  { value: "high", label: "High" },
+  { value: "low", label: "Low" },
+  { value: "close", label: "Close" },
+  { value: "volume", label: "Volume" },
 ];
 
 function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourceFormProps) {
@@ -45,8 +49,14 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
     (v: string) => setLocalValue((cv) => ({ ...cv, timeframe: v })),
     [setLocalValue]
   );
-  const handleSourceTypeChange = useCallback(
-    (v: string) => setLocalValue((cv) => ({ ...cv, sourceType: v })),
+  const handleFieldChange = useCallback(
+    (field: string, checked: boolean) =>
+      setLocalValue((cv) => {
+        const set = new Set(cv.fields || []);
+        if (checked) set.add(field);
+        else set.delete(field);
+        return { ...cv, fields: Array.from(set) };
+      }),
     [setLocalValue]
   );
   const handleDescriptionChange = useCallback(
@@ -81,15 +91,18 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             allowEmpty={false}
             fullWidth
           />
-          <Select
-            label="ソース種別"
-            value={localValue.sourceType || ""}
-            onChange={handleSourceTypeChange}
-            options={SOURCE_TYPE_OPTIONS}
-            required
-            allowEmpty={false}
-            fullWidth
-          />
+          <fieldset className="space-y-2">
+            <legend className="font-bold">Fields</legend>
+            {FIELD_OPTIONS.map((o) => (
+              <Checkbox
+                key={o.value}
+                label={o.label}
+                value={o.value}
+                checked={localValue.fields?.includes(o.value)}
+                onChange={(v) => handleFieldChange(o.value, v)}
+              />
+            ))}
+          </fieldset>
         </>
       )}
       <Textarea

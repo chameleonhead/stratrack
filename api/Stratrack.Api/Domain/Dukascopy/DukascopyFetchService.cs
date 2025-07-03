@@ -31,7 +31,11 @@ public class DukascopyFetchService(
         try
         {
             var sources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
-            foreach (var ds in sources.Where(d => d.SourceType == "dukascopy" && d.Timeframe == "tick" && d.Symbol == symbol))
+            foreach (var ds in sources.Where(d =>
+                d.Timeframe == "tick" &&
+                d.Symbol == symbol &&
+                (d.Fields?.Split(',').Contains("bid") ?? false) &&
+                (d.Fields?.Split(',').Contains("ask") ?? false)))
             {
                 await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
             }

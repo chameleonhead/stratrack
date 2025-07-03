@@ -12,6 +12,7 @@ public class DataSourceCreateRequest
     [Required]
     public string Timeframe { get; set; } = "";
     [Required]
-    public string SourceType { get; set; } = "";
+    [MinLength(1)]
+    public List<string> Fields { get; set; } = [];
     public string? Description { get; set; }
 }

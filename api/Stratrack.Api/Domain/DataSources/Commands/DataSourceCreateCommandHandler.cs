@@ -6,7 +6,7 @@ public class DataSourceCreateCommandHandler : CommandHandler<DataSourceAggregate
 {
     public override Task ExecuteAsync(DataSourceAggregate aggregate, DataSourceCreateCommand command, CancellationToken cancellationToken)
     {
-        aggregate.Create(command.Name, command.Symbol, command.Timeframe, command.SourceType, command.Description);
+        aggregate.Create(command.Name, command.Symbol, command.Timeframe, command.Fields, command.Description);
         return Task.CompletedTask;
     }
 }

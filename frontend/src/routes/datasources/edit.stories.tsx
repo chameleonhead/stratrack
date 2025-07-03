@@ -8,7 +8,7 @@ const sample = {
   name: "Sample",
   symbol: "EURUSD",
   timeframe: "1m",
-  sourceType: "dukascopy",
+  fields: ["bid", "ask"],
   description: "desc",
   createdAt: "",
   updatedAt: "",
