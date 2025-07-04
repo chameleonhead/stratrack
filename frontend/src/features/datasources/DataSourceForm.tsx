@@ -2,14 +2,17 @@ import { useCallback } from "react";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
 import Textarea from "../../components/Textarea";
-import Checkbox from "../../components/Checkbox";
 import { useLocalValue } from "../../hooks/useLocalValue";
+
+export type DataFormat = "tick" | "ohlc";
+export type VolumeType = "none" | "actual" | "tick";
 
 export type DataSourceFormValue = {
   name?: string;
   symbol?: string;
   timeframe?: string;
-  fields?: string[];
+  format?: DataFormat;
+  volume?: VolumeType;
   description?: string;
 };
 
@@ -24,14 +27,15 @@ const TIMEFRAME_OPTIONS = [
   { value: "5m", label: "5分足" },
 ];
 
-const FIELD_OPTIONS = [
-  { value: "bid", label: "Bid" },
-  { value: "ask", label: "Ask" },
-  { value: "open", label: "Open" },
-  { value: "high", label: "High" },
-  { value: "low", label: "Low" },
-  { value: "close", label: "Close" },
-  { value: "volume", label: "Volume" },
+const FORMAT_OPTIONS = [
+  { value: "tick", label: "Tick" },
+  { value: "ohlc", label: "OHLC" },
+];
+
+const VOLUME_OPTIONS = [
+  { value: "none", label: "なし" },
+  { value: "actual", label: "Actual" },
+  { value: "tick", label: "Tick Count" },
 ];
 
 function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourceFormProps) {
@@ -47,16 +51,6 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
   );
   const handleTimeframeChange = useCallback(
     (v: string) => setLocalValue((cv) => ({ ...cv, timeframe: v })),
-    [setLocalValue]
-  );
-  const handleFieldChange = useCallback(
-    (field: string, checked: boolean) =>
-      setLocalValue((cv) => {
-        const set = new Set(cv.fields || []);
-        if (checked) set.add(field);
-        else set.delete(field);
-        return { ...cv, fields: Array.from(set) };
-      }),
     [setLocalValue]
   );
   const handleDescriptionChange = useCallback(
@@ -91,18 +85,22 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             allowEmpty={false}
             fullWidth
           />
-          <fieldset className="space-y-2">
-            <legend className="font-bold">Fields</legend>
-            {FIELD_OPTIONS.map((o) => (
-              <Checkbox
-                key={o.value}
-                label={o.label}
-                value={o.value}
-                checked={localValue.fields?.includes(o.value)}
-                onChange={(v) => handleFieldChange(o.value, v)}
-              />
-            ))}
-          </fieldset>
+          <Select
+            label="フォーマット"
+            value={localValue.format || ""}
+            onChange={(v) => setLocalValue((cv) => ({ ...cv, format: v as DataFormat }))}
+            options={FORMAT_OPTIONS}
+            required
+            allowEmpty={false}
+            fullWidth
+          />
+          <Select
+            label="Volume"
+            value={localValue.volume || "none"}
+            onChange={(v) => setLocalValue((cv) => ({ ...cv, volume: v as VolumeType }))}
+            options={VOLUME_OPTIONS}
+            fullWidth
+          />
         </>
       )}
       <Textarea

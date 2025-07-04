@@ -6,6 +6,7 @@ using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
 using Stratrack.Api.Domain.Blobs;
+using Stratrack.Api.Domain.DataSources;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text;
@@ -40,7 +41,8 @@ public class DataChunkFunctionsTests
                 Name = "ds",
                 Symbol = "EURUSD",
                 Timeframe = "tick",
-                Fields = fields ?? new List<string>{"bid","ask"}
+                Format = DataFormat.Tick,
+                Volume = VolumeType.None
             }))
             .Build();
         var res = await function.PostDataSource(req, CancellationToken.None);

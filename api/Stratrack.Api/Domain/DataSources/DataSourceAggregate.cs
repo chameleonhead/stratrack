@@ -16,8 +16,10 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     public string Symbol { get; private set; } = "";
     public string Timeframe { get; private set; } = "";
     public List<string> Fields { get; private set; } = [];
+    public DataFormat Format { get; private set; } = DataFormat.Tick;
+    public VolumeType Volume { get; private set; } = VolumeType.None;
 
-    public void Create(string name, string symbol, string timeframe, IEnumerable<string> fields, string? description)
+    public void Create(string name, string symbol, string timeframe, DataFormat format, VolumeType volume, IEnumerable<string> fields, string? description)
     {
         if (isDeleted == true)
         {
@@ -27,6 +29,8 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
             && Symbol == symbol
             && Timeframe == timeframe
             && Fields.SequenceEqual(fields)
+            && Format == format
+            && Volume == volume
             && Description == description)
         {
             return;
@@ -34,7 +38,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
 
         // Assuming that the symbol, timeframe, and sourceType are not stored in this aggregate.
         // If they are needed, they should be added as properties and handled accordingly.
-        Emit(new DataSourceCreatedEvent(Id, name, symbol, timeframe, fields.ToList(), description));
+        Emit(new DataSourceCreatedEvent(Id, name, symbol, timeframe, format, volume, fields.ToList(), description));
     }
 
     public void Update(string name, string? description)
@@ -61,6 +65,8 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
         Symbol = aggregateEvent.Symbol;
         Timeframe = aggregateEvent.Timeframe;
         Fields = aggregateEvent.Fields.ToList();
+        Format = aggregateEvent.Format;
+        Volume = aggregateEvent.Volume;
         Description = aggregateEvent.Description;
     }
 

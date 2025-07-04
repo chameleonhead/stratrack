@@ -18,6 +18,8 @@ public class DataSourceReadModel : IReadModel,
     public string Symbol { get; set; } = "";
     public string Timeframe { get; set; } = "";
     public string Fields { get; set; } = "";
+    public DataFormat Format { get; set; } = DataFormat.Tick;
+    public VolumeType Volume { get; set; } = VolumeType.None;
     public string? Description { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -31,6 +33,8 @@ public class DataSourceReadModel : IReadModel,
         Symbol = dataSourceCreatedEvent.Symbol;
         Timeframe = dataSourceCreatedEvent.Timeframe;
         Fields = string.Join(',', dataSourceCreatedEvent.Fields);
+        Format = dataSourceCreatedEvent.Format;
+        Volume = dataSourceCreatedEvent.Volume;
         Description = dataSourceCreatedEvent.Description;
         CreatedAt = domainEvent.Timestamp;
         UpdatedAt = domainEvent.Timestamp;

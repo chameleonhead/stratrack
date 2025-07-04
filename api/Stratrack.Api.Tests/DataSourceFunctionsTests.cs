@@ -7,6 +7,7 @@ using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
+using Stratrack.Api.Domain.DataSources;
 using System.Net;
 using System.Text.Json;
 using WorkerHttpFake;
@@ -81,7 +82,8 @@ public class DataSourceFunctionsTests
                     Name = "DataSource 1",
                     Symbol = "EURUSD",
                     Timeframe = "H1",
-                    Fields = new List<string>{"bid","ask"},
+                    Format = DataFormat.Tick,
+                    Volume = VolumeType.None,
                     Description = "Description",
                 }
             ))
@@ -96,7 +98,8 @@ public class DataSourceFunctionsTests
         Assert.AreEqual("DataSource 1", obj.Name);
         Assert.AreEqual("EURUSD", obj.Symbol);
         Assert.AreEqual("H1", obj.Timeframe);
-        CollectionAssert.AreEqual(new List<string>{"bid","ask"}, obj.Fields);
+        Assert.AreEqual(DataFormat.Tick, obj.Format);
+        Assert.AreEqual(VolumeType.None, obj.Volume);
         Assert.AreEqual("Description", obj.Description);
     }
 
@@ -130,7 +133,8 @@ public class DataSourceFunctionsTests
             Name = "DataSource 1",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            Fields = new List<string>{"bid","ask"},
+            Format = DataFormat.Tick,
+            Volume = VolumeType.None,
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -160,7 +164,8 @@ public class DataSourceFunctionsTests
             Name = "DataSource 1",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            Fields = new List<string>{"bid","ask"},
+            Format = DataFormat.Tick,
+            Volume = VolumeType.None,
             Description = "Description",
         }).ConfigureAwait(false);
 
@@ -202,7 +207,8 @@ public class DataSourceFunctionsTests
                 Name = "x",
                 Symbol = "EURUSD",
                 Timeframe = "H1",
-                Fields = new List<string>{"bid","ask"}
+                Format = DataFormat.Tick,
+                Volume = VolumeType.None
             }))
             .Build();
 
@@ -222,7 +228,8 @@ public class DataSourceFunctionsTests
             Name = "name",
             Symbol = "EURUSD",
             Timeframe = "H1",
-            Fields = new List<string>{"bid","ask"},
+            Format = DataFormat.Tick,
+            Volume = VolumeType.None,
         }).ConfigureAwait(false);
 
         var request = new HttpRequestDataBuilder()

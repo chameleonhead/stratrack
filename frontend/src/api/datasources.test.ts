@@ -12,7 +12,8 @@ describe("createDataSource", () => {
       name: "ds",
       symbol: "EURUSD",
       timeframe: "1m",
-      fields: ["bid", "ask"],
+      format: "tick" as const,
+      volume: "none" as const,
     };
 
     await createDataSource(data);

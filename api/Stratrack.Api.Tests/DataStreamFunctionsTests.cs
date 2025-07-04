@@ -4,6 +4,7 @@ using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
+using Stratrack.Api.Domain.DataSources;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -39,7 +40,8 @@ public class DataStreamFunctionsTests
                 Name = "ds",
                 Symbol = "EURUSD",
                 Timeframe = "tick",
-                Fields = new List<string>{"bid","ask"}
+                Format = DataFormat.Tick,
+                Volume = VolumeType.None
             }))
             .Build();
         var res = await func.PostDataSource(req, CancellationToken.None);

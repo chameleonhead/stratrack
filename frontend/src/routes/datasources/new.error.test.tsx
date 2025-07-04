@@ -14,7 +14,8 @@ vi.mock("../../features/datasources/DataSourceForm", () => ({
       name: "ds1",
       symbol: "EURUSD",
       timeframe: "tick",
-      fields: ["bid", "ask"],
+      format: "tick",
+      volume: "none",
     });
     return null;
   },

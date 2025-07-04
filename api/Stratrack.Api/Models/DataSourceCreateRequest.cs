@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Stratrack.Api.Domain.DataSources;
 
 namespace Stratrack.Api.Models;
 
@@ -12,7 +13,8 @@ public class DataSourceCreateRequest
     [Required]
     public string Timeframe { get; set; } = "";
     [Required]
-    [MinLength(1)]
-    public List<string> Fields { get; set; } = [];
+    public DataFormat Format { get; set; } = DataFormat.Tick;
+
+    public VolumeType Volume { get; set; } = VolumeType.None;
     public string? Description { get; set; }
 }
