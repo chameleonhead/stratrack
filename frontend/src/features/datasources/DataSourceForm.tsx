@@ -1,8 +1,10 @@
 import { useCallback } from "react";
+import { z } from "zod";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
 import Textarea from "../../components/Textarea";
 import { useLocalValue } from "../../hooks/useLocalValue";
+import { useZodValidation } from "../../hooks/useZodValidation";
 
 export type DataFormat = "tick" | "ohlc";
 export type VolumeType = "none" | "actual" | "tick";
@@ -38,8 +40,28 @@ const VOLUME_OPTIONS = [
   { value: "tick", label: "Tick Count" },
 ];
 
+const DATA_SOURCE_SCHEMA = z.object({
+  name: z.string({ required_error: "名称は必須です" }).min(1, "名称は必須です"),
+  symbol: z
+    .string({ required_error: "通貨ペアは必須です" })
+    .min(1, "通貨ペアは必須です")
+    .optional(),
+  timeframe: z.string({ required_error: "時間足は必須です" }).min(1, "時間足は必須です").optional(),
+  format: z
+    .enum(["tick", "ohlc"], {
+      required_error: "フォーマットは必須です",
+    })
+    .optional(),
+  volume: z.enum(["none", "actual", "tick"]).optional(),
+  description: z.string().optional(),
+});
+
 function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourceFormProps) {
   const [localValue, setLocalValue] = useLocalValue<DataSourceFormValue>({}, value, onChange);
+  const rawErrors = useZodValidation(DATA_SOURCE_SCHEMA, localValue);
+  const errors = hideSourceFields
+    ? { ...rawErrors, symbol: undefined, timeframe: undefined, format: undefined }
+    : rawErrors;
 
   const handleNameChange = useCallback(
     (v: string) => setLocalValue((cv) => ({ ...cv, name: v })),
@@ -65,6 +87,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
         value={localValue.name || ""}
         onChange={handleNameChange}
         required
+        error={errors.name}
         fullWidth
       />
       {!hideSourceFields && (
@@ -74,6 +97,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             value={localValue.symbol || ""}
             onChange={handleSymbolChange}
             required
+            error={errors.symbol}
             fullWidth
           />
           <Select
@@ -83,6 +107,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             options={TIMEFRAME_OPTIONS}
             required
             allowEmpty={false}
+            error={errors.timeframe}
             fullWidth
           />
           <Select
@@ -92,6 +117,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             options={FORMAT_OPTIONS}
             required
             allowEmpty={false}
+            error={errors.format}
             fullWidth
           />
           <Select
@@ -99,6 +125,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
             value={localValue.volume || "none"}
             onChange={(v) => setLocalValue((cv) => ({ ...cv, volume: v as VolumeType }))}
             options={VOLUME_OPTIONS}
+            error={errors.volume}
             fullWidth
           />
         </>
@@ -107,6 +134,7 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
         label="説明"
         value={localValue.description || ""}
         onChange={handleDescriptionChange}
+        error={errors.description}
         rows={3}
         fullWidth
       />

@@ -22,3 +22,13 @@ export const Default: Story = {
     await expect(args.onChange).toHaveBeenCalled();
   },
 };
+
+export const Validation: Story = {
+  args: {},
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("名称"));
+    await userEvent.clear(canvas.getByLabelText("名称"));
+    await expect(canvas.getByText("名称は必須です")).toBeInTheDocument();
+  },
+};
