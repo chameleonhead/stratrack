@@ -6,6 +6,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System.Collections.Generic;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.DataSources.Queries;
@@ -63,12 +64,15 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
         var id = DataSourceId.New;
         try
         {
+            var fields = DetermineFields(body.Format, body.Volume);
             await commandBus.PublishAsync(new DataSourceCreateCommand(id)
             {
                 Name = body.Name,
                 Symbol = body.Symbol,
                 Timeframe = body.Timeframe,
-                Fields = body.Fields ?? new List<string>(),
+                Format = body.Format,
+                Volume = body.Volume,
+                Fields = fields,
                 Description = body.Description,
             }, token).ConfigureAwait(false);
         }
@@ -205,10 +209,26 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             Name = result.Name,
             Symbol = result.Symbol,
             Timeframe = result.Timeframe,
-            Fields = result.Fields.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+            Format = result.Format,
+            Volume = result.Volume,
             Description = result.Description,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,
         };
+    }
+
+    private static List<string> DetermineFields(DataFormat format, VolumeType volume)
+    {
+        var fields = format switch
+        {
+            DataFormat.Tick => new List<string> { "bid", "ask" },
+            DataFormat.Ohlc => new List<string> { "open", "high", "low", "close" },
+            _ => new List<string>()
+        };
+        if (volume != VolumeType.None)
+        {
+            fields.Add("volume");
+        }
+        return fields;
     }
 }

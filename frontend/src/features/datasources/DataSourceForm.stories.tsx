@@ -17,8 +17,8 @@ export const Default: Story = {
     const canvas = within(canvasElement);
     await userEvent.type(canvas.getByLabelText("名称"), "test");
     await userEvent.selectOptions(canvas.getByLabelText("時間足"), "tick");
-    await userEvent.click(canvas.getByLabelText("Bid"));
-    await userEvent.click(canvas.getByLabelText("Ask"));
+    await userEvent.selectOptions(canvas.getByLabelText("フォーマット"), "tick");
+    await userEvent.selectOptions(canvas.getByLabelText("Volume"), "none");
     await expect(args.onChange).toHaveBeenCalled();
   },
 };

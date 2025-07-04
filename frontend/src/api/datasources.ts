@@ -1,8 +1,12 @@
+export type DataFormat = "tick" | "ohlc";
+export type VolumeType = "none" | "actual" | "tick";
+
 export type NewDataSourceRequest = {
   name: string;
   symbol: string;
   timeframe: string;
-  fields: string[];
+  format: DataFormat;
+  volume?: VolumeType;
   description?: string;
 };
 
@@ -18,7 +22,8 @@ export type DataSourceDetail = {
   name: string;
   symbol: string;
   timeframe: string;
-  fields: string[];
+  format: DataFormat;
+  volume: VolumeType;
   description?: string;
   createdAt: string;
   updatedAt: string;
