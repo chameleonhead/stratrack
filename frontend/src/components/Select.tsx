@@ -33,7 +33,15 @@ function Select({
 }: SelectProps) {
   const uniqueId = useMemo(() => id || `select-${Math.random().toString(36).slice(2, 9)}`, [id]);
 
-  const [localValue, setLocalValue] = useLocalValue(defaultValue || "", value, onChange);
+  const firstOption = useMemo(() => {
+    if (options.length === 0) return "";
+    const opt = options[0];
+    return typeof opt === "string" ? opt : opt.value;
+  }, [options]);
+
+  const initialValue = defaultValue ?? (allowEmpty ? "" : firstOption);
+
+  const [localValue, setLocalValue] = useLocalValue(initialValue, value, onChange);
 
   function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     const selectedValue = event.target.value;

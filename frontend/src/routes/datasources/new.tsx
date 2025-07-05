@@ -1,17 +1,21 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createDataSource, NewDataSourceRequest } from "../../api/datasources";
-import DataSourceForm from "../../features/datasources/DataSourceForm";
+import DataSourceForm, { DataSourceFormHandle } from "../../features/datasources/DataSourceForm";
 
 const NewDataSource = () => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState<Partial<NewDataSourceRequest>>({});
+  const formRef = useRef<DataSourceFormHandle>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!dataSource.name || !dataSource.symbol || !dataSource.timeframe || !dataSource.format) {
+    const form = e.currentTarget;
+    const validHtml = form.reportValidity();
+    const validForm = formRef.current?.validate() ?? true;
+    if (!validHtml || !validForm) {
       return;
     }
     setIsSubmitting(true);
@@ -34,7 +38,7 @@ const NewDataSource = () => {
       <section>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
-          <DataSourceForm value={dataSource} onChange={setDataSource} />
+          <DataSourceForm ref={formRef} value={dataSource} onChange={setDataSource} />
           <button
             type="submit"
             className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"

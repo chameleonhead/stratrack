@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getDataSource,
@@ -6,7 +6,10 @@ import {
   deleteDataSource,
   DataSourceDetail,
 } from "../../api/datasources";
-import DataSourceForm, { DataSourceFormValue } from "../../features/datasources/DataSourceForm";
+import DataSourceForm, {
+  DataSourceFormHandle,
+  DataSourceFormValue,
+} from "../../features/datasources/DataSourceForm";
 
 const EditDataSource = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
@@ -14,6 +17,7 @@ const EditDataSource = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<DataSourceFormHandle>(null);
 
   useEffect(() => {
     if (dataSourceId) {
@@ -33,7 +37,10 @@ const EditDataSource = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!dataSourceId || !dataSource.name) {
+    const form = e.currentTarget;
+    const validHtml = form.reportValidity();
+    const validForm = formRef.current?.validate() ?? true;
+    if (!validHtml || !validForm || !dataSourceId) {
       return;
     }
     setIsSubmitting(true);
@@ -86,7 +93,12 @@ const EditDataSource = () => {
       <section>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
-          <DataSourceForm value={dataSource} onChange={handleFormChange} hideSourceFields />
+          <DataSourceForm
+            ref={formRef}
+            value={dataSource}
+            onChange={handleFormChange}
+            hideSourceFields
+          />
           <button
             type="submit"
             className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"
