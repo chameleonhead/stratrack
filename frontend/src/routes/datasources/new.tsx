@@ -5,7 +5,11 @@ import DataSourceForm, { DataSourceFormHandle } from "../../features/datasources
 
 const NewDataSource = () => {
   const navigate = useNavigate();
-  const [dataSource, setDataSource] = useState<Partial<NewDataSourceRequest>>({});
+  const [dataSource, setDataSource] = useState<Partial<NewDataSourceRequest>>({
+    timeframe: "tick",
+    format: "tick",
+    volume: "none",
+  });
   const formRef = useRef<DataSourceFormHandle>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
