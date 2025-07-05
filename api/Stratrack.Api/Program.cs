@@ -18,6 +18,7 @@ builder.Services
         options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.PropertyNameCaseInsensitive = true;
+        options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     })
     .AddStratrack<StratrackDbContextProvider>();
 
