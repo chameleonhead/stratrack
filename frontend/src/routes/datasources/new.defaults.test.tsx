@@ -33,7 +33,7 @@ describe("NewDataSource", () => {
     expect(api.createDataSource).toHaveBeenCalledWith({
       name: "ds1",
       symbol: "EURUSD",
-      timeframe: "tick",
+      timeframe: "1m",
       format: "tick",
       volume: "none",
     });

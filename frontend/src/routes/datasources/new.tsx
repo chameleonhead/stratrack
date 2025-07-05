@@ -9,7 +9,7 @@ import DataSourceForm, {
 const NewDataSource = () => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState<DataSourceFormValue>({
-    timeframe: "tick",
+    timeframe: "1m",
     format: "tick",
     volume: "none",
   });
