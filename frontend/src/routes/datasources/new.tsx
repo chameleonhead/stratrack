@@ -1,11 +1,14 @@
 import { FormEvent, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createDataSource, NewDataSourceRequest } from "../../api/datasources";
-import DataSourceForm, { DataSourceFormHandle } from "../../features/datasources/DataSourceForm";
+import { createDataSource } from "../../api/datasources";
+import DataSourceForm, {
+  DataSourceFormHandle,
+  DataSourceFormValue,
+} from "../../features/datasources/DataSourceForm";
 
 const NewDataSource = () => {
   const navigate = useNavigate();
-  const [dataSource, setDataSource] = useState<Partial<NewDataSourceRequest>>({
+  const [dataSource, setDataSource] = useState<DataSourceFormValue>({
     timeframe: "tick",
     format: "tick",
     volume: "none",
@@ -25,7 +28,14 @@ const NewDataSource = () => {
     setIsSubmitting(true);
     setError(null);
     try {
-      await createDataSource(dataSource as NewDataSourceRequest);
+      await createDataSource({
+        name: dataSource.name!,
+        symbol: dataSource.symbol!,
+        timeframe: dataSource.timeframe!,
+        format: dataSource.format!,
+        volume: dataSource.volume,
+        description: dataSource.description,
+      });
       navigate("/data-sources");
     } catch (err) {
       setError((err as Error).message);
