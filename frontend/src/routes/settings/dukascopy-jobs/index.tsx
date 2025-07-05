@@ -1,9 +1,9 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createDukascopyJob } from "../../api/dukascopyJobs";
-import Input from "../../components/Input";
+import { createDukascopyJob } from "../../../api/dukascopyJobs";
+import Input from "../../../components/Input";
 
-const NewDukascopyJob = () => {
+const DukascopyJobSettings = () => {
   const navigate = useNavigate();
   const [symbol, setSymbol] = useState("");
   const [start, setStart] = useState(new Date().toISOString().slice(0, 16));
@@ -23,7 +23,7 @@ const NewDukascopyJob = () => {
         symbol,
         startTime: new Date(start).toISOString(),
       });
-      navigate("/");
+      navigate("/settings/dukascopy-jobs");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -34,7 +34,7 @@ const NewDukascopyJob = () => {
   return (
     <div className="p-6 space-y-6">
       <header className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Dukascopy抽出ジョブ作成</h2>
+        <h2 className="text-2xl font-bold">Dukascopyジョブ管理</h2>
       </header>
       <section>
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -61,4 +61,4 @@ const NewDukascopyJob = () => {
   );
 };
 
-export default NewDukascopyJob;
+export default DukascopyJobSettings;

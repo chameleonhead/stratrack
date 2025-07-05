@@ -10,7 +10,7 @@ import NewDataSource from "./datasources/new";
 import EditDataSource from "./datasources/edit";
 import UploadDataFile from "./datasources/upload";
 import DataSourceChart from "./datasources/chart";
-import NewDukascopyJob from "./dukascopy-jobs/new";
+import DukascopyJobSettings from "./settings/dukascopy-jobs";
 import Settings from "./settings";
 
 export const routes = [
@@ -29,7 +29,7 @@ export const routes = [
       { path: "data-sources/:dataSourceId/edit", element: <EditDataSource /> },
       { path: "data-sources/:dataSourceId/upload", element: <UploadDataFile /> },
       { path: "data-sources/:dataSourceId/chart", element: <DataSourceChart /> },
-      { path: "dukascopy-jobs/new", element: <NewDukascopyJob /> },
+      { path: "settings/dukascopy-jobs", element: <DukascopyJobSettings /> },
       { path: "settings", element: <Settings /> },
     ],
   },
