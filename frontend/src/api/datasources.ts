@@ -1,5 +1,5 @@
 export type DataFormat = "tick" | "ohlc";
-export type VolumeType = "none" | "actual" | "tick";
+export type VolumeType = "none" | "actual" | "tickCount";
 
 export type NewDataSourceRequest = {
   name: string;

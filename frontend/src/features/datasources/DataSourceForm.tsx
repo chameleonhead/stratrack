@@ -7,7 +7,7 @@ import { useLocalValue } from "../../hooks/useLocalValue";
 import { useZodForm } from "../../hooks/useZodForm";
 
 export type DataFormat = "tick" | "ohlc";
-export type VolumeType = "none" | "actual" | "tick";
+export type VolumeType = "none" | "actual" | "tickCount";
 
 export type DataSourceFormValue = {
   name?: string;
@@ -26,7 +26,14 @@ export type DataSourceFormProps = {
 
 const TIMEFRAME_OPTIONS = [
   { value: "tick", label: "ティック" },
+  { value: "1m", label: "1分足" },
   { value: "5m", label: "5分足" },
+  { value: "15m", label: "15分足" },
+  { value: "30m", label: "30分足" },
+  { value: "1h", label: "1時間足" },
+  { value: "2h", label: "2時間足" },
+  { value: "4h", label: "4時間足" },
+  { value: "1d", label: "日足" },
 ];
 
 const FORMAT_OPTIONS = [
@@ -37,7 +44,7 @@ const FORMAT_OPTIONS = [
 const VOLUME_OPTIONS = [
   { value: "none", label: "なし" },
   { value: "actual", label: "Actual" },
-  { value: "tick", label: "Tick Count" },
+  { value: "tickCount", label: "Tick Count" },
 ];
 
 const DATA_SOURCE_SCHEMA = z.object({
@@ -52,7 +59,7 @@ const DATA_SOURCE_SCHEMA = z.object({
       required_error: "フォーマットは必須です",
     })
     .optional(),
-  volume: z.enum(["none", "actual", "tick"]).optional(),
+  volume: z.enum(["none", "actual", "tickCount"]).optional(),
   description: z.string().optional(),
 });
 
