@@ -25,6 +25,7 @@ export type DataSourceFormProps = {
 };
 
 const TIMEFRAME_OPTIONS = [
+  { value: "tick", label: "ティック" },
   { value: "1m", label: "1分足" },
   { value: "5m", label: "5分足" },
   { value: "15m", label: "15分足" },
