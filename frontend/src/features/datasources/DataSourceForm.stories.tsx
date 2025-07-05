@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn, userEvent, within, expect } from "storybook/test";
-import DataSourceForm from "./DataSourceForm";
+import { useRef } from "react";
+import DataSourceForm, { DataSourceFormHandle } from "./DataSourceForm";
 
 const meta = {
   component: DataSourceForm,
@@ -23,12 +24,26 @@ export const Default: Story = {
   },
 };
 
+const ValidationDemo = (args: React.ComponentProps<typeof DataSourceForm>) => {
+  const ref = useRef<DataSourceFormHandle>(null);
+  return (
+    <div>
+      <DataSourceForm ref={ref} {...args} />
+      <button type="button" onClick={() => ref.current?.validate()}>
+        validate
+      </button>
+    </div>
+  );
+};
+
 export const Validation: Story = {
   args: {},
+  render: ValidationDemo,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByLabelText("名称"));
     await userEvent.clear(canvas.getByLabelText("名称"));
+    await userEvent.click(canvas.getByRole("button", { name: "validate" }));
     await expect(canvas.getByText("名称は必須です")).toBeInTheDocument();
   },
 };

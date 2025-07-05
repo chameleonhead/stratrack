@@ -1,10 +1,10 @@
-import { useCallback } from "react";
+import { forwardRef, useCallback, useImperativeHandle } from "react";
 import { z } from "zod";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
 import Textarea from "../../components/Textarea";
 import { useLocalValue } from "../../hooks/useLocalValue";
-import { useZodValidation } from "../../hooks/useZodValidation";
+import { useZodForm } from "../../hooks/useZodForm";
 
 export type DataFormat = "tick" | "ohlc";
 export type VolumeType = "none" | "actual" | "tick";
@@ -56,12 +56,21 @@ const DATA_SOURCE_SCHEMA = z.object({
   description: z.string().optional(),
 });
 
-function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourceFormProps) {
+export type DataSourceFormHandle = {
+  validate: () => boolean;
+};
+
+function DataSourceForm(
+  { value, onChange, hideSourceFields = false }: DataSourceFormProps,
+  ref: React.ForwardedRef<DataSourceFormHandle>
+) {
   const [localValue, setLocalValue] = useLocalValue<DataSourceFormValue>({}, value, onChange);
-  const rawErrors = useZodValidation(DATA_SOURCE_SCHEMA, localValue);
+  const { errors: rawErrors, validate } = useZodForm(DATA_SOURCE_SCHEMA, localValue);
   const errors = hideSourceFields
     ? { ...rawErrors, symbol: undefined, timeframe: undefined, format: undefined }
     : rawErrors;
+
+  useImperativeHandle(ref, () => ({ validate }), [validate]);
 
   const handleNameChange = useCallback(
     (v: string) => setLocalValue((cv) => ({ ...cv, name: v })),
@@ -142,4 +151,4 @@ function DataSourceForm({ value, onChange, hideSourceFields = false }: DataSourc
   );
 }
 
-export default DataSourceForm;
+export default forwardRef(DataSourceForm);
