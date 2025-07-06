@@ -262,4 +262,35 @@ public class DataChunkFunctionsTests
         var text = Encoding.UTF8.GetString(blob);
         Assert.IsTrue(text.StartsWith("time,bid,ask"));
     }
+
+    [TestMethod]
+    public async Task PostDataFile_NoHeader_Standardized()
+    {
+        using var provider = CreateProvider();
+        var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
+        var dsId = await CreateDataSourceAsync(dsFunc);
+
+        var csv = "2024-01-01T00:00:00Z,1,1\n";
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(csv));
+        var req = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            {
+                FileName = "ticks.csv",
+                Base64Data = data
+            }))
+            .Build();
+
+        var res = await chunkFunc.PostDataFile(req, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Created, res.StatusCode);
+
+        using var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
+        var chunk = await context.DataChunks.FirstAsync(c => c.DataSourceId == Guid.Parse(dsId));
+        var storage = provider.GetRequiredService<IBlobStorage>();
+        var blob = await storage.GetAsync(chunk.BlobId, CancellationToken.None);
+        var text = Encoding.UTF8.GetString(blob);
+        Assert.IsTrue(text.StartsWith("time,bid,ask"));
+    }
 }

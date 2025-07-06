@@ -26,32 +26,62 @@ public class CsvChunkService(
         {
             var csv = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
             var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length <= 1)
+            if (lines.Length == 0)
             {
                 return false;
             }
 
-            var headerParts = lines[0].Split(',').Select(p => p.Trim().ToLower()).ToArray();
             var required = new[] { "time" }
-                .Concat((dataSource.Fields ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim().ToLower()))
+                .Concat((dataSource.Fields ?? string.Empty)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim().ToLower()))
                 .ToArray();
+
+            var firstParts = lines[0].Split(',').Select(p => p.Trim()).ToArray();
+            var headerParts = firstParts.Select(p => p.ToLower()).ToArray();
+            var hasHeader = required.All(f => headerParts.Contains(f));
+
             var indices = new Dictionary<string, int>();
-            foreach (var field in required)
+            if (hasHeader)
             {
-                var idx = Array.IndexOf(headerParts, field);
-                if (idx < 0)
+                foreach (var field in required)
                 {
-                    return false;
+                    var idx = Array.IndexOf(headerParts, field);
+                    if (idx < 0)
+                    {
+                        return false;
+                    }
+                    indices[field] = idx;
                 }
-                indices[field] = idx;
             }
 
-            var entries = lines.Skip(1)
+            var dataLines = hasHeader ? lines.Skip(1) : lines;
+            var entries = dataLines
                 .Select(l => l.Split(','))
-                .Select(p => new
+                .Select(p =>
                 {
-                    Time = DateTimeOffset.Parse(p[indices["time"]]),
-                    Line = string.Join(',', required.Skip(1).Select(f => p[indices[f]]))
+                    DateTimeOffset time;
+                    int offset = 1;
+                    if (hasHeader)
+                    {
+                        time = DateTimeOffset.Parse(p[indices["time"]]);
+                    }
+                    else if (!DateTimeOffset.TryParse(p[0], out time))
+                    {
+                        if (p.Length < 2 || !DateTimeOffset.TryParse($"{p[0]} {p[1]}", out time))
+                        {
+                            throw new FormatException("Invalid time format");
+                        }
+                        offset = 2;
+                    }
+                    var values = hasHeader
+                        ? required.Skip(1).Select(f => p[indices[f]])
+                        : required.Skip(1).Select((_, i) => p[i + offset]);
+                    return new
+                    {
+                        Time = time,
+                        Line = string.Join(',', values)
+                    };
                 })
                 .GroupBy(e => new DateTimeOffset(e.Time.Year, e.Time.Month, e.Time.Day, e.Time.Hour, 0, 0, e.Time.Offset));
 
