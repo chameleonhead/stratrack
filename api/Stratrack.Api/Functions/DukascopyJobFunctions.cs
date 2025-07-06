@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using System.Net;
 using System.Linq;
+using System.Collections.Generic;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
@@ -106,6 +107,29 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     {
         await _commandBus.PublishAsync(new DukascopyJobDeleteCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
+        return res;
+    }
+
+    [Function("GetDukascopyJobs")]
+    [OpenApiOperation(operationId: "get_dukascopy_jobs", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<Models.DukascopyJobSummary>))]
+    public async Task<HttpResponseData> GetJobs([HttpTrigger(AuthorizationLevel.Function, "get", Route = "dukascopy-job")] HttpRequestData req, CancellationToken token)
+    {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var summaries = jobs
+            .Where(j => !j.IsDeleted)
+            .Select(j => new Models.DukascopyJobSummary
+            {
+                Id = j.JobId,
+                DataSourceId = j.DataSourceId,
+                Symbol = j.Symbol,
+                StartTime = j.StartTime,
+                IsRunning = j.IsRunning,
+                UpdatedAt = j.UpdatedAt,
+            }).ToList();
+        var res = req.CreateResponse(HttpStatusCode.OK);
+        await res.WriteAsJsonAsync(summaries, cancellationToken: token).ConfigureAwait(false);
         return res;
     }
 

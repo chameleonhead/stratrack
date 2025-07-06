@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "../../components/Input";
-import { createDukascopyJob, startDukascopyJob, stopDukascopyJob } from "../../api/dukascopyJobs";
+import {
+  createDukascopyJob,
+  startDukascopyJob,
+  stopDukascopyJob,
+  listDukascopyJobs,
+  DukascopyJobSummary,
+} from "../../api/dukascopyJobs";
 
 const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
 
@@ -14,6 +20,24 @@ const DukascopyJobs = () => {
   const [jobs, setJobs] = useState<Record<string, JobState>>(initialState);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    listDukascopyJobs()
+      .then((items) => {
+        const state = { ...initialState };
+        items.forEach((j: DukascopyJobSummary) => {
+          if (PAIRS.includes(j.symbol)) {
+            state[j.symbol] = {
+              start: j.startTime.slice(0, 16),
+              running: j.isRunning,
+              jobId: j.id,
+            };
+          }
+        });
+        setJobs(state);
+      })
+      .catch((err) => setError((err as Error).message));
+  }, []);
 
   const handleDateChange = (pair: string, value: string) => {
     setJobs((prev) => ({ ...prev, [pair]: { ...prev[pair], start: value } }));
@@ -30,12 +54,16 @@ const DukascopyJobs = () => {
         }
         setJobs((prev) => ({ ...prev, [pair]: { ...job, running: false } }));
       } else {
-        const res = await createDukascopyJob({
-          symbol: pair,
-          startTime: new Date(job.start).toISOString(),
-        });
-        await startDukascopyJob(res.id);
-        setJobs((prev) => ({ ...prev, [pair]: { ...job, running: true, jobId: res.id } }));
+        let id = job.jobId;
+        if (!id) {
+          const res = await createDukascopyJob({
+            symbol: pair,
+            startTime: new Date(job.start).toISOString(),
+          });
+          id = res.id;
+        }
+        await startDukascopyJob(id);
+        setJobs((prev) => ({ ...prev, [pair]: { ...job, running: true, jobId: id } }));
       }
     } catch (err) {
       setError((err as Error).message);

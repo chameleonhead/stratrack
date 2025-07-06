@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using WorkerHttpFake;
 using System.Threading;
+using Stratrack.Api.Models;
 
 namespace Stratrack.Api.Tests;
 
@@ -71,6 +72,32 @@ public class DukascopyJobFunctionsTests
             .Build();
         var deleteRes = await func.DeleteJob(deleteReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, deleteRes.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetJobs_ReturnsJobs()
+    {
+        using var provider = CreateProvider();
+        var func = provider.GetRequiredService<DukascopyJobFunctions>();
+
+        var createReq = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/dukascopy-job")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(System.Text.Json.JsonSerializer.Serialize(new { symbol = "EURUSD", startTime = DateTimeOffset.UtcNow }))
+            .Build();
+        var createRes = await func.CreateJob(createReq, CancellationToken.None);
+        var created = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
+        var id = Guid.Parse(created["id"].ToString()!);
+
+        var listReq = new HttpRequestDataBuilder()
+            .WithUrl("http://localhost/api/dukascopy-job")
+            .WithMethod(HttpMethod.Get)
+            .Build();
+        var listRes = await func.GetJobs(listReq, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.OK, listRes.StatusCode);
+        var jobs = await listRes.ReadAsJsonAsync<List<DukascopyJobSummary>>();
+        Assert.AreEqual(1, jobs.Count);
+        Assert.AreEqual(id, jobs[0].Id);
     }
 }
 

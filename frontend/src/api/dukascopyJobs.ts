@@ -9,6 +9,15 @@ function toPlain<T>(value: T): T {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const API_KEY = import.meta.env.VITE_API_KEY ?? "";
 
+export type DukascopyJobSummary = {
+  id: string;
+  dataSourceId: string;
+  symbol: string;
+  startTime: string;
+  isRunning: boolean;
+  updatedAt: string;
+};
+
 export type CreateDukascopyJobRequest = {
   symbol: string;
   startTime: string;
@@ -51,4 +60,14 @@ export async function stopDukascopyJob(id: string) {
   if (!res.ok) {
     throw new Error(`Failed to stop dukascopy job: ${res.status}`);
   }
+}
+
+export async function listDukascopyJobs(): Promise<DukascopyJobSummary[]> {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job`, {
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch dukascopy jobs: ${res.status}`);
+  }
+  return res.json();
 }
