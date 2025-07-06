@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stratrack.Api.Models;
 
-public class TickFileUploadRequest
+public class CsvFileUploadRequest
 {
     [Required]
     public string FileName { get; set; } = "";

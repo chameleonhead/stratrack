@@ -65,7 +65,7 @@ public class DataChunkFunctionsTests
         var req = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
@@ -93,7 +93,7 @@ public class DataChunkFunctionsTests
         var req1 = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
@@ -106,7 +106,7 @@ public class DataChunkFunctionsTests
         var req2 = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,30,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,30,0,TimeSpan.Zero),
@@ -135,7 +135,7 @@ public class DataChunkFunctionsTests
         var req1 = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
@@ -147,7 +147,7 @@ public class DataChunkFunctionsTests
         var req2 = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,2,0,0,TimeSpan.Zero),
@@ -182,7 +182,7 @@ public class DataChunkFunctionsTests
         var req1 = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
@@ -218,9 +218,9 @@ public class DataChunkFunctionsTests
         var req = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ticks.csv",
+                FileName = "ohlc.csv",
                 Base64Data = data
             }))
             .Build();
@@ -248,9 +248,9 @@ public class DataChunkFunctionsTests
         var req = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ticks.csv",
+                FileName = "ohlc.csv",
                 Base64Data = data
             }))
             .Build();
@@ -279,9 +279,9 @@ public class DataChunkFunctionsTests
         var req = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ticks.csv",
+                FileName = "ohlc.csv",
                 Base64Data = data
             }))
             .Build();
@@ -310,9 +310,9 @@ public class DataChunkFunctionsTests
         var req = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ticks.csv",
+                FileName = "ohlc.csv",
                 Base64Data = data
             }))
             .Build();

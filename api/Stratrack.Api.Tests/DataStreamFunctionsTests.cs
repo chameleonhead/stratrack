@@ -59,7 +59,7 @@ public class DataStreamFunctionsTests
         var uploadReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
             .WithMethod(HttpMethod.Post)
-            .WithBody(JsonSerializer.Serialize(new TickChunkUploadRequest
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
             {
                 StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
                 EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),

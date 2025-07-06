@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stratrack.Api.Models;
 
-public class TickChunkUploadRequest
+public class CsvChunkUploadRequest
 {
     [Required]
     public DateTimeOffset StartTime { get; set; }

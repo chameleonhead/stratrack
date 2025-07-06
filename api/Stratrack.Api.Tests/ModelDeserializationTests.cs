@@ -68,10 +68,10 @@ public class ModelDeserializationTests
     }
 
     [TestMethod]
-    public void TickChunkUploadRequest_CanDeserialize()
+    public void CsvChunkUploadRequest_CanDeserialize()
     {
         var json = "{\"startTime\":\"2024-01-01T00:00:00Z\",\"endTime\":\"2024-01-01T01:00:00Z\",\"fileName\":\"file.csv\",\"base64Data\":\"QQ==\"}";
-        var model = JsonSerializer.Deserialize<TickChunkUploadRequest>(json, CreateOptions())!;
+        var model = JsonSerializer.Deserialize<CsvChunkUploadRequest>(json, CreateOptions())!;
         Assert.AreEqual(new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero), model.StartTime);
         Assert.AreEqual(new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero), model.EndTime);
         Assert.AreEqual("file.csv", model.FileName);
@@ -79,10 +79,10 @@ public class ModelDeserializationTests
     }
 
     [TestMethod]
-    public void TickFileUploadRequest_CanDeserialize()
+    public void CsvFileUploadRequest_CanDeserialize()
     {
         var json = "{\"fileName\":\"file.csv\",\"base64Data\":\"QQ==\"}";
-        var model = JsonSerializer.Deserialize<TickFileUploadRequest>(json, CreateOptions())!;
+        var model = JsonSerializer.Deserialize<CsvFileUploadRequest>(json, CreateOptions())!;
         Assert.AreEqual("file.csv", model.FileName);
         Assert.AreEqual("QQ==", model.Base64Data);
     }
