@@ -11,6 +11,7 @@ import EditDataSource from "./datasources/edit";
 import UploadDataFile from "./datasources/upload";
 import DataSourceChart from "./datasources/chart";
 import Settings from "./settings";
+import DukascopyJobs from "./settings/dukascopy-jobs";
 
 export const routes = [
   {
@@ -29,6 +30,7 @@ export const routes = [
       { path: "data-sources/:dataSourceId/upload", element: <UploadDataFile /> },
       { path: "data-sources/:dataSourceId/chart", element: <DataSourceChart /> },
       { path: "settings", element: <Settings /> },
+      { path: "settings/dukascopy-jobs", element: <DukascopyJobs /> },
     ],
   },
 ];

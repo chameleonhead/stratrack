@@ -36,6 +36,7 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisterCommand),
                 typeof(DataChunkDeleteCommand),
                 typeof(DukascopyJobCreateCommand),
+                typeof(DukascopyJobUpdateCommand),
                 typeof(DukascopyJobStartCommand),
                 typeof(DukascopyJobStopCommand),
                 typeof(DukascopyJobDeleteCommand)
@@ -49,6 +50,7 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisterCommandHandler),
                 typeof(DataChunkDeleteCommandHandler),
                 typeof(DukascopyJobCreateCommandHandler),
+                typeof(DukascopyJobUpdateCommandHandler),
                 typeof(DukascopyJobStartCommandHandler),
                 typeof(DukascopyJobStopCommandHandler),
                 typeof(DukascopyJobDeleteCommandHandler)
@@ -63,6 +65,7 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkRegisteredEvent),
                 typeof(DataChunkDeletedEvent),
                 typeof(DukascopyJobCreatedEvent),
+                typeof(DukascopyJobUpdatedEvent),
                 typeof(DukascopyJobStartedEvent),
                 typeof(DukascopyJobStoppedEvent),
                 typeof(DukascopyJobDeletedEvent)

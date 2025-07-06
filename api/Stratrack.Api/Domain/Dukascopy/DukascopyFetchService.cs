@@ -26,19 +26,18 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
-    public async Task FetchAsync(string symbol, DateTimeOffset startTime, CancellationToken token)
+    public async Task FetchAsync(Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
     {
         try
         {
-            var sources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
-            foreach (var ds in sources.Where(d =>
-                d.Timeframe == "tick" &&
-                d.Symbol == symbol &&
-                (d.Fields?.Split(',').Contains("bid") ?? false) &&
-                (d.Fields?.Split(',').Contains("ask") ?? false)))
+            var ds = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(dataSourceId)), token).ConfigureAwait(false);
+            if (ds == null)
             {
-                await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
+                _logger.LogWarning("Data source {DataSourceId} not found", dataSourceId);
+                return;
             }
+
+            await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
