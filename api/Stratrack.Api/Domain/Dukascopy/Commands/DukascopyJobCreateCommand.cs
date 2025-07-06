@@ -4,7 +4,6 @@ namespace Stratrack.Api.Domain.Dukascopy.Commands;
 
 public class DukascopyJobCreateCommand(DukascopyJobId aggregateId) : Command<DukascopyJobAggregate, DukascopyJobId>(aggregateId)
 {
-    public Guid DataSourceId { get; set; }
     public string Symbol { get; set; } = "";
     public DateTimeOffset StartTime { get; set; }
 }

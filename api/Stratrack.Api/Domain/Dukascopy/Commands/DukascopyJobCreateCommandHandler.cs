@@ -6,7 +6,7 @@ public class DukascopyJobCreateCommandHandler : CommandHandler<DukascopyJobAggre
 {
     public override Task ExecuteAsync(DukascopyJobAggregate aggregate, DukascopyJobCreateCommand command, CancellationToken cancellationToken)
     {
-        aggregate.Create(command.DataSourceId, command.Symbol, command.StartTime);
+        aggregate.Create(command.Symbol, command.StartTime);
         return Task.CompletedTask;
     }
 }

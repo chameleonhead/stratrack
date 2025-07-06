@@ -46,6 +46,9 @@ public class DukascopyJobFunctionsTests
         {
             var ds = await ctx.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId);
             Assert.IsNotNull(ds);
+            var job = await ctx.DukascopyJobs.FirstOrDefaultAsync(j => j.JobId == id);
+            Assert.IsNotNull(job);
+            Assert.AreEqual(dsId, job.DataSourceId);
         }
 
         var startReq = new HttpRequestDataBuilder()
