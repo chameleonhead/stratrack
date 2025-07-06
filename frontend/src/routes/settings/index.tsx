@@ -1,34 +1,6 @@
-import { FormEvent, useState } from "react";
-import Input from "../../components/Input";
-import { createDukascopyJob } from "../../api/dukascopyJobs";
+import { Link } from "react-router-dom";
 
 const Settings = () => {
-  const [symbol, setSymbol] = useState("");
-  const [start, setStart] = useState(new Date().toISOString().slice(0, 16));
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    if (!form.reportValidity()) {
-      return;
-    }
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await createDukascopyJob({
-        symbol,
-        startTime: new Date(start).toISOString(),
-      });
-      setSymbol("");
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="p-6 space-y-6">
       <header className="flex justify-between items-center">
@@ -36,27 +8,18 @@ const Settings = () => {
       </header>
 
       <section>
-        <h3 className="text-lg font-semibold mb-2">Dukascopy抽出ジョブ</h3>
-        <div className="rounded-xl border p-4 shadow max-w-md">
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {error && <p className="text-error">{error}</p>}
-            <Input label="通貨ペア" value={symbol} onChange={setSymbol} required fullWidth />
-            <Input
-              label="開始時刻"
-              type="datetime-local"
-              value={start}
-              onChange={setStart}
-              required
-              fullWidth
-            />
-            <button
-              type="submit"
-              className="mt-2 bg-primary text-primary-content py-1 px-4 rounded"
-              disabled={isSubmitting}
+        <h3 className="text-lg font-semibold mb-2">管理メニュー</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="rounded-xl border p-4 shadow">
+            <h4 className="font-bold">Dukascopyジョブ管理</h4>
+            <p className="text-sm text-gray-600">通貨ペアごとの抽出ジョブを管理します</p>
+            <Link
+              to="/settings/dukascopy-jobs"
+              className="mt-2 bg-primary text-primary-content py-1 px-3 rounded"
             >
-              作成
-            </button>
-          </form>
+              開く
+            </Link>
+          </div>
         </div>
       </section>
     </div>
