@@ -36,7 +36,7 @@ public class DataChunkFunctions(
     [OpenApiOperation(operationId: "upload_data_chunk", tags: ["DataChunks"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
-    [OpenApiRequestBody("application/json", typeof(TickChunkUploadRequest))]
+    [OpenApiRequestBody("application/json", typeof(CsvChunkUploadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Created, Description = "Created")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
@@ -45,7 +45,7 @@ public class DataChunkFunctions(
         string dataSourceId,
         CancellationToken token)
     {
-        var body = await req.ReadFromJsonAsync<TickChunkUploadRequest>(cancellationToken: token).ConfigureAwait(false);
+        var body = await req.ReadFromJsonAsync<CsvChunkUploadRequest>(cancellationToken: token).ConfigureAwait(false);
         if (body == null)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
@@ -102,7 +102,7 @@ public class DataChunkFunctions(
     [OpenApiOperation(operationId: "upload_data_file", tags: ["DataChunks"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
-    [OpenApiRequestBody("application/json", typeof(TickFileUploadRequest))]
+    [OpenApiRequestBody("application/json", typeof(CsvFileUploadRequest))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Created, Description = "Created")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
@@ -111,7 +111,7 @@ public class DataChunkFunctions(
         string dataSourceId,
         CancellationToken token)
     {
-        var body = await req.ReadFromJsonAsync<TickFileUploadRequest>(cancellationToken: token).ConfigureAwait(false);
+        var body = await req.ReadFromJsonAsync<CsvFileUploadRequest>(cancellationToken: token).ConfigureAwait(false);
         if (body == null)
         {
             return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
