@@ -66,13 +66,13 @@ public class CsvChunkService(
                     {
                         time = DateTimeOffset.Parse(p[indices["time"]]);
                     }
+                    else if (p.Length >= 2 && DateTimeOffset.TryParse($"{p[0]} {p[1]}", out time))
+                    {
+                        offset = 2;
+                    }
                     else if (!DateTimeOffset.TryParse(p[0], out time))
                     {
-                        if (p.Length < 2 || !DateTimeOffset.TryParse($"{p[0]} {p[1]}", out time))
-                        {
-                            throw new FormatException("Invalid time format");
-                        }
-                        offset = 2;
+                        throw new FormatException("Invalid time format");
                     }
                     var values = hasHeader
                         ? required.Skip(1).Select(f => p[indices[f]])

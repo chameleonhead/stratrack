@@ -31,7 +31,10 @@ public class DataChunkFunctionsTests
         return provider;
     }
 
-    private static async Task<string> CreateDataSourceAsync(DataSourceFunctions function, List<string>? fields = null)
+    private static async Task<string> CreateDataSourceAsync(
+        DataSourceFunctions function,
+        DataFormat format = DataFormat.Tick,
+        VolumeType volume = VolumeType.None)
     {
         var req = new HttpRequestDataBuilder()
             .WithUrl("http://localhost/api/data-sources")
@@ -41,8 +44,8 @@ public class DataChunkFunctionsTests
                 Name = "ds",
                 Symbol = "EURUSD",
                 Timeframe = "tick",
-                Format = DataFormat.Tick,
-                Volume = VolumeType.None
+                Format = format,
+                Volume = volume
             }))
             .Build();
         var res = await function.PostDataSource(req, CancellationToken.None);
@@ -292,5 +295,36 @@ public class DataChunkFunctionsTests
         var blob = await storage.GetAsync(chunk.BlobId, CancellationToken.None);
         var text = Encoding.UTF8.GetString(blob);
         Assert.IsTrue(text.StartsWith("time,bid,ask"));
+    }
+
+    [TestMethod]
+    public async Task PostDataFile_OhlcSplitTime_Standardized()
+    {
+        using var provider = CreateProvider();
+        var dsFunc = provider.GetRequiredService<DataSourceFunctions>();
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
+        var dsId = await CreateDataSourceAsync(dsFunc, DataFormat.Ohlc, VolumeType.TickCount);
+
+        var csv = "2025.02.14,12:48,96.639,96.641,96.629,96.640,139\n";
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(csv));
+        var req = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/file")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new TickFileUploadRequest
+            {
+                FileName = "ticks.csv",
+                Base64Data = data
+            }))
+            .Build();
+
+        var res = await chunkFunc.PostDataFile(req, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Created, res.StatusCode);
+
+        using var context = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
+        var chunk = await context.DataChunks.FirstAsync(c => c.DataSourceId == Guid.Parse(dsId));
+        var storage = provider.GetRequiredService<IBlobStorage>();
+        var blob = await storage.GetAsync(chunk.BlobId, CancellationToken.None);
+        var text = Encoding.UTF8.GetString(blob);
+        Assert.IsTrue(text.StartsWith("time,open,high,low,close,volume"));
     }
 }
