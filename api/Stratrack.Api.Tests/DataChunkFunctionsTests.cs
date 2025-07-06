@@ -220,7 +220,7 @@ public class DataChunkFunctionsTests
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ohlc.csv",
+                FileName = "ticks.csv",
                 Base64Data = data
             }))
             .Build();
@@ -250,7 +250,7 @@ public class DataChunkFunctionsTests
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ohlc.csv",
+                FileName = "ticks.csv",
                 Base64Data = data
             }))
             .Build();
@@ -281,7 +281,7 @@ public class DataChunkFunctionsTests
             .WithMethod(HttpMethod.Post)
             .WithBody(JsonSerializer.Serialize(new CsvFileUploadRequest
             {
-                FileName = "ohlc.csv",
+                FileName = "ticks.csv",
                 Base64Data = data
             }))
             .Build();
