@@ -1,0 +1,54 @@
+function toPlain<T>(value: T): T {
+  try {
+    return structuredClone(value);
+  } catch {
+    return JSON.parse(JSON.stringify(value));
+  }
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_KEY = import.meta.env.VITE_API_KEY ?? "";
+
+export type CreateDukascopyJobRequest = {
+  symbol: string;
+  startTime: string;
+};
+
+type CreateDukascopyJobResponse = { id: string; dataSourceId: string };
+
+export async function createDukascopyJob(
+  data: CreateDukascopyJobRequest
+): Promise<CreateDukascopyJobResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-functions-key": API_KEY,
+    },
+    body: JSON.stringify(toPlain(data)),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to create dukascopy job: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function startDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/start`, {
+    method: "POST",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to start dukascopy job: ${res.status}`);
+  }
+}
+
+export async function stopDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/stop`, {
+    method: "POST",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to stop dukascopy job: ${res.status}`);
+  }
+}

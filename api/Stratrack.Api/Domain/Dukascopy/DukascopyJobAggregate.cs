@@ -9,6 +9,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>
 {
+    public Guid DataSourceId { get; private set; }
     public string Symbol { get; private set; } = "";
     public DateTimeOffset StartTime { get; private set; }
     public bool IsDeleted { get; private set; }
@@ -16,7 +17,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void Create(string symbol, DateTimeOffset startTime)
     {
-        if (IsDeleted == false && Symbol == symbol && StartTime == startTime)
+        if (IsDeleted == false && Symbol == symbol && StartTime == startTime && DataSourceId == Guid.Empty)
         {
             return;
         }
@@ -24,9 +25,24 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         Emit(new DukascopyJobCreatedEvent(symbol, startTime));
     }
 
+    public void Update(Guid dataSourceId, DateTimeOffset startTime)
+    {
+        if (IsDeleted || IsRunning)
+        {
+            return;
+        }
+
+        if (DataSourceId == dataSourceId && StartTime == startTime)
+        {
+            return;
+        }
+
+        Emit(new DukascopyJobUpdatedEvent(dataSourceId, startTime));
+    }
+
     public void Start()
     {
-        if (!IsDeleted && !IsRunning)
+        if (!IsDeleted && !IsRunning && DataSourceId != Guid.Empty)
         {
             Emit(new DukascopyJobStartedEvent());
         }
@@ -52,8 +68,15 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     {
         Symbol = aggregateEvent.Symbol;
         StartTime = aggregateEvent.StartTime;
+        DataSourceId = Guid.Empty;
         IsDeleted = false;
         IsRunning = false;
+    }
+
+    public void Apply(DukascopyJobUpdatedEvent aggregateEvent)
+    {
+        DataSourceId = aggregateEvent.DataSourceId;
+        StartTime = aggregateEvent.StartTime;
     }
 
     public void Apply(DukascopyJobStartedEvent aggregateEvent)

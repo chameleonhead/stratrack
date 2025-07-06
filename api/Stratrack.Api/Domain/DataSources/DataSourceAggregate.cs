@@ -11,6 +11,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     IEmit<DataChunkDeletedEvent>
 {
     private bool isDeleted = false;
+    private bool isLocked = false;
     public string DataSourceName { get; private set; } = "";
     public string? Description { get; private set; }
     public string Symbol { get; private set; } = "";
@@ -18,6 +19,7 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
     public List<string> Fields { get; private set; } = [];
     public DataFormat Format { get; private set; } = DataFormat.Tick;
     public VolumeType Volume { get; private set; } = VolumeType.None;
+    public bool IsLocked => isLocked;
 
     public void Create(string name, string symbol, string timeframe, DataFormat format, VolumeType volume, IEnumerable<string> fields, string? description)
     {
@@ -59,6 +61,22 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
         Emit(new DataSourceDeletedEvent(Id));
     }
 
+    public void Lock()
+    {
+        if (!isLocked)
+        {
+            Emit(new DataSourceLockedEvent());
+        }
+    }
+
+    public void Unlock()
+    {
+        if (isLocked)
+        {
+            Emit(new DataSourceUnlockedEvent());
+        }
+    }
+
     public void Apply(DataSourceCreatedEvent aggregateEvent)
     {
         DataSourceName = aggregateEvent.Name;
@@ -83,6 +101,10 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
 
     public void RegisterDataChunk(Guid chunkId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime)
     {
+        if (isDeleted || isLocked)
+        {
+            return;
+        }
         Emit(new DataChunkRegisteredEvent(chunkId, blobId, startTime, endTime));
     }
 
@@ -97,5 +119,15 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
 
     public void Apply(DataChunkDeletedEvent aggregateEvent)
     {
+    }
+
+    public void Apply(DataSourceLockedEvent aggregateEvent)
+    {
+        isLocked = true;
+    }
+
+    public void Apply(DataSourceUnlockedEvent aggregateEvent)
+    {
+        isLocked = false;
     }
 }
