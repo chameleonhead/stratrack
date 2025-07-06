@@ -14,7 +14,7 @@ export type CreateDukascopyJobRequest = {
   startTime: string;
 };
 
-type CreateDukascopyJobResponse = { id: string };
+type CreateDukascopyJobResponse = { id: string; dataSourceId: string };
 
 export async function createDukascopyJob(
   data: CreateDukascopyJobRequest

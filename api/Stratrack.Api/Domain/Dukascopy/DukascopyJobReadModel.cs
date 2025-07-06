@@ -12,6 +12,7 @@ public class DukascopyJobReadModel : IReadModel,
 {
     public string Id { get; set; } = "";
     public Guid JobId { get; set; }
+    public Guid DataSourceId { get; set; }
     public string Symbol { get; set; } = "";
     public DateTimeOffset StartTime { get; set; }
     public bool IsDeleted { get; set; }
@@ -22,6 +23,7 @@ public class DukascopyJobReadModel : IReadModel,
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
+        DataSourceId = domainEvent.AggregateEvent.DataSourceId;
         Symbol = domainEvent.AggregateEvent.Symbol;
         StartTime = domainEvent.AggregateEvent.StartTime;
         IsDeleted = false;

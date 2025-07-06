@@ -9,19 +9,20 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>
 {
+    public Guid DataSourceId { get; private set; }
     public string Symbol { get; private set; } = "";
     public DateTimeOffset StartTime { get; private set; }
     public bool IsDeleted { get; private set; }
     public bool IsRunning { get; private set; }
 
-    public void Create(string symbol, DateTimeOffset startTime)
+    public void Create(Guid dataSourceId, string symbol, DateTimeOffset startTime)
     {
-        if (IsDeleted == false && Symbol == symbol && StartTime == startTime)
+        if (IsDeleted == false && DataSourceId == dataSourceId && Symbol == symbol && StartTime == startTime)
         {
             return;
         }
 
-        Emit(new DukascopyJobCreatedEvent(symbol, startTime));
+        Emit(new DukascopyJobCreatedEvent(dataSourceId, symbol, startTime));
     }
 
     public void Start()
@@ -50,6 +51,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void Apply(DukascopyJobCreatedEvent aggregateEvent)
     {
+        DataSourceId = aggregateEvent.DataSourceId;
         Symbol = aggregateEvent.Symbol;
         StartTime = aggregateEvent.StartTime;
         IsDeleted = false;

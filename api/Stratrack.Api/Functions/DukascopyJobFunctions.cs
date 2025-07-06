@@ -8,6 +8,8 @@ using System.Linq;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
+using Stratrack.Api.Domain.DataSources;
+using Stratrack.Api.Domain.DataSources.Commands;
 using EventFlow;
 using EventFlow.Queries;
 
@@ -28,13 +30,26 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     {
         var body = await req.ReadFromJsonAsync<CreateJobRequest>(cancellationToken: token).ConfigureAwait(false);
         var jobId = DukascopyJobId.New;
+        var dataSourceId = DataSourceId.New;
+        await _commandBus.PublishAsync(new DataSourceCreateCommand(dataSourceId)
+        {
+            Name = $"Dukascopy {body?.Symbol}",
+            Symbol = body?.Symbol ?? string.Empty,
+            Timeframe = "tick",
+            Format = DataFormat.Tick,
+            Volume = VolumeType.None,
+            Fields = new List<string> { "bid", "ask" },
+            Description = "Dukascopy auto generated"
+        }, token).ConfigureAwait(false);
+
         await _commandBus.PublishAsync(new DukascopyJobCreateCommand(jobId)
         {
+            DataSourceId = dataSourceId.GetGuid(),
             Symbol = body?.Symbol ?? string.Empty,
             StartTime = body?.StartTime ?? DateTimeOffset.UtcNow
         }, token).ConfigureAwait(false);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
-        await res.WriteAsJsonAsync(new { id = jobId.GetGuid() }, cancellationToken: token).ConfigureAwait(false);
+        await res.WriteAsJsonAsync(new { id = jobId.GetGuid(), dataSourceId = dataSourceId.GetGuid() }, cancellationToken: token).ConfigureAwait(false);
         return res;
     }
 

@@ -4,6 +4,7 @@ using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
 using EventFlow.EntityFramework;
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using WorkerHttpFake;
 using System.Threading;
 
@@ -39,6 +40,13 @@ public class DukascopyJobFunctionsTests
         Assert.AreEqual(HttpStatusCode.Accepted, createRes.StatusCode);
         var result = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
         var id = Guid.Parse(result["id"].ToString()!);
+        var dsId = Guid.Parse(result["dataSourceId"].ToString()!);
+
+        using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var ds = await ctx.DataSources.FirstOrDefaultAsync(d => d.DataSourceId == dsId);
+            Assert.IsNotNull(ds);
+        }
 
         var startReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/start")
