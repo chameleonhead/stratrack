@@ -83,6 +83,13 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Started")]
     public async Task<HttpResponseData> StartJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/start")] HttpRequestData req, Guid id, CancellationToken token)
     {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        if (job == null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+        await _commandBus.PublishAsync(new DataSourceLockCommand(DataSourceId.With(job.DataSourceId)), token).ConfigureAwait(false);
         await _commandBus.PublishAsync(new DukascopyJobStartCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
         return res;
@@ -94,6 +101,12 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Stopped")]
     public async Task<HttpResponseData> StopJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/stop")] HttpRequestData req, Guid id, CancellationToken token)
     {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        if (job != null)
+        {
+            await _commandBus.PublishAsync(new DataSourceUnlockCommand(DataSourceId.With(job.DataSourceId)), token).ConfigureAwait(false);
+        }
         await _commandBus.PublishAsync(new DukascopyJobStopCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
         return res;

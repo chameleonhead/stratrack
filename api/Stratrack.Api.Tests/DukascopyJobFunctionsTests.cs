@@ -58,6 +58,11 @@ public class DukascopyJobFunctionsTests
             .Build();
         var startRes = await func.StartJob(startReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
+        using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var ds = await ctx.DataSources.FirstAsync(d => d.DataSourceId == dsId);
+            Assert.IsTrue(ds.IsLocked);
+        }
 
         var stopReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/stop")
@@ -65,6 +70,11 @@ public class DukascopyJobFunctionsTests
             .Build();
         var stopRes = await func.StopJob(stopReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
+        using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
+        {
+            var ds = await ctx.DataSources.FirstAsync(d => d.DataSourceId == dsId);
+            Assert.IsFalse(ds.IsLocked);
+        }
 
         var deleteReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}")

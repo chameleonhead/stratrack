@@ -10,7 +10,9 @@ namespace Stratrack.Api.Domain.DataSources;
 public class DataSourceReadModel : IReadModel,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUpdatedEvent>,
-    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceLockedEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUnlockedEvent>
 {
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
@@ -21,6 +23,7 @@ public class DataSourceReadModel : IReadModel,
     public DataFormat Format { get; set; } = DataFormat.Tick;
     public VolumeType Volume { get; set; } = VolumeType.None;
     public string? Description { get; set; }
+    public bool IsLocked { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -36,6 +39,7 @@ public class DataSourceReadModel : IReadModel,
         Format = dataSourceCreatedEvent.Format;
         Volume = dataSourceCreatedEvent.Volume;
         Description = dataSourceCreatedEvent.Description;
+        IsLocked = false;
         CreatedAt = domainEvent.Timestamp;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
@@ -55,6 +59,24 @@ public class DataSourceReadModel : IReadModel,
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent> domainEvent, CancellationToken cancellationToken)
     {
         context.MarkForDeletion();
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceLockedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        Id = context.ReadModelId;
+        DataSourceId = domainEvent.AggregateIdentity.GetGuid();
+        IsLocked = true;
+        UpdatedAt = domainEvent.Timestamp;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceUnlockedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        Id = context.ReadModelId;
+        DataSourceId = domainEvent.AggregateIdentity.GetGuid();
+        IsLocked = false;
+        UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
 
