@@ -32,7 +32,14 @@ public class StratrackDbContextProvider : IDbContextProvider<StratrackDbContext>
     public StratrackDbContext CreateContext()
     {
         var context = new StratrackDbContext(_options);
-        context.Database.EnsureCreated();
+        if (context.Database.IsSqlServer())
+        {
+            context.Database.Migrate();
+        }
+        else
+        {
+            context.Database.EnsureCreated();
+        }
         return context;
     }
 
