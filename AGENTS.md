@@ -39,3 +39,11 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - Domain フォルダでは Aggregate クラスをモジュール直下に置き、`Commands` `Events` `Queries` の各サブフォルダを設ける構成を標準とします。例として `Domain/Dukascopy/DukascopyJobAggregate.cs` とその周辺に `Commands` `Events` `Queries` フォルダを配置します。
 - Entity Framework の `DbContext` を直接扱わず、読み取りは `IQueryProcessor` を介したクエリハンドラー経由で行ってください。
 - CommandHandler 内で ReadModel やデータベースを参照する処理は避け、Aggregate の状態のみを利用して判断してください。
+
+## データベースマイグレーション
+
+- API プロジェクトのマイグレーションは `api/Stratrack.Api/Domain/Migrations` フォルダに保存します。
+- モデル変更時は次のコマンドでマイグレーションを作成してください。
+  - `dotnet ef migrations add <MigrationName> --project api/Stratrack.Api --startup-project api/Stratrack.Api`
+- 生成したマイグレーションはリポジトリにコミットして共有します。
+- SQL Server を利用する環境では `StratrackDbContextProvider` が起動時に `Database.Migrate()` を自動実行します。インメモリ DB 使用時は `EnsureCreated()` となるためマイグレーションは適用されません。
