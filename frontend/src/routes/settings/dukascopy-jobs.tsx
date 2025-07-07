@@ -18,7 +18,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
   PAIRS.map((p) => [
     p,
     {
-      start: toDateTimeLocalString(new Date()),
+      start: "",
       running: false,
       dataSourceId: undefined,
     },
@@ -65,6 +65,11 @@ const DukascopyJobs = () => {
     const job = jobs[pair];
     setIsSubmitting(true);
     setError(null);
+    if (!job.start) {
+      setError("開始日時を指定してください");
+      setIsSubmitting(false);
+      return;
+    }
     try {
       if (job.running) {
         if (job.jobId) {

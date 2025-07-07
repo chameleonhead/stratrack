@@ -14,6 +14,7 @@ export type InputProps = {
   required?: boolean;
   error?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
 };
 
 function Input({
@@ -28,6 +29,7 @@ function Input({
   required = false,
   error,
   fullWidth = false,
+  disabled = false,
 }: InputProps) {
   const uniqueId = useMemo(() => id || `input-${Math.random().toString(36).slice(2, 9)}`, [id]);
 
@@ -56,6 +58,7 @@ function Input({
         onChange={handleChange}
         required={required}
         className={cn(fullWidth ? "w-full" : null, "input", error ? "input-error" : "")}
+        disabled={disabled}
       />
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
