@@ -27,6 +27,47 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
+    public async Task FetchHourAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset time, CancellationToken token)
+    {
+        var success = false;
+        try
+        {
+            var ds = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(dataSourceId)), token).ConfigureAwait(false);
+            if (ds == null)
+            {
+                _logger.LogWarning("Data source {DataSourceId} not found", dataSourceId);
+                return;
+            }
+
+            var data = await _client.GetTickDataAsync(symbol, time, token).ConfigureAwait(false);
+            if (data != null && data.Length > 0)
+            {
+                var blobId = await _blobStorage.SaveAsync($"{symbol}_{time:yyyyMMddHH}.csv", "text/csv", data, token).ConfigureAwait(false);
+                await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(ds.DataSourceId))
+                {
+                    DataChunkId = Guid.NewGuid(),
+                    BlobId = blobId,
+                    StartTime = time,
+                    EndTime = time.AddHours(1)
+                }, token).ConfigureAwait(false);
+            }
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch dukascopy chunk");
+        }
+        finally
+        {
+            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
+            {
+                ExecutedAt = DateTimeOffset.UtcNow,
+                IsSuccess = success
+            }, token).ConfigureAwait(false);
+        }
+    }
+
     public async Task FetchAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
     {
         var success = false;

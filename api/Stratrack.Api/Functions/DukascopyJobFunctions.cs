@@ -4,6 +4,8 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.DurableTask;
+using Microsoft.DurableTask.Client;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
@@ -12,12 +14,17 @@ using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
+using Stratrack.Api.Domain.DataSources.Queries;
 using EventFlow;
 using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, DukascopyFetchService fetchService, ILogger<DukascopyJobFunctions> logger)
+public class DukascopyJobFunctions(
+    ICommandBus commandBus,
+    IQueryProcessor queryProcessor,
+    DukascopyFetchService fetchService,
+    ILogger<DukascopyJobFunctions> logger)
 {
     private readonly ICommandBus _commandBus = commandBus;
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
@@ -161,17 +168,84 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
         return res;
     }
 
+    public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime);
+    public record DukascopyJobHourInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset Time);
+
+    [Function("DukascopyJobOrchestrator")]
+    public async Task RunOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var jobs = context.GetInput<IReadOnlyList<DukascopyJobInput>>();
+        if (jobs == null || jobs.Count == 0)
+        {
+            return;
+        }
+
+        var tasks = new List<Task>();
+        foreach (var job in jobs)
+        {
+            tasks.Add(context.CallSubOrchestratorAsync(nameof(DukascopyJobDayOrchestrator), job));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    [Function("DukascopyJobDayOrchestrator")]
+    public async Task DukascopyJobDayOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var job = context.GetInput<DukascopyJobInput>();
+        if (job == null)
+        {
+            return;
+        }
+
+        var start = await context.CallActivityAsync<DateTimeOffset?>(nameof(DukascopyGetNextTimeActivity), job);
+        if (start == null)
+        {
+            return;
+        }
+
+        var current = start.Value;
+        var maxTime = context.CurrentUtcDateTime.AddHours(-1);
+        var dayEnd = current.Date.AddDays(1);
+        while (current < dayEnd && current <= maxTime)
+        {
+            await context.CallActivityAsync(nameof(DukascopyJobHourActivity), new DukascopyJobHourInput(job.JobId, job.DataSourceId, job.Symbol, current));
+            current = current.AddHours(1);
+        }
+    }
+
+    [Function("DukascopyGetNextTimeActivity")]
+    public async Task<DateTimeOffset?> DukascopyGetNextTimeActivity([ActivityTrigger] DukascopyJobInput input, FunctionContext context)
+    {
+        var token = context.CancellationToken;
+        var range = await _queryProcessor.ProcessAsync(new DataChunkRangeQuery(input.DataSourceId), token).ConfigureAwait(false);
+        return range?.EndTime ?? input.StartTime;
+    }
+
+    [Function("DukascopyJobHourActivity")]
+    public async Task DukascopyJobHourActivity([ActivityTrigger] DukascopyJobHourInput input, FunctionContext context)
+    {
+        var token = context.CancellationToken;
+        _logger.LogInformation("Fetching {Symbol} {Time}", input.Symbol, input.Time);
+        await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, input.Time, token).ConfigureAwait(false);
+    }
+
     [Function("DukascopyJobTimer")]
-    public async Task RunJob([TimerTrigger("0 0 */12 * * *")] string timerInfo, CancellationToken token)
+    public async Task RunTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
     {
         _logger.LogInformation("DukascopyJobTimer triggered at {Time}", DateTimeOffset.UtcNow);
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        foreach (var job in jobs.Where(j => !j.IsDeleted && j.IsRunning))
+        var targets = jobs
+            .Where(j => !j.IsDeleted && j.IsRunning)
+            .Select(j => new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime))
+            .ToList();
+        if (targets.Count == 0)
         {
-            _logger.LogInformation("Running job {JobId}", job.JobId);
-            await _fetchService.FetchAsync(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, token).ConfigureAwait(false);
+            _logger.LogInformation("No running jobs found");
+            return;
         }
-        _logger.LogInformation("DukascopyJobTimer finished at {Time}", DateTimeOffset.UtcNow);
+
+        await client.ScheduleNewOrchestrationInstanceAsync("DukascopyJobOrchestrator", targets, token);
     }
 }
 
