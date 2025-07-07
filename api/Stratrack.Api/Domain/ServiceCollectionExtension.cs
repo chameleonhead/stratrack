@@ -92,6 +92,7 @@ public static class ServiceCollectionExtension
             ef.UseEntityFrameworkReadModel<DukascopyJobReadModel, StratrackDbContext>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DataChunkReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DataChunkRangeQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.RegisterServices(s =>
             {
