@@ -10,8 +10,8 @@ const NewDataSource = () => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState<DataSourceFormValue>({
     timeframe: "1m",
-    format: "tick",
-    volume: "none",
+    format: "ohlc",
+    volume: "tickCount",
   });
   const formRef = useRef<DataSourceFormHandle>(null);
   const [error, setError] = useState<string | null>(null);
