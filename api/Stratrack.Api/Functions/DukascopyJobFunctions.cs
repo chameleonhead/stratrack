@@ -17,11 +17,10 @@ using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, DukascopyFetchService fetchService, ILogger<DukascopyJobFunctions> logger)
+public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, ILogger<DukascopyJobFunctions> logger)
 {
     private readonly ICommandBus _commandBus = commandBus;
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
-    private readonly DukascopyFetchService _fetchService = fetchService;
     private readonly ILogger<DukascopyJobFunctions> _logger = logger;
     private record CreateJobRequest(string Symbol, DateTimeOffset StartTime);
 
@@ -161,17 +160,5 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
         return res;
     }
 
-    [Function("DukascopyJobTimer")]
-    public async Task RunJob([TimerTrigger("0 0 */12 * * *")] string timerInfo, CancellationToken token)
-    {
-        _logger.LogInformation("DukascopyJobTimer triggered at {Time}", DateTimeOffset.UtcNow);
-        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        foreach (var job in jobs.Where(j => !j.IsDeleted && j.IsRunning))
-        {
-            _logger.LogInformation("Running job {JobId}", job.JobId);
-            await _fetchService.FetchAsync(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, token).ConfigureAwait(false);
-        }
-        _logger.LogInformation("DukascopyJobTimer finished at {Time}", DateTimeOffset.UtcNow);
-    }
 }
 
