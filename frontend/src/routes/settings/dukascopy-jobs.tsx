@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Input from "../../components/Input";
+import DukascopyJobCard, { JobState } from "./DukascopyJobCard";
 import {
   createDukascopyJob,
   startDukascopyJob,
@@ -11,8 +11,6 @@ import {
 } from "../../api/dukascopyJobs";
 
 const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
-
-type JobState = { start: string; running: boolean; jobId?: string };
 
 const initialState: Record<string, JobState> = Object.fromEntries(
   PAIRS.map((p) => [p, { start: new Date().toISOString().slice(0, 16), running: false }])
@@ -88,49 +86,19 @@ const DukascopyJobs = () => {
         <h2 className="text-2xl font-bold">Dukascopyジョブ管理</h2>
       </header>
       {error && <p className="text-error">{error}</p>}
-      <table className="table w-full">
-        <thead>
-          <tr>
-            <th>通貨ペア</th>
-            <th>開始日時</th>
-            <th>操作</th>
-            <th>ログ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {PAIRS.map((pair) => {
-            const job = jobs[pair];
-            return (
-              <tr key={pair} className="hover">
-                <td>{pair}</td>
-                <td>
-                  <Input
-                    type="datetime-local"
-                    value={job.start}
-                    onChange={(v) => handleDateChange(pair, v)}
-                  />
-                </td>
-                <td>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => handleToggle(pair)}
-                    disabled={isSubmitting}
-                  >
-                    {job.running ? "停止" : "開始"}
-                  </button>
-                </td>
-                <td className="text-sm">
-                  <ul>
-                    {logs[pair]?.map((l) => (
-                      <li key={l.executedAt}>{new Date(l.executedAt).toLocaleString()}</li>
-                    ))}
-                  </ul>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {PAIRS.map((pair) => (
+          <DukascopyJobCard
+            key={pair}
+            pair={pair}
+            job={jobs[pair]}
+            logs={logs[pair] ?? []}
+            disabled={isSubmitting}
+            onDateChange={handleDateChange}
+            onToggle={handleToggle}
+          />
+        ))}
+      </div>
     </div>
   );
 };
