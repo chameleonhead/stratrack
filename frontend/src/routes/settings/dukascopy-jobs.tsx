@@ -5,7 +5,9 @@ import {
   startDukascopyJob,
   stopDukascopyJob,
   listDukascopyJobs,
+  listDukascopyJobLogs,
   DukascopyJobSummary,
+  DukascopyJobLog,
 } from "../../api/dukascopyJobs";
 
 const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
@@ -18,6 +20,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
 
 const DukascopyJobs = () => {
   const [jobs, setJobs] = useState<Record<string, JobState>>(initialState);
+  const [logs, setLogs] = useState<Record<string, DukascopyJobLog[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,16 +28,23 @@ const DukascopyJobs = () => {
     listDukascopyJobs()
       .then((items) => {
         const state = { ...initialState };
-        items.forEach((j: DukascopyJobSummary) => {
-          if (PAIRS.includes(j.symbol)) {
-            state[j.symbol] = {
-              start: j.startTime.slice(0, 16),
-              running: j.isRunning,
-              jobId: j.id,
-            };
-          }
+        const logState: Record<string, DukascopyJobLog[]> = {};
+        return Promise.all(
+          items.map(async (j: DukascopyJobSummary) => {
+            if (PAIRS.includes(j.symbol)) {
+              state[j.symbol] = {
+                start: j.startTime.slice(0, 16),
+                running: j.isRunning,
+                jobId: j.id,
+              };
+              const logs = await listDukascopyJobLogs(j.id).catch(() => []);
+              logState[j.symbol] = logs;
+            }
+          })
+        ).then(() => {
+          setJobs(state);
+          setLogs(logState);
         });
-        setJobs(state);
       })
       .catch((err) => setError((err as Error).message));
   }, []);
@@ -84,6 +94,7 @@ const DukascopyJobs = () => {
             <th>通貨ペア</th>
             <th>開始日時</th>
             <th>操作</th>
+            <th>ログ</th>
           </tr>
         </thead>
         <tbody>
@@ -107,6 +118,13 @@ const DukascopyJobs = () => {
                   >
                     {job.running ? "停止" : "開始"}
                   </button>
+                </td>
+                <td className="text-sm">
+                  <ul>
+                    {logs[pair]?.map((l) => (
+                      <li key={l.executedAt}>{new Date(l.executedAt).toLocaleString()}</li>
+                    ))}
+                  </ul>
                 </td>
               </tr>
             );

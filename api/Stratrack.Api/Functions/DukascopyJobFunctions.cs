@@ -146,13 +146,26 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
         return res;
     }
 
+    [Function("GetDukascopyJobLogs")]
+    [OpenApiOperation(operationId: "get_dukascopy_job_logs", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<Models.DukascopyJobLog>))]
+    public async Task<HttpResponseData> GetJobLogs([HttpTrigger(AuthorizationLevel.Function, "get", Route = "dukascopy-job/{id:guid}/logs")] HttpRequestData req, Guid id, CancellationToken token)
+    {
+        var logs = await _queryProcessor.ProcessAsync(new DukascopyJobExecutionReadModelSearchQuery(id, DateTimeOffset.UtcNow.AddDays(-7)), token).ConfigureAwait(false);
+        var items = logs.Select(l => new Models.DukascopyJobLog { ExecutedAt = l.ExecutedAt }).ToList();
+        var res = req.CreateResponse(HttpStatusCode.OK);
+        await res.WriteAsJsonAsync(items, cancellationToken: token).ConfigureAwait(false);
+        return res;
+    }
+
     [Function("DukascopyJobTimer")]
     public async Task RunJob([TimerTrigger("0 0 */12 * * *")] string timerInfo, CancellationToken token)
     {
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
         foreach (var job in jobs.Where(j => !j.IsDeleted && j.IsRunning))
         {
-            await _fetchService.FetchAsync(job.DataSourceId, job.Symbol, job.StartTime, token).ConfigureAwait(false);
+            await _fetchService.FetchAsync(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, token).ConfigureAwait(false);
         }
     }
 }

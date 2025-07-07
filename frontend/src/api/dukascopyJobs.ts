@@ -71,3 +71,15 @@ export async function listDukascopyJobs(): Promise<DukascopyJobSummary[]> {
   }
   return res.json();
 }
+
+export type DukascopyJobLog = { executedAt: string };
+
+export async function listDukascopyJobLogs(id: string): Promise<DukascopyJobLog[]> {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/logs`, {
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch dukascopy job logs: ${res.status}`);
+  }
+  return res.json();
+}

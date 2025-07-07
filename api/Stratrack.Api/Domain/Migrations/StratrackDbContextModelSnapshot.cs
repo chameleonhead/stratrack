@@ -219,7 +219,23 @@ namespace Stratrack.Api.Domain.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DukascopyJobs");
+                b.ToTable("DukascopyJobs");
+            });
+
+            modelBuilder.Entity("Stratrack.Api.Domain.Dukascopy.DukascopyJobExecutionReadModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("ExecutedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DukascopyJobExecutions");
                 });
 
             modelBuilder.Entity("Stratrack.Api.Domain.Strategies.StrategyReadModel", b =>

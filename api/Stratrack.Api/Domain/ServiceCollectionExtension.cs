@@ -41,7 +41,8 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobUpdateCommand),
                 typeof(DukascopyJobStartCommand),
                 typeof(DukascopyJobStopCommand),
-                typeof(DukascopyJobDeleteCommand)
+                typeof(DukascopyJobDeleteCommand),
+                typeof(DukascopyJobExecutedCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -57,7 +58,8 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobUpdateCommandHandler),
                 typeof(DukascopyJobStartCommandHandler),
                 typeof(DukascopyJobStopCommandHandler),
-                typeof(DukascopyJobDeleteCommandHandler)
+                typeof(DukascopyJobDeleteCommandHandler),
+                typeof(DukascopyJobExecutedCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -74,7 +76,8 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobUpdatedEvent),
                 typeof(DukascopyJobStartedEvent),
                 typeof(DukascopyJobStoppedEvent),
-                typeof(DukascopyJobDeletedEvent)
+                typeof(DukascopyJobDeletedEvent),
+                typeof(DukascopyJobExecutedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
@@ -90,14 +93,17 @@ public static class ServiceCollectionExtension
             ef.UseEntityFrameworkReadModel<DataSourceReadModel, StratrackDbContext>();
             ef.UseEntityFrameworkReadModel<DataChunkReadModel, StratrackDbContext, DataChunkReadModelLocator>();
             ef.UseEntityFrameworkReadModel<DukascopyJobReadModel, StratrackDbContext>();
+            ef.UseEntityFrameworkReadModel<DukascopyJobExecutionReadModel, StratrackDbContext, DukascopyJobExecutionReadModelLocator>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DataChunkReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DataChunkRangeQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobExecutionReadModelSearchQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
                 s.AddSingleton<DataChunkReadModelLocator>();
+                s.AddSingleton<DukascopyJobExecutionReadModelLocator>();
                 s.AddSingleton<IDukascopyClient, DukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
                 s.AddSingleton<CsvChunkService>();
