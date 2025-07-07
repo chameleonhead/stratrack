@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
@@ -16,11 +17,12 @@ using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, DukascopyFetchService fetchService)
+public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, DukascopyFetchService fetchService, ILogger<DukascopyJobFunctions> logger)
 {
     private readonly ICommandBus _commandBus = commandBus;
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
     private readonly DukascopyFetchService _fetchService = fetchService;
+    private readonly ILogger<DukascopyJobFunctions> _logger = logger;
     private record CreateJobRequest(string Symbol, DateTimeOffset StartTime);
 
     [Function("CreateDukascopyJob")]
@@ -153,7 +155,7 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     public async Task<HttpResponseData> GetJobLogs([HttpTrigger(AuthorizationLevel.Function, "get", Route = "dukascopy-job/{id:guid}/logs")] HttpRequestData req, Guid id, CancellationToken token)
     {
         var logs = await _queryProcessor.ProcessAsync(new DukascopyJobExecutionReadModelSearchQuery(id, DateTimeOffset.UtcNow.AddDays(-7)), token).ConfigureAwait(false);
-        var items = logs.Select(l => new Models.DukascopyJobLog { ExecutedAt = l.ExecutedAt }).ToList();
+        var items = logs.Select(l => new Models.DukascopyJobLog { ExecutedAt = l.ExecutedAt, IsSuccess = l.IsSuccess }).ToList();
         var res = req.CreateResponse(HttpStatusCode.OK);
         await res.WriteAsJsonAsync(items, cancellationToken: token).ConfigureAwait(false);
         return res;
@@ -162,11 +164,14 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
     [Function("DukascopyJobTimer")]
     public async Task RunJob([TimerTrigger("0 0 */12 * * *")] string timerInfo, CancellationToken token)
     {
+        _logger.LogInformation("DukascopyJobTimer triggered at {Time}", DateTimeOffset.UtcNow);
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
         foreach (var job in jobs.Where(j => !j.IsDeleted && j.IsRunning))
         {
+            _logger.LogInformation("Running job {JobId}", job.JobId);
             await _fetchService.FetchAsync(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, token).ConfigureAwait(false);
         }
+        _logger.LogInformation("DukascopyJobTimer finished at {Time}", DateTimeOffset.UtcNow);
     }
 }
 

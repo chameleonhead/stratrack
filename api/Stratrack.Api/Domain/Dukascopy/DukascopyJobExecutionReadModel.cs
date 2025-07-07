@@ -12,12 +12,14 @@ public class DukascopyJobExecutionReadModel : IReadModel,
     public string Id { get; set; } = "";
     public Guid JobId { get; set; }
     public DateTimeOffset ExecutedAt { get; set; }
+    public bool IsSuccess { get; set; }
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
         ExecutedAt = domainEvent.AggregateEvent.ExecutedAt;
+        IsSuccess = domainEvent.AggregateEvent.IsSuccess;
         return Task.CompletedTask;
     }
 }
