@@ -64,6 +64,20 @@ namespace Stratrack.Api.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DukascopyJobExecutions",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExecutedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    IsSuccess = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DukascopyJobExecutions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DukascopyJobs",
                 columns: table => new
                 {
@@ -178,6 +192,9 @@ namespace Stratrack.Api.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "DataSources");
+
+            migrationBuilder.DropTable(
+                name: "DukascopyJobExecutions");
 
             migrationBuilder.DropTable(
                 name: "DukascopyJobs");

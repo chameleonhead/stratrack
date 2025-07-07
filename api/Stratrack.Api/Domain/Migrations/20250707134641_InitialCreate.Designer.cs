@@ -12,8 +12,8 @@ using Stratrack.Api.Domain;
 namespace Stratrack.Api.Domain.Migrations
 {
     [DbContext(typeof(StratrackDbContext))]
-    [Migration("20250707124146_AddIsSuccessToJobExecution")]
-    partial class AddIsSuccessToJobExecution
+    [Migration("20250707134641_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
