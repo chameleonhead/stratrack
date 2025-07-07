@@ -84,6 +84,9 @@ const DukascopyJobs = () => {
     <div className="p-6 space-y-6">
       <header>
         <h2 className="text-2xl font-bold">Dukascopyジョブ管理</h2>
+        <p className="text-sm text-gray-600 mt-1">
+          日付を変更した後は一度ジョブを停止し、再度開始してください
+        </p>
       </header>
       {error && <p className="text-error">{error}</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
