@@ -14,6 +14,7 @@ using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
+using Stratrack.Api.Domain.DataSources.Queries;
 using EventFlow;
 using EventFlow.Queries;
 
@@ -168,6 +169,7 @@ public class DukascopyJobFunctions(
     }
 
     public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime);
+    public record DukascopyJobHourInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset Time);
 
     [Function("DukascopyJobOrchestrator")]
     public async Task RunOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
@@ -181,18 +183,51 @@ public class DukascopyJobFunctions(
         var tasks = new List<Task>();
         foreach (var job in jobs)
         {
-            tasks.Add(context.CallActivityAsync(nameof(DukascopyJobActivity), job));
+            tasks.Add(context.CallSubOrchestratorAsync(nameof(DukascopyJobDayOrchestrator), job));
         }
 
         await Task.WhenAll(tasks);
     }
 
-    [Function("DukascopyJobActivity")]
-    public async Task DukascopyJobActivity([ActivityTrigger] DukascopyJobInput input, FunctionContext context)
+    [Function("DukascopyJobDayOrchestrator")]
+    public async Task DukascopyJobDayOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var job = context.GetInput<DukascopyJobInput>();
+        if (job == null)
+        {
+            return;
+        }
+
+        var start = await context.CallActivityAsync<DateTimeOffset?>(nameof(DukascopyGetNextTimeActivity), job);
+        if (start == null)
+        {
+            return;
+        }
+
+        var current = start.Value;
+        var maxTime = context.CurrentUtcDateTime.AddHours(-1);
+        var dayEnd = current.Date.AddDays(1);
+        while (current < dayEnd && current <= maxTime)
+        {
+            await context.CallActivityAsync(nameof(DukascopyJobHourActivity), new DukascopyJobHourInput(job.JobId, job.DataSourceId, job.Symbol, current));
+            current = current.AddHours(1);
+        }
+    }
+
+    [Function("DukascopyGetNextTimeActivity")]
+    public async Task<DateTimeOffset?> DukascopyGetNextTimeActivity([ActivityTrigger] DukascopyJobInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        _logger.LogInformation("Processing job {JobId}", input.JobId);
-        await _fetchService.FetchAsync(input.JobId, input.DataSourceId, input.Symbol, input.StartTime, token).ConfigureAwait(false);
+        var range = await _queryProcessor.ProcessAsync(new DataChunkRangeQuery(input.DataSourceId), token).ConfigureAwait(false);
+        return range?.EndTime ?? input.StartTime;
+    }
+
+    [Function("DukascopyJobHourActivity")]
+    public async Task DukascopyJobHourActivity([ActivityTrigger] DukascopyJobHourInput input, FunctionContext context)
+    {
+        var token = context.CancellationToken;
+        _logger.LogInformation("Fetching {Symbol} {Time}", input.Symbol, input.Time);
+        await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, input.Time, token).ConfigureAwait(false);
     }
 
     [Function("DukascopyJobTimer")]
