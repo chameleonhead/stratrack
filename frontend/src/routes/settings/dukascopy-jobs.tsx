@@ -21,6 +21,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
       start: "",
       running: false,
       dataSourceId: undefined,
+      loaded: false,
     },
   ])
 );
@@ -44,12 +45,16 @@ const DukascopyJobs = () => {
                 running: j.isRunning,
                 jobId: j.id,
                 dataSourceId: j.dataSourceId,
+                loaded: true,
               };
               const logs = await listDukascopyJobLogs(j.id).catch(() => []);
               logState[j.symbol] = logs;
             }
           })
         ).then(() => {
+          for (const p of PAIRS) {
+            state[p] = { ...state[p], loaded: true };
+          }
           setJobs(state);
           setLogs(logState);
         });

@@ -7,7 +7,11 @@ const meta = {
   component: DukascopyJobCard,
   args: {
     pair: "EURUSD",
-    job: { start: toDateTimeLocalString(new Date()), running: false } as JobState,
+    job: {
+      start: toDateTimeLocalString(new Date()),
+      running: false,
+      loaded: true,
+    } as JobState,
     logs: [],
     disabled: false,
     onDateChange: fn(),
