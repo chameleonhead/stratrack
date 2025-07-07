@@ -64,18 +64,21 @@ public class DukascopyFetchService(
         while (current < DateTimeOffset.UtcNow)
         {
             var data = await _client.GetTickDataAsync(ds.Symbol, current, token).ConfigureAwait(false);
-            var blobId = await _blobStorage.SaveAsync(
-                $"{ds.Symbol}_{current:yyyyMMddHH}.csv",
-                "text/csv",
-                data,
-                token).ConfigureAwait(false);
-            await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(ds.DataSourceId))
+            if (data != null && data.Length > 0)
             {
-                DataChunkId = Guid.NewGuid(),
-                BlobId = blobId,
-                StartTime = current,
-                EndTime = current.AddHours(1)
-            }, token).ConfigureAwait(false);
+                var blobId = await _blobStorage.SaveAsync(
+                    $"{ds.Symbol}_{current:yyyyMMddHH}.csv",
+                    "text/csv",
+                    data,
+                    token).ConfigureAwait(false);
+                await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(ds.DataSourceId))
+                {
+                    DataChunkId = Guid.NewGuid(),
+                    BlobId = blobId,
+                    StartTime = current,
+                    EndTime = current.AddHours(1)
+                }, token).ConfigureAwait(false);
+            }
             current = current.AddHours(1);
         }
     }
