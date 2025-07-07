@@ -4,6 +4,8 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.DurableTask;
+using Microsoft.DurableTask.Client;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
@@ -17,10 +19,15 @@ using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor queryProcessor, ILogger<DukascopyJobFunctions> logger)
+public class DukascopyJobFunctions(
+    ICommandBus commandBus,
+    IQueryProcessor queryProcessor,
+    DukascopyFetchService fetchService,
+    ILogger<DukascopyJobFunctions> logger)
 {
     private readonly ICommandBus _commandBus = commandBus;
     private readonly IQueryProcessor _queryProcessor = queryProcessor;
+    private readonly DukascopyFetchService _fetchService = fetchService;
     private readonly ILogger<DukascopyJobFunctions> _logger = logger;
     private record CreateJobRequest(string Symbol, DateTimeOffset StartTime);
 
@@ -160,5 +167,50 @@ public class DukascopyJobFunctions(ICommandBus commandBus, IQueryProcessor query
         return res;
     }
 
+    public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime);
+
+    [Function("DukascopyJobOrchestrator")]
+    public async Task RunOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var jobs = context.GetInput<IReadOnlyList<DukascopyJobInput>>();
+        if (jobs == null || jobs.Count == 0)
+        {
+            return;
+        }
+
+        var tasks = new List<Task>();
+        foreach (var job in jobs)
+        {
+            tasks.Add(context.CallActivityAsync(nameof(DukascopyJobActivity), job));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    [Function("DukascopyJobActivity")]
+    public async Task DukascopyJobActivity([ActivityTrigger] DukascopyJobInput input, FunctionContext context)
+    {
+        var token = context.CancellationToken;
+        _logger.LogInformation("Processing job {JobId}", input.JobId);
+        await _fetchService.FetchAsync(input.JobId, input.DataSourceId, input.Symbol, input.StartTime, token).ConfigureAwait(false);
+    }
+
+    [Function("DukascopyJobTimer")]
+    public async Task RunTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
+    {
+        _logger.LogInformation("DukascopyJobTimer triggered at {Time}", DateTimeOffset.UtcNow);
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var targets = jobs
+            .Where(j => !j.IsDeleted && j.IsRunning)
+            .Select(j => new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime))
+            .ToList();
+        if (targets.Count == 0)
+        {
+            _logger.LogInformation("No running jobs found");
+            return;
+        }
+
+        await client.ScheduleNewOrchestrationInstanceAsync("DukascopyJobOrchestrator", targets, token);
+    }
 }
 
