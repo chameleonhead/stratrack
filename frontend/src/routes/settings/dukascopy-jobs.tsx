@@ -4,6 +4,7 @@ import {
   createDukascopyJob,
   startDukascopyJob,
   stopDukascopyJob,
+  updateDukascopyJob,
   listDukascopyJobs,
   listDukascopyJobLogs,
   DukascopyJobSummary,
@@ -13,7 +14,14 @@ import {
 const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
 
 const initialState: Record<string, JobState> = Object.fromEntries(
-  PAIRS.map((p) => [p, { start: new Date().toISOString().slice(0, 16), running: false }])
+  PAIRS.map((p) => [
+    p,
+    {
+      start: new Date().toISOString().slice(0, 16),
+      running: false,
+      dataSourceId: undefined,
+    },
+  ])
 );
 
 const DukascopyJobs = () => {
@@ -34,6 +42,7 @@ const DukascopyJobs = () => {
                 start: j.startTime.slice(0, 16),
                 running: j.isRunning,
                 jobId: j.id,
+                dataSourceId: j.dataSourceId,
               };
               const logs = await listDukascopyJobLogs(j.id).catch(() => []);
               logState[j.symbol] = logs;
@@ -63,15 +72,25 @@ const DukascopyJobs = () => {
         setJobs((prev) => ({ ...prev, [pair]: { ...job, running: false } }));
       } else {
         let id = job.jobId;
+        let dataSourceId = job.dataSourceId;
         if (!id) {
           const res = await createDukascopyJob({
             symbol: pair,
             startTime: new Date(job.start).toISOString(),
           });
           id = res.id;
+          dataSourceId = res.dataSourceId;
+        } else {
+          await updateDukascopyJob(id, {
+            dataSourceId: dataSourceId ?? "",
+            startTime: new Date(job.start).toISOString(),
+          });
         }
         await startDukascopyJob(id);
-        setJobs((prev) => ({ ...prev, [pair]: { ...job, running: true, jobId: id } }));
+        setJobs((prev) => ({
+          ...prev,
+          [pair]: { ...job, running: true, jobId: id, dataSourceId },
+        }));
       }
     } catch (err) {
       setError((err as Error).message);

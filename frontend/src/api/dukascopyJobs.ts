@@ -62,6 +62,25 @@ export async function stopDukascopyJob(id: string) {
   }
 }
 
+export type UpdateDukascopyJobRequest = {
+  dataSourceId: string;
+  startTime: string;
+};
+
+export async function updateDukascopyJob(id: string, data: UpdateDukascopyJobRequest) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-functions-key": API_KEY,
+    },
+    body: JSON.stringify(toPlain(data)),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to update dukascopy job: ${res.status}`);
+  }
+}
+
 export async function listDukascopyJobs(): Promise<DukascopyJobSummary[]> {
   const res = await fetch(`${API_BASE_URL}/api/dukascopy-job`, {
     headers: { "x-functions-key": API_KEY },
