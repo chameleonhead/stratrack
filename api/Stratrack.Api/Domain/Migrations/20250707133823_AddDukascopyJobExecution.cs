@@ -1,16 +1,15 @@
-using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Stratrack.Api.Domain.Migrations;
-
-/// <inheritdoc />
-public partial class AddDukascopyJobExecution : Migration
+namespace Stratrack.Api.Domain.Migrations
 {
     /// <inheritdoc />
-    protected override void Up(MigrationBuilder migrationBuilder)
+    public partial class AddDukascopyJobExecution : Migration
     {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
         migrationBuilder.CreateTable(
             name: "DukascopyJobExecutions",
             columns: table => new
@@ -23,11 +22,12 @@ public partial class AddDukascopyJobExecution : Migration
             {
                 table.PrimaryKey("PK_DukascopyJobExecutions", x => x.Id);
             });
-    }
+        }
 
-    /// <inheritdoc />
-    protected override void Down(MigrationBuilder migrationBuilder)
-    {
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
         migrationBuilder.DropTable(name: "DukascopyJobExecutions");
+        }
     }
 }
