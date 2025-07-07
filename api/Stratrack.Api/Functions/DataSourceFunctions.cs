@@ -203,6 +203,9 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
         {
             return null;
         }
+
+        var range = await queryProcessor.ProcessAsync(new DataChunkRangeQuery(result.DataSourceId), token).ConfigureAwait(false);
+
         return new DataSourceDetail()
         {
             Id = result.DataSourceId,
@@ -214,6 +217,8 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             Description = result.Description,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,
+            StartTime = range?.StartTime,
+            EndTime = range?.EndTime,
         };
     }
 
