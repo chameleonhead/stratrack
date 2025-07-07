@@ -46,4 +46,7 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - モデル変更時は次のコマンドでマイグレーションを作成してください。
   - `dotnet ef migrations add <MigrationName> --project api/Stratrack.Api --startup-project api/Stratrack.Api`
 - 生成したマイグレーションはリポジトリにコミットして共有します。
+- マイグレーションを作成した後は `SQLAZURECONNSTR_SqlConnectionString` 環境変数に適当な接続文字列を指定し、
+  `dotnet ef migrations list --project api/Stratrack.Api --startup-project api/Stratrack.Api`
+  を実行してマイグレーションが正しく検出されることを確認してください。
 - SQL Server を利用する環境では `StratrackDbContextProvider` が起動時に `Database.Migrate()` を自動実行します。インメモリ DB 使用時は `EnsureCreated()` となるためマイグレーションは適用されません。
