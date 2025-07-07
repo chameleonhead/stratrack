@@ -61,7 +61,8 @@ public class DukascopyFetchService(
         var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(ds.DataSourceId), token).ConfigureAwait(false);
         var lastEnd = chunks.OrderBy(c => c.EndTime).LastOrDefault()?.EndTime ?? startTime;
         var current = lastEnd;
-        while (current < DateTimeOffset.UtcNow)
+        var maxTime = DateTimeOffset.UtcNow.AddHours(-1);
+        while (current <= maxTime)
         {
             var data = await _client.GetTickDataAsync(ds.Symbol, current, token).ConfigureAwait(false);
             if (data != null && data.Length > 0)
