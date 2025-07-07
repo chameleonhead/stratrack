@@ -2,7 +2,12 @@ import Button from "../../components/Button";
 import Input from "../../components/Input";
 import type { DukascopyJobLog } from "../../api/dukascopyJobs";
 
-export type JobState = { start: string; running: boolean; jobId?: string };
+export type JobState = {
+  start: string;
+  running: boolean;
+  jobId?: string;
+  dataSourceId?: string;
+};
 
 type Props = {
   pair: string;
