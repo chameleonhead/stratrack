@@ -29,6 +29,7 @@ public class DukascopyFetchService(
 
     public async Task FetchAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
     {
+        var success = false;
         try
         {
             var ds = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(dataSourceId)), token).ConfigureAwait(false);
@@ -39,14 +40,19 @@ public class DukascopyFetchService(
             }
 
             await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
-            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
-            {
-                ExecutedAt = DateTimeOffset.UtcNow
-            }, token).ConfigureAwait(false);
+            success = true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process dukascopy fetch");
+        }
+        finally
+        {
+            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
+            {
+                ExecutedAt = DateTimeOffset.UtcNow,
+                IsSuccess = success
+            }, token).ConfigureAwait(false);
         }
     }
 
