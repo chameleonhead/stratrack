@@ -12,7 +12,7 @@ using Stratrack.Api.Domain;
 namespace Stratrack.Api.Domain.Migrations
 {
     [DbContext(typeof(StratrackDbContext))]
-    [Migration("20250707134641_InitialCreate")]
+    [Migration("20250707135536_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
