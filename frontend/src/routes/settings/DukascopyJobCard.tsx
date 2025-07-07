@@ -7,6 +7,7 @@ export type JobState = {
   running: boolean;
   jobId?: string;
   dataSourceId?: string;
+  loaded: boolean;
 };
 
 type Props = {
@@ -19,7 +20,7 @@ type Props = {
 };
 
 const DukascopyJobCard = ({ pair, job, logs, disabled, onDateChange, onToggle }: Props) => {
-  const isLoading = job.start === "";
+  const isLoading = !job.loaded;
   return (
     <div className="rounded-xl border p-4 shadow space-y-2">
       <h4 className="font-bold text-lg">{pair}</h4>
