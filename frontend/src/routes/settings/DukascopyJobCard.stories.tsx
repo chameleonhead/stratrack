@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { fn, within, expect } from "storybook/test";
 import DukascopyJobCard, { JobState } from "./DukascopyJobCard";
+import { toDateTimeLocalString } from "../../utils";
 
 const meta = {
   component: DukascopyJobCard,
   args: {
     pair: "EURUSD",
-    job: { start: new Date().toISOString().slice(0, 16), running: false } as JobState,
+    job: { start: toDateTimeLocalString(new Date()), running: false } as JobState,
     logs: [],
     disabled: false,
     onDateChange: fn(),

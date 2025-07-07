@@ -50,3 +50,11 @@ export const FullWidth: Story = {
     fullWidth: true,
   },
 };
+
+export const Disabled: Story = {
+  args: {
+    label: "開始日時",
+    placeholder: "ロード中...",
+    disabled: true,
+  },
+};
