@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DukascopyJobCard, { JobState } from "./DukascopyJobCard";
+import { toDateTimeLocalString } from "../../utils";
 import {
   createDukascopyJob,
   startDukascopyJob,
@@ -17,7 +18,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
   PAIRS.map((p) => [
     p,
     {
-      start: new Date().toISOString().slice(0, 16),
+      start: toDateTimeLocalString(new Date()),
       running: false,
       dataSourceId: undefined,
     },
@@ -39,7 +40,7 @@ const DukascopyJobs = () => {
           items.map(async (j: DukascopyJobSummary) => {
             if (PAIRS.includes(j.symbol)) {
               state[j.symbol] = {
-                start: j.startTime.slice(0, 16),
+                start: toDateTimeLocalString(j.startTime),
                 running: j.isRunning,
                 jobId: j.id,
                 dataSourceId: j.dataSourceId,
