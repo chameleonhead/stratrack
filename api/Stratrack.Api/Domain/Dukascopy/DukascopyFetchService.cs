@@ -6,6 +6,7 @@ using System.Linq;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.DataSources.Queries;
+using Stratrack.Api.Domain.Dukascopy.Commands;
 using System.Threading;
 using System.Threading.Tasks;
 using Stratrack.Api.Domain.Blobs;
@@ -26,7 +27,7 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
-    public async Task FetchAsync(Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
+    public async Task FetchAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
     {
         try
         {
@@ -38,6 +39,10 @@ public class DukascopyFetchService(
             }
 
             await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
+            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
+            {
+                ExecutedAt = DateTimeOffset.UtcNow
+            }, token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
