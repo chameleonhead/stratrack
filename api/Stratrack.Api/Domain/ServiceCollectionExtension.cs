@@ -99,6 +99,7 @@ public static class ServiceCollectionExtension
             ef.AddQueryHandlers(typeof(DataChunkRangeQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobExecutionReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobExecutionPagedQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();

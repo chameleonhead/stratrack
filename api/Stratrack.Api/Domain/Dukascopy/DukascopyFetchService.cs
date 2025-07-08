@@ -30,6 +30,8 @@ public class DukascopyFetchService(
     public async Task FetchHourAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset time, CancellationToken token)
     {
         var success = false;
+        string? error = null;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             var ds = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(dataSourceId)), token).ConfigureAwait(false);
@@ -57,13 +59,19 @@ public class DukascopyFetchService(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch dukascopy chunk");
+            error = ex.Message;
         }
         finally
         {
+            sw.Stop();
             await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
             {
                 ExecutedAt = DateTimeOffset.UtcNow,
-                IsSuccess = success
+                IsSuccess = success,
+                Symbol = symbol,
+                TargetTime = time,
+                ErrorMessage = error,
+                Duration = sw.Elapsed.TotalMilliseconds
             }, token).ConfigureAwait(false);
         }
     }
@@ -71,6 +79,8 @@ public class DukascopyFetchService(
     public async Task FetchAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset startTime, CancellationToken token)
     {
         var success = false;
+        string? error = null;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
             var ds = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(dataSourceId)), token).ConfigureAwait(false);
@@ -86,13 +96,19 @@ public class DukascopyFetchService(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process dukascopy fetch");
+            error = ex.Message;
         }
         finally
         {
+            sw.Stop();
             await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
             {
                 ExecutedAt = DateTimeOffset.UtcNow,
-                IsSuccess = success
+                IsSuccess = success,
+                Symbol = symbol,
+                TargetTime = startTime,
+                ErrorMessage = error,
+                Duration = sw.Elapsed.TotalMilliseconds
             }, token).ConfigureAwait(false);
         }
     }

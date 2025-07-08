@@ -39,7 +39,10 @@ const DukascopyJobCard = ({ pair, job, logs, disabled, onDateChange, onToggle }:
         <summary className="cursor-pointer">履歴</summary>
         <ul className="mt-1 pl-4 list-disc space-y-1 max-h-40 overflow-y-auto">
           {logs.map((l) => (
-            <li key={l.executedAt}>{new Date(l.executedAt).toLocaleString()}</li>
+            <li key={l.executedAt}>
+              {new Date(l.executedAt).toLocaleString()} - {new Date(l.targetTime).toLocaleString()}{" "}
+              -{l.isSuccess ? "成功" : `失敗: ${l.errorMessage ?? ""}`} ({Math.round(l.duration)}ms)
+            </li>
           ))}
           {logs.length === 0 && <li>なし</li>}
         </ul>
