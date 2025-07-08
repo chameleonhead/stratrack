@@ -4,13 +4,10 @@ import { DataSourceDetail, getDataSource } from "../../api/datasources";
 import { getDataStream } from "../../api/data";
 import LineChart, { LinePoint } from "../../components/LineChart";
 import CandlestickChart, { Candle } from "../../components/CandlestickChart";
-import TimeRangePicker, { TimeRange } from "../../components/TimeRangePicker";
-import Button from "../../components/Button";
 
 const DataSourceChart = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
-  const [range, setRange] = useState<TimeRange>({});
-  const [dataRange, setDataRange] = useState<TimeRange>({});
+  const [range, setRange] = useState<{ from: number; to: number } | null>(null);
   const [lineData, setLineData] = useState<LinePoint[]>([]);
   const [candleData, setCandleData] = useState<Candle[]>([]);
   const [dataSource, setDataSource] = useState<DataSourceDetail | null>(null);
@@ -57,37 +54,30 @@ const DataSourceChart = () => {
         if (ds.startTime && ds.endTime) {
           const end = new Date(ds.endTime).getTime();
           const start = ds.startTime ? new Date(ds.startTime).getTime() : end;
-          const defaultFrom = new Date(Math.max(start, end - 24 * 60 * 60 * 1000)).toISOString();
-          setRange({ from: defaultFrom, to: ds.endTime });
-          setDataRange({ from: ds.startTime, to: ds.endTime });
-          await loadData(defaultFrom, ds.endTime);
+          const defaultFrom = Math.max(start, end - 24 * 60 * 60 * 1000);
+          setRange({ from: defaultFrom, to: end });
+          await loadData(new Date(defaultFrom).toISOString(), ds.endTime);
         }
       })
       .catch((e) => console.error(e));
   }, [dataSourceId, loadData]);
-  const handleLoad = async () => {
-    if (!range.from || !range.to) return;
-    await loadData(range.from, range.to);
+  const handleRangeChange = async (newRange: { from: number; to: number }) => {
+    setRange(newRange);
+    await loadData(new Date(newRange.from).toISOString(), new Date(newRange.to).toISOString());
   };
 
   return (
     <div className="p-6 space-y-4">
       <h2 className="text-2xl font-bold">チャート表示</h2>
-      <div className="space-y-2">
-        <TimeRangePicker label="期間" value={range} onChange={setRange} fullWidth />
-        {dataRange.from && dataRange.to && (
-          <p className="text-sm text-gray-500">
-            利用可能期間: {new Date(dataRange.from).toLocaleString()} -{" "}
-            {new Date(dataRange.to).toLocaleString()}
-          </p>
-        )}
-        <Button onClick={handleLoad}>表示</Button>
-        {error && <p className="text-error">{error}</p>}
-      </div>
+      {error && <p className="text-error">{error}</p>}
       {dataSource?.format === "ohlc" ? (
-        <CandlestickChart data={candleData} />
+        <CandlestickChart
+          data={candleData}
+          range={range ?? undefined}
+          onRangeChange={handleRangeChange}
+        />
       ) : (
-        <LineChart data={lineData} />
+        <LineChart data={lineData} range={range ?? undefined} onRangeChange={handleRangeChange} />
       )}
     </div>
   );
