@@ -1,3 +1,16 @@
+import {
+  Chart as ChartJS,
+  LineElement,
+  LinearScale,
+  TimeScale,
+  PointElement,
+  Tooltip,
+  Legend,
+  ChartData,
+} from "chart.js";
+import "chartjs-adapter-date-fns";
+import { Line } from "react-chartjs-2";
+
 export type LinePoint = { x: number; y: number };
 
 export type LineChartProps = {
@@ -6,29 +19,30 @@ export type LineChartProps = {
   data: LinePoint[];
 };
 
+ChartJS.register(LineElement, LinearScale, TimeScale, PointElement, Tooltip, Legend);
+
 const LineChart = ({ width = 600, height = 300, data }: LineChartProps) => {
-  if (data.length === 0) {
-    return <svg width={width} height={height}></svg>;
-  }
+  const chartData: ChartData<"line", { x: number; y: number }[]> = {
+    datasets: [
+      {
+        label: "value",
+        data,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.4)",
+        pointRadius: 0,
+      },
+    ],
+  };
 
-  const minX = Math.min(...data.map((d) => d.x));
-  const maxX = Math.max(...data.map((d) => d.x));
-  const minY = Math.min(...data.map((d) => d.y));
-  const maxY = Math.max(...data.map((d) => d.y));
+  const options = {
+    responsive: false,
+    scales: {
+      x: { type: "time" },
+      y: { beginAtZero: false },
+    },
+  } as const;
 
-  const points = data
-    .map((d) => {
-      const x = ((d.x - minX) / (maxX - minX)) * width;
-      const y = height - ((d.y - minY) / (maxY - minY)) * height;
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-  return (
-    <svg width={width} height={height} className="border rounded">
-      <polyline fill="none" stroke="currentColor" strokeWidth="1" points={points} />
-    </svg>
-  );
+  return <Line data={chartData} options={options} width={width} height={height} />;
 };
 
 export default LineChart;
