@@ -20,6 +20,16 @@ const Settings = () => {
               開く
             </Link>
           </div>
+          <div className="rounded-xl border p-4 shadow">
+            <h4 className="font-bold">Dukascopyログ</h4>
+            <p className="text-sm text-gray-600">ジョブの実行履歴を確認します</p>
+            <Link
+              to="/settings/dukascopy-logs"
+              className="mt-2 bg-primary text-primary-content py-1 px-3 rounded"
+            >
+              開く
+            </Link>
+          </div>
         </div>
       </section>
     </div>

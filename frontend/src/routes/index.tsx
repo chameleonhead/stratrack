@@ -12,6 +12,7 @@ import UploadDataFile from "./datasources/upload";
 import DataSourceChart from "./datasources/chart";
 import Settings from "./settings";
 import DukascopyJobs from "./settings/dukascopy-jobs";
+import DukascopyLogs from "./settings/dukascopy-logs";
 
 export const routes = [
   {
@@ -31,6 +32,7 @@ export const routes = [
       { path: "data-sources/:dataSourceId/chart", element: <DataSourceChart /> },
       { path: "settings", element: <Settings /> },
       { path: "settings/dukascopy-jobs", element: <DukascopyJobs /> },
+      { path: "settings/dukascopy-logs", element: <DukascopyLogs /> },
     ],
   },
 ];

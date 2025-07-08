@@ -66,9 +66,9 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
     }
 
-    public void LogExecution(DateTimeOffset executedAt, bool isSuccess)
+    public void LogExecution(DateTimeOffset executedAt, bool isSuccess, string symbol, DateTimeOffset targetTime, string? errorMessage, double duration)
     {
-        Emit(new DukascopyJobExecutedEvent(executedAt, isSuccess));
+        Emit(new DukascopyJobExecutedEvent(executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
     }
 
     public void Apply(DukascopyJobCreatedEvent aggregateEvent)
