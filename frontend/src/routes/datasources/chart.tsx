@@ -21,9 +21,7 @@ const DataSourceChart = () => {
       if (!dataSourceId) return;
       try {
         const csv = await getDataStream(dataSourceId, from, to);
-        const lines = csv
-          .split(/\r?\n/)
-          .filter((l) => l && !l.startsWith("time"));
+        const lines = csv.split(/\r?\n/).filter((l) => l && !l.startsWith("time"));
         if (dataSource?.format === "ohlc") {
           const candles: Candle[] = lines.map((l) => {
             const [t, o, h, low, c] = l.split(",");
@@ -59,9 +57,7 @@ const DataSourceChart = () => {
         if (ds.startTime && ds.endTime) {
           const end = new Date(ds.endTime).getTime();
           const start = ds.startTime ? new Date(ds.startTime).getTime() : end;
-          const defaultFrom = new Date(
-            Math.max(start, end - 24 * 60 * 60 * 1000)
-          ).toISOString();
+          const defaultFrom = new Date(Math.max(start, end - 24 * 60 * 60 * 1000)).toISOString();
           setRange({ from: defaultFrom, to: ds.endTime });
           setDataRange({ from: ds.startTime, to: ds.endTime });
           await loadData(defaultFrom, ds.endTime);

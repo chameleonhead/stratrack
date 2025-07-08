@@ -20,7 +20,6 @@
     "react-ace": "^14.0.1",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.6.0",
-    "react-stockcharts": "^0.7.8",
     "tailwindcss": "^4.1.1",
     "zod": "^3.25.74",
     "zustand": "^5.0.5"
