@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { DataSourceDetail, getDataSource } from "../../api/datasources";
 import { getDataStream } from "../../api/data";
@@ -16,46 +16,62 @@ const DataSourceChart = () => {
   const [dataSource, setDataSource] = useState<DataSourceDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const loadData = useCallback(
+    async (from: string, to: string) => {
+      if (!dataSourceId) return;
+      try {
+        const csv = await getDataStream(dataSourceId, from, to);
+        const lines = csv
+          .split(/\r?\n/)
+          .filter((l) => l && !l.startsWith("time"));
+        if (dataSource?.format === "ohlc") {
+          const candles: Candle[] = lines.map((l) => {
+            const [t, o, h, low, c] = l.split(",");
+            return {
+              date: new Date(t),
+              open: parseFloat(o),
+              high: parseFloat(h),
+              low: parseFloat(low),
+              close: parseFloat(c),
+            };
+          });
+          setCandleData(candles);
+        } else {
+          const points: LinePoint[] = lines.map((l) => {
+            const [t, bid] = l.split(",");
+            return { x: Date.parse(t), y: parseFloat(bid) };
+          });
+          setLineData(points);
+        }
+        setError(null);
+      } catch (e) {
+        setError((e as Error).message);
+      }
+    },
+    [dataSourceId, dataSource]
+  );
+
   useEffect(() => {
     if (!dataSourceId) return;
     getDataSource(dataSourceId)
-      .then((ds) => {
+      .then(async (ds) => {
         setDataSource(ds);
         if (ds.startTime && ds.endTime) {
-          setRange({ from: ds.startTime, to: ds.endTime });
+          const end = new Date(ds.endTime).getTime();
+          const start = ds.startTime ? new Date(ds.startTime).getTime() : end;
+          const defaultFrom = new Date(
+            Math.max(start, end - 24 * 60 * 60 * 1000)
+          ).toISOString();
+          setRange({ from: defaultFrom, to: ds.endTime });
           setDataRange({ from: ds.startTime, to: ds.endTime });
+          await loadData(defaultFrom, ds.endTime);
         }
       })
       .catch((e) => console.error(e));
-  }, [dataSourceId]);
+  }, [dataSourceId, loadData]);
   const handleLoad = async () => {
-    if (!dataSourceId || !range.from || !range.to) return;
-    try {
-      const csv = await getDataStream(dataSourceId, range.from, range.to);
-      const lines = csv.split(/\r?\n/).filter((l) => l && !l.startsWith("time"));
-      if (dataSource?.format === "ohlc") {
-        const candles: Candle[] = lines.map((l) => {
-          const [t, o, h, low, c] = l.split(",");
-          return {
-            date: new Date(t),
-            open: parseFloat(o),
-            high: parseFloat(h),
-            low: parseFloat(low),
-            close: parseFloat(c),
-          };
-        });
-        setCandleData(candles);
-      } else {
-        const points: LinePoint[] = lines.map((l) => {
-          const [t, bid] = l.split(",");
-          return { x: Date.parse(t), y: parseFloat(bid) };
-        });
-        setLineData(points);
-      }
-      setError(null);
-    } catch (e) {
-      setError((e as Error).message);
-    }
+    if (!range.from || !range.to) return;
+    await loadData(range.from, range.to);
   };
 
   return (
