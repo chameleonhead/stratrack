@@ -42,7 +42,9 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStartCommand),
                 typeof(DukascopyJobStopCommand),
                 typeof(DukascopyJobDeleteCommand),
-                typeof(DukascopyJobExecutedCommand)
+                typeof(DukascopyJobExecutedCommand),
+                typeof(DukascopyJobProcessStartCommand),
+                typeof(DukascopyJobProcessFinishCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -59,7 +61,9 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStartCommandHandler),
                 typeof(DukascopyJobStopCommandHandler),
                 typeof(DukascopyJobDeleteCommandHandler),
-                typeof(DukascopyJobExecutedCommandHandler)
+                typeof(DukascopyJobExecutedCommandHandler),
+                typeof(DukascopyJobProcessStartCommandHandler),
+                typeof(DukascopyJobProcessFinishCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -77,7 +81,9 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStartedEvent),
                 typeof(DukascopyJobStoppedEvent),
                 typeof(DukascopyJobDeletedEvent),
-                typeof(DukascopyJobExecutedEvent)
+                typeof(DukascopyJobExecutedEvent),
+                typeof(DukascopyJobProcessStartedEvent),
+                typeof(DukascopyJobProcessFinishedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);

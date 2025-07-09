@@ -8,7 +8,9 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobStartedEvent>,
     IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>,
-    IEmit<DukascopyJobExecutedEvent>
+    IEmit<DukascopyJobExecutedEvent>,
+    IEmit<DukascopyJobProcessStartedEvent>,
+    IEmit<DukascopyJobProcessFinishedEvent>
 {
     public Guid DataSourceId { get; private set; }
     public string Symbol { get; private set; } = "";
@@ -16,6 +18,11 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public bool IsDeleted { get; private set; }
     public bool IsRunning { get; private set; }
     public DateTimeOffset? LastExecutedAt { get; private set; }
+    public bool IsProcessing { get; private set; }
+    public DateTimeOffset? LastProcessStartedAt { get; private set; }
+    public DateTimeOffset? LastProcessFinishedAt { get; private set; }
+    public bool? LastProcessSucceeded { get; private set; }
+    public string? LastProcessError { get; private set; }
 
     public void Create(string symbol, DateTimeOffset startTime)
     {
@@ -71,6 +78,22 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         Emit(new DukascopyJobExecutedEvent(executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
     }
 
+    public void StartProcess()
+    {
+        if (!IsProcessing)
+        {
+            Emit(new DukascopyJobProcessStartedEvent(DateTimeOffset.UtcNow));
+        }
+    }
+
+    public void FinishProcess(bool isSuccess, string? errorMessage)
+    {
+        if (IsProcessing)
+        {
+            Emit(new DukascopyJobProcessFinishedEvent(DateTimeOffset.UtcNow, isSuccess, errorMessage));
+        }
+    }
+
     public void Apply(DukascopyJobCreatedEvent aggregateEvent)
     {
         Symbol = aggregateEvent.Symbol;
@@ -104,5 +127,19 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public void Apply(DukascopyJobExecutedEvent aggregateEvent)
     {
         LastExecutedAt = aggregateEvent.ExecutedAt;
+    }
+
+    public void Apply(DukascopyJobProcessStartedEvent aggregateEvent)
+    {
+        IsProcessing = true;
+        LastProcessStartedAt = aggregateEvent.StartedAt;
+    }
+
+    public void Apply(DukascopyJobProcessFinishedEvent aggregateEvent)
+    {
+        IsProcessing = false;
+        LastProcessFinishedAt = aggregateEvent.FinishedAt;
+        LastProcessSucceeded = aggregateEvent.IsSuccess;
+        LastProcessError = aggregateEvent.ErrorMessage;
     }
 }

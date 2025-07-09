@@ -45,6 +45,7 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - API プロジェクトのマイグレーションは `api/Stratrack.Api/Domain/Migrations` フォルダに保存します。
 - モデル変更時は次のコマンドでマイグレーションを作成してください。
   - `dotnet ef migrations add <MigrationName> --project api/Stratrack.Api --startup-project api/Stratrack.Api`
+- 必ず上記のコマンドでマイグレーションを生成し、ファイルを手動で編集しないでください。
 - 生成したマイグレーションはリポジトリにコミットして共有します。
 - マイグレーションを作成した後は `SQLAZURECONNSTR_SqlConnectionString` 環境変数に適当な接続文字列を指定し、
   `dotnet ef migrations list --project api/Stratrack.Api --startup-project api/Stratrack.Api`
