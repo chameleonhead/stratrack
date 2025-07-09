@@ -51,7 +51,7 @@ public class DukascopyJobExecutionFunctions(
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
-        if (job.IsProcessing)
+        if (job.IsRunning)
         {
             return req.CreateResponse(HttpStatusCode.Accepted);
         }
@@ -184,7 +184,7 @@ public class DukascopyJobExecutionFunctions(
         var targets = new List<DukascopyJobInput>();
         foreach (var j in jobs.Where(j => !j.IsDeleted))
         {
-            if (!j.IsEnabled || j.IsProcessing)
+            if (!j.IsEnabled || j.IsRunning)
             {
                 _logger.LogInformation($"Skip {j.Symbol} job");
                 continue;

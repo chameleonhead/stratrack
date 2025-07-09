@@ -4,7 +4,7 @@ import Input from "../../components/Input";
 export type JobState = {
   start: string;
   enabled: boolean;
-  processing?: boolean;
+  running?: boolean;
   lastStarted?: string;
   lastFinished?: string;
   lastSucceeded?: boolean;
@@ -40,7 +40,7 @@ const DukascopyJobCard = ({ pair, job, disabled, onDateChange, onToggle }: Props
       </Button>
       <p className="text-sm">
         現在のステータス: {job.enabled ? "有効" : "無効"}
-        {job.processing ? " (処理中)" : ""}
+        {job.running ? " (処理中)" : ""}
       </p>
       {job.lastFinished && (
         <p className="text-sm">

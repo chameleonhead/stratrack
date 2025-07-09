@@ -7,7 +7,7 @@ public class DukascopyJobSummary
     public string Symbol { get; set; } = string.Empty;
     public DateTimeOffset StartTime { get; set; }
     public bool IsEnabled { get; set; }
-    public bool IsProcessing { get; set; }
+    public bool IsRunning { get; set; }
     public DateTimeOffset? LastProcessStartedAt { get; set; }
     public DateTimeOffset? LastProcessFinishedAt { get; set; }
     public bool? LastProcessSucceeded { get; set; }

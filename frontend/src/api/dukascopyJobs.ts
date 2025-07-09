@@ -15,7 +15,7 @@ export type DukascopyJobSummary = {
   symbol: string;
   startTime: string;
   isEnabled: boolean;
-  isProcessing: boolean;
+  isRunning: boolean;
   lastProcessStartedAt?: string;
   lastProcessFinishedAt?: string;
   lastProcessSucceeded?: boolean;

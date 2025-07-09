@@ -232,9 +232,9 @@ namespace Stratrack.Api.Domain.Migrations
 
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("bit")
-                        .HasColumnName("IsRunning");
+                        .HasColumnName("IsEnabled");
 
-                    b.Property<bool>("IsProcessing")
+                    b.Property<bool>("IsRunning")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("JobId")

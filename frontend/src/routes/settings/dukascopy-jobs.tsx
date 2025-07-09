@@ -19,7 +19,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
     {
       start: "",
       enabled: false,
-      processing: false,
+      running: false,
       jobId: undefined,
       dataSourceId: undefined,
       lastStarted: undefined,
@@ -45,7 +45,7 @@ const DukascopyJobs = () => {
             state[j.symbol] = {
               start: toDateTimeLocalString(j.startTime),
               enabled: j.isEnabled,
-              processing: j.isProcessing,
+              running: j.isRunning,
               lastStarted: j.lastProcessStartedAt,
               lastFinished: j.lastProcessFinishedAt,
               lastSucceeded: j.lastProcessSucceeded,

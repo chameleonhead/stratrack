@@ -18,7 +18,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public bool IsDeleted { get; private set; }
     public bool IsEnabled { get; private set; }
     public DateTimeOffset? LastExecutedAt { get; private set; }
-    public bool IsProcessing { get; private set; }
+    public bool IsRunning { get; private set; }
     public DateTimeOffset? LastProcessStartedAt { get; private set; }
     public DateTimeOffset? LastProcessFinishedAt { get; private set; }
     public bool? LastProcessSucceeded { get; private set; }
@@ -81,7 +81,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void StartExecution(Guid executionId)
     {
-        if (!IsProcessing)
+        if (!IsRunning)
         {
             Emit(new DukascopyJobExecutionStartedEvent(executionId, DateTimeOffset.UtcNow));
         }
@@ -89,7 +89,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void FinishExecution(Guid executionId, bool isSuccess, string? errorMessage)
     {
-        if (IsProcessing && CurrentExecutionId == executionId)
+        if (IsRunning && CurrentExecutionId == executionId)
         {
             Emit(new DukascopyJobExecutionFinishedEvent(executionId, DateTimeOffset.UtcNow, isSuccess, errorMessage));
         }
@@ -132,14 +132,14 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void Apply(DukascopyJobExecutionStartedEvent aggregateEvent)
     {
-        IsProcessing = true;
+        IsRunning = true;
         LastProcessStartedAt = aggregateEvent.StartedAt;
         CurrentExecutionId = aggregateEvent.ExecutionId;
     }
 
     public void Apply(DukascopyJobExecutionFinishedEvent aggregateEvent)
     {
-        IsProcessing = false;
+        IsRunning = false;
         LastProcessFinishedAt = aggregateEvent.FinishedAt;
         LastProcessSucceeded = aggregateEvent.IsSuccess;
         LastProcessError = aggregateEvent.ErrorMessage;

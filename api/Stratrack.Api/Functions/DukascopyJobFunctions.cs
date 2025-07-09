@@ -102,7 +102,7 @@ public class DukascopyJobFunctions(
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
-        if (job.IsProcessing)
+        if (job.IsRunning)
         {
             return req.CreateResponse(HttpStatusCode.Accepted);
         }
@@ -160,7 +160,7 @@ public class DukascopyJobFunctions(
                 Symbol = j.Symbol,
                 StartTime = j.StartTime,
                 IsEnabled = j.IsEnabled,
-                IsProcessing = j.IsProcessing,
+                IsRunning = j.IsRunning,
                 LastProcessStartedAt = j.LastProcessStartedAt,
                 LastProcessFinishedAt = j.LastProcessFinishedAt,
                 LastProcessSucceeded = j.LastProcessSucceeded,

@@ -19,9 +19,9 @@ public class DukascopyJobReadModel : IReadModel,
     public string Symbol { get; set; } = "";
     public DateTimeOffset StartTime { get; set; }
     public bool IsDeleted { get; set; }
-    [System.ComponentModel.DataAnnotations.Schema.Column("IsRunning")]
+    [System.ComponentModel.DataAnnotations.Schema.Column("IsEnabled")]
     public bool IsEnabled { get; set; }
-    public bool IsProcessing { get; set; }
+    public bool IsRunning { get; set; }
     public DateTimeOffset? LastProcessStartedAt { get; set; }
     public DateTimeOffset? LastProcessFinishedAt { get; set; }
     public bool? LastProcessSucceeded { get; set; }
@@ -82,7 +82,7 @@ public class DukascopyJobReadModel : IReadModel,
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsProcessing = true;
+        IsRunning = true;
         LastProcessStartedAt = domainEvent.AggregateEvent.StartedAt;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
@@ -92,7 +92,7 @@ public class DukascopyJobReadModel : IReadModel,
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsProcessing = false;
+        IsRunning = false;
         LastProcessFinishedAt = domainEvent.AggregateEvent.FinishedAt;
         LastProcessSucceeded = domainEvent.AggregateEvent.IsSuccess;
         LastProcessError = domainEvent.AggregateEvent.ErrorMessage;
