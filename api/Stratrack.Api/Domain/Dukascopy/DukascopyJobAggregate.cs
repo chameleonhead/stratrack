@@ -10,7 +10,9 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobDeletedEvent>,
     IEmit<DukascopyJobExecutedEvent>,
     IEmit<DukascopyJobExecutionStartedEvent>,
-    IEmit<DukascopyJobExecutionFinishedEvent>
+    IEmit<DukascopyJobExecutionFinishedEvent>,
+    IEmit<DukascopyJobExecutionInterruptRequestedEvent>,
+    IEmit<DukascopyJobExecutionInterruptedEvent>
 {
     public Guid DataSourceId { get; private set; }
     public string Symbol { get; private set; } = "";
@@ -24,6 +26,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public bool? LastExecutionSucceeded { get; private set; }
     public string? LastExecutionError { get; private set; }
     public Guid? CurrentExecutionId { get; private set; }
+    public bool InterruptRequested { get; private set; }
 
     public void Create(string symbol, DateTimeOffset startTime)
     {
@@ -95,6 +98,22 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
     }
 
+    public void RequestInterrupt()
+    {
+        if (IsRunning && !InterruptRequested)
+        {
+            Emit(new DukascopyJobExecutionInterruptRequestedEvent());
+        }
+    }
+
+    public void Interrupt(Guid executionId, string? errorMessage)
+    {
+        if (IsRunning && InterruptRequested && CurrentExecutionId == executionId)
+        {
+            Emit(new DukascopyJobExecutionInterruptedEvent(executionId, errorMessage));
+        }
+    }
+
     public void Apply(DukascopyJobCreatedEvent aggregateEvent)
     {
         Symbol = aggregateEvent.Symbol;
@@ -142,6 +161,21 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         IsRunning = false;
         LastExecutionFinishedAt = aggregateEvent.FinishedAt;
         LastExecutionSucceeded = aggregateEvent.IsSuccess;
+        LastExecutionError = aggregateEvent.ErrorMessage;
+        CurrentExecutionId = null;
+    }
+
+    public void Apply(DukascopyJobExecutionInterruptRequestedEvent aggregateEvent)
+    {
+        InterruptRequested = true;
+    }
+
+    public void Apply(DukascopyJobExecutionInterruptedEvent aggregateEvent)
+    {
+        IsRunning = false;
+        InterruptRequested = false;
+        LastExecutionFinishedAt = DateTimeOffset.UtcNow;
+        LastExecutionSucceeded = false;
         LastExecutionError = aggregateEvent.ErrorMessage;
         CurrentExecutionId = null;
     }

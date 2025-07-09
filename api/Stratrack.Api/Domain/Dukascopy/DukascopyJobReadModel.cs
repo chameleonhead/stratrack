@@ -11,7 +11,9 @@ public class DukascopyJobReadModel : IReadModel,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDisabledEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDeletedEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptRequestedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptedEvent>
 {
     public string Id { get; set; } = "";
     public Guid JobId { get; set; }
@@ -22,10 +24,12 @@ public class DukascopyJobReadModel : IReadModel,
     [System.ComponentModel.DataAnnotations.Schema.Column("IsEnabled")]
     public bool IsEnabled { get; set; }
     public bool IsRunning { get; set; }
+    public Guid? CurrentExecutionId { get; set; }
     public DateTimeOffset? LastExecutionStartedAt { get; set; }
     public DateTimeOffset? LastExecutionFinishedAt { get; set; }
     public bool? LastExecutionSucceeded { get; set; }
     public string? LastExecutionError { get; set; }
+    public bool InterruptRequested { get; set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobCreatedEvent> domainEvent, CancellationToken cancellationToken)
@@ -83,6 +87,7 @@ public class DukascopyJobReadModel : IReadModel,
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
         IsRunning = true;
+        CurrentExecutionId = domainEvent.AggregateEvent.ExecutionId;
         LastExecutionStartedAt = domainEvent.AggregateEvent.StartedAt;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
@@ -93,8 +98,32 @@ public class DukascopyJobReadModel : IReadModel,
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
         IsRunning = false;
+        CurrentExecutionId = null;
         LastExecutionFinishedAt = domainEvent.AggregateEvent.FinishedAt;
         LastExecutionSucceeded = domainEvent.AggregateEvent.IsSuccess;
+        LastExecutionError = domainEvent.AggregateEvent.ErrorMessage;
+        UpdatedAt = domainEvent.Timestamp;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptRequestedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        Id = context.ReadModelId;
+        JobId = domainEvent.AggregateIdentity.GetGuid();
+        InterruptRequested = true;
+        UpdatedAt = domainEvent.Timestamp;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        Id = context.ReadModelId;
+        JobId = domainEvent.AggregateIdentity.GetGuid();
+        IsRunning = false;
+        InterruptRequested = false;
+        CurrentExecutionId = null;
+        LastExecutionFinishedAt = domainEvent.Timestamp;
+        LastExecutionSucceeded = false;
         LastExecutionError = domainEvent.AggregateEvent.ErrorMessage;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;

@@ -6,6 +6,8 @@ import {
   enableDukascopyJob,
   disableDukascopyJob,
   startDukascopyJobExecution,
+  requestInterruptDukascopyJob,
+  interruptDukascopyJob,
   updateDukascopyJob,
   listDukascopyJobs,
   DukascopyJobSummary,
@@ -20,6 +22,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
       start: "",
       enabled: false,
       running: false,
+      interruptRequested: false,
       jobId: undefined,
       dataSourceId: undefined,
       lastStarted: undefined,
@@ -46,6 +49,7 @@ const DukascopyJobs = () => {
               start: toDateTimeLocalString(j.startTime),
               enabled: j.isEnabled,
               running: j.isRunning,
+              interruptRequested: j.interruptRequested ?? false,
               lastStarted: j.lastProcessStartedAt,
               lastFinished: j.lastProcessFinishedAt,
               lastSucceeded: j.lastProcessSucceeded,
@@ -113,6 +117,53 @@ const DukascopyJobs = () => {
     }
   };
 
+  const handleRun = async (pair: string) => {
+    const job = jobs[pair];
+    if (!job.jobId) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await startDukascopyJobExecution(job.jobId);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInterruptRequest = async (pair: string) => {
+    const job = jobs[pair];
+    if (!job.jobId) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await requestInterruptDukascopyJob(job.jobId);
+      setJobs((prev) => ({ ...prev, [pair]: { ...job, interruptRequested: true } }));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInterrupt = async (pair: string) => {
+    const job = jobs[pair];
+    if (!job.jobId) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await interruptDukascopyJob(job.jobId);
+      setJobs((prev) => ({
+        ...prev,
+        [pair]: { ...job, running: false, interruptRequested: false },
+      }));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <header>
@@ -131,6 +182,9 @@ const DukascopyJobs = () => {
             disabled={isSubmitting}
             onDateChange={handleDateChange}
             onToggle={handleToggle}
+            onRun={handleRun}
+            onInterruptRequest={handleInterruptRequest}
+            onInterrupt={handleInterrupt}
           />
         ))}
       </div>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stratrack.Api.Domain;
 
@@ -11,9 +12,11 @@ using Stratrack.Api.Domain;
 namespace Stratrack.Api.Domain.Migrations
 {
     [DbContext(typeof(StratrackDbContext))]
-    partial class StratrackDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250709173555_AddInterruptFields")]
+    partial class AddInterruptFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,9 +223,6 @@ namespace Stratrack.Api.Domain.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid?>("CurrentExecutionId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("DataSourceId")
                         .HasColumnType("uniqueidentifier");

@@ -5,6 +5,7 @@ export type JobState = {
   start: string;
   enabled: boolean;
   running?: boolean;
+  interruptRequested?: boolean;
   lastStarted?: string;
   lastFinished?: string;
   lastSucceeded?: boolean;
@@ -20,9 +21,21 @@ type Props = {
   disabled: boolean;
   onDateChange: (pair: string, value: string) => void;
   onToggle: (pair: string) => void;
+  onRun: (pair: string) => void;
+  onInterruptRequest: (pair: string) => void;
+  onInterrupt: (pair: string) => void;
 };
 
-const DukascopyJobCard = ({ pair, job, disabled, onDateChange, onToggle }: Props) => {
+const DukascopyJobCard = ({
+  pair,
+  job,
+  disabled,
+  onDateChange,
+  onToggle,
+  onRun,
+  onInterruptRequest,
+  onInterrupt,
+}: Props) => {
   const isLoading = !job.loaded;
   return (
     <div className="rounded-xl border p-4 shadow space-y-2">
@@ -35,9 +48,26 @@ const DukascopyJobCard = ({ pair, job, disabled, onDateChange, onToggle }: Props
         fullWidth
         disabled={isLoading}
       />
-      <Button size="sm" onClick={() => onToggle(pair)} disabled={disabled}>
-        {job.enabled ? "無効化" : "有効化"}
-      </Button>
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => onToggle(pair)} disabled={disabled}>
+          {job.enabled ? "無効化" : "有効化"}
+        </Button>
+        {job.enabled && !job.running && (
+          <Button size="sm" onClick={() => onRun(pair)} disabled={disabled}>
+            実行
+          </Button>
+        )}
+        {job.running && !job.interruptRequested && (
+          <Button size="sm" onClick={() => onInterruptRequest(pair)} disabled={disabled}>
+            中断依頼
+          </Button>
+        )}
+        {job.running && job.interruptRequested && (
+          <Button size="sm" onClick={() => onInterrupt(pair)} disabled={disabled}>
+            中断
+          </Button>
+        )}
+      </div>
       <p className="text-sm">
         現在のステータス: {job.enabled ? "有効" : "無効"}
         {job.running ? " (処理中)" : ""}

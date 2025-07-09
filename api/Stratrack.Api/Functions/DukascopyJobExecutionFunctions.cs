@@ -17,7 +17,7 @@ using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime);
+public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime, Guid ExecutionId);
 public record DukascopyJobExecutionInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime, Guid ExecutionId);
 public record DukascopyJobStartInput(Guid JobId, Guid ExecutionId);
 public record DukascopyJobHourInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset Time, Guid ExecutionId);
@@ -56,10 +56,50 @@ public class DukascopyJobExecutionFunctions(
             return req.CreateResponse(HttpStatusCode.Accepted);
         }
 
+        var executionId = Guid.NewGuid();
         await client.ScheduleNewOrchestrationInstanceAsync(
             "DukascopyJobOrchestrator",
-            new[] { new DukascopyJobInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime) },
+            new[] { new DukascopyJobInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, executionId) },
+            new StartOrchestrationOptions { InstanceId = executionId.ToString() },
             token);
+        return req.CreateResponse(HttpStatusCode.Accepted);
+    }
+
+    [Function("RequestDukascopyJobInterrupt")]
+    [OpenApiOperation(operationId: "request_dukascopy_job_interrupt", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Interrupt Requested")]
+    public async Task<HttpResponseData> RequestInterrupt(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/interrupt-request")] HttpRequestData req,
+        Guid id,
+        CancellationToken token)
+    {
+        await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptRequestCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
+        return req.CreateResponse(HttpStatusCode.Accepted);
+    }
+
+    [Function("InterruptDukascopyJob")]
+    [OpenApiOperation(operationId: "interrupt_dukascopy_job", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Interrupted")]
+    public async Task<HttpResponseData> Interrupt(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/interrupt")] HttpRequestData req,
+        Guid id,
+        [DurableClient] DurableTaskClient client,
+        CancellationToken token)
+    {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        if (job == null || job.CurrentExecutionId == null)
+        {
+            return req.CreateResponse(HttpStatusCode.Accepted);
+        }
+        await client.TerminateInstanceAsync(job.CurrentExecutionId.Value.ToString(), "interrupt", token);
+        await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptCommand(DukascopyJobId.With(id))
+        {
+            ExecutionId = job.CurrentExecutionId.Value,
+            ErrorMessage = "Interrupted"
+        }, token).ConfigureAwait(false);
         return req.CreateResponse(HttpStatusCode.Accepted);
     }
 
@@ -89,7 +129,7 @@ public class DukascopyJobExecutionFunctions(
             return;
         }
 
-        var executionId = Guid.NewGuid();
+        var executionId = job.ExecutionId;
         await context.CallActivityAsync(nameof(DukascopyJobProcessStartActivity), new DukascopyJobStartInput(job.JobId, executionId));
         string? error = null;
         var success = true;
@@ -189,7 +229,7 @@ public class DukascopyJobExecutionFunctions(
                 _logger.LogInformation($"Skip {j.Symbol} job");
                 continue;
             }
-            targets.Add(new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime));
+            targets.Add(new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime, Guid.NewGuid()));
         }
         if (targets.Count == 0)
         {
@@ -197,7 +237,7 @@ public class DukascopyJobExecutionFunctions(
             return;
         }
 
-        await client.ScheduleNewOrchestrationInstanceAsync("DukascopyJobOrchestrator", targets, token);
+        await client.ScheduleNewOrchestrationInstanceAsync("DukascopyJobOrchestrator", targets, null, token);
     }
 }
 

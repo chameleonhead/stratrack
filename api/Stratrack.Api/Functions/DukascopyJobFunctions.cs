@@ -154,6 +154,7 @@ public class DukascopyJobFunctions(
                 StartTime = j.StartTime,
                 IsEnabled = j.IsEnabled,
                 IsRunning = j.IsRunning,
+                InterruptRequested = j.InterruptRequested,
                 LastExecutionStartedAt = j.LastExecutionStartedAt,
                 LastExecutionFinishedAt = j.LastExecutionFinishedAt,
                 LastExecutionSucceeded = j.LastExecutionSucceeded,

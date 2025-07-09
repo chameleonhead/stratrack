@@ -16,6 +16,7 @@ export type DukascopyJobSummary = {
   startTime: string;
   isEnabled: boolean;
   isRunning: boolean;
+  interruptRequested?: boolean;
   lastProcessStartedAt?: string;
   lastProcessFinishedAt?: string;
   lastProcessSucceeded?: boolean;
@@ -74,6 +75,26 @@ export async function startDukascopyJobExecution(id: string) {
   });
   if (!res.ok) {
     throw new Error(`Failed to start dukascopy job execution: ${res.status}`);
+  }
+}
+
+export async function requestInterruptDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/interrupt-request`, {
+    method: "POST",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to request interrupt: ${res.status}`);
+  }
+}
+
+export async function interruptDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/interrupt`, {
+    method: "POST",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to interrupt job: ${res.status}`);
   }
 }
 
