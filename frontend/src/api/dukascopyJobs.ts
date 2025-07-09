@@ -14,7 +14,7 @@ export type DukascopyJobSummary = {
   dataSourceId: string;
   symbol: string;
   startTime: string;
-  isRunning: boolean;
+  isEnabled: boolean;
   isProcessing: boolean;
   lastProcessStartedAt?: string;
   lastProcessFinishedAt?: string;
@@ -47,23 +47,33 @@ export async function createDukascopyJob(
   return res.json();
 }
 
-export async function startDukascopyJob(id: string) {
-  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/start`, {
+export async function enableDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/enable`, {
     method: "POST",
     headers: { "x-functions-key": API_KEY },
   });
   if (!res.ok) {
-    throw new Error(`Failed to start dukascopy job: ${res.status}`);
+    throw new Error(`Failed to enable dukascopy job: ${res.status}`);
   }
 }
 
-export async function stopDukascopyJob(id: string) {
-  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/stop`, {
+export async function disableDukascopyJob(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/disable`, {
     method: "POST",
     headers: { "x-functions-key": API_KEY },
   });
   if (!res.ok) {
-    throw new Error(`Failed to stop dukascopy job: ${res.status}`);
+    throw new Error(`Failed to disable dukascopy job: ${res.status}`);
+  }
+}
+
+export async function startDukascopyJobExecution(id: string) {
+  const res = await fetch(`${API_BASE_URL}/api/dukascopy-job/${id}/execute`, {
+    method: "POST",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to start dukascopy job execution: ${res.status}`);
   }
 }
 

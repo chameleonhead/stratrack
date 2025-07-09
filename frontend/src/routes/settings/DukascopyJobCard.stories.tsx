@@ -9,7 +9,7 @@ const meta = {
     pair: "EURUSD",
     job: {
       start: toDateTimeLocalString(new Date()),
-      running: false,
+      enabled: false,
       loaded: true,
     } as JobState,
     disabled: false,

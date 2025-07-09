@@ -3,8 +3,9 @@ import DukascopyJobCard, { JobState } from "./DukascopyJobCard";
 import { toDateTimeLocalString } from "../../utils";
 import {
   createDukascopyJob,
-  startDukascopyJob,
-  stopDukascopyJob,
+  enableDukascopyJob,
+  disableDukascopyJob,
+  startDukascopyJobExecution,
   updateDukascopyJob,
   listDukascopyJobs,
   DukascopyJobSummary,
@@ -17,7 +18,7 @@ const initialState: Record<string, JobState> = Object.fromEntries(
     p,
     {
       start: "",
-      running: false,
+      enabled: false,
       processing: false,
       jobId: undefined,
       dataSourceId: undefined,
@@ -43,7 +44,7 @@ const DukascopyJobs = () => {
           if (PAIRS.includes(j.symbol)) {
             state[j.symbol] = {
               start: toDateTimeLocalString(j.startTime),
-              running: j.isRunning,
+              enabled: j.isEnabled,
               processing: j.isProcessing,
               lastStarted: j.lastProcessStartedAt,
               lastFinished: j.lastProcessFinishedAt,
@@ -77,11 +78,11 @@ const DukascopyJobs = () => {
       return;
     }
     try {
-      if (job.running) {
+      if (job.enabled) {
         if (job.jobId) {
-          await stopDukascopyJob(job.jobId);
+          await disableDukascopyJob(job.jobId);
         }
-        setJobs((prev) => ({ ...prev, [pair]: { ...job, running: false } }));
+        setJobs((prev) => ({ ...prev, [pair]: { ...job, enabled: false } }));
       } else {
         let id = job.jobId;
         let dataSourceId = job.dataSourceId;
@@ -98,10 +99,11 @@ const DukascopyJobs = () => {
             startTime: new Date(job.start).toISOString(),
           });
         }
-        await startDukascopyJob(id);
+        await enableDukascopyJob(id);
+        await startDukascopyJobExecution(id);
         setJobs((prev) => ({
           ...prev,
-          [pair]: { ...job, running: true, jobId: id, dataSourceId },
+          [pair]: { ...job, enabled: true, jobId: id, dataSourceId },
         }));
       }
     } catch (err) {
@@ -116,7 +118,7 @@ const DukascopyJobs = () => {
       <header>
         <h2 className="text-2xl font-bold">Dukascopyジョブ管理</h2>
         <p className="text-sm text-gray-600 mt-1">
-          日付を変更した後は一度ジョブを停止し、再度開始してください
+          日付を変更した後は一度ジョブを無効化し、再度有効化してください
         </p>
       </header>
       {error && <p className="text-error">{error}</p>}
