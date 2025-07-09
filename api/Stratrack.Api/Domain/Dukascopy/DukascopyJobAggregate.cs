@@ -9,6 +9,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>,
     IEmit<DukascopyJobExecutedEvent>,
+    IEmit<DukascopyJobSkippedEvent>,
     IEmit<DukascopyJobProcessStartedEvent>,
     IEmit<DukascopyJobProcessFinishedEvent>
 {
@@ -78,6 +79,11 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         Emit(new DukascopyJobExecutedEvent(executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
     }
 
+    public void LogSkip(DateTimeOffset executedAt, string symbol, string reason)
+    {
+        Emit(new DukascopyJobSkippedEvent(executedAt, symbol, reason));
+    }
+
     public void StartProcess()
     {
         if (!IsProcessing)
@@ -125,6 +131,11 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     }
 
     public void Apply(DukascopyJobExecutedEvent aggregateEvent)
+    {
+        LastExecutedAt = aggregateEvent.ExecutedAt;
+    }
+
+    public void Apply(DukascopyJobSkippedEvent aggregateEvent)
     {
         LastExecutedAt = aggregateEvent.ExecutedAt;
     }

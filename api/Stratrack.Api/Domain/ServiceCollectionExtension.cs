@@ -43,6 +43,7 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStopCommand),
                 typeof(DukascopyJobDeleteCommand),
                 typeof(DukascopyJobExecutedCommand),
+                typeof(DukascopyJobSkippedCommand),
                 typeof(DukascopyJobProcessStartCommand),
                 typeof(DukascopyJobProcessFinishCommand)
             ).AddCommandHandlers(
@@ -62,6 +63,7 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStopCommandHandler),
                 typeof(DukascopyJobDeleteCommandHandler),
                 typeof(DukascopyJobExecutedCommandHandler),
+                typeof(DukascopyJobSkippedCommandHandler),
                 typeof(DukascopyJobProcessStartCommandHandler),
                 typeof(DukascopyJobProcessFinishCommandHandler)
             ).AddEvents(
@@ -82,6 +84,7 @@ public static class ServiceCollectionExtension
                 typeof(DukascopyJobStoppedEvent),
                 typeof(DukascopyJobDeletedEvent),
                 typeof(DukascopyJobExecutedEvent),
+                typeof(DukascopyJobSkippedEvent),
                 typeof(DukascopyJobProcessStartedEvent),
                 typeof(DukascopyJobProcessFinishedEvent)
             );

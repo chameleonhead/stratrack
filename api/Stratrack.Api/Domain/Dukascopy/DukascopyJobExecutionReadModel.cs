@@ -6,7 +6,8 @@ using System.ComponentModel.DataAnnotations;
 namespace Stratrack.Api.Domain.Dukascopy;
 
 public class DukascopyJobExecutionReadModel : IReadModel,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent>
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobSkippedEvent>
 {
     [Key]
     public string Id { get; set; } = "";
@@ -28,6 +29,19 @@ public class DukascopyJobExecutionReadModel : IReadModel,
         TargetTime = domainEvent.AggregateEvent.TargetTime;
         ErrorMessage = domainEvent.AggregateEvent.ErrorMessage;
         Duration = domainEvent.AggregateEvent.Duration;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobSkippedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        Id = context.ReadModelId;
+        JobId = domainEvent.AggregateIdentity.GetGuid();
+        ExecutedAt = domainEvent.AggregateEvent.ExecutedAt;
+        IsSuccess = false;
+        Symbol = domainEvent.AggregateEvent.Symbol;
+        TargetTime = domainEvent.AggregateEvent.ExecutedAt;
+        ErrorMessage = domainEvent.AggregateEvent.Reason;
+        Duration = 0;
         return Task.CompletedTask;
     }
 }

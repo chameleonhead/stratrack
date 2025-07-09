@@ -332,6 +332,8 @@ public class DukascopyJobFunctions(
         }, context.CancellationToken).ConfigureAwait(false);
     }
 
+
+
     [Function("DukascopyJobTimer")]
     public async Task RunTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
     {
@@ -342,7 +344,14 @@ public class DukascopyJobFunctions(
         {
             if (!j.IsRunning || j.IsProcessing)
             {
+                var reason = !j.IsRunning ? "not running" : "processing";
                 _logger.LogInformation($"Skip {j.Symbol} job");
+                await _commandBus.PublishAsync(new DukascopyJobSkippedCommand(DukascopyJobId.With(j.JobId))
+                {
+                    ExecutedAt = DateTimeOffset.UtcNow,
+                    Symbol = j.Symbol,
+                    Reason = reason
+                }, token).ConfigureAwait(false);
                 continue;
             }
             targets.Add(new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime));
