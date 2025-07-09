@@ -67,14 +67,16 @@ namespace Stratrack.Api.Domain.Migrations
                 name: "DukascopyJobExecutions",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExecutionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExecutedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    IsSuccess = table.Column<bool>(type: "bit", nullable: false)
+                    StartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    FinishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsSuccess = table.Column<bool>(type: "bit", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DukascopyJobExecutions", x => x.Id);
+                    table.PrimaryKey("PK_DukascopyJobExecutions", x => x.ExecutionId);
                 });
 
             migrationBuilder.CreateTable(
@@ -88,11 +90,35 @@ namespace Stratrack.Api.Domain.Migrations
                     StartTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     IsRunning = table.Column<bool>(type: "bit", nullable: false),
+                    IsProcessing = table.Column<bool>(type: "bit", nullable: false),
+                    LastProcessStartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LastProcessFinishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LastProcessSucceeded = table.Column<bool>(type: "bit", nullable: true),
+                    LastProcessError = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DukascopyJobs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DukascopyJobSteps",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExecutionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExecutedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    IsSuccess = table.Column<bool>(type: "bit", nullable: false),
+                    Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TargetTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Duration = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DukascopyJobSteps", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -198,6 +224,9 @@ namespace Stratrack.Api.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "DukascopyJobs");
+
+            migrationBuilder.DropTable(
+                name: "DukascopyJobSteps");
 
             migrationBuilder.DropTable(
                 name: "EventEntity");
