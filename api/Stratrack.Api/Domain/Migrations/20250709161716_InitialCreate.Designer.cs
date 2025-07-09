@@ -240,16 +240,16 @@ namespace Stratrack.Api.Domain.Migrations
                     b.Property<Guid>("JobId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("LastProcessError")
+                    b.Property<string>("LastExecutionError")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("LastProcessFinishedAt")
+                    b.Property<DateTimeOffset?>("LastExecutionFinishedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("LastProcessStartedAt")
+                    b.Property<DateTimeOffset?>("LastExecutionStartedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<bool?>("LastProcessSucceeded")
+                    b.Property<bool?>("LastExecutionSucceeded")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset>("StartTime")

@@ -42,5 +42,5 @@ Azurite と Azure Functions Core Tools を利用することで、Durable Functi
 
 1. 別ターミナルで `azurite` を実行し、ストレージエミュレーターを起動します。Docker を使用する場合は `docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite` を実行します。
 2. `Stratrack.Api` ディレクトリで `func start` を実行し Functions ホストを起動します。
-3. `http://localhost:7071/api/swagger/ui` から `CreateDukascopyJob` などのエンドポイントを呼び出し、`EnableDukascopyJob` を実行すると `DukascopyJobOrchestrator` が起動してジョブが開始されます。
+3. `http://localhost:7071/api/swagger/ui` から `CreateDukascopyJob` などのエンドポイントを呼び出してください。
 4. オーケストレーターの状態は `func durable get-instances` で確認できます。
