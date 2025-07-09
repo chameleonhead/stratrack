@@ -42,7 +42,7 @@ public class StratrackDbContext : DbContext
         });
         modelBuilder.Entity<DukascopyJobExecutionReadModel>(entity =>
         {
-            entity.HasKey(m => m.ExecutionId);
+            entity.HasKey(m => m.Id);
         });
         modelBuilder.Entity<DukascopyJobStepReadModel>(entity =>
         {
