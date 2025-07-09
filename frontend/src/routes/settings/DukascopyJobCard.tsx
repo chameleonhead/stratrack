@@ -22,7 +22,6 @@ type Props = {
   onDateChange: (pair: string, value: string) => void;
   onToggle: (pair: string) => void;
   onRun: (pair: string) => void;
-  onInterruptRequest: (pair: string) => void;
   onInterrupt: (pair: string) => void;
 };
 
@@ -33,7 +32,6 @@ const DukascopyJobCard = ({
   onDateChange,
   onToggle,
   onRun,
-  onInterruptRequest,
   onInterrupt,
 }: Props) => {
   const isLoading = !job.loaded;
@@ -57,12 +55,7 @@ const DukascopyJobCard = ({
             実行
           </Button>
         )}
-        {job.running && !job.interruptRequested && (
-          <Button size="sm" onClick={() => onInterruptRequest(pair)} disabled={disabled}>
-            中断依頼
-          </Button>
-        )}
-        {job.running && job.interruptRequested && (
+        {job.running && (
           <Button size="sm" onClick={() => onInterrupt(pair)} disabled={disabled}>
             中断
           </Button>
@@ -70,7 +63,7 @@ const DukascopyJobCard = ({
       </div>
       <p className="text-sm">
         現在のステータス: {job.enabled ? "有効" : "無効"}
-        {job.running ? " (処理中)" : ""}
+        {job.running ? (job.interruptRequested ? " (中断待ち)" : " (処理中)") : ""}
       </p>
       {job.lastFinished && (
         <p className="text-sm">

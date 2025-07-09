@@ -16,7 +16,6 @@ const meta = {
     onDateChange: fn(),
     onToggle: fn(),
     onRun: fn(),
-    onInterruptRequest: fn(),
     onInterrupt: fn(),
   },
 } satisfies Meta<typeof DukascopyJobCard>;

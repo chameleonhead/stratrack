@@ -7,7 +7,6 @@ import {
   disableDukascopyJob,
   startDukascopyJobExecution,
   requestInterruptDukascopyJob,
-  interruptDukascopyJob,
   updateDukascopyJob,
   listDukascopyJobs,
   DukascopyJobSummary,
@@ -131,7 +130,7 @@ const DukascopyJobs = () => {
     }
   };
 
-  const handleInterruptRequest = async (pair: string) => {
+  const handleInterrupt = async (pair: string) => {
     const job = jobs[pair];
     if (!job.jobId) return;
     setIsSubmitting(true);
@@ -139,24 +138,6 @@ const DukascopyJobs = () => {
     try {
       await requestInterruptDukascopyJob(job.jobId);
       setJobs((prev) => ({ ...prev, [pair]: { ...job, interruptRequested: true } }));
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleInterrupt = async (pair: string) => {
-    const job = jobs[pair];
-    if (!job.jobId) return;
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await interruptDukascopyJob(job.jobId);
-      setJobs((prev) => ({
-        ...prev,
-        [pair]: { ...job, running: false, interruptRequested: false },
-      }));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -183,7 +164,6 @@ const DukascopyJobs = () => {
             onDateChange={handleDateChange}
             onToggle={handleToggle}
             onRun={handleRun}
-            onInterruptRequest={handleInterruptRequest}
             onInterrupt={handleInterrupt}
           />
         ))}
