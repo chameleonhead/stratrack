@@ -73,8 +73,28 @@ public class DukascopyJobExecutionFunctions(
     public async Task<HttpResponseData> RequestInterrupt(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/interrupt-request")] HttpRequestData req,
         Guid id,
+        [DurableClient] DurableTaskClient client,
         CancellationToken token)
     {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        if (job != null && job.CurrentExecutionId != null)
+        {
+            var instance = await client.GetInstanceAsync(job.CurrentExecutionId.Value.ToString(), token).ConfigureAwait(false);
+            if (instance == null || instance.RuntimeStatus is OrchestrationRuntimeStatus.Completed or OrchestrationRuntimeStatus.Failed or OrchestrationRuntimeStatus.Canceled or OrchestrationRuntimeStatus.Terminated)
+            {
+                if (job.IsRunning)
+                {
+                    await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptCommand(DukascopyJobId.With(id))
+                    {
+                        ExecutionId = job.CurrentExecutionId.Value,
+                        ErrorMessage = "Interrupted"
+                    }, token).ConfigureAwait(false);
+                }
+                return req.CreateResponse(HttpStatusCode.Accepted);
+            }
+        }
+
         await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptRequestCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
         return req.CreateResponse(HttpStatusCode.Accepted);
     }
