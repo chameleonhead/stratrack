@@ -19,10 +19,10 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public bool IsEnabled { get; private set; }
     public DateTimeOffset? LastExecutedAt { get; private set; }
     public bool IsRunning { get; private set; }
-    public DateTimeOffset? LastProcessStartedAt { get; private set; }
-    public DateTimeOffset? LastProcessFinishedAt { get; private set; }
-    public bool? LastProcessSucceeded { get; private set; }
-    public string? LastProcessError { get; private set; }
+    public DateTimeOffset? LastExecutionStartedAt { get; private set; }
+    public DateTimeOffset? LastExecutionFinishedAt { get; private set; }
+    public bool? LastExecutionSucceeded { get; private set; }
+    public string? LastExecutionError { get; private set; }
     public Guid? CurrentExecutionId { get; private set; }
 
     public void Create(string symbol, DateTimeOffset startTime)
@@ -133,16 +133,16 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public void Apply(DukascopyJobExecutionStartedEvent aggregateEvent)
     {
         IsRunning = true;
-        LastProcessStartedAt = aggregateEvent.StartedAt;
+        LastExecutionStartedAt = aggregateEvent.StartedAt;
         CurrentExecutionId = aggregateEvent.ExecutionId;
     }
 
     public void Apply(DukascopyJobExecutionFinishedEvent aggregateEvent)
     {
         IsRunning = false;
-        LastProcessFinishedAt = aggregateEvent.FinishedAt;
-        LastProcessSucceeded = aggregateEvent.IsSuccess;
-        LastProcessError = aggregateEvent.ErrorMessage;
+        LastExecutionFinishedAt = aggregateEvent.FinishedAt;
+        LastExecutionSucceeded = aggregateEvent.IsSuccess;
+        LastExecutionError = aggregateEvent.ErrorMessage;
         CurrentExecutionId = null;
     }
 }

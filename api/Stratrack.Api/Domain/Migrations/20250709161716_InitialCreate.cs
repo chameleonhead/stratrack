@@ -91,10 +91,10 @@ namespace Stratrack.Api.Domain.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false),
                     IsRunning = table.Column<bool>(type: "bit", nullable: false),
-                    LastProcessStartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LastProcessFinishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LastProcessSucceeded = table.Column<bool>(type: "bit", nullable: true),
-                    LastProcessError = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastExecutionStartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LastExecutionFinishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LastExecutionSucceeded = table.Column<bool>(type: "bit", nullable: true),
+                    LastExecutionError = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>

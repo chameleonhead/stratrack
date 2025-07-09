@@ -4,8 +4,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.DurableTask;
-using Microsoft.DurableTask.Client;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
@@ -93,7 +91,6 @@ public class DukascopyJobFunctions(
     public async Task<HttpResponseData> EnableJob(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/enable")] HttpRequestData req,
         Guid id,
-        [DurableClient] DurableTaskClient client,
         CancellationToken token)
     {
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
@@ -108,10 +105,6 @@ public class DukascopyJobFunctions(
         }
         await _commandBus.PublishAsync(new DataSourceLockCommand(DataSourceId.With(job.DataSourceId)), token).ConfigureAwait(false);
         await _commandBus.PublishAsync(new DukascopyJobEnableCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
-        await client.ScheduleNewOrchestrationInstanceAsync(
-            "DukascopyJobOrchestrator",
-            new[] { new DukascopyJobInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime) },
-            token);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
         return res;
     }
@@ -161,10 +154,10 @@ public class DukascopyJobFunctions(
                 StartTime = j.StartTime,
                 IsEnabled = j.IsEnabled,
                 IsRunning = j.IsRunning,
-                LastProcessStartedAt = j.LastProcessStartedAt,
-                LastProcessFinishedAt = j.LastProcessFinishedAt,
-                LastProcessSucceeded = j.LastProcessSucceeded,
-                LastProcessError = j.LastProcessError,
+                LastExecutionStartedAt = j.LastExecutionStartedAt,
+                LastExecutionFinishedAt = j.LastExecutionFinishedAt,
+                LastExecutionSucceeded = j.LastExecutionSucceeded,
+                LastExecutionError = j.LastExecutionError,
                 UpdatedAt = j.UpdatedAt,
             }).ToList();
         var res = req.CreateResponse(HttpStatusCode.OK);

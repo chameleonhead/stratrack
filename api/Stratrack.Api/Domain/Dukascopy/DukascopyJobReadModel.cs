@@ -22,10 +22,10 @@ public class DukascopyJobReadModel : IReadModel,
     [System.ComponentModel.DataAnnotations.Schema.Column("IsEnabled")]
     public bool IsEnabled { get; set; }
     public bool IsRunning { get; set; }
-    public DateTimeOffset? LastProcessStartedAt { get; set; }
-    public DateTimeOffset? LastProcessFinishedAt { get; set; }
-    public bool? LastProcessSucceeded { get; set; }
-    public string? LastProcessError { get; set; }
+    public DateTimeOffset? LastExecutionStartedAt { get; set; }
+    public DateTimeOffset? LastExecutionFinishedAt { get; set; }
+    public bool? LastExecutionSucceeded { get; set; }
+    public string? LastExecutionError { get; set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobCreatedEvent> domainEvent, CancellationToken cancellationToken)
@@ -83,7 +83,7 @@ public class DukascopyJobReadModel : IReadModel,
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
         IsRunning = true;
-        LastProcessStartedAt = domainEvent.AggregateEvent.StartedAt;
+        LastExecutionStartedAt = domainEvent.AggregateEvent.StartedAt;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
@@ -93,9 +93,9 @@ public class DukascopyJobReadModel : IReadModel,
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
         IsRunning = false;
-        LastProcessFinishedAt = domainEvent.AggregateEvent.FinishedAt;
-        LastProcessSucceeded = domainEvent.AggregateEvent.IsSuccess;
-        LastProcessError = domainEvent.AggregateEvent.ErrorMessage;
+        LastExecutionFinishedAt = domainEvent.AggregateEvent.FinishedAt;
+        LastExecutionSucceeded = domainEvent.AggregateEvent.IsSuccess;
+        LastExecutionError = domainEvent.AggregateEvent.ErrorMessage;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }

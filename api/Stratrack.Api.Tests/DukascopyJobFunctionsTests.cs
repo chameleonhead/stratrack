@@ -63,19 +63,20 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/enable")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var client = new Mock<DurableTaskClient>("test");
-        client.Setup(c => c.ScheduleNewOrchestrationInstanceAsync(
-            It.IsAny<TaskName>(),
-            It.IsAny<object?>(),
-            It.IsAny<StartOrchestrationOptions?>(),
-            It.IsAny<CancellationToken>())).ReturnsAsync("instance");
-        var startRes = await func.EnableJob(startReq, id, client.Object, CancellationToken.None);
+        var startRes = await func.EnableJob(startReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
             var ds = await ctx.DataSources.FirstAsync(d => d.DataSourceId == dsId);
             Assert.IsTrue(ds.IsLocked);
         }
+
+        var client = new Mock<DurableTaskClient>("test");
+        client.Setup(c => c.ScheduleNewOrchestrationInstanceAsync(
+            It.IsAny<TaskName>(),
+            It.IsAny<object?>(),
+            It.IsAny<StartOrchestrationOptions?>(),
+            It.IsAny<CancellationToken>())).ReturnsAsync("instance");
 
         var stopReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/disable")
