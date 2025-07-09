@@ -8,18 +8,38 @@ namespace Stratrack.Api.Infrastructure;
 
 public class DukascopyClient : IDukascopyClient
 {
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http;
+    private readonly Dictionary<string, string> _etagCache = new();
+
+    public DukascopyClient(HttpClient? httpClient = null)
+    {
+        _http = httpClient ?? new HttpClient();
+    }
 
     public async Task<byte[]?> GetTickDataAsync(string symbol, DateTimeOffset time, CancellationToken token)
     {
         var baseTime = new DateTimeOffset(time.Year, time.Month, time.Day, time.Hour, 0, 0, time.Offset);
         var url = $"https://datafeed.dukascopy.com/datafeed/{symbol}/{baseTime:yyyy}/{baseTime:MM}/{baseTime:dd}/{baseTime:HH}h_ticks.bi5";
-        using var res = await _http.GetAsync(url, token).ConfigureAwait(false);
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        if (_etagCache.TryGetValue(url, out var etag))
+        {
+            request.Headers.IfNoneMatch.ParseAdd(etag);
+        }
+
+        using var res = await _http.SendAsync(request, token).ConfigureAwait(false);
         if (res.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
         }
+        if (res.StatusCode == HttpStatusCode.NotModified)
+        {
+            return null;
+        }
         res.EnsureSuccessStatusCode();
+        if (res.Headers.ETag != null)
+        {
+            _etagCache[url] = res.Headers.ETag.ToString();
+        }
         var compressed = await res.Content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
 
         using var inStream = new MemoryStream(compressed);

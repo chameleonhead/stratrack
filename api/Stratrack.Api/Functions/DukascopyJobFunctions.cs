@@ -233,22 +233,37 @@ public class DukascopyJobFunctions(
             return;
         }
 
+        var tasks = new List<Task>();
         foreach (var job in jobs)
         {
-            await context.CallActivityAsync(nameof(DukascopyJobProcessStartActivity), job.JobId);
-            string? error = null;
-            var success = true;
-            try
-            {
-                await context.CallSubOrchestratorAsync(nameof(DukascopyJobDayOrchestrator), job);
-            }
-            catch (Exception ex)
-            {
-                success = false;
-                error = ex.Message;
-            }
-            await context.CallActivityAsync(nameof(DukascopyJobProcessFinishActivity), new DukascopyJobFinishInput(job.JobId, success, error));
+            tasks.Add(context.CallSubOrchestratorAsync(nameof(DukascopySingleJobOrchestrator), job));
         }
+        await Task.WhenAll(tasks);
+    }
+
+    [Function("DukascopySingleJobOrchestrator")]
+    public async Task DukascopySingleJobOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var job = context.GetInput<DukascopyJobInput>();
+        if (job == null)
+        {
+            return;
+        }
+
+        await context.CallActivityAsync(nameof(DukascopyJobProcessStartActivity), job.JobId);
+        string? error = null;
+        var success = true;
+        try
+        {
+            var subOptions = TaskOptions.FromRetryPolicy(new RetryPolicy(2, TimeSpan.FromSeconds(5)));
+            await context.CallSubOrchestratorAsync(nameof(DukascopyJobDayOrchestrator), job, subOptions);
+        }
+        catch (Exception ex)
+        {
+            success = false;
+            error = ex.Message;
+        }
+        await context.CallActivityAsync(nameof(DukascopyJobProcessFinishActivity), new DukascopyJobFinishInput(job.JobId, success, error));
     }
 
     [Function("DukascopyJobDayOrchestrator")]
@@ -266,13 +281,22 @@ public class DukascopyJobFunctions(
             return;
         }
 
-        var current = start.Value;
         var maxTime = context.CurrentUtcDateTime.AddHours(-1);
-        var dayEnd = current.Date.AddDays(1);
-        while (current < dayEnd && current <= maxTime)
+        var current = start.Value;
+        if (current > maxTime)
         {
-            await context.CallActivityAsync(nameof(DukascopyJobHourActivity), new DukascopyJobHourInput(job.JobId, job.DataSourceId, job.Symbol, current));
-            current = current.AddHours(1);
+            current = job.StartTime > maxTime.AddDays(-1) ? job.StartTime : maxTime.AddDays(-1);
+        }
+
+        while (current <= maxTime)
+        {
+            var dayEnd = current.Date.AddDays(1);
+            while (current < dayEnd && current <= maxTime)
+            {
+                var options = TaskOptions.FromRetryPolicy(new RetryPolicy(2, TimeSpan.FromSeconds(5)));
+                await context.CallActivityAsync(nameof(DukascopyJobHourActivity), new DukascopyJobHourInput(job.JobId, job.DataSourceId, job.Symbol, current), options);
+                current = current.AddHours(1);
+            }
         }
     }
 
@@ -288,7 +312,7 @@ public class DukascopyJobFunctions(
     public async Task DukascopyJobHourActivity([ActivityTrigger] DukascopyJobHourInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        _logger.LogInformation("Fetching {Symbol} {Time}", input.Symbol, input.Time);
+        _logger.LogInformation($"Fetching {input.Symbol} {input.Time}");
         await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, input.Time, token).ConfigureAwait(false);
     }
 
@@ -311,15 +335,21 @@ public class DukascopyJobFunctions(
     [Function("DukascopyJobTimer")]
     public async Task RunTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
     {
-        _logger.LogInformation("DukascopyJobTimer triggered at {Time}", DateTimeOffset.UtcNow);
+        _logger.LogInformation($"DukascopyJobTimer triggered at {DateTimeOffset.UtcNow}");
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var targets = jobs
-            .Where(j => !j.IsDeleted && j.IsRunning && !j.IsProcessing)
-            .Select(j => new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime))
-            .ToList();
+        var targets = new List<DukascopyJobInput>();
+        foreach (var j in jobs.Where(j => !j.IsDeleted))
+        {
+            if (!j.IsRunning || j.IsProcessing)
+            {
+                _logger.LogInformation($"Skip {j.Symbol} job");
+                continue;
+            }
+            targets.Add(new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime));
+        }
         if (targets.Count == 0)
         {
-            _logger.LogInformation("No running jobs found");
+            _logger.LogInformation("No job to start");
             return;
         }
 
