@@ -9,9 +9,8 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     IEmit<DukascopyJobStoppedEvent>,
     IEmit<DukascopyJobDeletedEvent>,
     IEmit<DukascopyJobExecutedEvent>,
-    IEmit<DukascopyJobSkippedEvent>,
-    IEmit<DukascopyJobProcessStartedEvent>,
-    IEmit<DukascopyJobProcessFinishedEvent>
+    IEmit<DukascopyJobExecutionStartedEvent>,
+    IEmit<DukascopyJobExecutionFinishedEvent>
 {
     public Guid DataSourceId { get; private set; }
     public string Symbol { get; private set; } = "";
@@ -24,6 +23,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public DateTimeOffset? LastProcessFinishedAt { get; private set; }
     public bool? LastProcessSucceeded { get; private set; }
     public string? LastProcessError { get; private set; }
+    public Guid? CurrentExecutionId { get; private set; }
 
     public void Create(string symbol, DateTimeOffset startTime)
     {
@@ -74,29 +74,24 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
     }
 
-    public void LogExecution(DateTimeOffset executedAt, bool isSuccess, string symbol, DateTimeOffset targetTime, string? errorMessage, double duration)
+    public void LogExecution(Guid executionId, DateTimeOffset executedAt, bool isSuccess, string symbol, DateTimeOffset targetTime, string? errorMessage, double duration)
     {
-        Emit(new DukascopyJobExecutedEvent(executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
+        Emit(new DukascopyJobExecutedEvent(executionId, executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
     }
 
-    public void LogSkip(DateTimeOffset executedAt, string symbol, string reason)
-    {
-        Emit(new DukascopyJobSkippedEvent(executedAt, symbol, reason));
-    }
-
-    public void StartProcess()
+    public void StartExecution(Guid executionId)
     {
         if (!IsProcessing)
         {
-            Emit(new DukascopyJobProcessStartedEvent(DateTimeOffset.UtcNow));
+            Emit(new DukascopyJobExecutionStartedEvent(executionId, DateTimeOffset.UtcNow));
         }
     }
 
-    public void FinishProcess(bool isSuccess, string? errorMessage)
+    public void FinishExecution(Guid executionId, bool isSuccess, string? errorMessage)
     {
-        if (IsProcessing)
+        if (IsProcessing && CurrentExecutionId == executionId)
         {
-            Emit(new DukascopyJobProcessFinishedEvent(DateTimeOffset.UtcNow, isSuccess, errorMessage));
+            Emit(new DukascopyJobExecutionFinishedEvent(executionId, DateTimeOffset.UtcNow, isSuccess, errorMessage));
         }
     }
 
@@ -135,22 +130,19 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         LastExecutedAt = aggregateEvent.ExecutedAt;
     }
 
-    public void Apply(DukascopyJobSkippedEvent aggregateEvent)
-    {
-        LastExecutedAt = aggregateEvent.ExecutedAt;
-    }
-
-    public void Apply(DukascopyJobProcessStartedEvent aggregateEvent)
+    public void Apply(DukascopyJobExecutionStartedEvent aggregateEvent)
     {
         IsProcessing = true;
         LastProcessStartedAt = aggregateEvent.StartedAt;
+        CurrentExecutionId = aggregateEvent.ExecutionId;
     }
 
-    public void Apply(DukascopyJobProcessFinishedEvent aggregateEvent)
+    public void Apply(DukascopyJobExecutionFinishedEvent aggregateEvent)
     {
         IsProcessing = false;
         LastProcessFinishedAt = aggregateEvent.FinishedAt;
         LastProcessSucceeded = aggregateEvent.IsSuccess;
         LastProcessError = aggregateEvent.ErrorMessage;
+        CurrentExecutionId = null;
     }
 }

@@ -5,6 +5,7 @@ namespace Stratrack.Api.Domain.Dukascopy.Events;
 
 [EventVersion("DukascopyJobExecuted", 2)]
 public class DukascopyJobExecutedEvent(
+    Guid executionId,
     DateTimeOffset executedAt,
     bool isSuccess,
     string symbol,
@@ -13,6 +14,7 @@ public class DukascopyJobExecutedEvent(
     double duration
 ) : AggregateEvent<DukascopyJobAggregate, DukascopyJobId>
 {
+    public Guid ExecutionId { get; } = executionId;
     public DateTimeOffset ExecutedAt { get; } = executedAt;
     public bool IsSuccess { get; } = isSuccess;
     public string Symbol { get; } = symbol;

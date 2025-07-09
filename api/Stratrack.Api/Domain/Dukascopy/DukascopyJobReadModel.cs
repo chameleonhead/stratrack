@@ -10,8 +10,8 @@ public class DukascopyJobReadModel : IReadModel,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStartedEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStoppedEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDeletedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessStartedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessFinishedEvent>
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>
 {
     public string Id { get; set; } = "";
     public Guid JobId { get; set; }
@@ -77,7 +77,7 @@ public class DukascopyJobReadModel : IReadModel,
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessStartedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
@@ -87,7 +87,7 @@ public class DukascopyJobReadModel : IReadModel,
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessFinishedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();

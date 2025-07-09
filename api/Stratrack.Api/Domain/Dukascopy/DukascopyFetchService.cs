@@ -27,7 +27,7 @@ public class DukascopyFetchService(
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
 
-    public async Task FetchHourAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset time, CancellationToken token)
+    public async Task FetchHourAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset time, Guid executionId, CancellationToken token)
     {
         var success = false;
         string? error = null;
@@ -66,6 +66,7 @@ public class DukascopyFetchService(
             sw.Stop();
             await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
             {
+                ExecutionId = executionId,
                 ExecutedAt = DateTimeOffset.UtcNow,
                 IsSuccess = success,
                 Symbol = symbol,
