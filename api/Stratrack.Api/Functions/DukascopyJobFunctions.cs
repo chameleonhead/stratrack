@@ -184,6 +184,34 @@ public class DukascopyJobFunctions(
         return res;
     }
 
+    [Function("GetDukascopyJobStatus")]
+    [OpenApiOperation(operationId: "get_dukascopy_job_status", tags: ["DukascopyJob"])]
+    [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Models.DukascopyJobStatus))]
+    public async Task<HttpResponseData> GetJobStatus(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "dukascopy-job/{id:guid}/status")] HttpRequestData req,
+        Guid id,
+        CancellationToken token)
+    {
+        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        if (job == null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        var last = await _queryProcessor.ProcessAsync(new DukascopyJobLastExecutionQuery(id), token).ConfigureAwait(false);
+        var res = req.CreateResponse(HttpStatusCode.OK);
+        await res.WriteAsJsonAsync(new Models.DukascopyJobStatus
+        {
+            IsRunning = job.IsRunning,
+            LastExecutedAt = last?.ExecutedAt,
+            LastSucceeded = last?.IsSuccess,
+            LastError = last?.ErrorMessage
+        }, cancellationToken: token).ConfigureAwait(false);
+        return res;
+    }
+
     [Function("GetAllDukascopyJobLogs")]
     [OpenApiOperation(operationId: "get_all_dukascopy_job_logs", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]

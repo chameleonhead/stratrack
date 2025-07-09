@@ -44,3 +44,4 @@ Azurite と Azure Functions Core Tools を利用することで、Durable Functi
 2. `Stratrack.Api` ディレクトリで `func start` を実行し Functions ホストを起動します。
 3. `http://localhost:7071/api/swagger/ui` から `CreateDukascopyJob` などのエンドポイントを呼び出し、`StartDukascopyJob` を実行すると `DukascopyJobOrchestrator` が起動してジョブが開始されます。
 4. オーケストレーターの状態は `func durable get-instances` で確認できます。
+5. ジョブの実行状況や直近のエラーは `GetDukascopyJobStatus` で取得できます。

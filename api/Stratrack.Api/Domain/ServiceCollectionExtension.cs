@@ -100,6 +100,7 @@ public static class ServiceCollectionExtension
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobExecutionReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobExecutionPagedQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobLastExecutionQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
