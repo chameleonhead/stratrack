@@ -12,7 +12,6 @@ const meta = {
       running: false,
       loaded: true,
     } as JobState,
-    logs: [],
     disabled: false,
     onDateChange: fn(),
     onToggle: fn(),

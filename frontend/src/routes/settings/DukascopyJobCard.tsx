@@ -1,10 +1,14 @@
 import Button from "../../components/Button";
 import Input from "../../components/Input";
-import type { DukascopyJobLog } from "../../api/dukascopyJobs";
 
 export type JobState = {
   start: string;
   running: boolean;
+  processing?: boolean;
+  lastStarted?: string;
+  lastFinished?: string;
+  lastSucceeded?: boolean;
+  lastError?: string;
   jobId?: string;
   dataSourceId?: string;
   loaded: boolean;
@@ -13,13 +17,12 @@ export type JobState = {
 type Props = {
   pair: string;
   job: JobState;
-  logs: DukascopyJobLog[];
   disabled: boolean;
   onDateChange: (pair: string, value: string) => void;
   onToggle: (pair: string) => void;
 };
 
-const DukascopyJobCard = ({ pair, job, logs, disabled, onDateChange, onToggle }: Props) => {
+const DukascopyJobCard = ({ pair, job, disabled, onDateChange, onToggle }: Props) => {
   const isLoading = !job.loaded;
   return (
     <div className="rounded-xl border p-4 shadow space-y-2">
@@ -35,18 +38,16 @@ const DukascopyJobCard = ({ pair, job, logs, disabled, onDateChange, onToggle }:
       <Button size="sm" onClick={() => onToggle(pair)} disabled={disabled}>
         {job.running ? "停止" : "開始"}
       </Button>
-      <details className="text-sm">
-        <summary className="cursor-pointer">履歴</summary>
-        <ul className="mt-1 pl-4 list-disc space-y-1 max-h-40 overflow-y-auto">
-          {logs.map((l) => (
-            <li key={l.executedAt}>
-              {new Date(l.executedAt).toLocaleString()} - {new Date(l.targetTime).toLocaleString()}{" "}
-              -{l.isSuccess ? "成功" : `失敗: ${l.errorMessage ?? ""}`} ({Math.round(l.duration)}ms)
-            </li>
-          ))}
-          {logs.length === 0 && <li>なし</li>}
-        </ul>
-      </details>
+      <p className="text-sm">
+        現在のステータス: {job.running ? "実行中" : "停止中"}
+        {job.processing ? " (処理中)" : ""}
+      </p>
+      {job.lastFinished && (
+        <p className="text-sm">
+          最終実行: {new Date(job.lastFinished).toLocaleString()} -{" "}
+          {job.lastSucceeded ? "成功" : `失敗: ${job.lastError ?? ""}`}
+        </p>
+      )}
     </div>
   );
 };

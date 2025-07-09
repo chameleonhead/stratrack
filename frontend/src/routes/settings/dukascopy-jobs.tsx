@@ -7,9 +7,7 @@ import {
   stopDukascopyJob,
   updateDukascopyJob,
   listDukascopyJobs,
-  listDukascopyJobLogs,
   DukascopyJobSummary,
-  DukascopyJobLog,
 } from "../../api/dukascopyJobs";
 
 const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
@@ -20,7 +18,13 @@ const initialState: Record<string, JobState> = Object.fromEntries(
     {
       start: "",
       running: false,
+      processing: false,
+      jobId: undefined,
       dataSourceId: undefined,
+      lastStarted: undefined,
+      lastFinished: undefined,
+      lastSucceeded: undefined,
+      lastError: undefined,
       loaded: false,
     },
   ])
@@ -28,7 +32,6 @@ const initialState: Record<string, JobState> = Object.fromEntries(
 
 const DukascopyJobs = () => {
   const [jobs, setJobs] = useState<Record<string, JobState>>(initialState);
-  const [logs, setLogs] = useState<Record<string, DukascopyJobLog[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,28 +39,26 @@ const DukascopyJobs = () => {
     listDukascopyJobs()
       .then((items) => {
         const state = { ...initialState };
-        const logState: Record<string, DukascopyJobLog[]> = {};
-        return Promise.all(
-          items.map(async (j: DukascopyJobSummary) => {
-            if (PAIRS.includes(j.symbol)) {
-              state[j.symbol] = {
-                start: toDateTimeLocalString(j.startTime),
-                running: j.isRunning,
-                jobId: j.id,
-                dataSourceId: j.dataSourceId,
-                loaded: true,
-              };
-              const logs = await listDukascopyJobLogs(j.id).catch(() => []);
-              logState[j.symbol] = logs;
-            }
-          })
-        ).then(() => {
-          for (const p of PAIRS) {
-            state[p] = { ...state[p], loaded: true };
+        items.forEach((j: DukascopyJobSummary) => {
+          if (PAIRS.includes(j.symbol)) {
+            state[j.symbol] = {
+              start: toDateTimeLocalString(j.startTime),
+              running: j.isRunning,
+              processing: j.isProcessing,
+              lastStarted: j.lastProcessStartedAt,
+              lastFinished: j.lastProcessFinishedAt,
+              lastSucceeded: j.lastProcessSucceeded,
+              lastError: j.lastProcessError,
+              jobId: j.id,
+              dataSourceId: j.dataSourceId,
+              loaded: true,
+            };
           }
-          setJobs(state);
-          setLogs(logState);
         });
+        for (const p of PAIRS) {
+          state[p] = { ...state[p], loaded: true };
+        }
+        setJobs(state);
       })
       .catch((err) => setError((err as Error).message));
   }, []);
@@ -125,7 +126,6 @@ const DukascopyJobs = () => {
             key={pair}
             pair={pair}
             job={jobs[pair]}
-            logs={logs[pair] ?? []}
             disabled={isSubmitting}
             onDateChange={handleDateChange}
             onToggle={handleToggle}
