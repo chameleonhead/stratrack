@@ -3,6 +3,8 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
+using Microsoft.DurableTask.Client;
+using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Linq;
@@ -113,12 +115,32 @@ public class DukascopyJobFunctions(
     [OpenApiOperation(operationId: "disable_dukascopy_job", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Disabled")]
-    public async Task<HttpResponseData> DisableJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/disable")] HttpRequestData req, Guid id, CancellationToken token)
+    public async Task<HttpResponseData> DisableJob(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/disable")] HttpRequestData req,
+        Guid id,
+        [DurableClient] DurableTaskClient client,
+        CancellationToken token)
     {
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
         var job = jobs.FirstOrDefault(j => j.JobId == id);
         if (job != null)
         {
+            if (job.CurrentExecutionId != null)
+            {
+                var instance = await client.GetInstanceAsync(job.CurrentExecutionId.Value.ToString(), token).ConfigureAwait(false);
+                if (instance != null && instance.RuntimeStatus is not (OrchestrationRuntimeStatus.Completed or OrchestrationRuntimeStatus.Failed or OrchestrationRuntimeStatus.Canceled or OrchestrationRuntimeStatus.Terminated))
+                {
+                    await client.TerminateInstanceAsync(job.CurrentExecutionId.Value.ToString(), "disable", token);
+                }
+                if (job.IsRunning)
+                {
+                    await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptCommand(DukascopyJobId.With(id))
+                    {
+                        ExecutionId = job.CurrentExecutionId.Value,
+                        ErrorMessage = "Interrupted"
+                    }, token).ConfigureAwait(false);
+                }
+            }
             await _commandBus.PublishAsync(new DataSourceUnlockCommand(DataSourceId.With(job.DataSourceId)), token).ConfigureAwait(false);
         }
         await _commandBus.PublishAsync(new DukascopyJobDisableCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);

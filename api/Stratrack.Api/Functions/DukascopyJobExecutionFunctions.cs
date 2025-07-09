@@ -17,12 +17,17 @@ using EventFlow.Queries;
 
 namespace Stratrack.Api.Functions;
 
-public record DukascopyJobInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime, Guid ExecutionId);
 public record DukascopyJobExecutionInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset StartTime, Guid ExecutionId);
-public record DukascopyJobStartInput(Guid JobId, Guid ExecutionId);
-public record DukascopyJobHourInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset Time, Guid ExecutionId);
+public record DukascopyJobDayInput(Guid JobId, Guid DataSourceId, string Symbol, DateTimeOffset Day, Guid ExecutionId);
 public record DukascopyJobFinishInput(Guid JobId, Guid ExecutionId, bool Success, string? Error);
 public record DukascopyJobInterruptInput(Guid JobId, Guid ExecutionId, string? Error);
+
+public enum DukascopyJobDayResult
+{
+    Success,
+    Interrupted,
+    Failed
+}
 
 public class DukascopyJobExecutionFunctions(
     ICommandBus commandBus,
@@ -58,9 +63,14 @@ public class DukascopyJobExecutionFunctions(
         }
 
         var executionId = Guid.NewGuid();
+        await _commandBus.PublishAsync(new DukascopyJobExecutionStartCommand(DukascopyJobId.With(id))
+        {
+            ExecutionId = executionId
+        }, token).ConfigureAwait(false);
+
         await client.ScheduleNewOrchestrationInstanceAsync(
             "DukascopyJobOrchestrator",
-            new[] { new DukascopyJobInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, executionId) },
+            new DukascopyJobExecutionInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, executionId),
             new StartOrchestrationOptions { InstanceId = executionId.ToString() },
             token);
         return req.CreateResponse(HttpStatusCode.Accepted);
@@ -125,69 +135,18 @@ public class DukascopyJobExecutionFunctions(
     }
 
     [Function("DukascopyJobOrchestrator")]
-    public async Task RunOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
-    {
-        var jobs = context.GetInput<IReadOnlyList<DukascopyJobInput>>();
-        if (jobs == null || jobs.Count == 0)
-        {
-            return;
-        }
-
-        var tasks = new List<Task>();
-        foreach (var job in jobs)
-        {
-            tasks.Add(context.CallSubOrchestratorAsync(nameof(DukascopySingleJobOrchestrator), job));
-        }
-        await Task.WhenAll(tasks);
-    }
-
-    [Function("DukascopySingleJobOrchestrator")]
-    public async Task DukascopySingleJobOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
-    {
-        var job = context.GetInput<DukascopyJobInput>();
-        if (job == null)
-        {
-            return;
-        }
-
-        var executionId = job.ExecutionId;
-        await context.CallActivityAsync(nameof(DukascopyJobProcessStartActivity), new DukascopyJobStartInput(job.JobId, executionId));
-        string? error = null;
-        var success = true;
-        var finished = true;
-        try
-        {
-            var subOptions = TaskOptions.FromRetryPolicy(new RetryPolicy(2, TimeSpan.FromSeconds(5)));
-            finished = await context.CallSubOrchestratorAsync<bool>(nameof(DukascopyJobDayOrchestrator), new DukascopyJobExecutionInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime, executionId), subOptions);
-        }
-        catch (Exception ex)
-        {
-            success = false;
-            error = ex.Message;
-        }
-        if (finished)
-        {
-            await context.CallActivityAsync(nameof(DukascopyJobProcessFinishActivity), new DukascopyJobFinishInput(job.JobId, executionId, success, error));
-        }
-        else
-        {
-            await context.CallActivityAsync(nameof(DukascopyJobProcessInterruptActivity), new DukascopyJobInterruptInput(job.JobId, executionId, "Interrupted"));
-        }
-    }
-
-    [Function("DukascopyJobDayOrchestrator")]
-    public async Task<bool> DukascopyJobDayOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    public async Task DukascopyJobOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         var job = context.GetInput<DukascopyJobExecutionInput>();
         if (job == null)
         {
-            return true;
+            return;
         }
 
         var start = await context.CallActivityAsync<DateTimeOffset?>(nameof(DukascopyGetNextTimeActivity), job);
         if (start == null)
         {
-            return true;
+            return;
         }
 
         var maxTime = context.CurrentUtcDateTime.AddHours(-1);
@@ -197,22 +156,39 @@ public class DukascopyJobExecutionFunctions(
             current = job.StartTime > maxTime.AddDays(-1) ? job.StartTime : maxTime.AddDays(-1);
         }
 
-        while (current <= maxTime)
+        var interrupted = false;
+        string? error = null;
+        try
         {
-            var dayEnd = current.Date.AddDays(1);
-            while (current < dayEnd && current <= maxTime)
+            while (current <= maxTime)
             {
-                var options = TaskOptions.FromRetryPolicy(new RetryPolicy(2, TimeSpan.FromSeconds(5)));
-                await context.CallActivityAsync(nameof(DukascopyJobHourActivity), new DukascopyJobHourInput(job.JobId, job.DataSourceId, job.Symbol, current, job.ExecutionId), options);
-                var stop = await context.CallActivityAsync<bool>(nameof(DukascopyCheckInterruptActivity), job.JobId);
-                if (stop)
+                var result = await context.CallActivityAsync<DukascopyJobDayResult>(nameof(DukascopyJobDayActivity), new DukascopyJobDayInput(job.JobId, job.DataSourceId, job.Symbol, current.Date, job.ExecutionId));
+                if (result == DukascopyJobDayResult.Interrupted)
                 {
-                    return false;
+                    interrupted = true;
+                    break;
                 }
-                current = current.AddHours(1);
+                if (result == DukascopyJobDayResult.Failed)
+                {
+                    error = "Failed";
+                    break;
+                }
+                current = current.Date.AddDays(1);
             }
         }
-        return true;
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+
+        if (interrupted)
+        {
+            await context.CallActivityAsync(nameof(DukascopyJobProcessInterruptActivity), new DukascopyJobInterruptInput(job.JobId, job.ExecutionId, "Interrupted"));
+            return;
+        }
+
+        var success = error == null;
+        await context.CallActivityAsync(nameof(DukascopyJobProcessFinishActivity), new DukascopyJobFinishInput(job.JobId, job.ExecutionId, success, error));
     }
 
     [Function("DukascopyGetNextTimeActivity")]
@@ -223,21 +199,41 @@ public class DukascopyJobExecutionFunctions(
         return range?.EndTime ?? input.StartTime;
     }
 
-    [Function("DukascopyJobHourActivity")]
-    public async Task DukascopyJobHourActivity([ActivityTrigger] DukascopyJobHourInput input, FunctionContext context)
-    {
-        var token = context.CancellationToken;
-        _logger.LogInformation($"Fetching {input.Symbol} {input.Time}");
-        await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, input.Time, input.ExecutionId, token).ConfigureAwait(false);
-    }
-
-    [Function("DukascopyCheckInterruptActivity")]
-    public async Task<bool> DukascopyCheckInterruptActivity([ActivityTrigger] Guid jobId, FunctionContext context)
+    [Function("DukascopyJobDayActivity")]
+    public async Task<DukascopyJobDayResult> DukascopyJobDayActivity([ActivityTrigger] DukascopyJobDayInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var job = jobs.FirstOrDefault(j => j.JobId == jobId);
-        return job?.InterruptRequested ?? false;
+        var job = jobs.FirstOrDefault(j => j.JobId == input.JobId);
+        if (job == null || job.InterruptRequested)
+        {
+            return DukascopyJobDayResult.Interrupted;
+        }
+
+        var current = input.Day;
+        var end = input.Day.AddDays(1);
+        try
+        {
+            while (current < end)
+            {
+                _logger.LogInformation($"Fetching {input.Symbol} {current}");
+                await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, current, input.ExecutionId, token).ConfigureAwait(false);
+
+                jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
+                job = jobs.FirstOrDefault(j => j.JobId == input.JobId);
+                if (job?.InterruptRequested ?? false)
+                {
+                    return DukascopyJobDayResult.Interrupted;
+                }
+                current = current.AddHours(1);
+            }
+
+            return DukascopyJobDayResult.Success;
+        }
+        catch
+        {
+            return DukascopyJobDayResult.Failed;
+        }
     }
 
     [Function("DukascopyJobProcessInterruptActivity")]
@@ -247,15 +243,6 @@ public class DukascopyJobExecutionFunctions(
         {
             ExecutionId = input.ExecutionId,
             ErrorMessage = input.Error
-        }, context.CancellationToken).ConfigureAwait(false);
-    }
-
-    [Function("DukascopyJobProcessStartActivity")]
-    public async Task DukascopyJobProcessStartActivity([ActivityTrigger] DukascopyJobStartInput input, FunctionContext context)
-    {
-        await _commandBus.PublishAsync(new DukascopyJobExecutionStartCommand(DukascopyJobId.With(input.JobId))
-        {
-            ExecutionId = input.ExecutionId
         }, context.CancellationToken).ConfigureAwait(false);
     }
 
@@ -275,7 +262,6 @@ public class DukascopyJobExecutionFunctions(
     {
         _logger.LogInformation($"DukascopyJobTimer triggered at {DateTimeOffset.UtcNow}");
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var targets = new List<DukascopyJobInput>();
         foreach (var j in jobs.Where(j => !j.IsDeleted))
         {
             if (!j.IsEnabled || j.IsRunning)
@@ -283,15 +269,19 @@ public class DukascopyJobExecutionFunctions(
                 _logger.LogInformation($"Skip {j.Symbol} job");
                 continue;
             }
-            targets.Add(new DukascopyJobInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime, Guid.NewGuid()));
-        }
-        if (targets.Count == 0)
-        {
-            _logger.LogInformation("No job to start");
-            return;
-        }
 
-        await client.ScheduleNewOrchestrationInstanceAsync("DukascopyJobOrchestrator", targets, null, token);
+            var executionId = Guid.NewGuid();
+            await _commandBus.PublishAsync(new DukascopyJobExecutionStartCommand(DukascopyJobId.With(j.JobId))
+            {
+                ExecutionId = executionId
+            }, token).ConfigureAwait(false);
+
+            await client.ScheduleNewOrchestrationInstanceAsync(
+                "DukascopyJobOrchestrator",
+                new DukascopyJobExecutionInput(j.JobId, j.DataSourceId, j.Symbol, j.StartTime, executionId),
+                new StartOrchestrationOptions { InstanceId = executionId.ToString() },
+                token);
+        }
     }
 }
 
