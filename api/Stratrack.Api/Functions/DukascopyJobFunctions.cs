@@ -90,7 +90,11 @@ public class DukascopyJobFunctions(
     [OpenApiOperation(operationId: "start_dukascopy_job", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Started")]
-    public async Task<HttpResponseData> StartJob([HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/start")] HttpRequestData req, Guid id, CancellationToken token)
+    public async Task<HttpResponseData> StartJob(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/start")] HttpRequestData req,
+        Guid id,
+        [DurableClient] DurableTaskClient client,
+        CancellationToken token)
     {
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
         var job = jobs.FirstOrDefault(j => j.JobId == id);
@@ -100,6 +104,10 @@ public class DukascopyJobFunctions(
         }
         await _commandBus.PublishAsync(new DataSourceLockCommand(DataSourceId.With(job.DataSourceId)), token).ConfigureAwait(false);
         await _commandBus.PublishAsync(new DukascopyJobStartCommand(DukascopyJobId.With(id)), token).ConfigureAwait(false);
+        await client.ScheduleNewOrchestrationInstanceAsync(
+            "DukascopyJobOrchestrator",
+            new[] { new DukascopyJobInput(job.JobId, job.DataSourceId, job.Symbol, job.StartTime) },
+            token);
         var res = req.CreateResponse(HttpStatusCode.Accepted);
         return res;
     }

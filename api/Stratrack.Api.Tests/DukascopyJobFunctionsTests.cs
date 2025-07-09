@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using WorkerHttpFake;
 using System.Threading;
 using Stratrack.Api.Models;
+using Moq;
+using Microsoft.DurableTask.Client;
+using Microsoft.DurableTask;
 
 namespace Stratrack.Api.Tests;
 
@@ -56,7 +59,13 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/start")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var startRes = await func.StartJob(startReq, id, CancellationToken.None);
+        var client = new Mock<DurableTaskClient>("test");
+        client.Setup(c => c.ScheduleNewOrchestrationInstanceAsync(
+            It.IsAny<TaskName>(),
+            It.IsAny<object?>(),
+            It.IsAny<StartOrchestrationOptions?>(),
+            It.IsAny<CancellationToken>())).ReturnsAsync("instance");
+        var startRes = await func.StartJob(startReq, id, client.Object, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
