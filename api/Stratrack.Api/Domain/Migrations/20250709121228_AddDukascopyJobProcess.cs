@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -18,10 +18,10 @@ namespace Stratrack.Api.Domain.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "LastProcessStartedAt",
+            migrationBuilder.AddColumn<string>(
+                name: "LastProcessError",
                 table: "DukascopyJobs",
-                type: "datetimeoffset",
+                type: "nvarchar(max)",
                 nullable: true);
 
             migrationBuilder.AddColumn<DateTimeOffset>(
@@ -30,16 +30,16 @@ namespace Stratrack.Api.Domain.Migrations
                 type: "datetimeoffset",
                 nullable: true);
 
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "LastProcessStartedAt",
+                table: "DukascopyJobs",
+                type: "datetimeoffset",
+                nullable: true);
+
             migrationBuilder.AddColumn<bool>(
                 name: "LastProcessSucceeded",
                 table: "DukascopyJobs",
                 type: "bit",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "LastProcessError",
-                table: "DukascopyJobs",
-                type: "nvarchar(max)",
                 nullable: true);
         }
 
@@ -51,7 +51,7 @@ namespace Stratrack.Api.Domain.Migrations
                 table: "DukascopyJobs");
 
             migrationBuilder.DropColumn(
-                name: "LastProcessStartedAt",
+                name: "LastProcessError",
                 table: "DukascopyJobs");
 
             migrationBuilder.DropColumn(
@@ -59,11 +59,11 @@ namespace Stratrack.Api.Domain.Migrations
                 table: "DukascopyJobs");
 
             migrationBuilder.DropColumn(
-                name: "LastProcessSucceeded",
+                name: "LastProcessStartedAt",
                 table: "DukascopyJobs");
 
             migrationBuilder.DropColumn(
-                name: "LastProcessError",
+                name: "LastProcessSucceeded",
                 table: "DukascopyJobs");
         }
     }
