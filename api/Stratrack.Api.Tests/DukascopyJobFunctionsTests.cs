@@ -82,7 +82,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/disable")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var stopRes = await func.DisableJob(stopReq, id, CancellationToken.None);
+        var stopRes = await func.DisableJob(stopReq, id, client.Object, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
