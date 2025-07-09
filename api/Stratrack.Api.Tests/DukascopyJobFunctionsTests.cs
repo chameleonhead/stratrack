@@ -26,6 +26,7 @@ public class DukascopyJobFunctionsTests
         services.AddLogging();
         services.AddStratrack<StratrackDbContextProvider>();
         services.AddSingleton<DukascopyJobFunctions>();
+        services.AddSingleton<DukascopyJobExecutionFunctions>();
         var sp = services.BuildServiceProvider();
         using var ctx = sp.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext();
         ctx.Database.EnsureDeleted();
@@ -59,7 +60,7 @@ public class DukascopyJobFunctionsTests
         }
 
         var startReq = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/dukascopy-job/{id}/start")
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}/enable")
             .WithMethod(HttpMethod.Post)
             .Build();
         var client = new Mock<DurableTaskClient>("test");
@@ -68,7 +69,7 @@ public class DukascopyJobFunctionsTests
             It.IsAny<object?>(),
             It.IsAny<StartOrchestrationOptions?>(),
             It.IsAny<CancellationToken>())).ReturnsAsync("instance");
-        var startRes = await func.StartJob(startReq, id, client.Object, CancellationToken.None);
+        var startRes = await func.EnableJob(startReq, id, client.Object, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
@@ -77,16 +78,24 @@ public class DukascopyJobFunctionsTests
         }
 
         var stopReq = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/dukascopy-job/{id}/stop")
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}/disable")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var stopRes = await func.StopJob(stopReq, id, CancellationToken.None);
+        var stopRes = await func.DisableJob(stopReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
             var ds = await ctx.DataSources.FirstAsync(d => d.DataSourceId == dsId);
             Assert.IsFalse(ds.IsLocked);
         }
+
+        var execFunc = provider.GetRequiredService<DukascopyJobExecutionFunctions>();
+        var execReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/dukascopy-job/{id}/execute")
+            .WithMethod(HttpMethod.Post)
+            .Build();
+        var execRes = await execFunc.StartExecution(execReq, id, client.Object, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.Accepted, execRes.StatusCode);
 
         var deleteReq = new HttpRequestDataBuilder()
             .WithUrl($"http://localhost/api/dukascopy-job/{id}")

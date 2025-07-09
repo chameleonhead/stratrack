@@ -5,8 +5,8 @@ namespace Stratrack.Api.Domain.Dukascopy;
 
 public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJobAggregate, DukascopyJobId>(id),
     IEmit<DukascopyJobCreatedEvent>,
-    IEmit<DukascopyJobStartedEvent>,
-    IEmit<DukascopyJobStoppedEvent>,
+    IEmit<DukascopyJobEnabledEvent>,
+    IEmit<DukascopyJobDisabledEvent>,
     IEmit<DukascopyJobDeletedEvent>,
     IEmit<DukascopyJobExecutedEvent>,
     IEmit<DukascopyJobExecutionStartedEvent>,
@@ -16,7 +16,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
     public string Symbol { get; private set; } = "";
     public DateTimeOffset StartTime { get; private set; }
     public bool IsDeleted { get; private set; }
-    public bool IsRunning { get; private set; }
+    public bool IsEnabled { get; private set; }
     public DateTimeOffset? LastExecutedAt { get; private set; }
     public bool IsProcessing { get; private set; }
     public DateTimeOffset? LastProcessStartedAt { get; private set; }
@@ -37,7 +37,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
 
     public void Update(Guid dataSourceId, DateTimeOffset startTime)
     {
-        if (IsDeleted || IsRunning)
+        if (IsDeleted || IsEnabled)
         {
             return;
         }
@@ -50,19 +50,19 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         Emit(new DukascopyJobUpdatedEvent(dataSourceId, startTime));
     }
 
-    public void Start()
+    public void Enable()
     {
-        if (!IsDeleted && !IsRunning && DataSourceId != Guid.Empty)
+        if (!IsDeleted && !IsEnabled && DataSourceId != Guid.Empty)
         {
-            Emit(new DukascopyJobStartedEvent());
+            Emit(new DukascopyJobEnabledEvent());
         }
     }
 
-    public void Stop()
+    public void Disable()
     {
-        if (!IsDeleted && IsRunning)
+        if (!IsDeleted && IsEnabled)
         {
-            Emit(new DukascopyJobStoppedEvent());
+            Emit(new DukascopyJobDisabledEvent());
         }
     }
 
@@ -101,7 +101,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         StartTime = aggregateEvent.StartTime;
         DataSourceId = Guid.Empty;
         IsDeleted = false;
-        IsRunning = false;
+        IsEnabled = false;
     }
 
     public void Apply(DukascopyJobUpdatedEvent aggregateEvent)
@@ -110,14 +110,14 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         StartTime = aggregateEvent.StartTime;
     }
 
-    public void Apply(DukascopyJobStartedEvent aggregateEvent)
+    public void Apply(DukascopyJobEnabledEvent aggregateEvent)
     {
-        IsRunning = true;
+        IsEnabled = true;
     }
 
-    public void Apply(DukascopyJobStoppedEvent aggregateEvent)
+    public void Apply(DukascopyJobDisabledEvent aggregateEvent)
     {
-        IsRunning = false;
+        IsEnabled = false;
     }
 
     public void Apply(DukascopyJobDeletedEvent aggregateEvent)
