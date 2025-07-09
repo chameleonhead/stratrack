@@ -236,6 +236,21 @@ namespace Stratrack.Api.Domain.Migrations
                     b.Property<bool>("IsRunning")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsProcessing")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LastProcessFinishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("LastProcessStartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool?>("LastProcessSucceeded")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastProcessError")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("JobId")
                         .HasColumnType("uniqueidentifier");
 

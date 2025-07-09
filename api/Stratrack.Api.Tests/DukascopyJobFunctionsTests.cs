@@ -122,49 +122,5 @@ public class DukascopyJobFunctionsTests
         Assert.AreEqual(id, jobs[0].Id);
     }
 
-    [TestMethod]
-    public async Task GetJobStatus_ReturnsStatus()
-    {
-        using var provider = CreateProvider();
-        var func = provider.GetRequiredService<DukascopyJobFunctions>();
-
-        var createReq = new HttpRequestDataBuilder()
-            .WithUrl("http://localhost/api/dukascopy-job")
-            .WithMethod(HttpMethod.Post)
-            .WithBody(System.Text.Json.JsonSerializer.Serialize(new { symbol = "EURUSD", startTime = DateTimeOffset.UtcNow }))
-            .Build();
-        var createRes = await func.CreateJob(createReq, CancellationToken.None);
-        var created = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
-        var id = Guid.Parse(created["id"].ToString()!);
-
-        var statusReq1 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/dukascopy-job/{id}/status")
-            .WithMethod(HttpMethod.Get)
-            .Build();
-        var statusRes1 = await func.GetJobStatus(statusReq1, id, CancellationToken.None);
-        Assert.AreEqual(HttpStatusCode.OK, statusRes1.StatusCode);
-        var status1 = await statusRes1.ReadAsJsonAsync<DukascopyJobStatus>();
-        Assert.IsFalse(status1.IsRunning);
-        Assert.IsNull(status1.LastExecutedAt);
-
-        var bus = provider.GetRequiredService<ICommandBus>();
-        await bus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(id))
-        {
-            ExecutedAt = DateTimeOffset.UtcNow,
-            IsSuccess = true,
-            Symbol = "EURUSD",
-            TargetTime = DateTimeOffset.UtcNow,
-            Duration = 1
-        }, CancellationToken.None);
-
-        var statusReq2 = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/dukascopy-job/{id}/status")
-            .WithMethod(HttpMethod.Get)
-            .Build();
-        var statusRes2 = await func.GetJobStatus(statusReq2, id, CancellationToken.None);
-        var status2 = await statusRes2.ReadAsJsonAsync<DukascopyJobStatus>();
-        Assert.IsNotNull(status2.LastExecutedAt);
-        Assert.IsTrue(status2.LastSucceeded.HasValue && status2.LastSucceeded.Value);
-    }
 }
 
