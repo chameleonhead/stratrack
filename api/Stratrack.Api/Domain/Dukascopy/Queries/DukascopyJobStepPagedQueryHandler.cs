@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Stratrack.Api.Domain.Dukascopy.Queries;
 
-public class DukascopyJobExecutionPagedQueryHandler(IDbContextProvider<StratrackDbContext> dbContextProvider) :
-    IQueryHandler<DukascopyJobExecutionPagedQuery, IReadOnlyCollection<DukascopyJobExecutionReadModel>>
+public class DukascopyJobStepPagedQueryHandler(IDbContextProvider<StratrackDbContext> dbContextProvider) :
+    IQueryHandler<DukascopyJobStepPagedQuery, IReadOnlyCollection<DukascopyJobStepReadModel>>
 {
-    public async Task<IReadOnlyCollection<DukascopyJobExecutionReadModel>> ExecuteQueryAsync(DukascopyJobExecutionPagedQuery query, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<DukascopyJobStepReadModel>> ExecuteQueryAsync(DukascopyJobStepPagedQuery query, CancellationToken cancellationToken)
     {
         using var context = dbContextProvider.CreateContext();
-        return await context.DukascopyJobExecutions
+        return await context.DukascopyJobSteps
             .OrderByDescending(e => e.ExecutedAt)
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)

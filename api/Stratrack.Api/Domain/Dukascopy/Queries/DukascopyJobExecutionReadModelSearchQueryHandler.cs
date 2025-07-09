@@ -10,11 +10,10 @@ public class DukascopyJobExecutionReadModelSearchQueryHandler(IDbContextProvider
     public async Task<IReadOnlyCollection<DukascopyJobExecutionReadModel>> ExecuteQueryAsync(DukascopyJobExecutionReadModelSearchQuery query, CancellationToken cancellationToken)
     {
         using var context = dbContextProvider.CreateContext();
-        var q = context.Set<DukascopyJobExecutionReadModel>().Where(e => e.JobId == query.JobId);
-        if (query.Since.HasValue)
-        {
-            q = q.Where(e => e.ExecutedAt >= query.Since.Value);
-        }
-        return await q.OrderByDescending(e => e.ExecutedAt).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return await context.DukascopyJobExecutions
+            .Where(e => e.JobId == query.JobId)
+            .OrderByDescending(e => e.StartedAt)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 }

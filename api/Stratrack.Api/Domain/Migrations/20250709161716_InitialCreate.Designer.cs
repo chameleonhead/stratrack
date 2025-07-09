@@ -12,8 +12,8 @@ using Stratrack.Api.Domain;
 namespace Stratrack.Api.Domain.Migrations
 {
     [DbContext(typeof(StratrackDbContext))]
-    [Migration("20250708024931_ExtendDukascopyJobExecution")]
-    partial class ExtendDukascopyJobExecution
+    [Migration("20250709161716_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -195,6 +195,80 @@ namespace Stratrack.Api.Domain.Migrations
 
             modelBuilder.Entity("Stratrack.Api.Domain.Dukascopy.DukascopyJobExecutionReadModel", b =>
                 {
+                    b.Property<Guid>("ExecutionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool?>("IsSuccess")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ExecutionId");
+
+                    b.ToTable("DukascopyJobExecutions");
+                });
+
+            modelBuilder.Entity("Stratrack.Api.Domain.Dukascopy.DukascopyJobReadModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("DataSourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("IsEnabled");
+
+                    b.Property<bool>("IsRunning")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastProcessError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("LastProcessFinishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("LastProcessStartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool?>("LastProcessSucceeded")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DukascopyJobs");
+                });
+
+            modelBuilder.Entity("Stratrack.Api.Domain.Dukascopy.DukascopyJobStepReadModel", b =>
+                {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
@@ -206,6 +280,9 @@ namespace Stratrack.Api.Domain.Migrations
 
                     b.Property<DateTimeOffset>("ExecutedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ExecutionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsSuccess")
                         .HasColumnType("bit");
@@ -222,39 +299,7 @@ namespace Stratrack.Api.Domain.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DukascopyJobExecutions");
-                });
-
-            modelBuilder.Entity("Stratrack.Api.Domain.Dukascopy.DukascopyJobReadModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("DataSourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRunning")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("StartTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DukascopyJobs");
+                    b.ToTable("DukascopyJobSteps");
                 });
 
             modelBuilder.Entity("Stratrack.Api.Domain.Strategies.StrategyReadModel", b =>

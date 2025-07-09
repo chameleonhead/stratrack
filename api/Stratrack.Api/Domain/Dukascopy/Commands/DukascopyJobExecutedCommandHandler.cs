@@ -7,6 +7,7 @@ public class DukascopyJobExecutedCommandHandler : CommandHandler<DukascopyJobAgg
     public override Task ExecuteAsync(DukascopyJobAggregate aggregate, DukascopyJobExecutedCommand command, CancellationToken cancellationToken)
     {
         aggregate.LogExecution(
+            command.ExecutionId,
             command.ExecutedAt,
             command.IsSuccess,
             command.Symbol,

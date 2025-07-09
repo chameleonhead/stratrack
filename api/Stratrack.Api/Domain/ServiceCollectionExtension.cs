@@ -39,12 +39,12 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkDeleteCommand),
                 typeof(DukascopyJobCreateCommand),
                 typeof(DukascopyJobUpdateCommand),
-                typeof(DukascopyJobStartCommand),
-                typeof(DukascopyJobStopCommand),
+                typeof(DukascopyJobEnableCommand),
+                typeof(DukascopyJobDisableCommand),
                 typeof(DukascopyJobDeleteCommand),
                 typeof(DukascopyJobExecutedCommand),
-                typeof(DukascopyJobProcessStartCommand),
-                typeof(DukascopyJobProcessFinishCommand)
+                typeof(DukascopyJobExecutionStartCommand),
+                typeof(DukascopyJobExecutionFinishCommand)
             ).AddCommandHandlers(
                 typeof(StrategyCreateCommandHandler),
                 typeof(StrategyUpdateCommandHandler),
@@ -58,12 +58,12 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkDeleteCommandHandler),
                 typeof(DukascopyJobCreateCommandHandler),
                 typeof(DukascopyJobUpdateCommandHandler),
-                typeof(DukascopyJobStartCommandHandler),
-                typeof(DukascopyJobStopCommandHandler),
+                typeof(DukascopyJobEnableCommandHandler),
+                typeof(DukascopyJobDisableCommandHandler),
                 typeof(DukascopyJobDeleteCommandHandler),
                 typeof(DukascopyJobExecutedCommandHandler),
-                typeof(DukascopyJobProcessStartCommandHandler),
-                typeof(DukascopyJobProcessFinishCommandHandler)
+                typeof(DukascopyJobExecutionStartCommandHandler),
+                typeof(DukascopyJobExecutionFinishCommandHandler)
             ).AddEvents(
                 typeof(StrategyCreatedEvent),
                 typeof(StrategyUpdatedEvent),
@@ -78,12 +78,12 @@ public static class ServiceCollectionExtension
                 typeof(DataChunkDeletedEvent),
                 typeof(DukascopyJobCreatedEvent),
                 typeof(DukascopyJobUpdatedEvent),
-                typeof(DukascopyJobStartedEvent),
-                typeof(DukascopyJobStoppedEvent),
+                typeof(DukascopyJobEnabledEvent),
+                typeof(DukascopyJobDisabledEvent),
                 typeof(DukascopyJobDeletedEvent),
                 typeof(DukascopyJobExecutedEvent),
-                typeof(DukascopyJobProcessStartedEvent),
-                typeof(DukascopyJobProcessFinishedEvent)
+                typeof(DukascopyJobExecutionStartedEvent),
+                typeof(DukascopyJobExecutionFinishedEvent)
             );
 
             ef.ConfigureEntityFramework(EntityFrameworkConfiguration.New);
@@ -100,17 +100,20 @@ public static class ServiceCollectionExtension
             ef.UseEntityFrameworkReadModel<DataChunkReadModel, StratrackDbContext, DataChunkReadModelLocator>();
             ef.UseEntityFrameworkReadModel<DukascopyJobReadModel, StratrackDbContext>();
             ef.UseEntityFrameworkReadModel<DukascopyJobExecutionReadModel, StratrackDbContext, DukascopyJobExecutionReadModelLocator>();
+            ef.UseEntityFrameworkReadModel<DukascopyJobStepReadModel, StratrackDbContext, DukascopyJobStepReadModelLocator>();
             ef.AddQueryHandlers(typeof(DataSourceReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DataChunkReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DataChunkRangeQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobExecutionReadModelSearchQueryHandler));
-            ef.AddQueryHandlers(typeof(DukascopyJobExecutionPagedQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobStepReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobStepPagedQueryHandler));
             ef.RegisterServices(s =>
             {
                 s.AddSingleton<IBlobStorage, DatabaseBlobStorage>();
                 s.AddSingleton<DataChunkReadModelLocator>();
                 s.AddSingleton<DukascopyJobExecutionReadModelLocator>();
+                s.AddSingleton<DukascopyJobStepReadModelLocator>();
                 s.AddSingleton<IDukascopyClient, DukascopyClient>();
                 s.AddSingleton<DukascopyFetchService>();
                 s.AddSingleton<CsvChunkService>();

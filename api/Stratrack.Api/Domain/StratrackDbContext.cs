@@ -20,6 +20,7 @@ public class StratrackDbContext : DbContext
     public DbSet<DataSourceReadModel> DataSources { get; set; }
     public DbSet<DukascopyJobReadModel> DukascopyJobs { get; set; }
     public DbSet<DukascopyJobExecutionReadModel> DukascopyJobExecutions { get; set; }
+    public DbSet<DukascopyJobStepReadModel> DukascopyJobSteps { get; set; }
     public DbSet<DataChunkReadModel> DataChunks { get; set; }
     public DbSet<BlobData> Blobs { get; set; }
 
@@ -40,6 +41,10 @@ public class StratrackDbContext : DbContext
             entity.HasKey(m => m.Id);
         });
         modelBuilder.Entity<DukascopyJobExecutionReadModel>(entity =>
+        {
+            entity.HasKey(m => m.ExecutionId);
+        });
+        modelBuilder.Entity<DukascopyJobStepReadModel>(entity =>
         {
             entity.HasKey(m => m.Id);
         });

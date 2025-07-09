@@ -12,16 +12,13 @@ public class StratrackDesignTimeDbContextFactory : IDesignTimeDbContextFactory<S
         {
             connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_SqlConnectionString");
         }
-
-        var optionsBuilder = new DbContextOptionsBuilder<StratrackDbContext>();
         if (string.IsNullOrEmpty(connectionString))
         {
-            optionsBuilder.UseInMemoryDatabase("StratrackDb");
+            connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=StratrackDb;Integrated Security=True;Trust Server Certificate=True";
         }
-        else
-        {
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+
+        var optionsBuilder = new DbContextOptionsBuilder<StratrackDbContext>();
+        optionsBuilder.UseSqlServer(connectionString);
 
         return new StratrackDbContext(optionsBuilder.Options);
     }

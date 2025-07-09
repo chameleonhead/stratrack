@@ -7,11 +7,11 @@ namespace Stratrack.Api.Domain.Dukascopy;
 public class DukascopyJobReadModel : IReadModel,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobCreatedEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobUpdatedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStartedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStoppedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobEnabledEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDisabledEvent>,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDeletedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessStartedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessFinishedEvent>
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>
 {
     public string Id { get; set; } = "";
     public Guid JobId { get; set; }
@@ -19,8 +19,9 @@ public class DukascopyJobReadModel : IReadModel,
     public string Symbol { get; set; } = "";
     public DateTimeOffset StartTime { get; set; }
     public bool IsDeleted { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.Column("IsEnabled")]
+    public bool IsEnabled { get; set; }
     public bool IsRunning { get; set; }
-    public bool IsProcessing { get; set; }
     public DateTimeOffset? LastProcessStartedAt { get; set; }
     public DateTimeOffset? LastProcessFinishedAt { get; set; }
     public bool? LastProcessSucceeded { get; set; }
@@ -35,7 +36,7 @@ public class DukascopyJobReadModel : IReadModel,
         StartTime = domainEvent.AggregateEvent.StartTime;
         DataSourceId = Guid.Empty;
         IsDeleted = false;
-        IsRunning = false;
+        IsEnabled = false;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
@@ -50,20 +51,20 @@ public class DukascopyJobReadModel : IReadModel,
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStartedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobEnabledEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsRunning = true;
+        IsEnabled = true;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobStoppedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobDisabledEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsRunning = false;
+        IsEnabled = false;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
@@ -77,21 +78,21 @@ public class DukascopyJobReadModel : IReadModel,
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessStartedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsProcessing = true;
+        IsRunning = true;
         LastProcessStartedAt = domainEvent.AggregateEvent.StartedAt;
         UpdatedAt = domainEvent.Timestamp;
         return Task.CompletedTask;
     }
 
-    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobProcessFinishedEvent> domainEvent, CancellationToken cancellationToken)
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent> domainEvent, CancellationToken cancellationToken)
     {
         Id = context.ReadModelId;
         JobId = domainEvent.AggregateIdentity.GetGuid();
-        IsProcessing = false;
+        IsRunning = false;
         LastProcessFinishedAt = domainEvent.AggregateEvent.FinishedAt;
         LastProcessSucceeded = domainEvent.AggregateEvent.IsSuccess;
         LastProcessError = domainEvent.AggregateEvent.ErrorMessage;

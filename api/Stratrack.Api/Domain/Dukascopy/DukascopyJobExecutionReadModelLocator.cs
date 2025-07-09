@@ -10,8 +10,10 @@ public class DukascopyJobExecutionReadModelLocator : IReadModelLocator
     {
         return domainEvent switch
         {
-            IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent> e =>
-                ["" + e.AggregateIdentity.GetGuid() + "_" + e.AggregateEvent.ExecutedAt.ToString("yyyyMMddHHmmss")],
+            IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent> e =>
+                [e.AggregateEvent.ExecutionId.ToString()],
+            IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent> e =>
+                [e.AggregateEvent.ExecutionId.ToString()],
             _ => []
         };
     }
