@@ -7,7 +7,8 @@ namespace Stratrack.Api.Domain.Dukascopy;
 
 public class DukascopyJobExecutionReadModel : IReadModel,
     IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionStartedEvent>,
-    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionFinishedEvent>,
+    IAmReadModelFor<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptedEvent>
 {
     [Key]
     public Guid ExecutionId { get; set; }
@@ -31,6 +32,16 @@ public class DukascopyJobExecutionReadModel : IReadModel,
         JobId = domainEvent.AggregateIdentity.GetGuid();
         FinishedAt = domainEvent.AggregateEvent.FinishedAt;
         IsSuccess = domainEvent.AggregateEvent.IsSuccess;
+        ErrorMessage = domainEvent.AggregateEvent.ErrorMessage;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutionInterruptedEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        ExecutionId = domainEvent.AggregateEvent.ExecutionId;
+        JobId = domainEvent.AggregateIdentity.GetGuid();
+        FinishedAt = domainEvent.Timestamp;
+        IsSuccess = false;
         ErrorMessage = domainEvent.AggregateEvent.ErrorMessage;
         return Task.CompletedTask;
     }

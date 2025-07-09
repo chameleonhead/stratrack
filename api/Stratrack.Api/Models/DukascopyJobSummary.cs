@@ -8,6 +8,7 @@ public class DukascopyJobSummary
     public DateTimeOffset StartTime { get; set; }
     public bool IsEnabled { get; set; }
     public bool IsRunning { get; set; }
+    public bool InterruptRequested { get; set; }
     public DateTimeOffset? LastExecutionStartedAt { get; set; }
     public DateTimeOffset? LastExecutionFinishedAt { get; set; }
     public bool? LastExecutionSucceeded { get; set; }
