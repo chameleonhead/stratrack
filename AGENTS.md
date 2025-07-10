@@ -39,6 +39,8 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 - Domain フォルダでは Aggregate クラスをモジュール直下に置き、`Commands` `Events` `Queries` の各サブフォルダを設ける構成を標準とします。例として `Domain/Dukascopy/DukascopyJobAggregate.cs` とその周辺に `Commands` `Events` `Queries` フォルダを配置します。
 - Entity Framework の `DbContext` を直接扱わず、読み取りは `IQueryProcessor` を介したクエリハンドラー経由で行ってください。
 - CommandHandler 内で ReadModel やデータベースを参照する処理は避け、Aggregate の状態のみを利用して判断してください。
+- ReadModel の ID は基本的に `Guid` で保持します。EventFlow の `Identity` として利用する際はプレフィックス付きの文字列に変換されるため、
+ その GUID を他のエンティティの ID として再利用しないよう注意してください。
 
 ## データベースマイグレーション
 
