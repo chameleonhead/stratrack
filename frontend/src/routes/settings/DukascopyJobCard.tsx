@@ -47,16 +47,21 @@ const DukascopyJobCard = ({
         disabled={isLoading}
       />
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => onToggle(pair)} disabled={disabled}>
+        <Button size="sm" onClick={() => onToggle(pair)} disabled={disabled} isLoading={disabled}>
           {job.enabled ? "無効化" : "有効化"}
         </Button>
         {job.enabled && !job.running && (
-          <Button size="sm" onClick={() => onRun(pair)} disabled={disabled}>
+          <Button size="sm" onClick={() => onRun(pair)} disabled={disabled} isLoading={disabled}>
             実行
           </Button>
         )}
         {job.running && (
-          <Button size="sm" onClick={() => onInterrupt(pair)} disabled={disabled}>
+          <Button
+            size="sm"
+            onClick={() => onInterrupt(pair)}
+            disabled={disabled}
+            isLoading={disabled}
+          >
             中断
           </Button>
         )}

@@ -5,6 +5,7 @@ import StrategyEditor from "../../features/strategies/StrategyEditor";
 import { Strategy, StrategyTemplate } from "../../codegen/dsl/strategy";
 import { renderStrategyCode } from "../../codegen/generators/strategyCodeRenderer";
 import { useIndicatorList } from "../../features/indicators/IndicatorProvider";
+import Button from "../../components/Button";
 
 const DEFAULT_TEMPLATE: StrategyTemplate = {
   variables: [],
@@ -65,14 +66,9 @@ const NewStrategy = () => {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
           <StrategyEditor value={strategy} onChange={setStrategy} />
-          <button
-            type="submit"
-            className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="mt-4" isLoading={isSubmitting} disabled={isSubmitting}>
             作成
-          </button>
-          {isSubmitting && <p>処理中...</p>}
+          </Button>
         </form>
       </section>
     </div>

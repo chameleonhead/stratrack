@@ -10,6 +10,7 @@ import DataSourceForm, {
   DataSourceFormHandle,
   DataSourceFormValue,
 } from "../../features/datasources/DataSourceForm";
+import Button from "../../components/Button";
 
 const EditDataSource = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
@@ -81,14 +82,15 @@ const EditDataSource = () => {
     <div className="p-6 space-y-6">
       <header className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">データソース編集</h2>
-        <button
+        <Button
           type="button"
-          className="btn btn-error"
+          variant="danger"
           onClick={handleDelete}
+          isLoading={isSubmitting}
           disabled={isSubmitting}
         >
           削除
-        </button>
+        </Button>
       </header>
       {isSubmitting && <p>処理中...</p>}
       <section>
@@ -100,14 +102,9 @@ const EditDataSource = () => {
             onChange={handleFormChange}
             hideSourceFields
           />
-          <button
-            type="submit"
-            className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="mt-4" isLoading={isSubmitting} disabled={isSubmitting}>
             更新
-          </button>
-          {isSubmitting && <p>処理中...</p>}
+          </Button>
         </form>
       </section>
     </div>

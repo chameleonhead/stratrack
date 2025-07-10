@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { uploadDataFile } from "../../api/data";
+import Button from "../../components/Button";
 
 const UploadDataFile = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
@@ -33,10 +34,9 @@ const UploadDataFile = () => {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
           <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting || !file}>
+          <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting || !file}>
             アップロード
-          </button>
-          {isSubmitting && <p>処理中...</p>}
+          </Button>
         </form>
       </section>
     </div>
