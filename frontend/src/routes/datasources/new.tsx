@@ -5,6 +5,7 @@ import DataSourceForm, {
   DataSourceFormHandle,
   DataSourceFormValue,
 } from "../../features/datasources/DataSourceForm";
+import Button from "../../components/Button";
 
 const NewDataSource = () => {
   const navigate = useNavigate();
@@ -53,13 +54,9 @@ const NewDataSource = () => {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
           <DataSourceForm ref={formRef} value={dataSource} onChange={setDataSource} />
-          <button
-            type="submit"
-            className="mt-4 bg-primary text-primary-content py-2 px-4 rounded"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="mt-4" isLoading={isSubmitting} disabled={isSubmitting}>
             作成
-          </button>
+          </Button>
         </form>
       </section>
     </div>

@@ -7,11 +7,14 @@ const PAGE_SIZE = 50;
 const DukascopyLogs = () => {
   const [logs, setLogs] = useState<DukascopyJobLog[]>([]);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     listAllDukascopyJobLogs(page, PAGE_SIZE)
       .then(setLogs)
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
   }, [page]);
 
   return (
@@ -19,6 +22,7 @@ const DukascopyLogs = () => {
       <header className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Dukascopyログ</h2>
       </header>
+      {isLoading && <p>ロード中...</p>}
       <table className="table table-sm">
         <thead>
           <tr>

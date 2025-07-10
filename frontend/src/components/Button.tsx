@@ -9,7 +9,8 @@ export type ButtonProps = {
   isLoading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  className?: string;
 };
 
 const baseStyles = "btn";
@@ -36,6 +37,7 @@ function Button({
   isLoading = false,
   disabled,
   fullWidth = false,
+  className,
   ...props
 }: ButtonProps) {
   return (
@@ -44,7 +46,8 @@ function Button({
         baseStyles,
         variantStyles[variant],
         sizeStyles[size],
-        fullWidth ? "w-full" : null
+        fullWidth ? "w-full" : null,
+        className
       )}
       type={type}
       disabled={disabled || isLoading}
