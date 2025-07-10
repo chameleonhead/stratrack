@@ -44,9 +44,12 @@ export async function uploadDataFile(dataSourceId: string, file: File) {
 export async function getDataStream(
   dataSourceId: string,
   startTime: string,
-  endTime: string
+  endTime: string,
+  format = "tick",
+  timeframe?: string
 ): Promise<string> {
-  const params = new URLSearchParams({ startTime, endTime });
+  const params = new URLSearchParams({ startTime, endTime, format });
+  if (timeframe) params.append("timeframe", timeframe);
   const res = await fetch(
     `${API_BASE_URL}/api/data-sources/${dataSourceId}/stream?${params.toString()}`,
     {

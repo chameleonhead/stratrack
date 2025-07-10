@@ -50,7 +50,7 @@ public class DataStreamFunctionsTests
     }
 
     [TestMethod]
-    public async Task GetDataStream_ReturnsChunkData()
+    public async Task GetDataStream_ReturnsOhlcData()
     {
         using var provider = CreateProvider();
         var dsId = await CreateDataSourceAsync(provider);
@@ -70,12 +70,12 @@ public class DataStreamFunctionsTests
 
         var streamFunc = provider.GetRequiredService<DataStreamFunctions>();
         var req = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/stream?startTime=2024-01-01T00:00:00Z&endTime=2024-01-01T01:00:00Z")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/stream?startTime=2024-01-01T00:00:00Z&endTime=2024-01-01T01:00:00Z&format=ohlc&timeframe=5m")
             .WithMethod(HttpMethod.Get)
             .Build();
         var res = await streamFunc.GetDataStream(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.OK, res.StatusCode);
         var body = await res.ReadAsStringAsync();
-        Assert.AreEqual("time,bid,ask\n", body);
+        Assert.IsTrue(body.StartsWith("time,open,high,low,close"));
     }
 }
