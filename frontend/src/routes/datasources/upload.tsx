@@ -36,6 +36,7 @@ const UploadDataFile = () => {
           <button type="submit" className="btn btn-primary" disabled={isSubmitting || !file}>
             アップロード
           </button>
+          {isSubmitting && <p>処理中...</p>}
         </form>
       </section>
     </div>

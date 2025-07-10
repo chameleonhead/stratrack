@@ -72,6 +72,7 @@ const NewStrategy = () => {
           >
             作成
           </button>
+          {isSubmitting && <p>処理中...</p>}
         </form>
       </section>
     </div>

@@ -73,6 +73,7 @@ const EditStrategy = () => {
           >
             更新
           </button>
+          {isSubmitting && <p>処理中...</p>}
         </form>
       </section>
     </div>

@@ -6,11 +6,14 @@ import { listStrategies, StrategySummary } from "../../api/strategies";
 const Strategies = () => {
   const navigate = useNavigate();
   const [strategies, setStrategies] = useState<StrategySummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     listStrategies()
       .then(setStrategies)
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
   }, []);
   return (
     <div className="p-6 space-y-6">
@@ -21,6 +24,7 @@ const Strategies = () => {
 
       <section>
         <h3 className="text-lg font-semibold mb-2">戦略一覧</h3>
+        {isLoading && <p>ロード中...</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {strategies.map((s) => (
             <div key={s.id} className="rounded-xl border p-4 shadow">

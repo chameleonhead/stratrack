@@ -6,11 +6,14 @@ import Button from "../../components/Button";
 const DataSources = () => {
   const navigate = useNavigate();
   const [dataSources, setDataSources] = useState<DataSourceSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     listDataSources()
       .then(setDataSources)
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   return (
@@ -22,6 +25,7 @@ const DataSources = () => {
 
       <section>
         <h3 className="text-lg font-semibold mb-2">一覧</h3>
+        {isLoading && <p>ロード中...</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {dataSources.map((ds) => (
             <div key={ds.id} className="rounded-xl border p-4 shadow">

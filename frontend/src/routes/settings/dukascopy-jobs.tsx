@@ -37,8 +37,10 @@ const DukascopyJobs = () => {
   const [jobs, setJobs] = useState<Record<string, JobState>>(initialState);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     listDukascopyJobs()
       .then((items) => {
         const state = { ...initialState };
@@ -64,7 +66,8 @@ const DukascopyJobs = () => {
         }
         setJobs(state);
       })
-      .catch((err) => setError((err as Error).message));
+      .catch((err) => setError((err as Error).message))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleDateChange = (pair: string, value: string) => {
@@ -153,6 +156,8 @@ const DukascopyJobs = () => {
           日付を変更した後は一度ジョブを無効化し、再度有効化してください
         </p>
       </header>
+      {isLoading && <p>ロード中...</p>}
+      {isSubmitting && <p>処理中...</p>}
       {error && <p className="text-error">{error}</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {PAIRS.map((pair) => (

@@ -90,6 +90,7 @@ const EditDataSource = () => {
           削除
         </button>
       </header>
+      {isSubmitting && <p>処理中...</p>}
       <section>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <p className="text-error">{error}</p>}
@@ -106,6 +107,7 @@ const EditDataSource = () => {
           >
             更新
           </button>
+          {isSubmitting && <p>処理中...</p>}
         </form>
       </section>
     </div>

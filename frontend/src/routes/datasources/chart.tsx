@@ -9,10 +9,12 @@ const DataSourceChart = () => {
   const [range, setRange] = useState<{ from: number; to: number } | null>(null);
   const [candleData, setCandleData] = useState<Candle[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadData = useCallback(
     async (from: string, to: string) => {
       if (!dataSourceId) return;
+      setIsLoading(true);
       try {
         const csv = await getDataStream(dataSourceId, from, to, "ohlc", "5m");
         const lines = csv.split(/\r?\n/).filter((l) => l && !l.startsWith("time"));
@@ -30,6 +32,8 @@ const DataSourceChart = () => {
         setError(null);
       } catch (e) {
         setError((e as Error).message);
+      } finally {
+        setIsLoading(false);
       }
     },
     [dataSourceId]
@@ -37,6 +41,7 @@ const DataSourceChart = () => {
 
   useEffect(() => {
     if (!dataSourceId) return;
+    setIsLoading(true);
     getDataSource(dataSourceId)
       .then(async (ds) => {
         if (ds.startTime && ds.endTime) {
@@ -47,7 +52,8 @@ const DataSourceChart = () => {
           await loadData(new Date(defaultFrom).toISOString(), ds.endTime);
         }
       })
-      .catch((e) => console.error(e));
+      .catch((e) => console.error(e))
+      .finally(() => setIsLoading(false));
   }, [dataSourceId, loadData]);
   const handleRangeChange = async (newRange: { from: number; to: number }) => {
     setRange(newRange);
@@ -57,6 +63,7 @@ const DataSourceChart = () => {
   return (
     <div className="p-6 space-y-4">
       <h2 className="text-2xl font-bold">チャート表示</h2>
+      {isLoading && <p>ロード中...</p>}
       {error && <p className="text-error">{error}</p>}
       <CandlestickChart
         data={candleData}
