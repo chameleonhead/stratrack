@@ -69,14 +69,6 @@ public class DataChunkFunctions(
         {
             return req.CreateResponse((HttpStatusCode)423);
         }
-        if (dataSource.IsLocked)
-        {
-            return req.CreateResponse((HttpStatusCode)423);
-        }
-        if (dataSource.IsLocked)
-        {
-            return req.CreateResponse((HttpStatusCode)423);
-        }
 
         var blobId = await _blobStorage.SaveAsync(
             body.FileName ?? $"{body.StartTime:yyyyMMddHH}.csv",
