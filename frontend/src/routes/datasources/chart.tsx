@@ -3,9 +3,13 @@ import { useParams } from "react-router-dom";
 import { getDataSource } from "../../api/datasources";
 import { getDataStream } from "../../api/data";
 import CandlestickChart, { Candle } from "../../components/CandlestickChart";
+import Select from "../../components/Select";
+import { TIMEFRAME_OPTIONS } from "../../timeframes";
+import { loadCandles, saveCandles } from "../../idb";
 
 const DataSourceChart = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
+  const [timeframe, setTimeframe] = useState("5m");
   const [range, setRange] = useState<{ from: number; to: number } | null>(null);
   const [candleData, setCandleData] = useState<Candle[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +20,29 @@ const DataSourceChart = () => {
       if (!dataSourceId) return;
       setIsLoading(true);
       try {
-        const csv = await getDataStream(dataSourceId, from, to, "ohlc", "5m");
-        const lines = csv.split(/\r?\n/).filter((l) => l && !l.startsWith("time"));
+        const fromMs = Date.parse(from);
+        const toMs = Date.parse(to);
+        const cached = await loadCandles(dataSourceId, timeframe, fromMs, toMs);
+        if (cached.length) {
+          setCandleData(
+            cached.map((c) => ({
+              date: new Date(c.time),
+              open: c.open,
+              high: c.high,
+              low: c.low,
+              close: c.close,
+            }))
+          );
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
+
+        const csv = await getDataStream(dataSourceId, from, to, "ohlc", timeframe);
+        const lines = csv
+          .split(/\r?\n/)
+          .map((l) => l.replace(/^data:\s*/, ""))
+          .filter((l) => l && !l.startsWith("time"));
         const candles: Candle[] = lines.map((l) => {
           const [t, o, h, low, c] = l.split(",");
           return {
@@ -29,6 +54,19 @@ const DataSourceChart = () => {
           };
         });
         setCandleData(candles);
+        await saveCandles(
+          dataSourceId,
+          timeframe,
+          candles.map((c) => ({
+            dataSourceId,
+            timeframe,
+            time: c.date.getTime(),
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          }))
+        );
         setError(null);
       } catch (e) {
         setError((e as Error).message);
@@ -36,7 +74,7 @@ const DataSourceChart = () => {
         setIsLoading(false);
       }
     },
-    [dataSourceId]
+    [dataSourceId, timeframe]
   );
 
   useEffect(() => {
@@ -54,7 +92,7 @@ const DataSourceChart = () => {
       })
       .catch((e) => console.error(e))
       .finally(() => setIsLoading(false));
-  }, [dataSourceId, loadData]);
+  }, [dataSourceId, loadData, timeframe]);
   const handleRangeChange = async (newRange: { from: number; to: number }) => {
     setRange(newRange);
     await loadData(new Date(newRange.from).toISOString(), new Date(newRange.to).toISOString());
@@ -65,6 +103,12 @@ const DataSourceChart = () => {
       <h2 className="text-2xl font-bold">チャート表示</h2>
       {isLoading && <p>ロード中...</p>}
       {error && <p className="text-error">{error}</p>}
+      <Select
+        label="時間足"
+        value={timeframe}
+        onChange={setTimeframe}
+        options={TIMEFRAME_OPTIONS.filter((o) => o.value !== "tick")}
+      />
       <CandlestickChart
         data={candleData}
         range={range ?? undefined}
