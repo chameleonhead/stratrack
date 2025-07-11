@@ -30,6 +30,12 @@ const DataSources = () => {
           {dataSources.map((ds) => (
             <div key={ds.id} className="rounded-xl border p-4 shadow">
               <h4 className="font-bold">{ds.name}</h4>
+              {ds.startTime && ds.endTime && (
+                <p className="text-sm text-gray-500">
+                  {new Date(ds.startTime).toLocaleDateString()} -{" "}
+                  {new Date(ds.endTime).toLocaleDateString()}
+                </p>
+              )}
               <div className="mt-2 space-x-2">
                 <Link to={`/data-sources/${ds.id}/edit`} className="btn btn-sm btn-primary">
                   編集
