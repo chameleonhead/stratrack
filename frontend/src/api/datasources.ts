@@ -15,6 +15,8 @@ export type DataSourceSummary = {
   name: string;
   createdAt: string;
   updatedAt: string;
+  startTime?: string;
+  endTime?: string;
 };
 
 export type DataSourceDetail = {

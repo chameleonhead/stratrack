@@ -12,7 +12,8 @@ public class DataSourceReadModel : IReadModel,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUpdatedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceDeletedEvent>,
     IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceLockedEvent>,
-    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUnlockedEvent>
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataSourceUnlockedEvent>,
+    IAmReadModelFor<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent>
 {
     public string Id { get; set; } = "";
     public Guid DataSourceId { get; set; } = Guid.Empty;
@@ -26,6 +27,8 @@ public class DataSourceReadModel : IReadModel,
     public bool IsLocked { get; set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
+    public DateTimeOffset? StartTime { get; private set; }
+    public DateTimeOffset? EndTime { get; private set; }
 
     public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataSourceCreatedEvent> domainEvent, CancellationToken cancellationToken)
     {
@@ -77,6 +80,16 @@ public class DataSourceReadModel : IReadModel,
         DataSourceId = domainEvent.AggregateIdentity.GetGuid();
         IsLocked = false;
         UpdatedAt = domainEvent.Timestamp;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyAsync(IReadModelContext context, IDomainEvent<DataSourceAggregate, DataSourceId, DataChunkRegisteredEvent> domainEvent, CancellationToken cancellationToken)
+    {
+        var e = domainEvent.AggregateEvent;
+        Id = context.ReadModelId;
+        DataSourceId = domainEvent.AggregateIdentity.GetGuid();
+        StartTime = StartTime == null || StartTime > e.StartTime ? e.StartTime : StartTime;
+        EndTime = EndTime == null || EndTime < e.EndTime ? e.EndTime : EndTime;
         return Task.CompletedTask;
     }
 

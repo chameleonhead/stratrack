@@ -33,6 +33,8 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             Name = s.Name,
             CreatedAt = s.CreatedAt,
             UpdatedAt = s.UpdatedAt,
+            StartTime = s.StartTime,
+            EndTime = s.EndTime,
         });
         await response.WriteAsJsonAsync(dataSourceSummaries, token).ConfigureAwait(false);
         return response;
@@ -204,8 +206,6 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             return null;
         }
 
-        var range = await queryProcessor.ProcessAsync(new DataChunkRangeQuery(result.DataSourceId), token).ConfigureAwait(false);
-
         return new DataSourceDetail()
         {
             Id = result.DataSourceId,
@@ -217,8 +217,8 @@ public class DataSourceFunctions(ICommandBus commandBus, IQueryProcessor queryPr
             Description = result.Description,
             CreatedAt = result.CreatedAt,
             UpdatedAt = result.UpdatedAt,
-            StartTime = range?.StartTime,
-            EndTime = range?.EndTime,
+            StartTime = result.StartTime,
+            EndTime = result.EndTime,
         };
     }
 

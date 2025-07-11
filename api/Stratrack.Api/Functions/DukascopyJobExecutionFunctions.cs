@@ -11,7 +11,7 @@ using System.Linq;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
-using Stratrack.Api.Domain.DataSources.Queries;
+using Stratrack.Api.Domain.DataSources;
 using EventFlow;
 using EventFlow.Queries;
 
@@ -195,8 +195,10 @@ public class DukascopyJobExecutionFunctions(
     public async Task<DateTimeOffset?> DukascopyGetNextTimeActivity([ActivityTrigger] DukascopyJobExecutionInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        var range = await _queryProcessor.ProcessAsync(new DataChunkRangeQuery(input.DataSourceId), token).ConfigureAwait(false);
-        return range?.EndTime ?? input.StartTime;
+        var ds = await _queryProcessor
+            .ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(input.DataSourceId)), token)
+            .ConfigureAwait(false);
+        return ds?.EndTime ?? input.StartTime;
     }
 
     [Function("DukascopyJobDayActivity")]
