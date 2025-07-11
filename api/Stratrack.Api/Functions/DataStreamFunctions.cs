@@ -89,28 +89,30 @@ public class DataStreamFunctions(
         }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "text/plain");
+        response.Headers.Add("Content-Type", "text/event-stream");
 
         if (format == "tick")
         {
-            await response.WriteStringAsync("time,bid\n", token).ConfigureAwait(false);
+            await response.WriteStringAsync("data: time,bid\n\n", token).ConfigureAwait(false);
             foreach (var line in lines)
             {
                 var parts = line.Split(',');
                 if (parts.Length < 2) continue;
                 var time = DateTimeOffset.Parse(parts[0]);
                 if (time < start || time >= end) continue;
-                await response.WriteStringAsync($"{time:o},{parts[1]}\n", token).ConfigureAwait(false);
+                await response.WriteStringAsync($"data: {time:o},{parts[1]}\n\n", token).ConfigureAwait(false);
+                await response.Body.FlushAsync(token).ConfigureAwait(false);
             }
             return response;
         }
 
         int tfMinutes = ParseTimeframeMinutes(timeframe);
-        await response.WriteStringAsync("time,open,high,low,close\n", token).ConfigureAwait(false);
+        await response.WriteStringAsync("data: time,open,high,low,close\n\n", token).ConfigureAwait(false);
         var ohlc = BuildOhlc(lines, dataSource.Format, tfMinutes, start, end);
         foreach (var c in ohlc)
         {
-            await response.WriteStringAsync($"{c.Time:o},{c.Open},{c.High},{c.Low},{c.Close}\n", token).ConfigureAwait(false);
+            await response.WriteStringAsync($"data: {c.Time:o},{c.Open},{c.High},{c.Low},{c.Close}\n\n", token).ConfigureAwait(false);
+            await response.Body.FlushAsync(token).ConfigureAwait(false);
         }
         return response;
     }

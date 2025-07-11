@@ -6,6 +6,7 @@ using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Models;
 using Stratrack.Api.Domain.DataSources;
 using System.Net;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using WorkerHttpFake;
@@ -75,7 +76,8 @@ public class DataStreamFunctionsTests
             .Build();
         var res = await streamFunc.GetDataStream(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.OK, res.StatusCode);
+        Assert.AreEqual("text/event-stream", res.Headers.GetValues("Content-Type").First());
         var body = await res.ReadAsStringAsync();
-        Assert.IsTrue(body.StartsWith("time,open,high,low,close"));
+        Assert.IsTrue(body.StartsWith("data: time,open,high,low,close"));
     }
 }
