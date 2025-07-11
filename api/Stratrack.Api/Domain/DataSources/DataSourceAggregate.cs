@@ -101,10 +101,11 @@ public class DataSourceAggregate(DataSourceId id) : AggregateRoot<DataSourceAggr
 
     public void RegisterDataChunk(Guid chunkId, Guid blobId, DateTimeOffset startTime, DateTimeOffset endTime)
     {
-        if (isDeleted || isLocked)
+        if (isDeleted)
         {
             return;
         }
+
         Emit(new DataChunkRegisteredEvent(chunkId, blobId, startTime, endTime));
     }
 
