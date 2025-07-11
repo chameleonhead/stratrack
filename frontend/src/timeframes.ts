@@ -9,3 +9,26 @@ export const TIMEFRAME_OPTIONS = [
   { value: "4h", label: "4時間足" },
   { value: "1d", label: "日足" },
 ];
+
+export function timeframeToMs(tf: string): number {
+  switch (tf) {
+    case "1m":
+      return 60_000;
+    case "5m":
+      return 5 * 60_000;
+    case "15m":
+      return 15 * 60_000;
+    case "30m":
+      return 30 * 60_000;
+    case "1h":
+      return 60 * 60_000;
+    case "2h":
+      return 2 * 60 * 60_000;
+    case "4h":
+      return 4 * 60 * 60_000;
+    case "1d":
+      return 24 * 60 * 60_000;
+    default:
+      return 0;
+  }
+}

@@ -5,7 +5,7 @@ import { getDataStream } from "../../api/data";
 import CandlestickChart, { Candle } from "../../components/CandlestickChart";
 import Select from "../../components/Select";
 import { TIMEFRAME_OPTIONS } from "../../timeframes";
-import { loadCandles, saveCandles } from "../../idb";
+import { loadCandles, saveCandles, hasCandles } from "../../idb";
 
 const DataSourceChart = () => {
   const { dataSourceId } = useParams<{ dataSourceId: string }>();
@@ -23,7 +23,8 @@ const DataSourceChart = () => {
         const fromMs = Date.parse(from);
         const toMs = Date.parse(to);
         const cached = await loadCandles(dataSourceId, timeframe, fromMs, toMs);
-        if (cached.length) {
+        const complete = await hasCandles(dataSourceId, timeframe, fromMs, toMs);
+        if (complete) {
           setCandleData(
             cached.map((c) => ({
               date: new Date(c.time),

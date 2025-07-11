@@ -1,4 +1,5 @@
 import { openDB, type DBSchema } from "idb";
+import { timeframeToMs } from "./timeframes";
 
 export interface Candle {
   dataSourceId: string;
@@ -41,4 +42,20 @@ export async function loadCandles(
   const db = await dbPromise;
   const range = IDBKeyRange.bound([dsId, timeframe, from], [dsId, timeframe, to]);
   return db.getAll("candles", range);
+}
+
+export async function hasCandles(
+  dsId: string,
+  timeframe: string,
+  from: number,
+  to: number
+): Promise<boolean> {
+  const tfMs = timeframeToMs(timeframe);
+  if (tfMs <= 0) return false;
+  const candles = await loadCandles(dsId, timeframe, from, to);
+  if (!candles.length) return false;
+  const expected = Math.ceil((to - from) / tfMs);
+  const first = candles[0].time;
+  const last = candles[candles.length - 1].time;
+  return candles.length >= expected && first <= from && last >= to - tfMs;
 }
