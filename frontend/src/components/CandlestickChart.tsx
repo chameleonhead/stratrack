@@ -49,6 +49,8 @@ const CandlestickChart = ({
   range,
   onRangeChange,
 }: CandlestickChartProps) => {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const resolvedHeight = isMobile ? 200 : height;
   const chartData = {
     datasets: [
       {
@@ -100,7 +102,7 @@ const CandlestickChart = ({
       data={chartData}
       options={options}
       width={width}
-      height={height}
+      height={resolvedHeight}
     />
   );
 };
