@@ -20,6 +20,7 @@ builder.Services
         options.PropertyNameCaseInsensitive = true;
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     })
-    .AddStratrack<StratrackDbContextProvider>();
+    .AddStratrack<StratrackDbContextProvider>()
+    .AddSingleton<StratrackDbContextProvider>();
 
 builder.Build().Run();

@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import Button from "../../components/Button";
+import { resetDatabase } from "../../api/maintenance";
 
 const Settings = () => {
   return (
@@ -29,6 +31,22 @@ const Settings = () => {
             >
               開く
             </Link>
+          </div>
+          <div className="rounded-xl border p-4 shadow">
+            <h4 className="font-bold">データベースリセット</h4>
+            <p className="text-sm text-gray-600">開発用データベースを初期化します</p>
+            <Button
+              className="mt-2"
+              onClick={async () => {
+                if (!confirm("本当にリセットしますか？")) {
+                  return;
+                }
+                await resetDatabase();
+                alert("リセットしました");
+              }}
+            >
+              実行
+            </Button>
           </div>
         </div>
       </section>

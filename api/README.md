@@ -44,3 +44,13 @@ Azurite と Azure Functions Core Tools を利用することで、Durable Functi
 2. `Stratrack.Api` ディレクトリで `func start` を実行し Functions ホストを起動します。
 3. `http://localhost:7071/api/swagger/ui` から `CreateDukascopyJob` などのエンドポイントを呼び出してください。
 4. オーケストレーターの状態は `func durable get-instances` で確認できます。
+
+## 開発用データベースリセット
+
+開発中にデータベースを初期状態へ戻したい場合、次のエンドポイントを呼び出します。
+
+```
+POST /api/maintenance/reset
+```
+
+InMemory DB と SQL Server のどちらを使用している場合でも、全てのテーブルが削除され再作成されます。

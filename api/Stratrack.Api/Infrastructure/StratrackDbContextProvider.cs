@@ -43,6 +43,15 @@ public class StratrackDbContextProvider : IDbContextProvider<StratrackDbContext>
         return context;
     }
 
+    /// <summary>
+    /// Create context without applying migrations. Used only for development
+    /// scenarios such as resetting the database when migrations fail.
+    /// </summary>
+    public StratrackDbContext CreateContextWithoutInitialization()
+    {
+        return new StratrackDbContext(_options);
+    }
+
     public void Dispose()
     {
     }

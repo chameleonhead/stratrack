@@ -20,5 +20,6 @@ export const Default: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText("設定")).toBeInTheDocument();
     await expect(canvas.getByText("Dukascopyジョブ管理")).toBeInTheDocument();
+    await expect(canvas.getByText("データベースリセット")).toBeInTheDocument();
   },
 };
