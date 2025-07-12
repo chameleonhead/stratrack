@@ -25,7 +25,7 @@ export type LineChartProps = {
 ChartJS.register(LineElement, LinearScale, TimeScale, PointElement, Tooltip, Legend);
 ChartJS.register(zoomPlugin);
 
-const LineChart = ({ width = 600, height = 300, data, range, onRangeChange }: LineChartProps) => {
+const LineChart = ({ width, height = 300, data, range, onRangeChange }: LineChartProps) => {
   const chartData: ChartData<"line", { x: number; y: number }[]> = {
     datasets: [
       {
@@ -39,7 +39,8 @@ const LineChart = ({ width = 600, height = 300, data, range, onRangeChange }: Li
   };
 
   const options = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: { type: "time", min: range?.from, max: range?.to },
       y: { beginAtZero: false },
@@ -66,7 +67,9 @@ const LineChart = ({ width = 600, height = 300, data, range, onRangeChange }: Li
     },
   } as const;
 
-  return <Line data={chartData} options={options} width={width} height={height} />;
+  return (
+    <Line className="w-full" data={chartData} options={options} width={width} height={height} />
+  );
 };
 
 export default LineChart;
