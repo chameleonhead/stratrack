@@ -16,7 +16,7 @@ public class DukascopyClient : IDukascopyClient
         _http = httpClient ?? new HttpClient();
     }
 
-    public async Task<byte[]?> GetTickDataAsync(string symbol, DateTimeOffset time, CancellationToken token)
+    public async Task<DukascopyFetchResult> GetTickDataAsync(string symbol, DateTimeOffset time, CancellationToken token)
     {
         var baseTime = new DateTimeOffset(time.Year, time.Month, time.Day, time.Hour, 0, 0, time.Offset);
         var url = $"https://datafeed.dukascopy.com/datafeed/{symbol}/{baseTime:yyyy}/{baseTime:MM}/{baseTime:dd}/{baseTime:HH}h_ticks.bi5";
@@ -25,22 +25,26 @@ public class DukascopyClient : IDukascopyClient
         {
             request.Headers.IfNoneMatch.ParseAdd(etag);
         }
+        try
+        {
+            using var res = await _http.SendAsync(request, token).ConfigureAwait(false);
+            var status = (int)res.StatusCode;
+            if (res.Headers.ETag != null)
+            {
+                _etagCache[url] = res.Headers.ETag.ToString();
+            }
+            if (res.StatusCode != HttpStatusCode.OK)
+            {
+                return new DukascopyFetchResult
+                {
+                    Url = url,
+                    HttpStatus = status,
+                    ETag = res.Headers.ETag?.ToString(),
+                    LastModified = res.Content.Headers.LastModified
+                };
+            }
 
-        using var res = await _http.SendAsync(request, token).ConfigureAwait(false);
-        if (res.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-        if (res.StatusCode == HttpStatusCode.NotModified)
-        {
-            return null;
-        }
-        res.EnsureSuccessStatusCode();
-        if (res.Headers.ETag != null)
-        {
-            _etagCache[url] = res.Headers.ETag.ToString();
-        }
-        var compressed = await res.Content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
+            var compressed = await res.Content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
 
         using var inStream = new MemoryStream(compressed);
         var properties = new byte[5];
@@ -53,7 +57,7 @@ public class DukascopyClient : IDukascopyClient
         using var decompressed = new MemoryStream();
         decoder.Code(inStream, decompressed, inStream.Length - inStream.Position, outSize, null);
 
-        var span = decompressed.ToArray();
+            var span = decompressed.ToArray();
         var sb = new StringBuilder();
         sb.AppendLine("time,bid,ask");
         for (var i = 0; i + 20 <= span.Length; i += 20)
@@ -64,6 +68,22 @@ public class DukascopyClient : IDukascopyClient
             var tickTime = baseTime.AddMilliseconds(offset);
             sb.AppendLine($"{tickTime:O},{bid / 100000.0:F5},{ask / 100000.0:F5}");
         }
-        return Encoding.UTF8.GetBytes(sb.ToString());
+            return new DukascopyFetchResult
+            {
+                Url = url,
+                HttpStatus = status,
+                ETag = res.Headers.ETag?.ToString(),
+                LastModified = res.Content.Headers.LastModified,
+                Data = Encoding.UTF8.GetBytes(sb.ToString())
+            };
+        }
+        catch
+        {
+            return new DukascopyFetchResult
+            {
+                Url = url,
+                HttpStatus = 0
+            };
+        }
     }
 }

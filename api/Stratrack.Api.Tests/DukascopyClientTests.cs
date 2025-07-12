@@ -13,7 +13,7 @@ public class DukascopyClientTests
     public async Task GetTickDataAsync_ReturnsNullForNotFound()
     {
         var client = new DukascopyClient();
-        var data = await client.GetTickDataAsync("EURUSD", new DateTimeOffset(2000,1,1,0,0,0,TimeSpan.Zero), CancellationToken.None);
-        Assert.IsNull(data);
+        var result = await client.GetTickDataAsync("EURUSD", new DateTimeOffset(2000,1,1,0,0,0,TimeSpan.Zero), CancellationToken.None);
+        Assert.AreEqual(404, result.HttpStatus);
     }
 }

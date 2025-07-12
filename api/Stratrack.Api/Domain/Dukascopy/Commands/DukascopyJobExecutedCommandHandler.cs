@@ -12,6 +12,10 @@ public class DukascopyJobExecutedCommandHandler : CommandHandler<DukascopyJobAgg
             command.IsSuccess,
             command.Symbol,
             command.TargetTime,
+            command.FileUrl,
+            command.HttpStatus,
+            command.ETag,
+            command.LastModified,
             command.ErrorMessage,
             command.Duration);
         return Task.CompletedTask;

@@ -4,14 +4,14 @@ using Stratrack.Api.Domain.Dukascopy.Events;
 
 namespace Stratrack.Api.Domain.Dukascopy;
 
-public class DukascopyJobStepReadModelLocator : IReadModelLocator
+public class DukascopyJobFetchResultReadModelLocator : IReadModelLocator
 {
     public IEnumerable<string> GetReadModelIds(IDomainEvent domainEvent)
     {
         return domainEvent switch
         {
             IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent> e =>
-                ["" + e.AggregateEvent.ExecutionId + "_" + e.AggregateEvent.TargetTime.ToString("yyyyMMddHHmmss")],
+                ["" + e.AggregateIdentity.GetGuid() + "_" + e.AggregateEvent.FileUrl],
             _ => []
         };
     }
