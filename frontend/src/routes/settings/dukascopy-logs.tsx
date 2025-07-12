@@ -26,28 +26,24 @@ const DukascopyLogs = () => {
       <table className="table table-sm">
         <thead>
           <tr>
-            <th>実行時刻</th>
-            <th>通貨</th>
-            <th>対象時刻</th>
-            <th>結果</th>
-            <th>エラー</th>
-            <th>時間(ms)</th>
+            <th>URL</th>
+            <th>HTTPステータス</th>
+            <th>ETag</th>
+            <th>最終更新日</th>
           </tr>
         </thead>
         <tbody>
           {logs.map((l) => (
-            <tr key={l.executedAt + l.symbol}>
-              <td>{new Date(l.executedAt).toLocaleString()}</td>
-              <td>{l.symbol}</td>
-              <td>{new Date(l.targetTime).toLocaleString()}</td>
-              <td>{l.isSuccess ? "成功" : "失敗"}</td>
-              <td>{l.errorMessage ?? ""}</td>
-              <td>{Math.round(l.duration)}</td>
+            <tr key={l.fileUrl}>
+              <td className="break-all">{l.fileUrl}</td>
+              <td>{l.httpStatus}</td>
+              <td>{l.eTag ?? ""}</td>
+              <td>{l.lastModified ? new Date(l.lastModified).toLocaleString() : ""}</td>
             </tr>
           ))}
           {logs.length === 0 && (
             <tr>
-              <td colSpan={6} className="text-center">
+              <td colSpan={4} className="text-center">
                 ログがありません
               </td>
             </tr>

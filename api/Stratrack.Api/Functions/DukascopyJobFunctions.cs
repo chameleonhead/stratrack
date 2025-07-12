@@ -194,15 +194,13 @@ public class DukascopyJobFunctions(
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<Models.DukascopyJobLog>))]
     public async Task<HttpResponseData> GetJobLogs([HttpTrigger(AuthorizationLevel.Function, "get", Route = "dukascopy-job/{id:guid}/logs")] HttpRequestData req, Guid id, CancellationToken token)
     {
-        var logs = await _queryProcessor.ProcessAsync(new DukascopyJobStepReadModelSearchQuery(id, DateTimeOffset.UtcNow.AddDays(-7)), token).ConfigureAwait(false);
+        var logs = await _queryProcessor.ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(id, DateTimeOffset.UtcNow.AddDays(-7)), token).ConfigureAwait(false);
         var items = logs.Select(l => new Models.DukascopyJobLog
         {
-            ExecutedAt = l.ExecutedAt,
-            IsSuccess = l.IsSuccess,
-            Symbol = l.Symbol,
-            TargetTime = l.TargetTime,
-            ErrorMessage = l.ErrorMessage,
-            Duration = l.Duration
+            FileUrl = l.FileUrl,
+            HttpStatus = l.HttpStatus,
+            ETag = l.ETag,
+            LastModified = l.LastModified
         }).ToList();
         var res = req.CreateResponse(HttpStatusCode.OK);
         await res.WriteAsJsonAsync(items, cancellationToken: token).ConfigureAwait(false);
@@ -221,15 +219,13 @@ public class DukascopyJobFunctions(
         var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
         var page = int.TryParse(query.Get("page"), out var p) ? p : 1;
         var pageSize = int.TryParse(query.Get("pageSize"), out var s) ? s : 100;
-        var logs = await _queryProcessor.ProcessAsync(new DukascopyJobStepPagedQuery(page, pageSize), token).ConfigureAwait(false);
+        var logs = await _queryProcessor.ProcessAsync(new DukascopyJobFetchResultPagedQuery(page, pageSize), token).ConfigureAwait(false);
         var items = logs.Select(l => new Models.DukascopyJobLog
         {
-            ExecutedAt = l.ExecutedAt,
-            IsSuccess = l.IsSuccess,
-            Symbol = l.Symbol,
-            TargetTime = l.TargetTime,
-            ErrorMessage = l.ErrorMessage,
-            Duration = l.Duration
+            FileUrl = l.FileUrl,
+            HttpStatus = l.HttpStatus,
+            ETag = l.ETag,
+            LastModified = l.LastModified
         }).ToList();
         var res = req.CreateResponse(HttpStatusCode.OK);
         await res.WriteAsJsonAsync(items, cancellationToken: token).ConfigureAwait(false);

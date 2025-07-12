@@ -128,12 +128,10 @@ export async function listDukascopyJobs(): Promise<DukascopyJobSummary[]> {
 }
 
 export type DukascopyJobLog = {
-  executedAt: string;
-  isSuccess: boolean;
-  symbol: string;
-  targetTime: string;
-  errorMessage?: string;
-  duration: number;
+  fileUrl: string;
+  httpStatus: number;
+  eTag?: string;
+  lastModified?: string;
 };
 
 export async function listDukascopyJobLogs(id: string): Promise<DukascopyJobLog[]> {

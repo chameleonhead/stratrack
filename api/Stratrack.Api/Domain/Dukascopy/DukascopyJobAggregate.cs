@@ -77,9 +77,20 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
     }
 
-    public void LogExecution(Guid executionId, DateTimeOffset executedAt, bool isSuccess, string symbol, DateTimeOffset targetTime, string? errorMessage, double duration)
+    public void RecordFetchResult(
+        Guid executionId,
+        DateTimeOffset executedAt,
+        bool isSuccess,
+        string symbol,
+        DateTimeOffset targetTime,
+        string fileUrl,
+        int httpStatus,
+        string? eTag,
+        DateTimeOffset? lastModified,
+        string? errorMessage,
+        double duration)
     {
-        Emit(new DukascopyJobExecutedEvent(executionId, executedAt, isSuccess, symbol, targetTime, errorMessage, duration));
+        Emit(new DukascopyJobExecutedEvent(executionId, executedAt, isSuccess, symbol, targetTime, fileUrl, httpStatus, eTag, lastModified, errorMessage, duration));
     }
 
     public void StartExecution(Guid executionId)
