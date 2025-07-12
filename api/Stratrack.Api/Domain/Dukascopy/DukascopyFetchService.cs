@@ -31,6 +31,7 @@ public class DukascopyFetchService(
     {
         var success = false;
         string? error = null;
+        DukascopyFetchResult result = new();
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
@@ -41,10 +42,10 @@ public class DukascopyFetchService(
                 return;
             }
 
-            var data = await _client.GetTickDataAsync(symbol, time, token).ConfigureAwait(false);
-            if (data != null && data.Length > 0)
+            result = await _client.GetTickDataAsync(symbol, time, token).ConfigureAwait(false);
+            if (result.Data != null && result.Data.Length > 0)
             {
-                var blobId = await _blobStorage.SaveAsync($"{symbol}_{time:yyyyMMddHH}.csv", "text/csv", data, token).ConfigureAwait(false);
+                var blobId = await _blobStorage.SaveAsync($"{symbol}_{time:yyyyMMddHH}.csv", "text/csv", result.Data, token).ConfigureAwait(false);
                 await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(ds.DataSourceId))
                 {
                     DataChunkId = Guid.NewGuid(),
@@ -54,7 +55,7 @@ public class DukascopyFetchService(
                 }, token).ConfigureAwait(false);
             }
 
-            success = true;
+            success = result.HttpStatus >= 200 && result.HttpStatus < 300;
         }
         catch (Exception ex)
         {
@@ -72,6 +73,10 @@ public class DukascopyFetchService(
                 IsSuccess = success,
                 Symbol = symbol,
                 TargetTime = time,
+                FileUrl = result.Url,
+                HttpStatus = result.HttpStatus,
+                ETag = result.ETag,
+                LastModified = result.LastModified,
                 ErrorMessage = error,
                 Duration = sw.Elapsed.TotalMilliseconds
             }, token).ConfigureAwait(false);
@@ -109,6 +114,10 @@ public class DukascopyFetchService(
                 IsSuccess = success,
                 Symbol = symbol,
                 TargetTime = startTime,
+                FileUrl = string.Empty,
+                HttpStatus = 0,
+                ETag = null,
+                LastModified = null,
                 ErrorMessage = error,
                 Duration = sw.Elapsed.TotalMilliseconds
             }, token).ConfigureAwait(false);
@@ -123,13 +132,13 @@ public class DukascopyFetchService(
         var maxTime = DateTimeOffset.UtcNow.AddHours(-1);
         while (current <= maxTime)
         {
-            var data = await _client.GetTickDataAsync(ds.Symbol, current, token).ConfigureAwait(false);
-            if (data != null && data.Length > 0)
+            var result = await _client.GetTickDataAsync(ds.Symbol, current, token).ConfigureAwait(false);
+            if (result.Data != null && result.Data.Length > 0)
             {
                 var blobId = await _blobStorage.SaveAsync(
                     $"{ds.Symbol}_{current:yyyyMMddHH}.csv",
                     "text/csv",
-                    data,
+                    result.Data,
                     token).ConfigureAwait(false);
                 await _commandBus.PublishAsync(new DataChunkRegisterCommand(DataSourceId.With(ds.DataSourceId))
                 {
