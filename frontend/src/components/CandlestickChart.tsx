@@ -26,6 +26,7 @@ export type CandlestickChartProps = {
   width?: number;
   height?: number;
   range?: { from: number; to: number };
+  limits?: { from: number; to: number };
   onRangeChange?: (range: { from: number; to: number }) => void;
 };
 
@@ -47,6 +48,7 @@ const CandlestickChart = ({
   width,
   height = 300,
   range,
+  limits,
   onRangeChange,
 }: CandlestickChartProps) => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -94,6 +96,14 @@ const CandlestickChart = ({
             onRangeChange?.({ from, to });
           },
         },
+        limits: limits
+          ? {
+              x: {
+                min: limits.from,
+                max: limits.to,
+              },
+            }
+          : undefined,
       },
     },
   } as const;
