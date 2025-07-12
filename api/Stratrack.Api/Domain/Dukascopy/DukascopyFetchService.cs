@@ -60,6 +60,7 @@ public class DukascopyFetchService(
         {
             _logger.LogError(ex, "Failed to fetch dukascopy chunk");
             error = ex.Message;
+            throw;
         }
         finally
         {
