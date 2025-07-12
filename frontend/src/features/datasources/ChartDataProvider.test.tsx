@@ -161,4 +161,47 @@ describe("ChartDataProvider", () => {
 
     expect(ctx?.candleData.length).toBe(0);
   });
+
+  it("loads additional data when range moves outside the loaded area", async () => {
+    const extendedDs = {
+      ...dsDetail,
+      endTime: new Date(baseTime + 2 * 86400000).toISOString(),
+    };
+    vi.mocked(apiDs.getDataSource).mockResolvedValue(extendedDs);
+    vi.mocked(apiData.getDataStream).mockResolvedValue(
+      "time,open,high,low,close\n2024-01-02T00:00:00Z,1,2,0,1"
+    );
+    vi.mocked(idb.loadCandles).mockResolvedValue([]);
+    vi.mocked(idb.hasCandles).mockResolvedValue(false);
+    vi.mocked(idb.saveCandles).mockResolvedValue();
+
+    let ctx: ChartDataContextValue | undefined;
+    const div = document.createElement("div");
+    await act(async () => {
+      const root = createRoot(div);
+      root.render(
+        <ChartDataProvider dataSourceId="ds">
+          <Consumer onValue={(v) => (ctx = v)} />
+        </ChartDataProvider>
+      );
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(apiData.getDataStream).toHaveBeenCalledTimes(1);
+    const initialRange = ctx!.range!;
+
+    await act(async () => {
+      await ctx!.handleRangeChange({
+        from: initialRange.from - 3600000,
+        to: initialRange.to - 3600000,
+      });
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(apiData.getDataStream).toHaveBeenCalledTimes(2);
+  });
 });
