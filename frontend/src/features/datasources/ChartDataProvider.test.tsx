@@ -2,11 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createRoot } from "react-dom/client";
 import { act } from "react-dom/test-utils";
-import {
-  ChartDataProvider,
-  useChartData,
-  type ChartDataContextValue,
-} from "./ChartDataProvider";
+import { ChartDataProvider, useChartData, type ChartDataContextValue } from "./ChartDataProvider";
 import * as apiDs from "../../api/datasources";
 import type { DataSourceDetail } from "../../api/datasources";
 import * as apiData from "../../api/data";

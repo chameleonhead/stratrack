@@ -44,7 +44,7 @@ ChartJS.register(zoomPlugin);
 
 const CandlestickChart = ({
   data,
-  width = 600,
+  width,
   height = 300,
   range,
   onRangeChange,
@@ -65,7 +65,8 @@ const CandlestickChart = ({
   };
 
   const options = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: { type: "time", min: range?.from, max: range?.to },
       y: { beginAtZero: false },
@@ -93,7 +94,14 @@ const CandlestickChart = ({
   } as const;
 
   return (
-    <Chart type="candlestick" data={chartData} options={options} width={width} height={height} />
+    <Chart
+      className="w-full"
+      type="candlestick"
+      data={chartData}
+      options={options}
+      width={width}
+      height={height}
+    />
   );
 };
 
