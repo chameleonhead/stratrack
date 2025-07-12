@@ -77,6 +77,19 @@ public class DataStreamFunctions(
             .OrderBy(c => c.StartTime)
             .ToList();
 
+        // データが存在しない場合は、開始時刻より前の最新チャンクを取得する
+        if (target.Count == 0)
+        {
+            var prev = chunks
+                .Where(c => c.EndTime <= start)
+                .OrderByDescending(c => c.EndTime)
+                .FirstOrDefault();
+            if (prev != null)
+            {
+                target.Add(prev);
+            }
+        }
+
         var format = formatStr ?? (dataSource.Format == DataFormat.Tick ? "tick" : "ohlc");
         var timeframe = timeframeStr ?? dataSource.Timeframe;
 
@@ -86,6 +99,22 @@ public class DataStreamFunctions(
             var data = await _blobStorage.GetAsync(chunk.BlobId, token).ConfigureAwait(false);
             var text = System.Text.Encoding.UTF8.GetString(data);
             lines.AddRange(text.Split('\n', StringSplitOptions.RemoveEmptyEntries).Skip(1));
+        }
+
+        // 取得範囲内のデータが存在しない場合は直前のデータのみ返却する
+        var hasDataInRange = lines.Any(l =>
+        {
+            var parts = l.Split(',');
+            if (parts.Length < 2) return false;
+            var time = DateTimeOffset.Parse(parts[0]);
+            return time >= start && time < end;
+        });
+
+        if (!hasDataInRange && lines.Count > 0)
+        {
+            var last = lines.Last();
+            start = DateTimeOffset.Parse(last.Split(',')[0]);
+            lines = new List<string> { last };
         }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
