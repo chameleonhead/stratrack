@@ -79,17 +79,20 @@ const CandlestickChart = ({
           wheel: { enabled: true },
           pinch: { enabled: true },
           mode: "x",
+          onZoomComplete: ({ chart }: { chart: ChartJS }) => {
+            const from = chart.scales.x.min as number;
+            const to = chart.scales.x.max as number;
+            onRangeChange?.({ from, to });
+          },
         },
-        pan: { enabled: true, mode: "x" },
-        onZoomComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
-        },
-        onPanComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
+        pan: {
+          enabled: true,
+          mode: "x",
+          onPanComplete: ({ chart }: { chart: ChartJS }) => {
+            const from = chart.scales.x.min as number;
+            const to = chart.scales.x.max as number;
+            onRangeChange?.({ from, to });
+          },
         },
       },
     },
