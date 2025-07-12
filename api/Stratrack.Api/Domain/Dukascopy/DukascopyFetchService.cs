@@ -66,7 +66,7 @@ public class DukascopyFetchService(
         finally
         {
             sw.Stop();
-            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
+            await _commandBus.PublishAsync(new DukascopyJobRecordFetchResultCommand(DukascopyJobId.With(jobId))
             {
                 ExecutionId = executionId,
                 ExecutedAt = DateTimeOffset.UtcNow,
@@ -108,7 +108,7 @@ public class DukascopyFetchService(
         finally
         {
             sw.Stop();
-            await _commandBus.PublishAsync(new DukascopyJobExecutedCommand(DukascopyJobId.With(jobId))
+            await _commandBus.PublishAsync(new DukascopyJobRecordFetchResultCommand(DukascopyJobId.With(jobId))
             {
                 ExecutedAt = DateTimeOffset.UtcNow,
                 IsSuccess = success,

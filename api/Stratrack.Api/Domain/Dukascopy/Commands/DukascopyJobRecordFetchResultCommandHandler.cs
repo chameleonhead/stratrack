@@ -2,11 +2,11 @@ using EventFlow.Commands;
 
 namespace Stratrack.Api.Domain.Dukascopy.Commands;
 
-public class DukascopyJobExecutedCommandHandler : CommandHandler<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedCommand>
+public class DukascopyJobRecordFetchResultCommandHandler : CommandHandler<DukascopyJobAggregate, DukascopyJobId, DukascopyJobRecordFetchResultCommand>
 {
-    public override Task ExecuteAsync(DukascopyJobAggregate aggregate, DukascopyJobExecutedCommand command, CancellationToken cancellationToken)
+    public override Task ExecuteAsync(DukascopyJobAggregate aggregate, DukascopyJobRecordFetchResultCommand command, CancellationToken cancellationToken)
     {
-        aggregate.LogExecution(
+        aggregate.RecordFetchResult(
             command.ExecutionId,
             command.ExecutedAt,
             command.IsSuccess,

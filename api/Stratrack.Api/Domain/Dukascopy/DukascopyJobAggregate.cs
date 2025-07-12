@@ -77,7 +77,7 @@ public class DukascopyJobAggregate(DukascopyJobId id) : AggregateRoot<DukascopyJ
         }
     }
 
-    public void LogExecution(
+    public void RecordFetchResult(
         Guid executionId,
         DateTimeOffset executedAt,
         bool isSuccess,
