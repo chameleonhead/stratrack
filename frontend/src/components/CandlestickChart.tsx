@@ -26,6 +26,7 @@ export type CandlestickChartProps = {
   width?: number;
   height?: number;
   range?: { from: number; to: number };
+  limits?: { from: number; to: number };
   onRangeChange?: (range: { from: number; to: number }) => void;
 };
 
@@ -47,6 +48,7 @@ const CandlestickChart = ({
   width,
   height = 300,
   range,
+  limits,
   onRangeChange,
 }: CandlestickChartProps) => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -79,18 +81,29 @@ const CandlestickChart = ({
           wheel: { enabled: true },
           pinch: { enabled: true },
           mode: "x",
+          onZoomComplete: ({ chart }: { chart: ChartJS }) => {
+            const from = chart.scales.x.min as number;
+            const to = chart.scales.x.max as number;
+            onRangeChange?.({ from, to });
+          },
         },
-        pan: { enabled: true, mode: "x" },
-        onZoomComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
+        pan: {
+          enabled: true,
+          mode: "x",
+          onPanComplete: ({ chart }: { chart: ChartJS }) => {
+            const from = chart.scales.x.min as number;
+            const to = chart.scales.x.max as number;
+            onRangeChange?.({ from, to });
+          },
         },
-        onPanComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
-        },
+        limits: limits
+          ? {
+              x: {
+                min: limits.from,
+                max: limits.to,
+              },
+            }
+          : undefined,
       },
     },
   } as const;
