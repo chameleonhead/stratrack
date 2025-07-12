@@ -55,7 +55,7 @@ public class DukascopyFetchService(
                 }, token).ConfigureAwait(false);
             }
 
-            success = result.HttpStatus >= 200 && result.HttpStatus < 300;
+            success = result.HttpStatus == 200 || result.HttpStatus == 404;
         }
         catch (Exception ex)
         {
