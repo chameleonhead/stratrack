@@ -96,14 +96,9 @@ const CandlestickChart = ({
   } as const;
 
   return (
-    <Chart
-      className="w-full"
-      type="candlestick"
-      data={chartData}
-      options={options}
-      width={width}
-      height={resolvedHeight}
-    />
+    <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight }}>
+      <Chart className="w-full h-full" type="candlestick" data={chartData} options={options} />
+    </div>
   );
 };
 

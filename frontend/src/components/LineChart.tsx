@@ -68,7 +68,9 @@ const LineChart = ({ width, height = 300, data, range, onRangeChange }: LineChar
   } as const;
 
   return (
-    <Line className="w-full" data={chartData} options={options} width={width} height={height} />
+    <div style={{ width: width ? `${width}px` : "100%", height }}>
+      <Line className="w-full h-full" data={chartData} options={options} />
+    </div>
   );
 };
 
