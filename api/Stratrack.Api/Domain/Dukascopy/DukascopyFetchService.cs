@@ -7,6 +7,7 @@ using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.DataSources.Queries;
 using Stratrack.Api.Domain.Dukascopy.Commands;
+using Stratrack.Api.Domain.Dukascopy.Queries;
 using System.Threading;
 using System.Threading.Tasks;
 using Stratrack.Api.Domain.Blobs;
@@ -26,6 +27,29 @@ public class DukascopyFetchService(
     private readonly IBlobStorage _blobStorage = blobStorage;
     private readonly ICommandBus _commandBus = commandBus;
     private readonly ILogger<DukascopyFetchService> _logger = logger;
+
+    internal static DateTimeOffset? ParseTimeFromUrl(string url)
+    {
+        try
+        {
+            var uri = new Uri(url);
+            var parts = uri.AbsolutePath.Trim('/').Split('/');
+            if (parts.Length < 6)
+            {
+                return null;
+            }
+            var year = int.Parse(parts[^4]);
+            var month = int.Parse(parts[^3]);
+            var day = int.Parse(parts[^2]);
+            var hourPart = parts[^1].Split('h')[0];
+            var hour = int.Parse(hourPart);
+            return new DateTimeOffset(year, month, day, hour, 0, 0, TimeSpan.Zero);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public async Task FetchHourAsync(Guid jobId, Guid dataSourceId, string symbol, DateTimeOffset time, Guid executionId, CancellationToken token)
     {
@@ -97,7 +121,7 @@ public class DukascopyFetchService(
                 return;
             }
 
-            await ProcessSourceAsync(ds, startTime, token).ConfigureAwait(false);
+            await ProcessSourceAsync(jobId, ds, startTime, token).ConfigureAwait(false);
             success = true;
         }
         catch (Exception ex)
@@ -124,14 +148,29 @@ public class DukascopyFetchService(
         }
     }
 
-    private async Task ProcessSourceAsync(DataSourceReadModel ds, DateTimeOffset startTime, CancellationToken token)
+    private async Task ProcessSourceAsync(Guid jobId, DataSourceReadModel ds, DateTimeOffset startTime, CancellationToken token)
     {
-        var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(ds.DataSourceId), token).ConfigureAwait(false);
-        var lastEnd = chunks.OrderBy(c => c.EndTime).LastOrDefault()?.EndTime ?? startTime;
-        var current = lastEnd;
+        var results = await _queryProcessor
+            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(jobId, null), token)
+            .ConfigureAwait(false);
+
+        var successTimes = results
+            .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
+            .Select(r => ParseTimeFromUrl(r.FileUrl))
+            .Where(t => t.HasValue)
+            .Select(t => t!.Value)
+            .ToHashSet();
+
         var maxTime = DateTimeOffset.UtcNow.AddHours(-1);
+        var current = startTime;
         while (current <= maxTime)
         {
+            if (successTimes.Contains(current))
+            {
+                current = current.AddHours(1);
+                continue;
+            }
+
             var result = await _client.GetTickDataAsync(ds.Symbol, current, token).ConfigureAwait(false);
             if (result.Data != null && result.Data.Length > 0)
             {

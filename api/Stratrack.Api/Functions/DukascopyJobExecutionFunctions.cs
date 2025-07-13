@@ -195,10 +195,28 @@ public class DukascopyJobExecutionFunctions(
     public async Task<DateTimeOffset?> DukascopyGetNextTimeActivity([ActivityTrigger] DukascopyJobExecutionInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        var ds = await _queryProcessor
-            .ProcessAsync(new ReadModelByIdQuery<DataSourceReadModel>(DataSourceId.With(input.DataSourceId)), token)
+        var results = await _queryProcessor
+            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, null), token)
             .ConfigureAwait(false);
-        return ds?.EndTime ?? input.StartTime;
+
+        var successTimes = results
+            .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
+            .Select(r => DukascopyFetchService.ParseTimeFromUrl(r.FileUrl))
+            .Where(t => t.HasValue)
+            .Select(t => t!.Value)
+            .ToHashSet();
+
+        var maxTime = DateTimeOffset.UtcNow.AddHours(-1);
+        var current = input.StartTime;
+        while (current <= maxTime)
+        {
+            if (!successTimes.Contains(current))
+            {
+                return current;
+            }
+            current = current.AddHours(1);
+        }
+        return null;
     }
 
     [Function("DukascopyJobDayActivity")]
@@ -212,14 +230,28 @@ public class DukascopyJobExecutionFunctions(
             return DukascopyJobDayResult.Interrupted;
         }
 
+        var results = await _queryProcessor
+            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, null), token)
+            .ConfigureAwait(false);
+
+        var successTimes = results
+            .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
+            .Select(r => DukascopyFetchService.ParseTimeFromUrl(r.FileUrl))
+            .Where(t => t.HasValue)
+            .Select(t => t!.Value)
+            .ToHashSet();
+
         var current = input.Day;
         var end = input.Day.AddDays(1);
         try
         {
             while (current < end)
             {
-                _logger.LogInformation($"Fetching {input.Symbol} {current}");
-                await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, current, input.ExecutionId, token).ConfigureAwait(false);
+                if (!successTimes.Contains(current))
+                {
+                    _logger.LogInformation($"Fetching {input.Symbol} {current}");
+                    await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, current, input.ExecutionId, token).ConfigureAwait(false);
+                }
 
                 jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
                 job = jobs.FirstOrDefault(j => j.JobId == input.JobId);
