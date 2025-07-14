@@ -56,7 +56,9 @@ namespace Stratrack.Api.Domain.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsLocked = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    StartTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    EndTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -67,6 +69,7 @@ namespace Stratrack.Api.Domain.Migrations
                 name: "DukascopyJobExecutions",
                 columns: table => new
                 {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ExecutionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -76,7 +79,23 @@ namespace Stratrack.Api.Domain.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DukascopyJobExecutions", x => x.ExecutionId);
+                    table.PrimaryKey("PK_DukascopyJobExecutions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DukascopyJobFetchResults",
+                columns: table => new
+                {
+                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FileUrl = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HttpStatus = table.Column<int>(type: "int", nullable: false),
+                    ETag = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastModified = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DukascopyJobFetchResults", x => new { x.JobId, x.FileUrl });
                 });
 
             migrationBuilder.CreateTable(
@@ -91,34 +110,17 @@ namespace Stratrack.Api.Domain.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     IsEnabled = table.Column<bool>(type: "bit", nullable: false),
                     IsRunning = table.Column<bool>(type: "bit", nullable: false),
+                    CurrentExecutionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     LastExecutionStartedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastExecutionFinishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LastExecutionSucceeded = table.Column<bool>(type: "bit", nullable: true),
                     LastExecutionError = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InterruptRequested = table.Column<bool>(type: "bit", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DukascopyJobs", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DukascopyJobSteps",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ExecutionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExecutedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    IsSuccess = table.Column<bool>(type: "bit", nullable: false),
-                    Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TargetTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Duration = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DukascopyJobSteps", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -223,10 +225,10 @@ namespace Stratrack.Api.Domain.Migrations
                 name: "DukascopyJobExecutions");
 
             migrationBuilder.DropTable(
-                name: "DukascopyJobs");
+                name: "DukascopyJobFetchResults");
 
             migrationBuilder.DropTable(
-                name: "DukascopyJobSteps");
+                name: "DukascopyJobs");
 
             migrationBuilder.DropTable(
                 name: "EventEntity");

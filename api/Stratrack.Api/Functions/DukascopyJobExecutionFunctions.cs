@@ -230,19 +230,20 @@ public class DukascopyJobExecutionFunctions(
             return DukascopyJobDayResult.Interrupted;
         }
 
+        var dayStart = input.Day;
+        var dayEnd = input.Day.AddDays(1);
         var results = await _queryProcessor
-            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, null), token)
+            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, dayStart), token)
             .ConfigureAwait(false);
 
         var successTimes = results
             .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
             .Select(r => DukascopyFetchService.ParseTimeFromUrl(r.FileUrl))
-            .Where(t => t.HasValue)
+            .Where(t => t.HasValue && t.Value >= dayStart && t.Value < dayEnd)
             .Select(t => t!.Value)
             .ToHashSet();
-
-        var current = input.Day;
-        var end = input.Day.AddDays(1);
+        var current = dayStart;
+        var end = dayEnd;
         try
         {
             while (current < end)

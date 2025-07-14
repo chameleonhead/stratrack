@@ -12,8 +12,8 @@ using Stratrack.Api.Domain;
 namespace Stratrack.Api.Domain.Migrations
 {
     [DbContext(typeof(StratrackDbContext))]
-    [Migration("20250712175842_ChangeJobStepToFetchResult")]
-    partial class ChangeJobStepToFetchResult
+    [Migration("20250714183545_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

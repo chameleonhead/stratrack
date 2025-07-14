@@ -47,11 +47,13 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
 ## データベースマイグレーション
 
 - API プロジェクトのマイグレーションは `api/Stratrack.Api/Domain/Migrations` フォルダに保存します。
-- モデル変更時は次のコマンドでマイグレーションを作成してください。
+- モデル変更時はリポジトリのルートディレクトリで次のコマンドを実行してマイグレーションを作成してください。
   - `dotnet ef migrations add <MigrationName> --project api/Stratrack.Api --startup-project api/Stratrack.Api`
 - 必ず上記のコマンドでマイグレーションを生成し、ファイルを手動で編集しないでください。
 - 生成したマイグレーションはリポジトリにコミットして共有します。
-- マイグレーションを作成した後は `SQLAZURECONNSTR_SqlConnectionString` 環境変数に適当な接続文字列を指定し、
+- `StratrackDesignTimeDbContextFactory` がデザイン時の DbContext を提供するため、特別な環境変数の設定は不要です。Windows 以外の環境では SQLite を自動利用します。
   `dotnet ef migrations list --project api/Stratrack.Api --startup-project api/Stratrack.Api`
-  を実行してマイグレーションが正しく検出されることを確認してください。
+  を実行し、マイグレーションが正しく検出されることを確認してください。
+  SQL Server 向けのマイグレーションを生成する場合は `ConnectionStrings:SqlConnectionString`
+  などに SQL Server の接続文字列を指定して `dotnet ef migrations add` を実行してください。
 - SQL Server を利用する環境では `StratrackDbContextProvider` が起動時に `Database.Migrate()` を自動実行します。インメモリ DB 使用時は `EnsureCreated()` となるためマイグレーションは適用されません。
