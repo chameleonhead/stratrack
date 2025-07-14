@@ -51,7 +51,7 @@ Python の FastAPI プロジェクトで当初はこの形でリリースする�
   - `dotnet ef migrations add <MigrationName> --project api/Stratrack.Api --startup-project api/Stratrack.Api`
 - 必ず上記のコマンドでマイグレーションを生成し、ファイルを手動で編集しないでください。
 - 生成したマイグレーションはリポジトリにコミットして共有します。
-- `StratrackDesignTimeDbContextFactory` がデザイン時の DbContext を提供するため、特別な環境変数の設定は不要です。
+- `StratrackDesignTimeDbContextFactory` がデザイン時の DbContext を提供するため、特別な環境変数の設定は不要です。Windows 以外の環境では SQLite を自動利用します。
   `dotnet ef migrations list --project api/Stratrack.Api --startup-project api/Stratrack.Api`
   を実行し、マイグレーションが正しく検出されることを確認してください。
 - SQL Server を利用する環境では `StratrackDbContextProvider` が起動時に `Database.Migrate()` を自動実行します。インメモリ DB 使用時は `EnsureCreated()` となるためマイグレーションは適用されません。
