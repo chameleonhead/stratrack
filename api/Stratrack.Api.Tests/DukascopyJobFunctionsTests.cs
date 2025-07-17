@@ -1,19 +1,15 @@
+using EventFlow.EntityFramework;
+using Microsoft.DurableTask;
+using Microsoft.DurableTask.Client;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Stratrack.Api.Domain;
 using Stratrack.Api.Functions;
 using Stratrack.Api.Infrastructure;
-using EventFlow.EntityFramework;
-using System.Net;
-using Microsoft.EntityFrameworkCore;
-using WorkerHttpFake;
-using System.Threading;
 using Stratrack.Api.Models;
-using EventFlow;
-using Moq;
-using Microsoft.DurableTask.Client;
-using Microsoft.DurableTask;
-using Stratrack.Api.Domain.Dukascopy.Commands;
-using Stratrack.Api.Domain.Dukascopy;
+using System.Net;
+using WorkerHttpFake;
 
 namespace Stratrack.Api.Tests;
 
@@ -44,7 +40,7 @@ public class DukascopyJobFunctionsTests
             .WithMethod(HttpMethod.Post)
             .WithBody(System.Text.Json.JsonSerializer.Serialize(new { symbol = "EURUSD", startTime = DateTimeOffset.UtcNow }))
             .Build();
-        var createRes = await func.CreateJob(createReq, CancellationToken.None);
+        var createRes = await func.CreateDukascopyJob(createReq, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, createRes.StatusCode);
         var result = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
         var id = Guid.Parse(result["id"].ToString()!);
@@ -63,7 +59,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/enable")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var startRes = await func.EnableJob(startReq, id, CancellationToken.None);
+        var startRes = await func.EnableDukascopyJob(startReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, startRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
@@ -82,7 +78,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/disable")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var stopRes = await func.DisableJob(stopReq, id, client.Object, CancellationToken.None);
+        var stopRes = await func.DisableDukascopyJob(stopReq, id, client.Object, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, stopRes.StatusCode);
         using (var ctx = provider.GetRequiredService<IDbContextProvider<StratrackDbContext>>().CreateContext())
         {
@@ -102,7 +98,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}")
             .WithMethod(HttpMethod.Delete)
             .Build();
-        var deleteRes = await func.DeleteJob(deleteReq, id, CancellationToken.None);
+        var deleteRes = await func.DeleteDukascopyJob(deleteReq, id, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, deleteRes.StatusCode);
     }
 
@@ -117,7 +113,7 @@ public class DukascopyJobFunctionsTests
             .WithMethod(HttpMethod.Post)
             .WithBody(System.Text.Json.JsonSerializer.Serialize(new { symbol = "EURUSD", startTime = DateTimeOffset.UtcNow }))
             .Build();
-        var createRes = await func.CreateJob(createReq, CancellationToken.None);
+        var createRes = await func.CreateDukascopyJob(createReq, CancellationToken.None);
         var created = await createRes.ReadAsJsonAsync<Dictionary<string, object>>();
         var id = Guid.Parse(created["id"].ToString()!);
 
@@ -125,7 +121,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl("http://localhost/api/dukascopy-job")
             .WithMethod(HttpMethod.Get)
             .Build();
-        var listRes = await func.GetJobs(listReq, CancellationToken.None);
+        var listRes = await func.GetDukascopyJobs(listReq, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.OK, listRes.StatusCode);
         var jobs = await listRes.ReadAsJsonAsync<List<DukascopyJobSummary>>();
         Assert.AreEqual(1, jobs.Count);

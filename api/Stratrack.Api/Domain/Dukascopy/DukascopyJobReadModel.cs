@@ -21,7 +21,6 @@ public class DukascopyJobReadModel : IReadModel,
     public string Symbol { get; set; } = "";
     public DateTimeOffset StartTime { get; set; }
     public bool IsDeleted { get; set; }
-    [System.ComponentModel.DataAnnotations.Schema.Column("IsEnabled")]
     public bool IsEnabled { get; set; }
     public bool IsRunning { get; set; }
     public Guid? CurrentExecutionId { get; set; }

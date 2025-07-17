@@ -11,7 +11,7 @@ public class DukascopyJobFetchResultReadModelLocator : IReadModelLocator
         return domainEvent switch
         {
             IDomainEvent<DukascopyJobAggregate, DukascopyJobId, DukascopyJobExecutedEvent> e =>
-                ["" + e.AggregateIdentity.GetGuid() + "_" + e.AggregateEvent.FileUrl],
+                ["" + e.AggregateIdentity.GetGuid() + "_" + e.AggregateEvent.TargetTime],
             _ => []
         };
     }

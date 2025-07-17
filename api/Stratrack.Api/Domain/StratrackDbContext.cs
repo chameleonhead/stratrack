@@ -46,7 +46,7 @@ public class StratrackDbContext : DbContext
         });
         modelBuilder.Entity<DukascopyJobFetchResultReadModel>(entity =>
         {
-            entity.HasKey(m => new { m.JobId, m.FileUrl });
+            entity.HasKey(m => m.Id);
         });
         modelBuilder.Entity<DataChunkReadModel>(entity =>
         {

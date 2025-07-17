@@ -1,19 +1,17 @@
+using EventFlow;
+using EventFlow.Queries;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
-using Microsoft.OpenApi.Models;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Linq;
+using Microsoft.OpenApi.Models;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Queries;
-using Stratrack.Api.Domain.DataSources;
-using EventFlow;
-using EventFlow.Queries;
+using System.Net;
 
 namespace Stratrack.Api.Functions;
 
@@ -41,18 +39,17 @@ public class DukascopyJobExecutionFunctions(
     private readonly ILogger<DukascopyJobExecutionFunctions> _logger = logger;
 
 
-    [Function("StartDukascopyJobExecution")]
+    [Function(nameof(StartDukascopyJobExecution))]
     [OpenApiOperation(operationId: "start_dukascopy_job_execution", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Started")]
-    public async Task<HttpResponseData> StartExecution(
+    public async Task<HttpResponseData> StartDukascopyJobExecution(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/execute")] HttpRequestData req,
         Guid id,
         [DurableClient] DurableTaskClient client,
         CancellationToken token)
     {
-        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        var job = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DukascopyJobReadModel>(DukascopyJobId.With(id).ToString()), token).ConfigureAwait(false);
         if (job == null)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
@@ -76,18 +73,17 @@ public class DukascopyJobExecutionFunctions(
         return req.CreateResponse(HttpStatusCode.Accepted);
     }
 
-    [Function("RequestDukascopyJobInterrupt")]
+    [Function(nameof(RequestDukascopyJobInterrupt))]
     [OpenApiOperation(operationId: "request_dukascopy_job_interrupt", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Interrupt Requested")]
-    public async Task<HttpResponseData> RequestInterrupt(
+    public async Task<HttpResponseData> RequestDukascopyJobInterrupt(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/interrupt-request")] HttpRequestData req,
         Guid id,
         [DurableClient] DurableTaskClient client,
         CancellationToken token)
     {
-        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        var job = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DukascopyJobReadModel>(DukascopyJobId.With(id).ToString()), token).ConfigureAwait(false);
         if (job != null && job.CurrentExecutionId != null)
         {
             var instance = await client.GetInstanceAsync(job.CurrentExecutionId.Value.ToString(), token).ConfigureAwait(false);
@@ -109,18 +105,17 @@ public class DukascopyJobExecutionFunctions(
         return req.CreateResponse(HttpStatusCode.Accepted);
     }
 
-    [Function("InterruptDukascopyJob")]
+    [Function(nameof(InterruptDukascopyJob))]
     [OpenApiOperation(operationId: "interrupt_dukascopy_job", tags: ["DukascopyJob"])]
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Accepted, Description = "Interrupted")]
-    public async Task<HttpResponseData> Interrupt(
+    public async Task<HttpResponseData> InterruptDukascopyJob(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "dukascopy-job/{id:guid}/interrupt")] HttpRequestData req,
         Guid id,
         [DurableClient] DurableTaskClient client,
         CancellationToken token)
     {
-        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var job = jobs.FirstOrDefault(j => j.JobId == id);
+        var job = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DukascopyJobReadModel>(DukascopyJobId.With(id).ToString()), token).ConfigureAwait(false);
         if (job == null || job.CurrentExecutionId == null)
         {
             return req.CreateResponse(HttpStatusCode.Accepted);
@@ -134,7 +129,7 @@ public class DukascopyJobExecutionFunctions(
         return req.CreateResponse(HttpStatusCode.Accepted);
     }
 
-    [Function("DukascopyJobOrchestrator")]
+    [Function(nameof(DukascopyJobOrchestrator))]
     public async Task DukascopyJobOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         var job = context.GetInput<DukascopyJobExecutionInput>();
@@ -143,23 +138,23 @@ public class DukascopyJobExecutionFunctions(
             return;
         }
 
-        var start = await context.CallActivityAsync<DateTimeOffset?>(nameof(DukascopyGetNextTimeActivity), job);
-        if (start == null)
-        {
-            return;
-        }
-
-        var maxTime = context.CurrentUtcDateTime.AddHours(-1);
-        var current = start.Value;
-        if (current > maxTime)
-        {
-            current = job.StartTime > maxTime.AddDays(-1) ? job.StartTime : maxTime.AddDays(-1);
-        }
-
         var interrupted = false;
         string? error = null;
         try
         {
+            var start = await context.CallActivityAsync<DateTimeOffset?>(nameof(DukascopyGetNextTimeActivity), job);
+            if (start == null)
+            {
+                return;
+            }
+
+            var maxTime = context.CurrentUtcDateTime.AddHours(-1);
+            var current = start.Value;
+            if (current > maxTime)
+            {
+                current = job.StartTime > maxTime.AddDays(-1) ? job.StartTime : maxTime.AddDays(-1);
+            }
+
             while (current <= maxTime)
             {
                 var result = await context.CallActivityAsync<DukascopyJobDayResult>(nameof(DukascopyJobDayActivity), new DukascopyJobDayInput(job.JobId, job.DataSourceId, job.Symbol, current.Date, job.ExecutionId));
@@ -191,76 +186,86 @@ public class DukascopyJobExecutionFunctions(
         await context.CallActivityAsync(nameof(DukascopyJobProcessFinishActivity), new DukascopyJobFinishInput(job.JobId, job.ExecutionId, success, error));
     }
 
-    [Function("DukascopyGetNextTimeActivity")]
+    [Function(nameof(DukascopyGetNextTimeActivity))]
     public async Task<DateTimeOffset?> DukascopyGetNextTimeActivity([ActivityTrigger] DukascopyJobExecutionInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        var results = await _queryProcessor
-            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, null), token)
+        var summary = await _queryProcessor
+            .ProcessAsync(new DukascopyJobFetchResultReadModelGetExecutionSummaryQuery(input.JobId), token)
             .ConfigureAwait(false);
 
-        var successTimes = results
-            .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
-            .Select(r => DukascopyFetchService.ParseTimeFromUrl(r.FileUrl))
-            .Where(t => t.HasValue)
-            .Select(t => t!.Value)
-            .ToHashSet();
-
-        var maxTime = DateTimeOffset.UtcNow.AddHours(-1);
-        var current = input.StartTime;
-        while (current <= maxTime)
+        var startTime = input.StartTime;
+        if (summary == null)
         {
-            if (!successTimes.Contains(current))
-            {
-                return current;
-            }
-            current = current.AddHours(1);
+            return startTime;
         }
-        return null;
+        if (summary.OldestFailureTime.HasValue && summary.OldestFailureTime >= input.StartTime)
+        {
+            return summary.OldestFailureTime;
+        }
+        if (summary.LastSuccessTime.HasValue && summary.LastSuccessTime >= input.StartTime)
+        {
+            return summary.LastSuccessTime.Value.AddHours(1);
+        }
+        return startTime;
     }
 
-    [Function("DukascopyJobDayActivity")]
+    [Function(nameof(DukascopyJobDayActivity))]
     public async Task<DukascopyJobDayResult> DukascopyJobDayActivity([ActivityTrigger] DukascopyJobDayInput input, FunctionContext context)
     {
         var token = context.CancellationToken;
-        var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-        var job = jobs.FirstOrDefault(j => j.JobId == input.JobId);
-        if (job == null || job.InterruptRequested)
-        {
-            return DukascopyJobDayResult.Interrupted;
-        }
-
-        var dayStart = input.Day;
-        var dayEnd = input.Day.AddDays(1);
-        var results = await _queryProcessor
-            .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, dayStart), token)
-            .ConfigureAwait(false);
-
-        var successTimes = results
-            .Where(r => r.LastModified.HasValue && (r.HttpStatus == 200 || r.HttpStatus == 404))
-            .Select(r => DukascopyFetchService.ParseTimeFromUrl(r.FileUrl))
-            .Where(t => t.HasValue && t.Value >= dayStart && t.Value < dayEnd)
-            .Select(t => t!.Value)
-            .ToHashSet();
-        var current = dayStart;
-        var end = dayEnd;
         try
         {
+            var job = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DukascopyJobReadModel>(DukascopyJobId.With(input.JobId).ToString()), token)
+                .ConfigureAwait(false);
+            if (job == null || job.InterruptRequested)
+            {
+                return DukascopyJobDayResult.Interrupted;
+            }
+
+            var dayStart = input.Day;
+            var dayEnd = input.Day.AddDays(1);
+            var results = await _queryProcessor
+                .ProcessAsync(new DukascopyJobFetchResultReadModelSearchQuery(input.JobId, dayStart, dayEnd), token)
+                .ConfigureAwait(false);
+
+            var current = dayStart;
+            var end = dayEnd;
+            using var iterator = results.OrderBy(r => r.TargetTime).GetEnumerator();
+            var result = iterator.MoveNext() ? iterator.Current : null;
+            while (result != null && result.TargetTime < current)
+            {
+                result = iterator.MoveNext() ? iterator.Current : null;
+            }
             while (current < end)
             {
-                if (!successTimes.Contains(current))
+                if (result != null)
                 {
-                    _logger.LogInformation($"Fetching {input.Symbol} {current}");
-                    await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, current, input.ExecutionId, token).ConfigureAwait(false);
+                    if (result.TargetTime == current && result.HttpStatus == 200 || result.HttpStatus == 404)
+                    {
+                        _logger.LogInformation($"Already fetched {input.Symbol} {current} with status {result.HttpStatus}");
+                        current = current.AddHours(1);
+                        continue;
+                    }
+                }
+                _logger.LogInformation($"Fetching {input.Symbol} {current}");
+                await _fetchService.FetchHourAsync(input.JobId, input.DataSourceId, input.Symbol, current, input.ExecutionId, token).ConfigureAwait(false);
+                if (result != null)
+                {
+                    if (result.TargetTime == current)
+                    {
+                        result = iterator.MoveNext() ? iterator.Current : null;
+                    }
                 }
 
-                jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);
-                job = jobs.FirstOrDefault(j => j.JobId == input.JobId);
+                current = current.AddHours(1);
+
+                job = await _queryProcessor.ProcessAsync(new ReadModelByIdQuery<DukascopyJobReadModel>(DukascopyJobId.With(input.JobId).ToString()), token)
+                    .ConfigureAwait(false);
                 if (job?.InterruptRequested ?? false)
                 {
                     return DukascopyJobDayResult.Interrupted;
                 }
-                current = current.AddHours(1);
             }
 
             return DukascopyJobDayResult.Success;
@@ -271,7 +276,7 @@ public class DukascopyJobExecutionFunctions(
         }
     }
 
-    [Function("DukascopyJobProcessInterruptActivity")]
+    [Function(nameof(DukascopyJobProcessInterruptActivity))]
     public async Task DukascopyJobProcessInterruptActivity([ActivityTrigger] DukascopyJobInterruptInput input, FunctionContext context)
     {
         await _commandBus.PublishAsync(new DukascopyJobExecutionInterruptCommand(DukascopyJobId.With(input.JobId))
@@ -281,7 +286,7 @@ public class DukascopyJobExecutionFunctions(
         }, context.CancellationToken).ConfigureAwait(false);
     }
 
-    [Function("DukascopyJobProcessFinishActivity")]
+    [Function(nameof(DukascopyJobProcessFinishActivity))]
     public async Task DukascopyJobProcessFinishActivity([ActivityTrigger] DukascopyJobFinishInput input, FunctionContext context)
     {
         await _commandBus.PublishAsync(new DukascopyJobExecutionFinishCommand(DukascopyJobId.With(input.JobId))
@@ -292,8 +297,8 @@ public class DukascopyJobExecutionFunctions(
         }, context.CancellationToken).ConfigureAwait(false);
     }
 
-    [Function("DukascopyJobTimer")]
-    public async Task RunTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
+    [Function(nameof(DukascopyJobTimer))]
+    public async Task DukascopyJobTimer([TimerTrigger("0 0 */12 * * *")] string timerInfo, [DurableClient] DurableTaskClient client, CancellationToken token)
     {
         _logger.LogInformation($"DukascopyJobTimer triggered at {DateTimeOffset.UtcNow}");
         var jobs = await _queryProcessor.ProcessAsync(new DukascopyJobReadModelSearchQuery(), token).ConfigureAwait(false);

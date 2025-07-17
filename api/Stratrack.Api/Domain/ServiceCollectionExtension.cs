@@ -2,12 +2,11 @@
 using EventFlow.EntityFramework.Extensions;
 using EventFlow.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Stratrack.Api.Domain.Blobs;
 using Stratrack.Api.Domain.DataSources;
 using Stratrack.Api.Domain.DataSources.Commands;
 using Stratrack.Api.Domain.DataSources.Events;
 using Stratrack.Api.Domain.DataSources.Queries;
-using Stratrack.Api.Domain.Blobs;
-using Stratrack.Api.Infrastructure;
 using Stratrack.Api.Domain.Dukascopy;
 using Stratrack.Api.Domain.Dukascopy.Commands;
 using Stratrack.Api.Domain.Dukascopy.Events;
@@ -16,6 +15,7 @@ using Stratrack.Api.Domain.Strategies;
 using Stratrack.Api.Domain.Strategies.Commands;
 using Stratrack.Api.Domain.Strategies.Events;
 using Stratrack.Api.Domain.Strategies.Queries;
+using Stratrack.Api.Infrastructure;
 
 namespace Stratrack.Api.Domain;
 
@@ -112,6 +112,7 @@ public static class ServiceCollectionExtension
             ef.AddQueryHandlers(typeof(DukascopyJobReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobExecutionReadModelSearchQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobFetchResultReadModelSearchQueryHandler));
+            ef.AddQueryHandlers(typeof(DukascopyJobFetchResultReadModelGetExecutionSummaryQueryHandler));
             ef.AddQueryHandlers(typeof(DukascopyJobFetchResultPagedQueryHandler));
             ef.RegisterServices(s =>
             {
