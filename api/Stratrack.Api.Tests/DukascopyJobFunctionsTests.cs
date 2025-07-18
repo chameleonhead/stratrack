@@ -91,7 +91,7 @@ public class DukascopyJobFunctionsTests
             .WithUrl($"http://localhost/api/dukascopy-job/{id}/execute")
             .WithMethod(HttpMethod.Post)
             .Build();
-        var execRes = await execFunc.StartExecution(execReq, id, client.Object, CancellationToken.None);
+        var execRes = await execFunc.StartDukascopyJobExecution(execReq, id, client.Object, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.Accepted, execRes.StatusCode);
 
         var deleteReq = new HttpRequestDataBuilder()
