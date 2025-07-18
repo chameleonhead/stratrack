@@ -11,6 +11,9 @@ public class DukascopyClient : IDukascopyClient
     private readonly HttpClient _http;
     private readonly Dictionary<string, string> _etagCache = new();
 
+    internal static int GetScaleDigits(string symbol)
+        => symbol.EndsWith("JPY", StringComparison.OrdinalIgnoreCase) ? 3 : 5;
+
     public DukascopyClient(HttpClient? httpClient = null)
     {
         _http = httpClient ?? new HttpClient();
@@ -60,13 +63,17 @@ public class DukascopyClient : IDukascopyClient
             var span = decompressed.ToArray();
         var sb = new StringBuilder();
         sb.AppendLine("time,bid,ask");
+        var digits = GetScaleDigits(symbol);
+        var factor = digits == 3 ? 1000.0 : 100000.0;
         for (var i = 0; i + 20 <= span.Length; i += 20)
         {
             var offset = BinaryPrimitives.ReadUInt32BigEndian(span.AsSpan(i, 4));
             var ask = BinaryPrimitives.ReadUInt32BigEndian(span.AsSpan(i + 4, 4));
             var bid = BinaryPrimitives.ReadUInt32BigEndian(span.AsSpan(i + 8, 4));
             var tickTime = baseTime.AddMilliseconds(offset);
-            sb.AppendLine($"{tickTime:O},{bid / 100000.0:F5},{ask / 100000.0:F5}");
+            var bidStr = (bid / factor).ToString($"F{digits}");
+            var askStr = (ask / factor).ToString($"F{digits}");
+            sb.AppendLine($"{tickTime:O},{bidStr},{askStr}");
         }
             return new DukascopyFetchResult
             {

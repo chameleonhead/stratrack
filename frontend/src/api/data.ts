@@ -61,3 +61,18 @@ export async function getDataStream(
   }
   return res.text();
 }
+
+export async function deleteDataChunks(dataSourceId: string, startTime?: string, endTime?: string) {
+  const params = new URLSearchParams();
+  if (startTime) params.append("startTime", startTime);
+  if (endTime) params.append("endTime", endTime);
+  const query = params.toString();
+  const url = `${API_BASE_URL}/api/data-sources/${dataSourceId}/chunks${query ? `?${query}` : ""}`;
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: { "x-functions-key": API_KEY },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete data chunks: ${res.status}`);
+  }
+}

@@ -11,8 +11,20 @@ import {
   listDukascopyJobs,
   DukascopyJobSummary,
 } from "../../api/dukascopyJobs";
+import { deleteDataChunks } from "../../api/data";
 
-const PAIRS = ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "EURJPY"];
+const PAIRS = [
+  "EURUSD",
+  "USDJPY",
+  "GBPUSD",
+  "AUDUSD",
+  "EURJPY",
+  "GBPJPY",
+  "AUDJPY",
+  "USDCHF",
+  "USDCAD",
+  "NZDUSD",
+];
 
 const initialState: Record<string, JobState> = Object.fromEntries(
   PAIRS.map((p) => [
@@ -148,6 +160,20 @@ const DukascopyJobs = () => {
     }
   };
 
+  const handleDeleteData = async (pair: string) => {
+    const job = jobs[pair];
+    if (!job.dataSourceId) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await deleteDataChunks(job.dataSourceId);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <header>
@@ -170,6 +196,7 @@ const DukascopyJobs = () => {
             onToggle={handleToggle}
             onRun={handleRun}
             onInterrupt={handleInterrupt}
+            onDeleteData={handleDeleteData}
           />
         ))}
       </div>

@@ -23,6 +23,7 @@ type Props = {
   onToggle: (pair: string) => void;
   onRun: (pair: string) => void;
   onInterrupt: (pair: string) => void;
+  onDeleteData: (pair: string) => void;
 };
 
 const DukascopyJobCard = ({
@@ -33,6 +34,7 @@ const DukascopyJobCard = ({
   onToggle,
   onRun,
   onInterrupt,
+  onDeleteData,
 }: Props) => {
   const isLoading = !job.loaded;
   return (
@@ -63,6 +65,16 @@ const DukascopyJobCard = ({
             isLoading={disabled}
           >
             中断
+          </Button>
+        )}
+        {job.dataSourceId && (
+          <Button
+            size="sm"
+            onClick={() => onDeleteData(pair)}
+            disabled={disabled}
+            isLoading={disabled}
+          >
+            データ削除
           </Button>
         )}
       </div>
