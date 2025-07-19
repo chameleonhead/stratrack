@@ -1,16 +1,12 @@
 import {
-  Chart as ChartJS,
-  LineElement,
-  LinearScale,
-  TimeScale,
-  PointElement,
+  ResponsiveContainer,
+  LineChart as ReLineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
-  Legend,
-  ChartData,
-} from "chart.js";
-import zoomPlugin from "chartjs-plugin-zoom";
-import "chartjs-adapter-date-fns";
-import { Line } from "react-chartjs-2";
+} from "recharts";
 
 export type LinePoint = { x: number; y: number };
 
@@ -19,57 +15,28 @@ export type LineChartProps = {
   height?: number;
   data: LinePoint[];
   range?: { from: number; to: number };
-  onRangeChange?: (range: { from: number; to: number }) => void;
 };
 
-ChartJS.register(LineElement, LinearScale, TimeScale, PointElement, Tooltip, Legend);
-ChartJS.register(zoomPlugin);
-
-const LineChart = ({ width, height = 300, data, range, onRangeChange }: LineChartProps) => {
-  const chartData: ChartData<"line", { x: number; y: number }[]> = {
-    datasets: [
-      {
-        label: "value",
-        data,
-        borderColor: "#3b82f6",
-        backgroundColor: "rgba(59,130,246,0.4)",
-        pointRadius: 0,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { type: "time", min: range?.from, max: range?.to },
-      y: { beginAtZero: false },
-    },
-    plugins: {
-      zoom: {
-        zoom: {
-          wheel: { enabled: true },
-          pinch: { enabled: true },
-          mode: "x",
-        },
-        pan: { enabled: true, mode: "x" },
-        onZoomComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
-        },
-        onPanComplete: ({ chart }: { chart: ChartJS }) => {
-          const from = chart.scales.x.min as number;
-          const to = chart.scales.x.max as number;
-          onRangeChange?.({ from, to });
-        },
-      },
-    },
-  } as const;
-
+const LineChart = ({ width, height = 300, data, range }: LineChartProps) => {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const resolvedHeight = isMobile ? 200 : height;
+  const filtered = range ? data.filter((p) => p.x >= range.from && p.x <= range.to) : data;
   return (
-    <div style={{ width: width ? `${width}px` : "100%", height }}>
-      <Line className="w-full h-full" data={chartData} options={options} />
+    <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ReLineChart data={filtered} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="x"
+            type="number"
+            domain={["dataMin", "dataMax"]}
+            tickFormatter={(v) => new Date(v).toLocaleString()}
+          />
+          <YAxis domain={["auto", "auto"]} />
+          <Tooltip labelFormatter={(value) => new Date(value as number).toLocaleString()} />
+          <Line type="monotone" dataKey="y" stroke="#3b82f6" dot={false} />
+        </ReLineChart>
+      </ResponsiveContainer>
     </div>
   );
 };
