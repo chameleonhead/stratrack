@@ -81,7 +81,7 @@ function TimingControl({ value, onChange }: TimingControlProps) {
     <section id="timing-control" className="space-y-4">
       <h2>時間帯・曜日制限</h2>
       {localValue.timingControl?.allowedTradingPeriods?.map((p, i) => (
-        <AllowedTradingPeriod value={p} onChange={(value) => handleUpdate(value, i)} />
+        <AllowedTradingPeriod key={i} value={p} onChange={(value) => handleUpdate(value, i)} />
       ))}
       <div>
         <Button onClick={handleAdd}>追加</Button>
