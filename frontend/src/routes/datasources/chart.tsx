@@ -5,16 +5,8 @@ import { TIMEFRAME_OPTIONS } from "../../timeframes";
 import { ChartDataProvider, useChartData } from "../../features/datasources/ChartDataProvider";
 
 const ChartContent = () => {
-  const {
-    candleData,
-    range,
-    dsRange,
-    timeframe,
-    setTimeframe,
-    isLoading,
-    error,
-    handleRangeChange,
-  } = useChartData();
+  const { candleData, range, timeframe, setTimeframe, isLoading, error, handleRangeChange } =
+    useChartData();
   return (
     <div className="p-6 space-y-4">
       <h2 className="text-2xl font-bold">チャート表示</h2>
@@ -29,7 +21,6 @@ const ChartContent = () => {
       <CandlestickChart
         data={candleData}
         range={range ?? undefined}
-        limits={dsRange ?? undefined}
         onRangeChange={handleRangeChange}
       />
     </div>
