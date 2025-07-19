@@ -18,6 +18,5 @@ export const Default: Story = {
       { date: new Date(2), open: 1.0, high: 1.2, low: 0.9, close: 1.15 },
       { date: new Date(3), open: 1.15, high: 1.25, low: 1.05, close: 1.1 },
     ],
-    limits: { from: 0, to: 3 },
   },
 };

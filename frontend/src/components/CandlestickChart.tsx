@@ -1,17 +1,6 @@
-import {
-  Chart as ChartJS,
-  TimeScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  BarController,
-  BarElement,
-} from "chart.js";
-import zoomPlugin from "chartjs-plugin-zoom";
-import { CandlestickController, CandlestickElement } from "chartjs-chart-financial";
-import "chartjs-adapter-date-fns";
-import { Chart } from "react-chartjs-2";
+import React from "react";
+import { ResponsiveContainer } from "recharts";
+import { scaleLinear, scaleTime } from "d3-scale";
 
 export type Candle = {
   date: Date;
@@ -30,87 +19,50 @@ export type CandlestickChartProps = {
   onRangeChange?: (range: { from: number; to: number }) => void;
 };
 
-ChartJS.register(
-  CandlestickController,
-  CandlestickElement,
-  TimeScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  BarController,
-  BarElement
-);
-ChartJS.register(zoomPlugin);
-
-const CandlestickChart = ({
-  data,
-  width,
-  height = 300,
-  range,
-  limits,
-  onRangeChange,
-}: CandlestickChartProps) => {
+const CandlestickChart = ({ data, width, height = 300, range }: CandlestickChartProps) => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const resolvedHeight = isMobile ? 200 : height;
-  const chartData = {
-    datasets: [
-      {
-        label: "price",
-        data: data.map((d) => ({
-          x: d.date.getTime(),
-          o: d.open,
-          h: d.high,
-          l: d.low,
-          c: d.close,
-        })),
-      },
-    ],
-  };
+  const sorted = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const rangeFrom = range?.from ?? sorted[0]?.date.getTime() ?? 0;
+  const rangeTo = range?.to ?? sorted[sorted.length - 1]?.date.getTime() ?? 0;
+  const filtered = sorted.filter(
+    (c) => c.date.getTime() >= rangeFrom && c.date.getTime() <= rangeTo
+  );
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { type: "time", min: range?.from, max: range?.to },
-      y: { beginAtZero: false },
-    },
-    plugins: {
-      zoom: {
-        zoom: {
-          wheel: { enabled: true },
-          pinch: { enabled: true },
-          mode: "x",
-          onZoomComplete: ({ chart }: { chart: ChartJS }) => {
-            const from = chart.scales.x.min as number;
-            const to = chart.scales.x.max as number;
-            onRangeChange?.({ from, to });
-          },
-        },
-        pan: {
-          enabled: true,
-          mode: "x",
-          onPanComplete: ({ chart }: { chart: ChartJS }) => {
-            const from = chart.scales.x.min as number;
-            const to = chart.scales.x.max as number;
-            onRangeChange?.({ from, to });
-          },
-        },
-        limits: limits
-          ? {
-              x: {
-                min: limits.from,
-                max: limits.to,
-              },
-            }
-          : undefined,
-      },
-    },
-  } as const;
+  const [size, setSize] = React.useState({ width: 0, height: 0 });
+  const onResize = (w: number, h: number) => setSize({ width: w, height: h });
+  const x = scaleTime().domain([rangeFrom, rangeTo]).range([0, size.width]);
+  const minLow = Math.min(...sorted.map((d) => d.low));
+  const maxHigh = Math.max(...sorted.map((d) => d.high));
+  const y = scaleLinear().domain([minLow, maxHigh]).range([size.height, 0]).nice();
+  const candleW = filtered.length > 0 ? Math.max(1, size.width / filtered.length / 1.5) : 1;
 
   return (
     <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight }}>
-      <Chart className="w-full h-full" type="candlestick" data={chartData} options={options} />
+      <ResponsiveContainer width="100%" height="100%" onResize={onResize}>
+        <svg width={size.width} height={size.height} style={{ overflow: "visible" }}>
+          {filtered.map((c, i) => {
+            const xPos = x(c.date.getTime());
+            const openY = y(c.open);
+            const closeY = y(c.close);
+            const highY = y(c.high);
+            const lowY = y(c.low);
+            const color = c.close >= c.open ? "#16a34a" : "#ef4444";
+            return (
+              <g key={i}>
+                <line x1={xPos} x2={xPos} y1={highY} y2={lowY} stroke={color} />
+                <rect
+                  x={xPos - candleW / 2}
+                  y={Math.min(openY, closeY)}
+                  width={candleW}
+                  height={Math.max(1, Math.abs(openY - closeY))}
+                  fill={color}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      </ResponsiveContainer>
     </div>
   );
 };
