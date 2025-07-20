@@ -7,3 +7,5 @@ At this stage it only contains scaffolding code.
 
 - `npm run build` – Compile TypeScript sources.
 
+See [TODO.md](TODO.md) for planned features and tasks.
+
