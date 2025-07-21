@@ -70,6 +70,27 @@ describe('parse', () => {
     expect(decl.fields.length).toBe(0);
   });
 
+  it('skips unknown tokens and braces', () => {
+    const code = 'class F { 42; { int x; } void g(); int a; }';
+    const tokens = lex(code);
+    const ast = parse(tokens);
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
+  });
+
+  it('handles nested blocks inside methods', () => {
+    const code = 'class H { void h() { if(true){ int x; } } int a; }';
+    const tokens = lex(code);
+    const ast = parse(tokens);
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
+  });
+
+  it('throws when void is used as field type', () => {
+    const tokens = lex('class G { void bad; }');
+    expect(() => parse(tokens)).toThrow('void type cannot be used for fields');
+  });
+
   it('throws on invalid syntax', () => {
     const tokens = lex('enum X {');
     expect(() => parse(tokens)).toThrow();

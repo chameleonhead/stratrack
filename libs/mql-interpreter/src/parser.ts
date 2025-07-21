@@ -112,6 +112,9 @@ export function parse(tokens: Token[]): Declaration[] {
         }
         if (tokens[idx]?.value === ';') {
           const fieldType = consume().value;
+          if (fieldType === 'void') {
+            throw new Error('void type cannot be used for fields');
+          }
           const fieldName = consume(TokenType.Identifier).value;
           const dims: Array<number | null> = [];
           while (peek().value === '[') {
