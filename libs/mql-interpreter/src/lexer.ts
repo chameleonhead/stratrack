@@ -12,11 +12,25 @@ export interface Token {
   value: string;
 }
 
+// Common MQL built-in keywords. The list is based on the MQL5 documentation at
+// https://www.mql5.com/ja/docs/basis/types and is not exhaustive but covers
+// the primitive types and a few basic statements.
 const keywords = new Set([
-  'int',
-  'double',
-  'string',
   'void',
+  'bool',
+  'char',
+  'uchar',
+  'short',
+  'ushort',
+  'int',
+  'uint',
+  'long',
+  'ulong',
+  'float',
+  'double',
+  'color',
+  'datetime',
+  'string',
   'if',
   'else',
   'return',

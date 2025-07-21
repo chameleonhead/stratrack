@@ -13,6 +13,11 @@ describe('lex', () => {
     ]);
   });
 
+  it('recognizes additional builtin types', () => {
+    const tokens = lex('bool flag;');
+    expect(tokens[0]).toEqual({ type: TokenType.Keyword, value: 'bool' });
+  });
+
   it('ignores comments and strings', () => {
     const tokens = lex('int a = 5; // comment\n/*multi*/string s="hi";');
     expect(tokens).toEqual([
