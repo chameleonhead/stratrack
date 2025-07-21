@@ -31,6 +31,13 @@ describe('execute', () => {
     });
   });
 
+  it('stores structs', () => {
+    const tokens = lex('struct S { int a; };');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.classes.S.fields.a).toEqual({ type: 'int', dimensions: [] });
+  });
+
   it('stores dynamic array fields', () => {
     const tokens = lex('class A { double arr[]; }');
     const ast = parse(tokens);

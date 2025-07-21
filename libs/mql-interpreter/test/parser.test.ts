@@ -26,6 +26,14 @@ describe('parse', () => {
     expect(classDecl.fields.length).toBe(0);
   });
 
+  it('parses struct declaration', () => {
+    const tokens = lex('struct Point { int x; int y; };');
+    const ast = parse(tokens);
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.name).toBe('Point');
+    expect(decl.fields.length).toBe(2);
+  });
+
   it('parses class fields', () => {
     const tokens = lex('class A { int a; string b; }');
     const ast = parse(tokens);

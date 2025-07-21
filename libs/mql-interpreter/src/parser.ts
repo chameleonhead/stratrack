@@ -85,7 +85,10 @@ export function parse(tokens: Token[]): Declaration[] {
   }
 
   function parseClass(): ClassDeclaration {
-    consume(TokenType.Keyword, 'class');
+    const keyword = consume(TokenType.Keyword);
+    if (keyword.value !== 'class' && keyword.value !== 'struct') {
+      throw new Error(`Expected class or struct keyword but found ${keyword.value}`);
+    }
     const name = consume(TokenType.Identifier).value;
     let base: string | undefined;
     if (!atEnd() && peek().value === ':') {
@@ -170,7 +173,10 @@ export function parse(tokens: Token[]): Declaration[] {
     const token = peek();
     if (token.type === TokenType.Keyword && token.value === 'enum') {
       declarations.push(parseEnum());
-    } else if (token.type === TokenType.Keyword && token.value === 'class') {
+    } else if (
+      token.type === TokenType.Keyword &&
+      (token.value === 'class' || token.value === 'struct')
+    ) {
       declarations.push(parseClass());
     } else {
       pos++;

@@ -18,6 +18,11 @@ describe('lex', () => {
     expect(tokens[0]).toEqual({ type: TokenType.Keyword, value: 'bool' });
   });
 
+  it('recognizes control statement keywords', () => {
+    const tokens = lex('for(i=0;i<10;i++){}');
+    expect(tokens[0]).toEqual({ type: TokenType.Keyword, value: 'for' });
+  });
+
   it('ignores comments and strings', () => {
     const tokens = lex('int a = 5; // comment\n/*multi*/string s="hi";');
     expect(tokens).toEqual([
