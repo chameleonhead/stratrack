@@ -73,12 +73,6 @@ describe('execute', () => {
     expect(runtime.functions.f.length).toBe(2);
   });
 
-  it('stores operator overloads', () => {
-    const tokens = lex('int operator+(int a, int b);');
-    const ast = parse(tokens);
-    const runtime = execute(ast);
-    expect(runtime.functions['operator+'][0].returnType).toBe('int');
-  });
 
   it('throws when base class is missing', () => {
     const tokens = lex('class Child : Parent {}');

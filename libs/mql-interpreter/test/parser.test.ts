@@ -84,13 +84,6 @@ describe('parse', () => {
     ]);
   });
 
-  it('parses operator overload declarations', () => {
-    const tokens = lex('int operator+(int a, int b);');
-    const ast = parse(tokens);
-    const fn = ast[0] as any;
-    expect(fn.name).toBe('operator+');
-    expect(fn.parameters.length).toBe(2);
-  });
 
   it('parses multiple declarations', () => {
     const tokens = lex('enum E{A};class C{}');
