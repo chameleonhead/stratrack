@@ -22,6 +22,16 @@ arrays and a comprehensive set of builtin function stubs. Besides
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.
 
+The preprocessor handles simple `#define` and `#undef` directives. Only
+parameterless constants are expanded during lexing, allowing code like
+
+```mql
+#define SIZE 10
+class A { int arr[SIZE]; }
+```
+
+to be parsed correctly.
+
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:
 

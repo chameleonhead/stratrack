@@ -12,6 +12,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Provide a command‑line interface for running MQL scripts within Node.js
 - [x] Implement the full set of builtin functions listed at
   <https://docs.mql4.com/function_indices>
+- [x] Handle simple `#define` and `#undef` preprocessing directives
+- [ ] Support parameterized macros in the preprocessor
 - [ ] Support loading and executing code split across multiple files
 - [ ] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples
