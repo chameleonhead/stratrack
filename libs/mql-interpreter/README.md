@@ -32,6 +32,10 @@ class A { int arr[SIZE]; }
 
 to be parsed correctly.
 
+Conditional compilation directives `#ifdef`, `#ifndef`, `#else` and `#endif`
+are also recognized. Code within inactive branches is skipped entirely during
+preprocessing, so you can enable or disable sections based on defined macros.
+
 `#property` directives are recognized as well. Use `preprocessWithProperties`
 to collect program properties before parsing. When using `interpret()`, the
 collected properties are returned in `runtime.properties`.

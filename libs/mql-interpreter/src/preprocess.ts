@@ -35,6 +35,15 @@ export function preprocessWithProperties(
   const lines = source.split(/\r?\n/);
   let codeLines: string[] = [];
   const result: Token[] = [];
+  const condStack: Array<{
+    parentActive: boolean;
+    condition: boolean;
+    active: boolean;
+    elseSeen: boolean;
+  }> = [];
+
+  const isActive = () =>
+    condStack.length === 0 ? true : condStack[condStack.length - 1].active;
 
   const flush = () => {
     if (codeLines.length === 0) return;
@@ -52,6 +61,49 @@ export function preprocessWithProperties(
 
   for (const line of lines) {
     const trimmed = line.trim();
+    if (trimmed.startsWith('#ifdef')) {
+      flush();
+      const id = trimmed.slice('#ifdef'.length).trim().split(/\s+/)[0];
+      const parentActive = isActive();
+      const cond = macros[id] !== undefined;
+      condStack.push({
+        parentActive,
+        condition: cond,
+        active: parentActive && cond,
+        elseSeen: false,
+      });
+      continue;
+    }
+    if (trimmed.startsWith('#ifndef')) {
+      flush();
+      const id = trimmed.slice('#ifndef'.length).trim().split(/\s+/)[0];
+      const parentActive = isActive();
+      const cond = macros[id] === undefined;
+      condStack.push({
+        parentActive,
+        condition: cond,
+        active: parentActive && cond,
+        elseSeen: false,
+      });
+      continue;
+    }
+    if (trimmed.startsWith('#else')) {
+      flush();
+      const state = condStack[condStack.length - 1];
+      if (!state) throw new Error('#else without #ifdef');
+      if (state.elseSeen) throw new Error('multiple #else');
+      state.active = state.parentActive && !state.condition;
+      state.elseSeen = true;
+      continue;
+    }
+    if (trimmed.startsWith('#endif')) {
+      flush();
+      if (!condStack.pop()) throw new Error('#endif without #ifdef');
+      continue;
+    }
+    if (!isActive()) {
+      continue;
+    }
     if (trimmed.startsWith('#define')) {
       const rest = trimmed.slice('#define'.length).trim();
       const [id, ...exprParts] = rest.split(/\s+/);

@@ -48,4 +48,28 @@ describe('preprocess', () => {
       preprocess(code, { fileProvider: () => undefined })
     ).toThrow('missing.mqh');
   });
+
+  it('handles #ifdef blocks', () => {
+    const code = '#define FLAG\n#ifdef FLAG\nclass A{}\n#else\nclass B{}\n#endif';
+    const tokens = preprocess(code);
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(Object.keys(runtime.classes)).toEqual(['A']);
+  });
+
+  it('handles #ifndef with else', () => {
+    const code = '#define A\n#ifndef A\nclass X{}\n#else\nclass Y{}\n#endif';
+    const tokens = preprocess(code);
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(Object.keys(runtime.classes)).toEqual(['Y']);
+  });
+
+  it('supports nested conditionals', () => {
+    const code = '#define A\n#ifdef A\n#ifndef B\nclass C{}\n#endif\n#endif';
+    const tokens = preprocess(code);
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(Object.keys(runtime.classes)).toEqual(['C']);
+  });
 });
