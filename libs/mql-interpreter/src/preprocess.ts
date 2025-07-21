@@ -11,6 +11,14 @@ export interface PreprocessResult {
   properties: PropertyMap;
 }
 
+export interface PreprocessOptions {
+  /**
+   * Optional callback that returns the contents of an imported file.
+   * If undefined or the file is missing, an error is thrown.
+   */
+  fileProvider?: (path: string) => string | undefined;
+}
+
 import { lex, Token, TokenType } from './lexer';
 
 /**
@@ -18,11 +26,29 @@ import { lex, Token, TokenType } from './lexer';
  * directives. Only parameterless macros are supported. The resulting token
  * stream has all identifiers substituted with their macro values.
  */
-export function preprocessWithProperties(source: string): PreprocessResult {
+export function preprocessWithProperties(
+  source: string,
+  options: PreprocessOptions = {}
+): PreprocessResult {
   const macros: MacroMap = {};
   const properties: PropertyMap = {};
   const lines = source.split(/\r?\n/);
-  const codeLines: string[] = [];
+  let codeLines: string[] = [];
+  const result: Token[] = [];
+
+  const flush = () => {
+    if (codeLines.length === 0) return;
+    const tokens = lex(codeLines.join('\n'));
+    for (const token of tokens) {
+      if (token.type === TokenType.Identifier && macros[token.value] !== undefined) {
+        const expansion = lex(macros[token.value]);
+        result.push(...expansion);
+      } else {
+        result.push(token);
+      }
+    }
+    codeLines = [];
+  };
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -46,24 +72,33 @@ export function preprocessWithProperties(source: string): PreprocessResult {
       }
       continue;
     }
+    if (trimmed.startsWith('#import')) {
+      flush();
+      const rest = trimmed.slice('#import'.length).trim();
+      if (rest) {
+        const path = rest.replace(/^["<]|[">]$/g, '');
+        const content = options.fileProvider?.(path);
+        if (content === undefined) {
+          throw new Error(`Imported file not provided: ${path}`);
+        }
+        const imported = preprocessWithProperties(content, options);
+        // merge properties from the imported file
+        for (const key in imported.properties) {
+          if (!properties[key]) properties[key] = [];
+          properties[key].push(...imported.properties[key]);
+        }
+        result.push(...imported.tokens);
+      }
+      continue;
+    }
     codeLines.push(line);
   }
 
-  const tokens = lex(codeLines.join('\n'));
-  const result: Token[] = [];
-
-  for (const token of tokens) {
-    if (token.type === TokenType.Identifier && macros[token.value] !== undefined) {
-      const expansion = lex(macros[token.value]);
-      result.push(...expansion);
-    } else {
-      result.push(token);
-    }
-  }
+  flush();
 
   return { tokens: result, properties };
 }
 
-export function preprocess(source: string): Token[] {
-  return preprocessWithProperties(source).tokens;
+export function preprocess(source: string, options: PreprocessOptions = {}): Token[] {
+  return preprocessWithProperties(source, options).tokens;
 }

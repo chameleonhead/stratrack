@@ -15,7 +15,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Handle simple `#define` and `#undef` preprocessing directives
 - [x] Capture program properties using `#property`
 - [ ] Support parameterized macros in the preprocessor
-- [ ] Support loading and executing code split across multiple files
+- [x] Support loading and executing code split across multiple files
 - [ ] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples
 - [ ] Execute functions via a specified entry point and manage an execution context

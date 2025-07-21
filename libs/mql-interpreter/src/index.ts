@@ -10,6 +10,7 @@ import {
   MacroMap,
   PreprocessResult,
   PropertyMap,
+  PreprocessOptions,
 } from './preprocess';
 
 export {
@@ -31,15 +32,17 @@ export {
   MacroMap,
   PreprocessResult,
   PropertyMap,
+  PreprocessOptions,
   getBuiltin,
   BuiltinFunction,
 };
 
 export function interpret(
   source: string,
-  entryPointOrContext?: string | ExecutionContext
+  entryPointOrContext?: string | ExecutionContext,
+  options: PreprocessOptions = {}
 ): Runtime {
-  const { tokens, properties } = preprocessWithProperties(source);
+  const { tokens, properties } = preprocessWithProperties(source, options);
   const ast = parse(tokens);
   const runtime = execute(ast, entryPointOrContext);
   runtime.properties = properties;

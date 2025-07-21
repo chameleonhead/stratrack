@@ -36,6 +36,17 @@ to be parsed correctly.
 to collect program properties before parsing. When using `interpret()`, the
 collected properties are returned in `runtime.properties`.
 
+The preprocessor also supports a simplified `#import "file"` directive.  Files
+must be provided via a `fileProvider` callback passed to `preprocess` or
+`interpret`.  This keeps the interpreter free of Node.js dependencies so the
+same logic works in the browser.
+
+```ts
+preprocess('#import "lib.mqh"\n#import', {
+  fileProvider: (name) => libraries[name],
+});
+```
+
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:
 

@@ -29,4 +29,23 @@ describe('preprocess', () => {
     expect(properties.version).toEqual(['"1.0"']);
     expect(Object.keys(runtime.classes)).toEqual(['A']);
   });
+
+  it('imports external files', () => {
+    const code = '#import "lib.mqh"\n#import\nclass B{}';
+    const { tokens: tks, properties } = preprocessWithProperties(code, {
+      fileProvider: (p) =>
+        p === 'lib.mqh' ? '#property note "x"\nclass A{}' : undefined,
+    });
+    const ast = parse(tks);
+    const runtime = execute(ast);
+    expect(properties.note).toEqual(['"x"']);
+    expect(Object.keys(runtime.classes)).toEqual(['A', 'B']);
+  });
+
+  it('throws when imported file missing', () => {
+    const code = '#import "missing.mqh"\n#import';
+    expect(() =>
+      preprocess(code, { fileProvider: () => undefined })
+    ).toThrow('missing.mqh');
+  });
 });
