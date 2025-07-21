@@ -17,12 +17,10 @@ recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
 `switch` and more.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
-arrays and a growing set of builtin function stubs. Besides `Print`,
-`OrderSend` and `iMA`, several account information functions like
-`AccountBalance` and `AccountCurrency` are provided. Additional
-builtin names from the
-<https://docs.mql4.com/function_indices> list will be implemented over
-time and can be accessed through `getBuiltin()`.
+arrays and a comprehensive set of builtin function stubs. Besides
+`Print`, `OrderSend` and `iMA`, all functions listed at
+<https://docs.mql4.com/function_indices> are available as no-ops and can
+be accessed through `getBuiltin()`.
 
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:

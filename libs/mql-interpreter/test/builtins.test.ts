@@ -12,6 +12,11 @@ describe('builtins', () => {
     expect(fn).toBeTypeOf('function');
   });
 
+  it('provides a stub from the function index list', () => {
+    const fn = getBuiltin('ArrayCopy');
+    expect(fn).toBeTypeOf('function');
+  });
+
   it('returns undefined for unknown', () => {
     expect(getBuiltin('Unknown')).toBeUndefined();
   });
