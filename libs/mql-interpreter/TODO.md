@@ -11,3 +11,4 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Support loading and executing code split across multiple files
 - [ ] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples
+- [ ] Parse class methods, constructors, destructors and access modifiers

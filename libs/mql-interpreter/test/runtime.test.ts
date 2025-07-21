@@ -15,7 +15,17 @@ describe('execute', () => {
     const tokens = lex('class Parent {} class Child : Parent {}');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.Child).toEqual({ base: 'Parent' });
+    expect(runtime.classes.Child).toEqual({ base: 'Parent', fields: {} });
+  });
+
+  it('stores class fields', () => {
+    const tokens = lex('class A { int a; string b; }');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.classes.A).toEqual({
+      base: undefined,
+      fields: { a: 'int', b: 'string' },
+    });
   });
 
   it('throws when base class is missing', () => {

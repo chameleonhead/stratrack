@@ -1,5 +1,5 @@
 import { lex, Token, TokenType } from './lexer';
-import { parse, Declaration } from './parser';
+import { parse, Declaration, ClassDeclaration, ClassField } from './parser';
 import { execute, Runtime } from './runtime';
 import { cast, PrimitiveType } from './casting';
 
@@ -9,6 +9,8 @@ export {
   TokenType,
   parse,
   Declaration,
+  ClassDeclaration,
+  ClassField,
   execute,
   Runtime,
   cast,

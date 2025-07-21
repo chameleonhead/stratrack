@@ -9,10 +9,16 @@ export interface EnumDeclaration {
   members: EnumMember[];
 }
 
+export interface ClassField {
+  name: string;
+  fieldType: string;
+}
+
 export interface ClassDeclaration {
   type: 'ClassDeclaration';
   name: string;
   base?: string;
+  fields: ClassField[];
 }
 
 export type Declaration = EnumDeclaration | ClassDeclaration;
@@ -86,11 +92,56 @@ export function parse(tokens: Token[]): Declaration[] {
       base = consume(TokenType.Identifier).value;
     }
     consume(TokenType.Punctuation, '{');
-    skipBlock();
+    const fields: ClassField[] = [];
+    while (!atEnd() && peek().value !== '}') {
+      const start = peek();
+      const next = tokens[pos + 1];
+      const third = tokens[pos + 2];
+      // simple field: <type> <name>;
+      if (
+        (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
+        next?.type === TokenType.Identifier &&
+        third?.value === ';'
+      ) {
+        const fieldType = consume().value;
+        const fieldName = consume(TokenType.Identifier).value;
+        consume(TokenType.Punctuation, ';');
+        fields.push({ name: fieldName, fieldType });
+        continue;
+      }
+      // skip method declarations/definitions
+      if (
+        (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
+        next?.type === TokenType.Identifier &&
+        third?.value === '('
+      ) {
+        // skip until opening brace or semicolon
+        consume();
+        consume(TokenType.Identifier);
+        consume(TokenType.Punctuation, '(');
+        while (!atEnd() && peek().value !== ')' ) consume();
+        consume(TokenType.Punctuation, ')');
+        if (!atEnd() && peek().value === '{') {
+          consume(TokenType.Punctuation, '{');
+          skipBlock();
+        } else if (!atEnd() && peek().value === ';') {
+          consume(TokenType.Punctuation, ';');
+        }
+        continue;
+      }
+      // unknown token inside class - skip
+      if (peek().value === '{') {
+        consume(TokenType.Punctuation, '{');
+        skipBlock();
+      } else {
+        pos++;
+      }
+    }
+    consume(TokenType.Punctuation, '}');
     if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'ClassDeclaration', name, base };
+    return { type: 'ClassDeclaration', name, base, fields };
   }
 
   while (!atEnd()) {

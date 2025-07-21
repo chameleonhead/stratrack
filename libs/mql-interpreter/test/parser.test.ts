@@ -23,6 +23,17 @@ describe('parse', () => {
     expect(classDecl.type).toBe('ClassDeclaration');
     expect(classDecl.name).toBe('Child');
     expect(classDecl.base).toBe('Parent');
+    expect(classDecl.fields.length).toBe(0);
+  });
+
+  it('parses class fields', () => {
+    const tokens = lex('class A { int a; string b; }');
+    const ast = parse(tokens);
+    const classDecl = ast[0] as ClassDeclaration;
+    expect(classDecl.fields).toEqual([
+      { name: 'a', fieldType: 'int' },
+      { name: 'b', fieldType: 'string' },
+    ]);
   });
 
   it('parses multiple declarations', () => {
@@ -35,14 +46,18 @@ describe('parse', () => {
   it('skips irrelevant tokens and parses class body', () => {
     const tokens = lex('int x; class D { int a; }');
     const ast = parse(tokens);
-    expect((ast[0] as ClassDeclaration).name).toBe('D');
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.name).toBe('D');
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int' }]);
   });
 
   it('handles nested blocks and semicolons', () => {
     const code = 'class E { void f() { int y; } };';
     const tokens = lex(code);
     const ast = parse(tokens);
-    expect((ast[0] as ClassDeclaration).name).toBe('E');
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.name).toBe('E');
+    expect(decl.fields.length).toBe(0);
   });
 
   it('throws on invalid syntax', () => {
