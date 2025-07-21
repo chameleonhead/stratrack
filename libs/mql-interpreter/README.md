@@ -8,7 +8,9 @@ declarations like `int values[];`. These fields are stored in the runtime
 with their array dimensions.
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
-A minimal runtime executes the AST and registers enums and classes.
+The runtime executes the AST and registers enums and classes. `execute()` accepts
+an optional entry point name for future use when function execution is
+implemented.
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,

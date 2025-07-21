@@ -10,8 +10,26 @@ export interface Runtime {
 
 import { Declaration, ClassDeclaration } from './parser';
 
-export function execute(declarations: Declaration[]): Runtime {
+/** Options for executing code. */
+export interface ExecutionContext {
+  /** Entry point function name. */
+  entryPoint?: string;
+}
+
+export function execute(
+  declarations: Declaration[],
+  entryPointOrContext?: string | ExecutionContext
+): Runtime {
   const runtime: Runtime = { enums: {}, classes: {} };
+
+  // Extract entry point for future use. Execution of functions is not yet
+  // implemented, so this is currently ignored.
+  const entryPoint =
+    typeof entryPointOrContext === 'string'
+      ? entryPointOrContext
+      : entryPointOrContext?.entryPoint;
+  // TODO: implement function invocation using `entryPoint` and an execution
+  // context when method parsing is available.
 
   for (const decl of declarations) {
     if (decl.type === 'EnumDeclaration') {
