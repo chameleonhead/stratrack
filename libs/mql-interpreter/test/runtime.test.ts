@@ -55,7 +55,7 @@ describe('execute', () => {
     const code =
       'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
     const runtime = execute(parse(lex(code)));
-    expect(runtime).toEqual({ enums: {}, classes: {} });
+    expect(runtime).toEqual({ enums: {}, classes: {}, properties: {} });
   });
 
   it('handles visibility specifiers', () => {

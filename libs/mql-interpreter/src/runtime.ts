@@ -6,6 +6,7 @@ export interface RuntimeClassField {
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField> }>;
+  properties: Record<string, string[]>;
 }
 
 import { Declaration, ClassDeclaration } from './parser';
@@ -20,7 +21,7 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {} };
+  const runtime: Runtime = { enums: {}, classes: {}, properties: {} };
 
   // Extract entry point for future use. Execution of functions is not yet
   // implemented, so this is currently ignored.

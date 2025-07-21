@@ -2,6 +2,15 @@ export interface MacroMap {
   [name: string]: string;
 }
 
+export interface PropertyMap {
+  [name: string]: string[];
+}
+
+export interface PreprocessResult {
+  tokens: Token[];
+  properties: PropertyMap;
+}
+
 import { lex, Token, TokenType } from './lexer';
 
 /**
@@ -9,8 +18,9 @@ import { lex, Token, TokenType } from './lexer';
  * directives. Only parameterless macros are supported. The resulting token
  * stream has all identifiers substituted with their macro values.
  */
-export function preprocess(source: string): Token[] {
+export function preprocessWithProperties(source: string): PreprocessResult {
   const macros: MacroMap = {};
+  const properties: PropertyMap = {};
   const lines = source.split(/\r?\n/);
   const codeLines: string[] = [];
 
@@ -25,6 +35,15 @@ export function preprocess(source: string): Token[] {
     if (trimmed.startsWith('#undef')) {
       const id = trimmed.slice('#undef'.length).trim().split(/\s+/)[0];
       delete macros[id];
+      continue;
+    }
+    if (trimmed.startsWith('#property')) {
+      const rest = trimmed.slice('#property'.length).trim();
+      const [name, ...valueParts] = rest.split(/\s+/);
+      if (name) {
+        if (!properties[name]) properties[name] = [];
+        properties[name].push(valueParts.join(' '));
+      }
       continue;
     }
     codeLines.push(line);
@@ -42,5 +61,9 @@ export function preprocess(source: string): Token[] {
     }
   }
 
-  return result;
+  return { tokens: result, properties };
+}
+
+export function preprocess(source: string): Token[] {
+  return preprocessWithProperties(source).tokens;
 }

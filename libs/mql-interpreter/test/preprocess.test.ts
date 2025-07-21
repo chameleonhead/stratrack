@@ -1,4 +1,4 @@
-import { preprocess } from '../src/preprocess';
+import { preprocess, preprocessWithProperties } from '../src/preprocess';
 import { parse } from '../src/parser';
 import { execute } from '../src/runtime';
 import { describe, it, expect } from 'vitest';
@@ -19,5 +19,14 @@ describe('preprocess', () => {
     const runtime = execute(ast);
     // A should remain identifier since it was undefined
     expect(Object.keys(runtime.classes)).toEqual(['B']);
+  });
+
+  it('captures program properties', () => {
+    const code = '#property version "1.0"\nclass A{}';
+    const { tokens, properties } = preprocessWithProperties(code);
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(properties.version).toEqual(['"1.0"']);
+    expect(Object.keys(runtime.classes)).toEqual(['A']);
   });
 });

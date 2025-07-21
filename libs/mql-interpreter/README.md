@@ -32,6 +32,10 @@ class A { int arr[SIZE]; }
 
 to be parsed correctly.
 
+`#property` directives are recognized as well. Use `preprocessWithProperties`
+to collect program properties before parsing. When using `interpret()`, the
+collected properties are returned in `runtime.properties`.
+
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:
 

@@ -4,7 +4,13 @@ import { execute, Runtime, ExecutionContext } from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
 import { getBuiltin, BuiltinFunction } from './builtins';
-import { preprocess, MacroMap } from './preprocess';
+import {
+  preprocess,
+  preprocessWithProperties,
+  MacroMap,
+  PreprocessResult,
+  PropertyMap,
+} from './preprocess';
 
 export {
   lex,
@@ -21,7 +27,10 @@ export {
   PrimitiveType,
   ArrayResize,
   preprocess,
+  preprocessWithProperties,
   MacroMap,
+  PreprocessResult,
+  PropertyMap,
   getBuiltin,
   BuiltinFunction,
 };
@@ -30,7 +39,9 @@ export function interpret(
   source: string,
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const tokens = preprocess(source);
+  const { tokens, properties } = preprocessWithProperties(source);
   const ast = parse(tokens);
-  return execute(ast, entryPointOrContext);
+  const runtime = execute(ast, entryPointOrContext);
+  runtime.properties = properties;
+  return runtime;
 }

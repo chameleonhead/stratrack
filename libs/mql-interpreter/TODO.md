@@ -13,6 +13,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Implement the full set of builtin functions listed at
   <https://docs.mql4.com/function_indices>
 - [x] Handle simple `#define` and `#undef` preprocessing directives
+- [x] Capture program properties using `#property`
 - [ ] Support parameterized macros in the preprocessor
 - [ ] Support loading and executing code split across multiple files
 - [ ] Create automated tests covering the lexer, parser and runtime
