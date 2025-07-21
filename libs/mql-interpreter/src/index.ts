@@ -7,7 +7,13 @@ import {
   FunctionDeclaration,
   FunctionParameter,
 } from './parser';
-import { execute, Runtime, ExecutionContext, RuntimeFunctionParameter } from './runtime';
+import {
+  execute,
+  Runtime,
+  ExecutionContext,
+  RuntimeFunctionParameter,
+  callFunction,
+} from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
 import { getBuiltin, BuiltinFunction } from './builtins';
@@ -45,6 +51,7 @@ export {
   PreprocessOptions,
   getBuiltin,
   BuiltinFunction,
+  callFunction,
 };
 
 export function interpret(

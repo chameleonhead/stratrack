@@ -17,6 +17,8 @@ export interface Runtime {
 }
 
 import { Declaration, ClassDeclaration, FunctionDeclaration } from './parser';
+import { getBuiltin } from './builtins';
+import { cast, PrimitiveType } from './casting';
 
 /** Options for executing code. */
 export interface ExecutionContext {
@@ -77,4 +79,38 @@ export function execute(
   }
 
   return runtime;
+}
+
+export function callFunction(runtime: Runtime, name: string, args: any[] = []): any {
+  const decl = runtime.functions[name];
+  const builtin = getBuiltin(name);
+
+  if (!decl && !builtin) {
+    throw new Error(`Function ${name} not found`);
+  }
+
+  if (decl) {
+    if (args.length > decl.parameters.length) {
+      throw new Error('Too many arguments');
+    }
+    const finalArgs: any[] = [];
+    for (let i = 0; i < decl.parameters.length; i++) {
+      const p = decl.parameters[i];
+      if (i < args.length) {
+        finalArgs.push(args[i]);
+      } else if (p.defaultValue !== undefined) {
+        finalArgs.push(cast(p.defaultValue, p.type as PrimitiveType));
+      } else {
+        throw new Error(`Missing argument ${p.name}`);
+      }
+    }
+    args = finalArgs;
+  }
+
+  if (!builtin) {
+    // TODO: interpret user-defined function bodies
+    throw new Error(`Function ${name} has no implementation`);
+  }
+
+  return builtin(...args);
 }

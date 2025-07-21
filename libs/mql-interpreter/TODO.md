@@ -21,5 +21,6 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples
 - [ ] Execute functions via a specified entry point and manage an execution context
+  - `callFunction()` helper performs argument checks and dispatches to builtins
 - [ ] Parse class methods, constructors, destructors and access modifiers
 - [ ] Parse control-flow statements (if/else, loops, switch)

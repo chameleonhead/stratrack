@@ -12,7 +12,9 @@ A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
 The runtime executes the AST and registers enums and classes. `execute()` accepts
 an optional entry point name for future use when function execution is
-implemented.
+implemented. Functions can be invoked manually using `callFunction()` which
+checks arguments against the parsed signature and then dispatches to a builtin
+implementation if one exists.
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
