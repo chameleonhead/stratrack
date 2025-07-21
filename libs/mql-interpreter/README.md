@@ -1,7 +1,7 @@
 # MQL Interpreter
 
 This package provides a basic framework for executing MQL4/5 code within Node.js.
-At this stage it only contains scaffolding code.
+It currently includes a simple lexer that tokenizes MQL source code.
 
 ## Development
 
