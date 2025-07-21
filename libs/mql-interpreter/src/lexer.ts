@@ -20,10 +20,12 @@ const keywords = new Set([
   'if',
   'else',
   'return',
+  'enum',
+  'class',
 ]);
 
 const operatorChars = new Set(['+', '-', '*', '/', '=', '>', '<', '!', '&', '|']);
-const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.']);
+const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.', ':']);
 
 export function lex(source: string): Token[] {
   const tokens: Token[] = [];
