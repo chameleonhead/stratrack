@@ -14,7 +14,7 @@ export interface RuntimeFunctionParameter {
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField> }>;
-  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }>;
+  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }[]>;
   properties: Record<string, string[]>;
 }
 
@@ -71,7 +71,10 @@ export function execute(
         dimensions: p.dimensions,
         defaultValue: p.defaultValue,
       }));
-      runtime.functions[fn.name] = { returnType: fn.returnType, parameters: params };
+      if (!runtime.functions[fn.name]) {
+        runtime.functions[fn.name] = [];
+      }
+      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params });
     }
   }
 
@@ -86,29 +89,43 @@ export function execute(
 }
 
 export function callFunction(runtime: Runtime, name: string, args: any[] = []): any {
-  const decl = runtime.functions[name];
+  const overloads = runtime.functions[name];
   const builtin = getBuiltin(name);
 
-  if (!decl && !builtin) {
+  if ((!overloads || overloads.length === 0) && !builtin) {
     throw new Error(`Function ${name} not found`);
   }
 
-  if (decl) {
-    if (args.length > decl.parameters.length) {
-      throw new Error('Too many arguments');
-    }
-    const finalArgs: any[] = [];
-    for (let i = 0; i < decl.parameters.length; i++) {
-      const p = decl.parameters[i];
-      if (i < args.length) {
-        finalArgs.push(args[i]);
-      } else if (p.defaultValue !== undefined) {
-        finalArgs.push(cast(p.defaultValue, p.type as PrimitiveType));
-      } else {
-        throw new Error(`Missing argument ${p.name}`);
+  let decl: { returnType: string; parameters: RuntimeFunctionParameter[] } | undefined;
+  if (overloads && overloads.length) {
+    let required = 0;
+    for (const candidate of overloads) {
+      required = candidate.parameters.filter((p) => p.defaultValue === undefined).length;
+      if (args.length >= required && args.length <= candidate.parameters.length) {
+        decl = candidate;
+        break;
       }
     }
-    args = finalArgs;
+    if (decl) {
+      const finalArgs: any[] = [];
+      for (let i = 0; i < decl.parameters.length; i++) {
+        const p = decl.parameters[i];
+        if (i < args.length) {
+          finalArgs.push(args[i]);
+        } else if (p.defaultValue !== undefined) {
+          finalArgs.push(cast(p.defaultValue, p.type as PrimitiveType));
+        }
+      }
+      if (args.length > decl.parameters.length) {
+        throw new Error('Too many arguments');
+      }
+      if (args.length < required) {
+        throw new Error(`Missing argument ${decl.parameters[args.length].name}`);
+      }
+      args = finalArgs.slice(0, decl.parameters.length);
+    } else if (!builtin) {
+      throw new Error('Too many arguments');
+    }
   }
 
   if (!builtin) {

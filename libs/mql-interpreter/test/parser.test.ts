@@ -91,6 +91,14 @@ describe('parse', () => {
     expect((ast[1] as ClassDeclaration).name).toBe('C');
   });
 
+  it('parses overloaded functions separately', () => {
+    const tokens = lex('void f(); void f(int a);');
+    const ast = parse(tokens);
+    expect(ast.length).toBe(2);
+    expect((ast[0] as any).name).toBe('f');
+    expect((ast[1] as any).parameters.length).toBe(1);
+  });
+
   it('skips irrelevant tokens and parses class body', () => {
     const tokens = lex('int x; class D { int a; }');
     const ast = parse(tokens);

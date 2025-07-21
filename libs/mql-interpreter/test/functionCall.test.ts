@@ -22,4 +22,15 @@ describe('callFunction', () => {
   it('invokes builtin without signature', () => {
     expect(callFunction(runtime, 'Print', ['test'])).toBe(0);
   });
+
+  it('handles overloaded functions', () => {
+    const r = execute(
+      parse(
+        lex('void foo(); void foo(int a, int b=1);')
+      )
+    );
+    expect(() => callFunction(r, 'foo')).toThrow('Function foo has no implementation');
+    expect(() => callFunction(r, 'foo', [1])).toThrow('Function foo has no implementation');
+    expect(() => callFunction(r, 'foo', [1, 2, 3])).toThrow('Too many arguments');
+  });
 });

@@ -8,6 +8,9 @@ declarations like `int values[];`. These fields are stored in the runtime
 with their array dimensions. Top-level functions are also parsed. Their return
 type, name and parameter list (including any default values) are recorded in the
 runtime for inspection.
+A single name may have multiple declarations with different parameter lists,
+mirroring MQL's function overloading rules. The runtime stores every overload
+so `callFunction()` can choose the one matching the argument count.
 A parameter can be prefixed with `&` to indicate it is passed by reference.
 Arrays are always treated as references. The runtime stores this information for
 each parameter.

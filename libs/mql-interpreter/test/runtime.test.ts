@@ -49,8 +49,8 @@ describe('execute', () => {
     const tokens = lex('double lin(double a,double b){return a+b;}');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.functions.lin.returnType).toBe('double');
-    expect(runtime.functions.lin.parameters).toEqual([
+    expect(runtime.functions.lin[0].returnType).toBe('double');
+    expect(runtime.functions.lin[0].parameters).toEqual([
       { type: 'double', byRef: false, name: 'a', dimensions: [], defaultValue: undefined },
       { type: 'double', byRef: false, name: 'b', dimensions: [], defaultValue: undefined },
     ]);
@@ -60,10 +60,17 @@ describe('execute', () => {
     const tokens = lex('void modify(int &ref, double vals[]);');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.functions.modify.parameters).toEqual([
+    expect(runtime.functions.modify[0].parameters).toEqual([
       { type: 'int', byRef: true, name: 'ref', dimensions: [], defaultValue: undefined },
       { type: 'double', byRef: false, name: 'vals', dimensions: [null], defaultValue: undefined },
     ]);
+  });
+
+  it('stores overloaded functions', () => {
+    const tokens = lex('void f(); void f(int a);');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.functions.f.length).toBe(2);
   });
 
   it('throws when base class is missing', () => {

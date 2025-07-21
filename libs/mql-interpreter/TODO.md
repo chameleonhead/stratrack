@@ -9,6 +9,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Map essential MQL built‑in functions (e.g. `OrderSend`, `iMA`) to JavaScript implementations
 - [x] Parse dynamic array declarations
 - [x] Parse top-level function declarations
+- [x] Support function overloading when parsing and calling functions
 - [x] Implement the `ArrayResize` helper for manipulating arrays
 - [x] Provide a command‑line interface for running MQL scripts within Node.js
 - [x] Implement the full set of builtin functions listed at
