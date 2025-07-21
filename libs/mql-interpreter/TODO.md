@@ -7,5 +7,6 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Design an execution engine capable of evaluating the AST
 - [ ] Map essential MQL built‑in functions (e.g. `OrderSend`, `iMA`) to JavaScript implementations
 - [ ] Provide a command‑line interface for running MQL scripts within Node.js
+- [ ] Support loading and executing code split across multiple files
 - [ ] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples

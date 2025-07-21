@@ -25,5 +25,12 @@ export function execute(declarations: Declaration[]): Runtime {
     }
   }
 
+  for (const name in runtime.classes) {
+    const cls = runtime.classes[name];
+    if (cls.base && !runtime.classes[cls.base]) {
+      throw new Error(`Base class ${cls.base} not found for ${name}`);
+    }
+  }
+
   return runtime;
 }

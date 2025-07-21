@@ -24,4 +24,39 @@ describe('parse', () => {
     expect(classDecl.name).toBe('Child');
     expect(classDecl.base).toBe('Parent');
   });
+
+  it('parses multiple declarations', () => {
+    const tokens = lex('enum E{A};class C{}');
+    const ast = parse(tokens);
+    expect(ast.length).toBe(2);
+    expect((ast[1] as ClassDeclaration).name).toBe('C');
+  });
+
+  it('skips irrelevant tokens and parses class body', () => {
+    const tokens = lex('int x; class D { int a; }');
+    const ast = parse(tokens);
+    expect((ast[0] as ClassDeclaration).name).toBe('D');
+  });
+
+  it('handles nested blocks and semicolons', () => {
+    const code = 'class E { void f() { int y; } };';
+    const tokens = lex(code);
+    const ast = parse(tokens);
+    expect((ast[0] as ClassDeclaration).name).toBe('E');
+  });
+
+  it('throws on invalid syntax', () => {
+    const tokens = lex('enum X {');
+    expect(() => parse(tokens)).toThrow();
+  });
+
+  it('throws on wrong token type', () => {
+    const tokens = lex('enum { }');
+    expect(() => parse(tokens)).toThrow();
+  });
+
+  it('throws on wrong token value', () => {
+    const tokens = lex('enum X ;');
+    expect(() => parse(tokens)).toThrow();
+  });
 });
