@@ -1,11 +1,11 @@
 import { lex, Token, TokenType } from './lexer';
 import { parse, Declaration } from './parser';
-export { lex, Token, TokenType, parse, Declaration };
+import { execute, Runtime } from './runtime';
 
-export function interpret(source: string): void {
-  console.log('Interpreting source...');
+export { lex, Token, TokenType, parse, Declaration, execute, Runtime };
+
+export function interpret(source: string): Runtime {
   const tokens = lex(source);
-  console.log(tokens);
   const ast = parse(tokens);
-  console.log(ast);
+  return execute(ast);
 }
