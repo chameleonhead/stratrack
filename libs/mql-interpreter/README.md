@@ -16,6 +16,17 @@ between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
 `switch` and more.
 
+Utility helpers include `ArrayResize()` to change the length of dynamic
+arrays and a small set of builtin function stubs such as `Print`, `OrderSend`
+and `iMA` accessible via `getBuiltin()`.
+
+After running `npm run build` you can use the `mql-interpreter` CLI to execute a
+file and print the resulting runtime information:
+
+```bash
+npx mql-interpreter path/to/file.mq4
+```
+
 ## Development
 
 - `npm run build` – Compile TypeScript sources.

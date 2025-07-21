@@ -2,6 +2,8 @@ import { lex, Token, TokenType } from './lexer';
 import { parse, Declaration, ClassDeclaration, ClassField } from './parser';
 import { execute, Runtime, ExecutionContext } from './runtime';
 import { cast, PrimitiveType } from './casting';
+import { ArrayResize } from './arrayResize';
+import { getBuiltin, BuiltinFunction } from './builtins';
 
 export {
   lex,
@@ -16,6 +18,9 @@ export {
   ExecutionContext,
   cast,
   PrimitiveType,
+  ArrayResize,
+  getBuiltin,
+  BuiltinFunction,
 };
 
 export function interpret(
