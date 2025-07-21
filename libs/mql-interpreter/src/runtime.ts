@@ -3,13 +3,20 @@ export interface RuntimeClassField {
   dimensions: Array<number | null>;
 }
 
+export interface RuntimeFunctionParameter {
+  type: string;
+  name: string;
+  defaultValue?: string;
+}
+
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField> }>;
+  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }>;
   properties: Record<string, string[]>;
 }
 
-import { Declaration, ClassDeclaration } from './parser';
+import { Declaration, ClassDeclaration, FunctionDeclaration } from './parser';
 
 /** Options for executing code. */
 export interface ExecutionContext {
@@ -21,7 +28,7 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {}, properties: {} };
+  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, properties: {} };
 
   // Extract entry point for future use. Execution of functions is not yet
   // implemented, so this is currently ignored.
@@ -51,6 +58,14 @@ export function execute(
         fields[f.name] = { type: f.fieldType, dimensions: f.dimensions };
       }
       runtime.classes[decl.name] = { base: classDecl.base, fields };
+    } else if (decl.type === 'FunctionDeclaration') {
+      const fn = decl as FunctionDeclaration;
+      const params = fn.parameters.map((p) => ({
+        type: p.paramType,
+        name: p.name,
+        defaultValue: p.defaultValue,
+      }));
+      runtime.functions[fn.name] = { returnType: fn.returnType, parameters: params };
     }
   }
 

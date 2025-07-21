@@ -54,6 +54,26 @@ describe('parse', () => {
     ]);
   });
 
+  it('parses function definitions', () => {
+    const tokens = lex('int sum(int a, int b) { return a+b; }');
+    const ast = parse(tokens);
+    const fn = ast[0] as any;
+    expect(fn.type).toBe('FunctionDeclaration');
+    expect(fn.name).toBe('sum');
+    expect(fn.returnType).toBe('int');
+    expect(fn.parameters).toEqual([
+      { paramType: 'int', name: 'a', defaultValue: undefined },
+      { paramType: 'int', name: 'b', defaultValue: undefined },
+    ]);
+  });
+
+  it('parses function prototypes with default values', () => {
+    const tokens = lex('void log(string s="hi");');
+    const ast = parse(tokens);
+    const fn = ast[0] as any;
+    expect(fn.parameters[0].defaultValue).toBe('hi');
+  });
+
   it('parses multiple declarations', () => {
     const tokens = lex('enum E{A};class C{}');
     const ast = parse(tokens);

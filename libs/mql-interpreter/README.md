@@ -5,7 +5,9 @@ It currently includes a simple lexer and parser. The parser recognizes
 enumerations, class and struct declarations with single inheritance. Class fields
 declared as `<type> <name>;` are captured, including simple dynamic array
 declarations like `int values[];`. These fields are stored in the runtime
-with their array dimensions.
+with their array dimensions. Top-level functions are also parsed. Their return
+type, name and parameter list (including any default values) are recorded in the
+runtime for inspection.
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
 The runtime executes the AST and registers enums and classes. `execute()` accepts

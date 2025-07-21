@@ -1,6 +1,13 @@
 import { lex, Token, TokenType } from './lexer';
-import { parse, Declaration, ClassDeclaration, ClassField } from './parser';
-import { execute, Runtime, ExecutionContext } from './runtime';
+import {
+  parse,
+  Declaration,
+  ClassDeclaration,
+  ClassField,
+  FunctionDeclaration,
+  FunctionParameter,
+} from './parser';
+import { execute, Runtime, ExecutionContext, RuntimeFunctionParameter } from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
 import { getBuiltin, BuiltinFunction } from './builtins';
@@ -21,8 +28,11 @@ export {
   Declaration,
   ClassDeclaration,
   ClassField,
+  FunctionDeclaration,
+  FunctionParameter,
   execute,
   Runtime,
+  RuntimeFunctionParameter,
   ExecutionContext,
   cast,
   PrimitiveType,

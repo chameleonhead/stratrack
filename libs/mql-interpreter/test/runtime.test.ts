@@ -45,6 +45,14 @@ describe('execute', () => {
     expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null] });
   });
 
+  it('stores functions', () => {
+    const tokens = lex('double lin(double a,double b){return a+b;}');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.functions.lin.returnType).toBe('double');
+    expect(runtime.functions.lin.parameters.length).toBe(2);
+  });
+
   it('throws when base class is missing', () => {
     const tokens = lex('class Child : Parent {}');
     const ast = parse(tokens);
@@ -55,7 +63,7 @@ describe('execute', () => {
     const code =
       'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
     const runtime = execute(parse(lex(code)));
-    expect(runtime).toEqual({ enums: {}, classes: {}, properties: {} });
+    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, properties: {} });
   });
 
   it('handles visibility specifiers', () => {

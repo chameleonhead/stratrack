@@ -22,7 +22,20 @@ export interface ClassDeclaration {
   fields: ClassField[];
 }
 
-export type Declaration = EnumDeclaration | ClassDeclaration;
+export interface FunctionParameter {
+  paramType: string;
+  name: string;
+  defaultValue?: string;
+}
+
+export interface FunctionDeclaration {
+  type: 'FunctionDeclaration';
+  returnType: string;
+  name: string;
+  parameters: FunctionParameter[];
+}
+
+export type Declaration = EnumDeclaration | ClassDeclaration | FunctionDeclaration;
 
 import { Token, TokenType } from './lexer';
 
@@ -169,6 +182,36 @@ export function parse(tokens: Token[]): Declaration[] {
     return { type: 'ClassDeclaration', name, base, fields };
   }
 
+  function parseFunction(): FunctionDeclaration {
+    const returnType = consume().value;
+    const name = consume(TokenType.Identifier).value;
+    consume(TokenType.Punctuation, '(');
+    const parameters: FunctionParameter[] = [];
+    while (!atEnd() && peek().value !== ')') {
+      const pType = consume().value;
+      const pName = consume(TokenType.Identifier).value;
+      let defaultValue: string | undefined;
+      if (peek().value === '=') {
+        consume(TokenType.Operator, '=');
+        defaultValue = consume().value;
+      }
+      parameters.push({ paramType: pType, name: pName, defaultValue });
+      if (peek().value === ',') {
+        consume(TokenType.Punctuation, ',');
+      } else {
+        break;
+      }
+    }
+    consume(TokenType.Punctuation, ')');
+    if (!atEnd() && peek().value === '{') {
+      consume(TokenType.Punctuation, '{');
+      skipBlock();
+    } else if (!atEnd() && peek().value === ';') {
+      consume(TokenType.Punctuation, ';');
+    }
+    return { type: 'FunctionDeclaration', returnType, name, parameters };
+  }
+
   while (!atEnd()) {
     const token = peek();
     if (token.type === TokenType.Keyword && token.value === 'enum') {
@@ -178,6 +221,12 @@ export function parse(tokens: Token[]): Declaration[] {
       (token.value === 'class' || token.value === 'struct')
     ) {
       declarations.push(parseClass());
+    } else if (
+      (token.type === TokenType.Keyword || token.type === TokenType.Identifier) &&
+      tokens[pos + 1]?.type === TokenType.Identifier &&
+      tokens[pos + 2]?.value === '('
+    ) {
+      declarations.push(parseFunction());
     } else {
       pos++;
     }
