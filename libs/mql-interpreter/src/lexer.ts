@@ -54,6 +54,7 @@ const keywords = new Set([
   'enum',
   'class',
   'struct',
+  'operator',
 ]);
 
 const operatorChars = new Set(['+', '-', '*', '/', '=', '>', '<', '!', '&', '|']);

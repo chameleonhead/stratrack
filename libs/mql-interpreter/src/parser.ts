@@ -186,7 +186,17 @@ export function parse(tokens: Token[]): Declaration[] {
 
   function parseFunction(): FunctionDeclaration {
     const returnType = consume().value;
-    const name = consume(TokenType.Identifier).value;
+    let nameToken = consume();
+    let name = nameToken.value;
+    if (nameToken.type === TokenType.Keyword && nameToken.value === 'operator') {
+      name = 'operator';
+      while (!atEnd() && peek().value !== '(') {
+        name += tokens[pos].value;
+        pos++;
+      }
+    } else if (nameToken.type !== TokenType.Identifier) {
+      throw new Error('Expected function name');
+    }
     consume(TokenType.Punctuation, '(');
     const parameters: FunctionParameter[] = [];
     while (!atEnd() && peek().value !== ')') {
@@ -246,8 +256,9 @@ export function parse(tokens: Token[]): Declaration[] {
       declarations.push(parseClass());
     } else if (
       (token.type === TokenType.Keyword || token.type === TokenType.Identifier) &&
-      tokens[pos + 1]?.type === TokenType.Identifier &&
-      tokens[pos + 2]?.value === '('
+      (tokens[pos + 1]?.type === TokenType.Identifier ||
+        (tokens[pos + 1]?.type === TokenType.Keyword && tokens[pos + 1].value === 'operator')) &&
+      (tokens[pos + 2]?.value === '(' || tokens[pos + 3]?.value === '(')
     ) {
       declarations.push(parseFunction());
     } else {

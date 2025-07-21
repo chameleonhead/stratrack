@@ -11,6 +11,9 @@ runtime for inspection.
 A single name may have multiple declarations with different parameter lists,
 mirroring MQL's function overloading rules. The runtime stores every overload
 so `callFunction()` can choose the one matching the argument count.
+A function may also overload operations using the `operator` keyword. Such
+declarations are parsed and recorded with names like `operator+` or
+`operator[]`.
 A parameter can be prefixed with `&` to indicate it is passed by reference.
 Arrays are always treated as references. The runtime stores this information for
 each parameter.
