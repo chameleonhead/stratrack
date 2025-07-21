@@ -5,7 +5,9 @@ export interface RuntimeClassField {
 
 export interface RuntimeFunctionParameter {
   type: string;
+  byRef: boolean;
   name: string;
+  dimensions: Array<number | null>;
   defaultValue?: string;
 }
 
@@ -64,7 +66,9 @@ export function execute(
       const fn = decl as FunctionDeclaration;
       const params = fn.parameters.map((p) => ({
         type: p.paramType,
+        byRef: p.byRef,
         name: p.name,
+        dimensions: p.dimensions,
         defaultValue: p.defaultValue,
       }));
       runtime.functions[fn.name] = { returnType: fn.returnType, parameters: params };

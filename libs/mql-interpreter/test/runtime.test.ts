@@ -50,7 +50,20 @@ describe('execute', () => {
     const ast = parse(tokens);
     const runtime = execute(ast);
     expect(runtime.functions.lin.returnType).toBe('double');
-    expect(runtime.functions.lin.parameters.length).toBe(2);
+    expect(runtime.functions.lin.parameters).toEqual([
+      { type: 'double', byRef: false, name: 'a', dimensions: [], defaultValue: undefined },
+      { type: 'double', byRef: false, name: 'b', dimensions: [], defaultValue: undefined },
+    ]);
+  });
+
+  it('stores reference parameter info', () => {
+    const tokens = lex('void modify(int &ref, double vals[]);');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.functions.modify.parameters).toEqual([
+      { type: 'int', byRef: true, name: 'ref', dimensions: [], defaultValue: undefined },
+      { type: 'double', byRef: false, name: 'vals', dimensions: [null], defaultValue: undefined },
+    ]);
   });
 
   it('throws when base class is missing', () => {

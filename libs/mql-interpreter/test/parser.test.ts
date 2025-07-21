@@ -62,8 +62,8 @@ describe('parse', () => {
     expect(fn.name).toBe('sum');
     expect(fn.returnType).toBe('int');
     expect(fn.parameters).toEqual([
-      { paramType: 'int', name: 'a', defaultValue: undefined },
-      { paramType: 'int', name: 'b', defaultValue: undefined },
+      { paramType: 'int', byRef: false, name: 'a', dimensions: [], defaultValue: undefined },
+      { paramType: 'int', byRef: false, name: 'b', dimensions: [], defaultValue: undefined },
     ]);
   });
 
@@ -72,6 +72,16 @@ describe('parse', () => {
     const ast = parse(tokens);
     const fn = ast[0] as any;
     expect(fn.parameters[0].defaultValue).toBe('hi');
+  });
+
+  it('parses reference parameters and arrays', () => {
+    const tokens = lex('void modify(int &ref, double vals[]);');
+    const ast = parse(tokens);
+    const fn = ast[0] as any;
+    expect(fn.parameters).toEqual([
+      { paramType: 'int', byRef: true, name: 'ref', dimensions: [], defaultValue: undefined },
+      { paramType: 'double', byRef: false, name: 'vals', dimensions: [null], defaultValue: undefined },
+    ]);
   });
 
   it('parses multiple declarations', () => {

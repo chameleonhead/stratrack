@@ -24,7 +24,9 @@ export interface ClassDeclaration {
 
 export interface FunctionParameter {
   paramType: string;
+  byRef: boolean;
   name: string;
+  dimensions: Array<number | null>;
   defaultValue?: string;
 }
 
@@ -189,13 +191,34 @@ export function parse(tokens: Token[]): Declaration[] {
     const parameters: FunctionParameter[] = [];
     while (!atEnd() && peek().value !== ')') {
       const pType = consume().value;
+      let byRef = false;
+      if (peek().value === '&') {
+        consume(TokenType.Operator, '&');
+        byRef = true;
+      }
       const pName = consume(TokenType.Identifier).value;
+      const dims: Array<number | null> = [];
+      while (peek().value === '[') {
+        consume(TokenType.Punctuation, '[');
+        let size: number | null = null;
+        if (peek().type === TokenType.Number) {
+          size = parseInt(consume(TokenType.Number).value, 10);
+        }
+        consume(TokenType.Punctuation, ']');
+        dims.push(size);
+      }
       let defaultValue: string | undefined;
       if (peek().value === '=') {
         consume(TokenType.Operator, '=');
         defaultValue = consume().value;
       }
-      parameters.push({ paramType: pType, name: pName, defaultValue });
+      parameters.push({
+        paramType: pType,
+        byRef,
+        name: pName,
+        dimensions: dims,
+        defaultValue,
+      });
       if (peek().value === ',') {
         consume(TokenType.Punctuation, ',');
       } else {
