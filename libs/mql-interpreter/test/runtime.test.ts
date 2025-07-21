@@ -24,8 +24,18 @@ describe('execute', () => {
     const runtime = execute(ast);
     expect(runtime.classes.A).toEqual({
       base: undefined,
-      fields: { a: 'int', b: 'string' },
+      fields: {
+        a: { type: 'int', dimensions: [] },
+        b: { type: 'string', dimensions: [] },
+      },
     });
+  });
+
+  it('stores dynamic array fields', () => {
+    const tokens = lex('class A { double arr[]; }');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null] });
   });
 
   it('throws when base class is missing', () => {

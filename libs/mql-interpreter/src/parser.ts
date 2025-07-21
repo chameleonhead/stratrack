@@ -12,6 +12,7 @@ export interface EnumDeclaration {
 export interface ClassField {
   name: string;
   fieldType: string;
+  dimensions: Array<number | null>;
 }
 
 export interface ClassDeclaration {
@@ -97,17 +98,35 @@ export function parse(tokens: Token[]): Declaration[] {
       const start = peek();
       const next = tokens[pos + 1];
       const third = tokens[pos + 2];
-      // simple field: <type> <name>;
+      // field declaration possibly with array dimensions
       if (
         (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
-        next?.type === TokenType.Identifier &&
-        third?.value === ';'
+        next?.type === TokenType.Identifier
       ) {
-        const fieldType = consume().value;
-        const fieldName = consume(TokenType.Identifier).value;
-        consume(TokenType.Punctuation, ';');
-        fields.push({ name: fieldName, fieldType });
-        continue;
+        let idx = pos + 2;
+        while (tokens[idx]?.value === '[') {
+          idx++;
+          if (tokens[idx]?.type === TokenType.Number) idx++;
+          if (tokens[idx]?.value !== ']') break;
+          idx++;
+        }
+        if (tokens[idx]?.value === ';') {
+          const fieldType = consume().value;
+          const fieldName = consume(TokenType.Identifier).value;
+          const dims: Array<number | null> = [];
+          while (peek().value === '[') {
+            consume(TokenType.Punctuation, '[');
+            let size: number | null = null;
+            if (peek().type === TokenType.Number) {
+              size = parseInt(consume(TokenType.Number).value, 10);
+            }
+            consume(TokenType.Punctuation, ']');
+            dims.push(size);
+          }
+          consume(TokenType.Punctuation, ';');
+          fields.push({ name: fieldName, fieldType, dimensions: dims });
+          continue;
+        }
       }
       // skip method declarations/definitions
       if (

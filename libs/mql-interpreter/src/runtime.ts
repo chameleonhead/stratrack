@@ -1,6 +1,11 @@
+export interface RuntimeClassField {
+  type: string;
+  dimensions: Array<number | null>;
+}
+
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  classes: Record<string, { base?: string; fields: Record<string, string> }>;
+  classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField> }>;
 }
 
 import { Declaration, ClassDeclaration } from './parser';
@@ -22,9 +27,9 @@ export function execute(declarations: Declaration[]): Runtime {
       runtime.enums[decl.name] = members;
     } else if (decl.type === 'ClassDeclaration') {
       const classDecl = decl as ClassDeclaration;
-      const fields: Record<string, string> = {};
+      const fields: Record<string, RuntimeClassField> = {};
       for (const f of classDecl.fields) {
-        fields[f.name] = f.fieldType;
+        fields[f.name] = { type: f.fieldType, dimensions: f.dimensions };
       }
       runtime.classes[decl.name] = { base: classDecl.base, fields };
     }

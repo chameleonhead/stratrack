@@ -31,8 +31,18 @@ describe('parse', () => {
     const ast = parse(tokens);
     const classDecl = ast[0] as ClassDeclaration;
     expect(classDecl.fields).toEqual([
-      { name: 'a', fieldType: 'int' },
-      { name: 'b', fieldType: 'string' },
+      { name: 'a', fieldType: 'int', dimensions: [] },
+      { name: 'b', fieldType: 'string', dimensions: [] },
+    ]);
+  });
+
+  it('parses dynamic array fields', () => {
+    const tokens = lex('class B { double arr[]; int matrix[][10]; }');
+    const ast = parse(tokens);
+    const classDecl = ast[0] as ClassDeclaration;
+    expect(classDecl.fields).toEqual([
+      { name: 'arr', fieldType: 'double', dimensions: [null] },
+      { name: 'matrix', fieldType: 'int', dimensions: [null, 10] },
     ]);
   });
 
@@ -48,7 +58,7 @@ describe('parse', () => {
     const ast = parse(tokens);
     const decl = ast[0] as ClassDeclaration;
     expect(decl.name).toBe('D');
-    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int' }]);
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
   });
 
   it('handles nested blocks and semicolons', () => {
