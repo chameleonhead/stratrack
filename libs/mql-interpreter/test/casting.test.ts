@@ -18,4 +18,9 @@ describe('cast', () => {
     expect(cast(0, 'bool')).toBe(0);
     expect(cast(5, 'bool')).toBe(1);
   });
+
+  it('throws on unknown type', () => {
+    // Force cast with incorrect type
+    expect(() => cast(1, 'unknown' as any)).toThrow('Unknown cast target');
+  });
 });

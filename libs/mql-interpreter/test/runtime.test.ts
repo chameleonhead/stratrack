@@ -50,4 +50,18 @@ describe('execute', () => {
     const ast = parse(tokens);
     expect(() => execute(ast)).toThrowError('Base class Parent not found');
   });
+
+  it('ignores control flow statements', () => {
+    const code =
+      'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
+    const runtime = execute(parse(lex(code)));
+    expect(runtime).toEqual({ enums: {}, classes: {} });
+  });
+
+  it('handles visibility specifiers', () => {
+    const code = 'class A{public: int x; private: int y;} struct S{private: int a; public: int b;}';
+    const runtime = execute(parse(lex(code)));
+    expect(Object.keys(runtime.classes.A.fields)).toEqual(['x', 'y']);
+    expect(Object.keys(runtime.classes.S.fields)).toEqual(['a', 'b']);
+  });
 });
