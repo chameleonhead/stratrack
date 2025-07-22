@@ -11,9 +11,16 @@ export interface RuntimeFunctionParameter {
   defaultValue?: string;
 }
 
+export interface RuntimeClassMethod {
+  name: string;
+  returnType?: string;
+  parameters: RuntimeFunctionParameter[];
+  visibility: 'public' | 'private' | 'protected';
+}
+
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField> }>;
+  classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
   functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }[]>;
   properties: Record<string, string[]>;
 }
@@ -61,7 +68,19 @@ export function execute(
       for (const f of classDecl.fields) {
         fields[f.name] = { type: f.fieldType, dimensions: f.dimensions };
       }
-      runtime.classes[decl.name] = { base: classDecl.base, fields };
+      const methods: RuntimeClassMethod[] = classDecl.methods.map((m) => ({
+        name: m.name,
+        returnType: m.returnType,
+        parameters: m.parameters.map((p) => ({
+          type: p.paramType,
+          byRef: p.byRef,
+          name: p.name,
+          dimensions: p.dimensions,
+          defaultValue: p.defaultValue,
+        })),
+        visibility: m.visibility,
+      }));
+      runtime.classes[decl.name] = { base: classDecl.base, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {
       const fn = decl as FunctionDeclaration;
       const params = fn.parameters.map((p) => ({

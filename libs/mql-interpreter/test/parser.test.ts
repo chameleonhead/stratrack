@@ -54,6 +54,16 @@ describe('parse', () => {
     ]);
   });
 
+  it('parses class methods and operator overloads', () => {
+    const tokens = lex('class X{public:int a; int Add(int v); double operator+(double b); X(); ~X();}');
+    const ast = parse(tokens);
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.methods.map(m => m.name)).toEqual(['Add', 'operator+', 'X', '~X']);
+    expect(decl.methods[0].parameters[0].paramType).toBe('int');
+    expect(decl.methods[1].returnType).toBe('double');
+    expect(decl.methods[0].visibility).toBe('public');
+  });
+
   it('parses function definitions', () => {
     const tokens = lex('int sum(int a, int b) { return a+b; }');
     const ast = parse(tokens);

@@ -10,7 +10,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Parse dynamic array declarations
 - [x] Parse top-level function declarations
 - [x] Support function overloading when parsing and calling functions
-- [ ] Parse operator overloading as class/struct methods
+- [x] Parse operator overloading as class/struct methods
 - [x] Implement the `ArrayResize` helper for manipulating arrays
 - [x] Provide a command‑line interface for running MQL scripts within Node.js
 - [x] Implement the full set of builtin functions listed at
@@ -21,9 +21,9 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Support parameterized macros in the preprocessor
 - [ ] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
-- [ ] Create automated tests covering the lexer, parser and runtime
+- [x] Create automated tests covering the lexer, parser and runtime
 - [ ] Document the interpreter architecture and usage examples
 - [ ] Execute functions via a specified entry point and manage an execution context
   - `callFunction()` helper performs argument checks and dispatches to builtins
-- [ ] Parse class methods, constructors, destructors and access modifiers
+- [x] Parse class methods, constructors, destructors and access modifiers
 - [ ] Parse control-flow statements (if/else, loops, switch)

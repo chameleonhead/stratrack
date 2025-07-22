@@ -11,10 +11,10 @@ runtime for inspection.
 A single name may have multiple declarations with different parameter lists,
 mirroring MQL's function overloading rules. The runtime stores every overload
 A function may be overloaded with different parameter lists so `callFunction()`
-can choose the one matching the argument count. MQL defines operator
-overloading for class or struct methods, but method parsing has not yet been
-implemented in this interpreter. Support for operator overloads will be added
-when class methods are parsed.
+can choose the one matching the argument count. The parser also captures class
+methods, including constructors, destructors and operator overloads like
+`operator+`. Only the method signatures are stored; method bodies are ignored
+during execution.
 A parameter can be prefixed with `&` to indicate it is passed by reference.
 Arrays are always treated as references. The runtime stores this information for
 each parameter.

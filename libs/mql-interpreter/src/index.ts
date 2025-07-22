@@ -4,6 +4,7 @@ import {
   Declaration,
   ClassDeclaration,
   ClassField,
+  ClassMethod,
   FunctionDeclaration,
   FunctionParameter,
 } from './parser';
@@ -34,6 +35,7 @@ export {
   Declaration,
   ClassDeclaration,
   ClassField,
+  ClassMethod,
   FunctionDeclaration,
   FunctionParameter,
   execute,

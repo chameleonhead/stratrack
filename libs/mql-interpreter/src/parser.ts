@@ -15,11 +15,19 @@ export interface ClassField {
   dimensions: Array<number | null>;
 }
 
+export interface ClassMethod {
+  name: string;
+  returnType?: string;
+  parameters: FunctionParameter[];
+  visibility: 'public' | 'private' | 'protected';
+}
+
 export interface ClassDeclaration {
   type: 'ClassDeclaration';
   name: string;
   base?: string;
   fields: ClassField[];
+  methods: ClassMethod[];
 }
 
 export interface FunctionParameter {
@@ -104,7 +112,7 @@ export function parse(tokens: Token[]): Declaration[] {
     if (keyword.value !== 'class' && keyword.value !== 'struct') {
       throw new Error(`Expected class or struct keyword but found ${keyword.value}`);
     }
-    const name = consume(TokenType.Identifier).value;
+    const className = consume(TokenType.Identifier).value;
     let base: string | undefined;
     if (!atEnd() && peek().value === ':') {
       consume(TokenType.Punctuation, ':');
@@ -112,10 +120,22 @@ export function parse(tokens: Token[]): Declaration[] {
     }
     consume(TokenType.Punctuation, '{');
     const fields: ClassField[] = [];
+    const methods: ClassMethod[] = [];
+    let visibility: 'public' | 'private' | 'protected' = 'private';
     while (!atEnd() && peek().value !== '}') {
       const start = peek();
       const next = tokens[pos + 1];
       const third = tokens[pos + 2];
+      if (
+        start.type === TokenType.Keyword &&
+        (start.value === 'public' || start.value === 'private' || start.value === 'protected') &&
+        next?.value === ':'
+      ) {
+        visibility = start.value as 'public' | 'private' | 'protected';
+        consume();
+        consume(TokenType.Punctuation, ':');
+        continue;
+      }
       // field declaration possibly with array dimensions
       if (
         (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
@@ -149,17 +169,76 @@ export function parse(tokens: Token[]): Declaration[] {
           continue;
         }
       }
-      // skip method declarations/definitions
-      if (
+      const isConstructor =
+        start.type === TokenType.Identifier && start.value === className && next?.value === '(';
+      const isDestructor =
+        start.type === TokenType.Operator && start.value === '~' && next?.type === TokenType.Identifier && next.value === className && tokens[pos + 2]?.value === '(';
+      const isMethod =
         (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
-        next?.type === TokenType.Identifier &&
-        third?.value === '('
-      ) {
-        // skip until opening brace or semicolon
-        consume();
-        consume(TokenType.Identifier);
+        (next?.type === TokenType.Identifier || (next?.type === TokenType.Keyword && next.value === 'operator')) &&
+        (third?.value === '(' || tokens[pos + 3]?.value === '(');
+      if (isConstructor || isDestructor || isMethod) {
+        let returnType: string | undefined;
+        let methodName: string;
+        if (isConstructor) {
+          consume(TokenType.Identifier); // class name
+          methodName = className;
+        } else if (isDestructor) {
+          consume(TokenType.Operator, '~');
+          consume(TokenType.Identifier, className);
+          methodName = '~' + className;
+        } else {
+          returnType = consume().value;
+          let nameTok = consume();
+          methodName = nameTok.value;
+          if (nameTok.type === TokenType.Keyword && nameTok.value === 'operator') {
+            methodName = 'operator';
+            while (!atEnd() && peek().value !== '(') {
+              methodName += tokens[pos].value;
+              pos++;
+            }
+          } else if (nameTok.type !== TokenType.Identifier) {
+            throw new Error('Expected method name');
+          }
+        }
         consume(TokenType.Punctuation, '(');
-        while (!atEnd() && peek().value !== ')' ) consume();
+        const parameters: FunctionParameter[] = [];
+        while (!atEnd() && peek().value !== ')') {
+          const pType = consume().value;
+          let byRef = false;
+          if (peek().value === '&') {
+            consume(TokenType.Operator, '&');
+            byRef = true;
+          }
+          const pName = consume(TokenType.Identifier).value;
+          const dims: Array<number | null> = [];
+          while (peek().value === '[') {
+            consume(TokenType.Punctuation, '[');
+            let size: number | null = null;
+            if (peek().type === TokenType.Number) {
+              size = parseInt(consume(TokenType.Number).value, 10);
+            }
+            consume(TokenType.Punctuation, ']');
+            dims.push(size);
+          }
+          let defaultValue: string | undefined;
+          if (peek().value === '=') {
+            consume(TokenType.Operator, '=');
+            defaultValue = consume().value;
+          }
+          parameters.push({
+            paramType: pType,
+            byRef,
+            name: pName,
+            dimensions: dims,
+            defaultValue,
+          });
+          if (peek().value === ',') {
+            consume(TokenType.Punctuation, ',');
+          } else {
+            break;
+          }
+        }
         consume(TokenType.Punctuation, ')');
         if (!atEnd() && peek().value === '{') {
           consume(TokenType.Punctuation, '{');
@@ -167,6 +246,7 @@ export function parse(tokens: Token[]): Declaration[] {
         } else if (!atEnd() && peek().value === ';') {
           consume(TokenType.Punctuation, ';');
         }
+        methods.push({ name: methodName, returnType, parameters, visibility });
         continue;
       }
       // unknown token inside class - skip
@@ -181,7 +261,7 @@ export function parse(tokens: Token[]): Declaration[] {
     if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'ClassDeclaration', name, base, fields };
+    return { type: 'ClassDeclaration', name: className, base, fields, methods };
   }
 
   function parseFunction(): FunctionDeclaration {

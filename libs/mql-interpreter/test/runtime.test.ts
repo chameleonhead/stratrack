@@ -15,7 +15,7 @@ describe('execute', () => {
     const tokens = lex('class Parent {} class Child : Parent {}');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.Child).toEqual({ base: 'Parent', fields: {} });
+    expect(runtime.classes.Child).toEqual({ base: 'Parent', fields: {}, methods: [] });
   });
 
   it('stores class fields', () => {
@@ -28,6 +28,7 @@ describe('execute', () => {
         a: { type: 'int', dimensions: [] },
         b: { type: 'string', dimensions: [] },
       },
+      methods: [],
     });
   });
 
@@ -43,6 +44,15 @@ describe('execute', () => {
     const ast = parse(tokens);
     const runtime = execute(ast);
     expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null] });
+  });
+
+  it('stores class methods including operators', () => {
+    const code = 'class M{int add(int v); double operator+(double b); M();}';
+    const runtime = execute(parse(lex(code)));
+    const methods = runtime.classes.M.methods;
+    expect(methods.map(m => m.name)).toEqual(['add', 'operator+', 'M']);
+    expect(methods[0].parameters[0].type).toBe('int');
+    expect(methods[1].returnType).toBe('double');
   });
 
   it('stores functions', () => {

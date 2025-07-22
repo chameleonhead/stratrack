@@ -57,7 +57,7 @@ const keywords = new Set([
   'operator',
 ]);
 
-const operatorChars = new Set(['+', '-', '*', '/', '=', '>', '<', '!', '&', '|']);
+const operatorChars = new Set(['+', '-', '*', '/', '=', '>', '<', '!', '&', '|', '~']);
 const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.', ':']);
 
 export function lex(source: string): Token[] {
