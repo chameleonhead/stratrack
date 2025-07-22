@@ -48,7 +48,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Execute control-flow statements via `executeStatements()` helper
       supporting `if`, `for`, `while`, `do..while`, `switch`,
       `break` and `continue`.
-- [ ] Integrate statement execution with parsed function bodies so user
+- [x] Integrate statement execution with parsed function bodies so user
       defined functions can run.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
  - [x] Implement object instantiation and inheritance through `instantiate()`

@@ -8,6 +8,7 @@ import type { Runtime } from './runtime';
 interface ExecResult {
   break?: boolean;
   continue?: boolean;
+  return?: any;
 }
 
 const typeKeywords = new Set([
@@ -135,7 +136,7 @@ export function executeStatements(
           if (condVal) {
             const body = captureStatementSource();
             const r = executeStatements(body, env, runtime);
-            if (r.break || r.continue) return r;
+            if (r.return !== undefined || r.break || r.continue) return r;
             if (!atEnd() && peek().type === TokenType.Keyword && peek().value === 'else') {
               consume(TokenType.Keyword, 'else');
               skipStatement();
@@ -146,7 +147,7 @@ export function executeStatements(
               consume(TokenType.Keyword, 'else');
               const body = captureStatementSource();
               const r = executeStatements(body, env, runtime);
-              if (r.break || r.continue) return r;
+              if (r.return !== undefined || r.break || r.continue) return r;
             }
           }
           return {};
@@ -159,6 +160,7 @@ export function executeStatements(
           const body = captureStatementSource();
           while (evaluateExpression(condExpr, env, runtime)) {
             const r = executeStatements(body, env, runtime);
+            if (r.return !== undefined) return r;
             if (r.break) break;
             if (r.continue) continue;
           }
@@ -174,6 +176,7 @@ export function executeStatements(
           if (!atEnd() && peek().value === ';') consume(TokenType.Punctuation, ';');
           do {
             const r = executeStatements(body, env, runtime);
+            if (r.return !== undefined) return r;
             if (r.break) break;
             if (r.continue) { continue; }
           } while (evaluateExpression(condExpr, env, runtime));
@@ -193,6 +196,7 @@ export function executeStatements(
           while (true) {
             if (cond.trim() && !evaluateExpression(cond, env, runtime)) break;
             const r = executeStatements(body, env, runtime);
+            if (r.return !== undefined) return r;
             if (r.break) break;
             if (post.trim()) evaluateExpression(post, env, runtime);
             if (r.continue) continue;
@@ -217,6 +221,7 @@ export function executeStatements(
               const body = captureCaseBody();
               if (executing) {
                 const r = executeStatements(body, env, runtime);
+                if (r.return !== undefined) return r;
                 if (r.break) {
                   executing = false;
                   while (!atEnd() && peek().value !== '}') consume();
@@ -229,6 +234,7 @@ export function executeStatements(
               const body = captureCaseBody();
               if (!executing) {
                 const r = executeStatements(body, env, runtime);
+                if (r.return !== undefined) return r;
                 if (r.break) break;
               }
             } else {
@@ -249,6 +255,16 @@ export function executeStatements(
           if (!atEnd() && peek().value === ';') consume(TokenType.Punctuation, ';');
           return { continue: true };
         }
+        case 'return': {
+          consume(TokenType.Keyword, 'return');
+          let val: any = undefined;
+          if (peek().value !== ';') {
+            const expr = readExpression(';');
+            val = evaluateExpression(expr, env, runtime);
+          }
+          if (!atEnd() && peek().value === ';') consume(TokenType.Punctuation, ';');
+          return { return: val };
+        }
       }
     }
 
@@ -256,7 +272,7 @@ export function executeStatements(
       consume(TokenType.Punctuation, '{');
       while (!atEnd() && peek().value !== '}') {
         const r = exec();
-        if (r.break || r.continue) {
+        if (r.return !== undefined || r.break || r.continue) {
           while (!atEnd() && peek().value !== '}') skipStatement();
           consume(TokenType.Punctuation, '}');
           return r;
@@ -275,7 +291,7 @@ export function executeStatements(
 
   while (!atEnd()) {
     const res = exec();
-    if (res.break || res.continue) return res;
+    if (res.return !== undefined || res.break || res.continue) return res;
   }
   return {};
 }

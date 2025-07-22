@@ -25,7 +25,7 @@ export interface RuntimeClassMethod {
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; abstract?: boolean; templateParams?: string[]; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
-  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; templateParams?: string[] }[]>;
+  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string; templateParams?: string[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
   properties: Record<string, string[]>;
   /** Stored values of static local variables keyed by function name */
@@ -35,6 +35,7 @@ export interface Runtime {
 import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
 import { getBuiltin } from './builtins';
 import { cast, PrimitiveType } from './casting';
+import { executeStatements } from './statements';
 
 /** Options for executing code. */
 export interface ExecutionContext {
@@ -107,7 +108,7 @@ export function execute(
       if (!runtime.functions[fn.name]) {
         runtime.functions[fn.name] = [];
       }
-      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals, templateParams: fn.templateParams });
+      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals, body: fn.body, templateParams: fn.templateParams });
     } else if (decl.type === 'VariableDeclaration') {
       const v = decl as VariableDeclaration;
       if (runtime.variables[v.name] && v.storage === 'extern') {
@@ -156,7 +157,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     throw new Error(`Function ${name} not found`);
   }
 
-  let decl: { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[] } | undefined;
+  let decl: { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string } | undefined;
   if (overloads && overloads.length) {
     let required = 0;
     for (const candidate of overloads) {
@@ -211,8 +212,34 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
   }
 
   if (!builtin) {
-    // TODO: interpret user-defined function bodies
-    throw new Error(`Function ${name} has no implementation`);
+    if (!decl || !decl.body) {
+      throw new Error(`Function ${name} has no implementation`);
+    }
+    const env: any = {};
+    for (let i = 0; i < decl.parameters.length; i++) {
+      const p = decl.parameters[i];
+      env[p.name] = args[i];
+    }
+    for (const local of decl.locals) {
+      let val: any = undefined;
+      if (local.storage === 'static') {
+        val = runtime.staticLocals[name][local.name];
+      } else if (local.initialValue !== undefined) {
+        try {
+          val = cast(local.initialValue, local.varType as PrimitiveType);
+        } catch {
+          val = local.initialValue;
+        }
+      }
+      env[local.name] = val;
+    }
+    const res = executeStatements(decl.body, env, runtime);
+    for (const local of decl.locals) {
+      if (local.storage === 'static') {
+        runtime.staticLocals[name][local.name] = env[local.name];
+      }
+    }
+    return res.return;
   }
 
   return builtin(...args);

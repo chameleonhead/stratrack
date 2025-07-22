@@ -50,6 +50,8 @@ export interface FunctionDeclaration {
   name: string;
   parameters: FunctionParameter[];
   locals: VariableDeclaration[];
+  /** Raw statement text for the function body */
+  body?: string;
   templateParams?: string[];
 }
 
@@ -442,13 +444,16 @@ export function parse(tokens: Token[]): Declaration[] {
     }
     consume(TokenType.Punctuation, ')');
     const locals: VariableDeclaration[] = [];
+    let body = '';
     if (!atEnd() && peek().value === '{') {
       consume(TokenType.Punctuation, '{');
+      let bodyStart = pos;
       while (!atEnd() && peek().value !== '}') {
         const startPos = pos;
         try {
           const varDecl = parseVariable();
           locals.push(varDecl);
+          bodyStart = pos;
           continue;
         } catch {
           pos = startPos;
@@ -466,20 +471,32 @@ export function parse(tokens: Token[]): Declaration[] {
           skipStatement();
         }
       }
+      const bodyTokens = tokens.slice(bodyStart, pos);
+      body = bodyTokens.map((t) => t.value).join(' ');
       consume(TokenType.Punctuation, '}');
     } else if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'FunctionDeclaration', returnType, name, parameters, locals };
+    return { type: 'FunctionDeclaration', returnType, name, parameters, locals, body };
   }
 
   function parseVariable(): VariableDeclaration {
+    const typeKeywords = new Set([
+      'void','bool','char','uchar','short','ushort','int','uint','long','ulong',
+      'float','double','color','datetime','string'
+    ]);
     let storage: 'static' | 'input' | 'extern' | undefined;
     if (
       peek().type === TokenType.Keyword &&
       (peek().value === 'static' || peek().value === 'input' || peek().value === 'extern')
     ) {
       storage = consume(TokenType.Keyword).value as 'static' | 'input' | 'extern';
+    }
+    const next = peek();
+    if (
+      !(next.type === TokenType.Identifier || (next.type === TokenType.Keyword && typeKeywords.has(next.value)))
+    ) {
+      throw new Error('Not a variable declaration');
     }
     const varType = consume().value;
     const name = consume(TokenType.Identifier).value;

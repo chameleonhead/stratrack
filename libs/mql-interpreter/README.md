@@ -32,8 +32,8 @@ as a class field type.
 The runtime executes the AST and registers enums, classes, functions and global
 variables. `execute()` can optionally invoke an entry point function after
 setup. Provide the name and arguments via `{ entryPoint, args }` and the
-function (or builtin) will be executed using `callFunction()`. Function bodies
-are not interpreted yet so only builtins will execute.
+function (or builtin) will be executed using `callFunction()`. Parsed function
+bodies are executed with `executeStatements`, so simple user code can run.
 You may also invoke any parsed function manually using `callFunction()`, which
 checks arguments against the stored signatures and dispatches to a builtin
 implementation if one exists.
@@ -108,11 +108,11 @@ Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under
 `runtime.variables` for later inspection.
-Function bodies are scanned for local variable declarations, which are stored
-with each function. Control-flow statements such as `if`, `for` and `switch`
-are recognized and kept as placeholder nodes. Static local variables are
-initialized the first time a function is called and preserved across
-subsequent calls. Their values are stored in `runtime.staticLocals`.
+Function bodies are scanned for local variable declarations and the raw
+statement text is saved. `callFunction()` executes this body using
+`executeStatements`, which currently understands `if`, loops, `switch`,
+`break`, `continue` and `return`. Static local variables are initialized on the
+first call and their values stored in `runtime.staticLocals`.
 
 The preprocessor handles `#define` and `#undef` directives. Both simple
 constants and parameterized macros are expanded during lexing, allowing code like

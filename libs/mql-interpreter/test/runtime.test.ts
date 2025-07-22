@@ -185,14 +185,17 @@ describe('execute', () => {
   });
 
   it('initializes and preserves static locals', () => {
-    const tokens = lex('void f(){ static int c=1; }');
-    const ast = parse(tokens);
-    const runtime = execute(ast);
-    expect(runtime.staticLocals.f).toBeUndefined();
-    expect(() => callFunction(runtime, 'f')).toThrow('Function f has no implementation');
-    expect(runtime.staticLocals.f.c).toBe(1);
-    runtime.staticLocals.f.c = 5;
-    expect(() => callFunction(runtime, 'f')).toThrow('Function f has no implementation');
-    expect(runtime.staticLocals.f.c).toBe(5);
+    const code = 'int f(){ static int c=1; c++; return c; }';
+    const runtime = execute(parse(lex(code)));
+    expect(callFunction(runtime, 'f')).toBe(2);
+    expect(runtime.staticLocals.f.c).toBe(2);
+    expect(callFunction(runtime, 'f')).toBe(3);
+    expect(runtime.staticLocals.f.c).toBe(3);
+  });
+
+  it('executes user-defined function body', () => {
+    const code = 'int add(int a,int b){ int c=a+b; return c; }';
+    const runtime = execute(parse(lex(code)));
+    expect(callFunction(runtime, 'add', [2,3])).toBe(5);
   });
 });
