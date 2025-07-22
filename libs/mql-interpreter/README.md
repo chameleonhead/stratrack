@@ -18,6 +18,8 @@ during execution.
 A parameter can be prefixed with `&` to indicate it is passed by reference.
 Arrays are always treated as references. The runtime stores this information for
 each parameter.
+A reference argument must be an object, e.g. `{value: 10}`. Builtins like
+`StringTrimLeft` will mutate the passed object.
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
 The runtime executes the AST and registers enums, classes, functions and global
@@ -41,7 +43,8 @@ Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
 `Print`, `OrderSend` and `iMA`, all functions listed at
 <https://docs.mql4.com/function_indices> are available as no-ops and can
-be accessed through `getBuiltin()`.
+be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`
+and `StringTrimLeft` have working implementations.
 
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional

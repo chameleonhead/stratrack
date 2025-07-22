@@ -33,4 +33,16 @@ describe('callFunction', () => {
     expect(() => callFunction(r, 'foo', [1])).toThrow('Function foo has no implementation');
     expect(() => callFunction(r, 'foo', [1, 2, 3])).toThrow('Too many arguments');
   });
+
+  it('checks reference argument type', () => {
+    const r = execute(parse(lex('void mod(int &v);')));
+    expect(() => callFunction(r, 'mod', [1])).toThrow('Argument v must be passed by reference');
+  });
+
+  it('passes reference object to builtin', () => {
+    const r = execute(parse(lex('void StringTrimLeft(string &s);')));
+    const ref = { value: '  hi' };
+    callFunction(r, 'StringTrimLeft', [ref]);
+    expect(ref.value).toBe('hi');
+  });
 });

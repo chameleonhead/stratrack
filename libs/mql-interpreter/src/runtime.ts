@@ -171,6 +171,13 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
         throw new Error(`Missing argument ${decl.parameters[args.length].name}`);
       }
       args = finalArgs.slice(0, decl.parameters.length);
+      for (let i = 0; i < decl.parameters.length; i++) {
+        if (decl.parameters[i].byRef) {
+          if (typeof args[i] !== 'object' || args[i] === null) {
+            throw new Error(`Argument ${decl.parameters[i].name} must be passed by reference`);
+          }
+        }
+      }
     } else if (!builtin) {
       throw new Error('Too many arguments');
     }

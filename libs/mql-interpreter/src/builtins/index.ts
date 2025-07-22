@@ -33,9 +33,18 @@ const builtins: Record<string, BuiltinFunction> = {
   AccountServer: () => '',
   AccountStopoutLevel: noop,
   AccountStopoutMode: noop,
+  ArrayResize: (arr: any[], newSize: number) => {
+    ArrayResizeHelper(arr, newSize);
+    return arr.length;
+  },
+  StringTrimLeft: (str: { value: string }) => {
+    str.value = str.value.replace(/^\s+/, '');
+    return str.value.length;
+  },
 };
 
 import { builtinNames } from './stubNames';
+import { ArrayResize as ArrayResizeHelper } from '../arrayResize';
 for (const name of builtinNames) {
   if (!builtins[name]) builtins[name] = noop;
 }
