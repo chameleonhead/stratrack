@@ -33,6 +33,7 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from './preprocess';
+import { BacktestRunner, loadCsv, Candle } from './backtest';
 
 export {
   lex,
@@ -70,6 +71,9 @@ export {
   executeStatements,
   LexError,
   LexResult,
+  Candle,
+  BacktestRunner,
+  loadCsv,
 };
 
 export interface Compilation {

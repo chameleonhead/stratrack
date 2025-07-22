@@ -71,7 +71,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Add tests covering common error scenarios (undefined identifiers, invalid casts, incompatible types).
 - [x] Document the new error reporting workflow in the README with examples for both library and CLI usage.
 
-- [ ] Develop a backtesting runner that drives the interpreter with market data
-- [ ] Support feeding historical candles and ticks to mimic real terminal behavior
-- [ ] Load time series from various formats and replay them to the runtime
-- [ ] Generate analysis reports using the same pipeline as live executions
+- [x] Develop a backtesting runner that drives the interpreter with market data
+- [x] Support feeding historical candles and ticks to mimic real terminal behavior
+- [x] Load time series from various formats and replay them to the runtime
+- [x] Generate analysis reports using the same pipeline as live executions

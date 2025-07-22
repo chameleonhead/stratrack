@@ -199,3 +199,18 @@ npx mql-interpreter bad.mq4
 
 See [TODO.md](TODO.md) for planned features and tasks.
 
+## Backtesting
+
+The library provides a small helper to replay historical market data. Use
+`BacktestRunner` with a sequence of candles and your MQL source. The runner
+exposes builtins such as `iOpen` and `iClose` so code can access bar data while
+`step()` or `run()` executes the specified entry point for each candle.
+
+```ts
+import { BacktestRunner } from 'mql-interpreter';
+const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+const runner = new BacktestRunner('int count; void OnTick(){count++;}', candles);
+runner.run();
+console.log(runner.getRuntime().globalValues.count); // 1
+```
+
