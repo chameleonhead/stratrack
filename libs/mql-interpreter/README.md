@@ -46,6 +46,12 @@ arrays and a comprehensive set of builtin function stubs. Besides
 be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`
 and `StringTrimLeft` have working implementations.
 
+Builtins fall into two categories. **Core** builtins are environment
+independent and always behave the same (e.g. `ArrayResize` or `Print`).
+Others like `iMA` or `AccountBalance` depend on trading platform data and
+default to no-ops.  Host applications may provide real implementations by
+calling `registerEnvBuiltins()` before executing code.
+
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under

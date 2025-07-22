@@ -18,7 +18,7 @@ import {
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
-import { getBuiltin, BuiltinFunction } from './builtins';
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
 import {
   preprocess,
   preprocessWithProperties,
@@ -55,6 +55,7 @@ export {
   PreprocessOptions,
   getBuiltin,
   BuiltinFunction,
+  registerEnvBuiltins,
   callFunction,
 };
 

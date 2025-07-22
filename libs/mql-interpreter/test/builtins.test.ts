@@ -1,4 +1,4 @@
-import { getBuiltin } from '../src/builtins';
+import { getBuiltin, registerEnvBuiltins } from '../src/builtins';
 import { describe, it, expect } from 'vitest';
 
 describe('builtins', () => {
@@ -15,6 +15,12 @@ describe('builtins', () => {
   it('provides a stub from the function index list', () => {
     const fn = getBuiltin('ArrayCopy');
     expect(fn).toBeTypeOf('function');
+  });
+
+  it('allows overriding environment builtins', () => {
+    registerEnvBuiltins({ iMA: () => 42 });
+    const fn = getBuiltin('iMA');
+    expect(fn?.()).toBe(42);
   });
 
   it('returns undefined for unknown', () => {

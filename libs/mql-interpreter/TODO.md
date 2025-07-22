@@ -15,6 +15,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Provide a command‑line interface for running MQL scripts within Node.js
 - [x] Implement the full set of builtin functions listed at
   <https://docs.mql4.com/function_indices>
+- [x] Distinguish environment dependent builtins and allow overriding them with
+  `registerEnvBuiltins()`
 - [x] Handle simple `#define` and `#undef` preprocessing directives
 - [x] Capture program properties using `#property`
 - [x] Support conditional compilation directives (#ifdef, #ifndef, #else, #endif)
