@@ -9,6 +9,7 @@ import {
   ControlStatement,
   VariableDeclaration,
   FunctionParameter,
+  ParseError,
 } from './parser';
 import {
   execute,
@@ -130,10 +131,27 @@ export function compile(
   options: PreprocessOptions = {}
 ): Compilation {
   const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
-  const ast = parse(tokens);
+  let ast: Declaration[] = [];
+  let parseError: CompilationError | null = null;
+  if (lexErrors.length === 0) {
+    try {
+      ast = parse(tokens);
+    } catch (err: any) {
+      if (err instanceof ParseError) {
+        parseError = { message: err.message, line: err.line, column: err.column };
+      } else {
+        parseError = { message: err.message ?? String(err), line: 0, column: 0 };
+      }
+    }
+  }
   const runtime = execute(ast);
   runtime.properties = properties;
-  const errors = [...lexErrors, ...checkTypes(ast)];
+  const errors = [...lexErrors];
+  if (parseError) {
+    errors.push(parseError);
+  } else {
+    errors.push(...checkTypes(ast));
+  }
   return { ast, runtime, properties, errors };
 }
 

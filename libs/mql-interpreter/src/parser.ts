@@ -94,6 +94,16 @@ export type Declaration =
 
 import { Token, TokenType } from './lexer';
 
+export class ParseError extends Error {
+  line: number;
+  column: number;
+  constructor(message: string, line: number, column: number) {
+    super(message);
+    this.line = line;
+    this.column = column;
+  }
+}
+
 export function parse(tokens: Token[]): Declaration[] {
   const declarations: Declaration[] = [];
   let pos = 0;
@@ -101,15 +111,32 @@ export function parse(tokens: Token[]): Declaration[] {
   const peek = () => tokens[pos];
   const consume = (type?: TokenType, value?: string): Token => {
     const token = tokens[pos];
-    if (!token) throw new Error('Unexpected end of input');
+    if (!token)
+      throw new ParseError(
+        'Unexpected end of input',
+        tokens[pos - 1]?.line ?? 0,
+        tokens[pos - 1]?.column ?? 0
+      );
     if (type && token.type !== type) {
-      throw new Error(`Expected token type ${type} but found ${token.type}`);
+      throw new ParseError(
+        `Expected token type ${type} but found ${token.type}`,
+        token.line,
+        token.column
+      );
     }
     if (value && token.value !== value) {
-      throw new Error(`Expected token value ${value} but found ${token.value}`);
+      throw new ParseError(
+        `Expected token value ${value} but found ${token.value}`,
+        token.line,
+        token.column
+      );
     }
     if (type === TokenType.Identifier && token.type === TokenType.Keyword) {
-      throw new Error(`Reserved word ${token.value} cannot be used as identifier`);
+      throw new ParseError(
+        `Reserved word ${token.value} cannot be used as identifier`,
+        token.line,
+        token.column
+      );
     }
     pos++;
     return token;
@@ -174,7 +201,11 @@ export function parse(tokens: Token[]): Declaration[] {
     while (!atEnd()) {
       const kw = consume(TokenType.Keyword).value;
       if (kw !== 'class' && kw !== 'typename') {
-        throw new Error('Expected class or typename in template parameter');
+        throw new ParseError(
+          'Expected class or typename in template parameter',
+          tokens[pos - 1]?.line ?? 0,
+          tokens[pos - 1]?.column ?? 0
+        );
       }
       const id = consume(TokenType.Identifier).value;
       params.push(id);
@@ -210,7 +241,11 @@ export function parse(tokens: Token[]): Declaration[] {
       fn.templateParams = params;
       return fn;
     }
-    throw new Error('Unexpected template declaration');
+    throw new ParseError(
+      'Unexpected template declaration',
+      next.line,
+      next.column
+    );
   }
 
   function parseControlStatement(): ControlStatement {
@@ -229,7 +264,11 @@ export function parse(tokens: Token[]): Declaration[] {
     }
     const keyword = consume(TokenType.Keyword);
     if (keyword.value !== 'class' && keyword.value !== 'struct') {
-      throw new Error(`Expected class or struct keyword but found ${keyword.value}`);
+      throw new ParseError(
+        `Expected class or struct keyword but found ${keyword.value}`,
+        keyword.line,
+        keyword.column
+      );
     }
     const className = consume(TokenType.Identifier).value;
     let base: string | undefined;
@@ -285,7 +324,11 @@ export function parse(tokens: Token[]): Declaration[] {
         if (tokens[idx]?.value === ';') {
           const fieldType = consume().value;
           if (fieldType === 'void') {
-            throw new Error('void type cannot be used for fields');
+            throw new ParseError(
+              'void type cannot be used for fields',
+              tokens[pos - 1]?.line ?? 0,
+              tokens[pos - 1]?.column ?? 0
+            );
           }
           const fieldName = consume(TokenType.Identifier).value;
           const dims: Array<number | null> = [];
@@ -332,7 +375,11 @@ export function parse(tokens: Token[]): Declaration[] {
               pos++;
             }
           } else if (nameTok.type !== TokenType.Identifier) {
-            throw new Error('Expected method name');
+            throw new ParseError(
+              'Expected method name',
+              nameTok.line,
+              nameTok.column
+            );
           }
         }
         consume(TokenType.Punctuation, '(');
@@ -460,7 +507,7 @@ export function parse(tokens: Token[]): Declaration[] {
         pos++;
       }
     } else if (nameToken.type !== TokenType.Identifier) {
-      throw new Error('Expected function name');
+      throw new ParseError('Expected function name', nameToken.line, nameToken.column);
     }
     consume(TokenType.Punctuation, '(');
     const parameters: FunctionParameter[] = [];
@@ -555,7 +602,7 @@ export function parse(tokens: Token[]): Declaration[] {
     if (
       !(next.type === TokenType.Identifier || (next.type === TokenType.Keyword && typeKeywords.has(next.value)))
     ) {
-      throw new Error('Not a variable declaration');
+      throw new ParseError('Not a variable declaration', next.line, next.column);
     }
     const varType = consume().value;
     const name = consume(TokenType.Identifier).value;

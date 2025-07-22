@@ -172,8 +172,9 @@ file and print the resulting runtime information:
 npx mql-interpreter path/to/file.mq4
 ```
 
-The CLI performs compilation first. If any type errors are detected they are
-printed and the process exits with a non-zero status:
+The CLI performs compilation first. If any syntax or type errors are detected
+they are printed and the process exits with a non-zero status. When syntax
+errors occur, type checking is skipped to avoid redundant messages:
 
 ```bash
 npx mql-interpreter bad.mq4
