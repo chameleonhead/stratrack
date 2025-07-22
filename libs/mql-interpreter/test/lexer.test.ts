@@ -70,6 +70,19 @@ describe('lex', () => {
     ]);
   });
 
+  it('distinguishes prefix and postfix increment/decrement', () => {
+    const pre = lex('--a');
+    const post = lex('a++');
+    expect(pre).toEqual([
+      { type: TokenType.Operator, value: '--' },
+      { type: TokenType.Identifier, value: 'a' },
+    ]);
+    expect(post).toEqual([
+      { type: TokenType.Identifier, value: 'a' },
+      { type: TokenType.Operator, value: '++' },
+    ]);
+  });
+
   it('throws on unknown characters', () => {
     expect(() => lex('#')).toThrow();
   });

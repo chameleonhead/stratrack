@@ -33,4 +33,6 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Parse class methods, constructors, destructors and access modifiers
 - [x] Parse control-flow statements (if/else, loops, switch)
 - [ ] Evaluate expressions using arithmetic, assignment, relational and
-      boolean operators following MQL operator rules
+      boolean operators following MQL operator rules. This must honor
+      the correct operator precedence and differentiate prefix/postfix
+      forms like `--a` vs `a--`.
