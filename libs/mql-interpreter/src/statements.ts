@@ -25,7 +25,10 @@ export function executeStatements(
   env: EvalEnv = {},
   runtime?: Runtime
 ): ExecResult {
-  const tokens = lex(source);
+  const { tokens, errors } = lex(source);
+  if (errors.length) {
+    throw new Error(errors.map(e => e.message).join('\n'));
+  }
   let pos = 0;
 
   const peek = () => tokens[pos];

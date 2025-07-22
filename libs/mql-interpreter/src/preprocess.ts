@@ -14,6 +14,7 @@ export interface PropertyMap {
 export interface PreprocessResult {
   tokens: Token[];
   properties: PropertyMap;
+  errors: LexError[];
 }
 
 export interface PreprocessOptions {
@@ -24,9 +25,9 @@ export interface PreprocessOptions {
   fileProvider?: (path: string) => string | undefined;
 }
 
-import { lex, Token, TokenType } from './lexer';
+import { lex, Token, TokenType, LexError } from './lexer';
 
-function expandTokens(tokens: Token[], macros: MacroMap): Token[] {
+function expandTokens(tokens: Token[], macros: MacroMap, errors: LexError[]): Token[] {
   const out: Token[] = [];
   for (let i = 0; i < tokens.length; i++) {
     const tok = tokens[i];
@@ -37,7 +38,9 @@ function expandTokens(tokens: Token[], macros: MacroMap): Token[] {
       continue;
     }
     if (!macro.params) {
-      out.push(...expandTokens(lex(macro.body), macros));
+      const res = lex(macro.body);
+      out.push(...expandTokens(res.tokens, macros, errors));
+      errors.push(...res.errors);
       continue;
     }
     if (tokens[i + 1]?.value !== '(') {
@@ -77,7 +80,9 @@ function expandTokens(tokens: Token[], macros: MacroMap): Token[] {
       const re = new RegExp(`\\b${p}\\b`, 'g');
       body = body.replace(re, argStrings[idx] ?? '');
     });
-    out.push(...expandTokens(lex(body), macros));
+    const res = lex(body);
+    out.push(...expandTokens(res.tokens, macros, errors));
+    errors.push(...res.errors);
   }
   return out;
 }
@@ -96,6 +101,7 @@ export function preprocessWithProperties(
   const lines = source.split(/\r?\n/);
   let codeLines: string[] = [];
   const result: Token[] = [];
+  const errors: LexError[] = [];
   const condStack: Array<{
     parentActive: boolean;
     condition: boolean;
@@ -108,8 +114,9 @@ export function preprocessWithProperties(
 
   const flush = () => {
     if (codeLines.length === 0) return;
-    const tokens = lex(codeLines.join('\n'));
-    result.push(...expandTokens(tokens, macros));
+    const res = lex(codeLines.join('\n'));
+    result.push(...expandTokens(res.tokens, macros, errors));
+    errors.push(...res.errors);
     codeLines = [];
   };
 
@@ -204,6 +211,7 @@ export function preprocessWithProperties(
           properties[key].push(...imported.properties[key]);
         }
         result.push(...imported.tokens);
+        errors.push(...imported.errors);
       }
       continue;
     }
@@ -212,7 +220,7 @@ export function preprocessWithProperties(
 
   flush();
 
-  return { tokens: result, properties };
+  return { tokens: result, properties, errors };
 }
 
 export function preprocess(source: string, options: PreprocessOptions = {}): Token[] {
