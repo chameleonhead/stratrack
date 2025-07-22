@@ -57,3 +57,16 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`
 - [x] Maintain global variable values in `runtime.globalValues`
+
+# Upcoming Features
+
+- [ ] Implement compile-time type checking to validate variable declarations, expressions and function calls.
+  - [ ] Detect mismatched types in assignments and arguments.
+  - [ ] Verify builtin functions are called with correct argument types and counts.
+- [ ] Accumulate compile errors instead of throwing immediately.
+  - [ ] Introduce a `CompilationError` interface with source location and message.
+  - [ ] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.
+- [ ] Update the CLI to display the list of compilation errors and exit with a non-zero status when any are present.
+- [ ] Expose error and type-checking results through the public library API so other tools can consume them.
+- [ ] Add tests covering common error scenarios (undefined identifiers, invalid casts, incompatible types).
+- [ ] Document the new error reporting workflow in the README with examples for both library and CLI usage.
