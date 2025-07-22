@@ -1,4 +1,5 @@
 import { evaluateExpression } from '../src/expression';
+import { interpret } from '../src/index';
 import { describe, it, expect } from 'vitest';
 
 describe('evaluateExpression', () => {
@@ -26,5 +27,11 @@ describe('evaluateExpression', () => {
     const env: any = { a: 1 };
     const result = evaluateExpression('1 + 2 * 3 - a', env);
     expect(result).toBe(6); // 1 + 6 - 1
+  });
+
+  it('creates objects with new', () => {
+    const runtime = interpret('class A{int x;}');
+    const obj = evaluateExpression('new A', {}, runtime);
+    expect(obj).toEqual({ x: undefined });
   });
 });

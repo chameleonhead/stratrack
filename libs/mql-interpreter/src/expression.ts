@@ -14,7 +14,14 @@ const assignmentOps = new Set([
   '=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>='
 ]);
 
-export function evaluateExpression(expr: string, env: EvalEnv = {}): any {
+import type { Runtime } from './runtime';
+import { instantiate } from './runtime';
+
+export function evaluateExpression(
+  expr: string,
+  env: EvalEnv = {},
+  runtime?: Runtime
+): any {
   const tokens = lex(expr);
   let pos = 0;
 
@@ -43,6 +50,12 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}): any {
     if (t.type === TokenType.Identifier) {
       consume();
       return { value: env[t.value], ref: t.value };
+    }
+    if (t.type === TokenType.Keyword && t.value === 'new') {
+      consume(TokenType.Keyword, 'new');
+      const cls = consume(TokenType.Identifier).value;
+      if (!runtime) throw new Error('Runtime required for new operator');
+      return { value: instantiate(runtime, cls) };
     }
     if (t.value === '(') {
       consume(TokenType.Punctuation, '(');

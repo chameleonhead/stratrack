@@ -36,8 +36,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
       boolean operators following MQL operator rules. A custom
       recursive-descent parser now honors operator precedence and
       distinguishes prefix from postfix forms like `--a` vs `a--`.
-      Statement execution and the `new`/`delete` operators remain
-      unimplemented.
+      Statement execution remains unimplemented. The `new` operator can
+      instantiate classes via the runtime.
 - [x] Enforce identifier rules from the MQL documentation:
       maximum length of 63 characters and disallow reserved words.
       Expand the lexer keyword list based on
@@ -48,6 +48,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,
       `switch`) and implement `break`/`continue` behavior.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
-- [ ] Implement object instantiation, inheritance and polymorphic dispatch.
+- [x] Implement object instantiation and inheritance through `instantiate()`
+      and the `new` operator. Polymorphic dispatch is still pending.
 - [ ] Support templates and class templates.
 - [ ] Support abstract classes and pure virtual methods.

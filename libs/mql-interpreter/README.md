@@ -80,6 +80,13 @@ const obj = instantiate(runtime, 'C');
 // obj has properties a and b
 ```
 
+`evaluateExpression()` understands the `new` operator when passed the runtime,
+allowing small object constructions inside expressions:
+
+```ts
+const obj = evaluateExpression('new C', {}, runtime);
+```
+
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under
