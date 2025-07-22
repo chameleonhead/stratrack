@@ -45,8 +45,11 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Ensure comment syntax from
       <https://docs.mql4.com/basis/syntax/commentaries> continues
       to be tokenized correctly.
-- [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,
-      `switch`) and implement `break`/`continue` behavior.
+- [x] Execute control-flow statements via `executeStatements()` helper
+      supporting `if`, `for`, `while`, `do..while`, `switch`,
+      `break` and `continue`.
+- [ ] Integrate statement execution with parsed function bodies so user
+      defined functions can run.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
  - [x] Implement object instantiation and inheritance through `instantiate()`
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.

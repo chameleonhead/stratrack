@@ -22,6 +22,7 @@ import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
 import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
 import { evaluateExpression } from './expression';
+import { executeStatements } from './statements';
 import {
   preprocess,
   preprocessWithProperties,
@@ -63,6 +64,7 @@ export {
   callFunction,
   instantiate,
   evaluateExpression,
+  executeStatements,
 };
 
 export function interpret(

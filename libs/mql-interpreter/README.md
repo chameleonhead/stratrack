@@ -93,6 +93,17 @@ const obj = evaluateExpression('new C', {}, runtime);
 evaluateExpression('delete obj', { obj }, runtime);
 ```
 
+A companion helper `executeStatements()` can interpret a small subset of MQL
+control flow including `if`, `for`, `while`, `do...while`, `switch`, `break`
+and `continue`. It executes statements against a plain object environment using
+`evaluateExpression` for the expressions:
+
+```ts
+const env: any = { sum: 0, i: 0 };
+executeStatements('for(i=0;i<3;i++){ if(i==1) continue; sum+=i; }', env);
+// env.sum === 3
+```
+
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under

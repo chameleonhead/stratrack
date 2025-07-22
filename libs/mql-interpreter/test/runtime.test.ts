@@ -1,6 +1,7 @@
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
 import { execute, callFunction, instantiate } from '../src/runtime';
+import { executeStatements } from '../src/statements';
 import { preprocessWithProperties } from '../src/preprocess';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -121,11 +122,16 @@ describe('execute', () => {
     expect(() => execute(ast)).toThrowError('Base class Parent not found');
   });
 
-  it('ignores control flow statements', () => {
-    const code =
-      'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
-    const runtime = execute(parse(lex(code)));
-    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {} });
+  it('executes control flow statements', () => {
+    const env: any = { sum: 0, i: 0 };
+    executeStatements('for(i=0;i<3;i++){ if(i==1) continue; sum+=i; }', env);
+    expect(env.sum).toBe(2);
+    executeStatements('i=0; while(i<2){ i++; if(i==1) break; }', env);
+    expect(env.i).toBe(1);
+    executeStatements('do{i++;}while(i<2);', env);
+    expect(env.i).toBe(2);
+    executeStatements('switch(i){ case 2: sum=10; break; default: sum=0; }', env);
+    expect(env.sum).toBe(10);
   });
 
   it('handles visibility specifiers', () => {
