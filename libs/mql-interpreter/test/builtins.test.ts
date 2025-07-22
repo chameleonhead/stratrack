@@ -1,0 +1,29 @@
+import { getBuiltin, registerEnvBuiltins } from '../src/builtins';
+import { describe, it, expect } from 'vitest';
+
+describe('builtins', () => {
+  it('provides Print function', () => {
+    const fn = getBuiltin('Print');
+    expect(fn).toBeTypeOf('function');
+  });
+
+  it('provides an account information function', () => {
+    const fn = getBuiltin('AccountBalance');
+    expect(fn).toBeTypeOf('function');
+  });
+
+  it('provides a stub from the function index list', () => {
+    const fn = getBuiltin('ArrayCopy');
+    expect(fn).toBeTypeOf('function');
+  });
+
+  it('allows overriding environment builtins', () => {
+    registerEnvBuiltins({ iMA: () => 42 });
+    const fn = getBuiltin('iMA');
+    expect(fn?.()).toBe(42);
+  });
+
+  it('returns undefined for unknown', () => {
+    expect(getBuiltin('Unknown')).toBeUndefined();
+  });
+});
