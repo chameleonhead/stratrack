@@ -20,11 +20,18 @@ Arrays are always treated as references. The runtime stores this information for
 each parameter.
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
-The runtime executes the AST and registers enums and classes. `execute()` accepts
-an optional entry point name for future use when function execution is
-implemented. Functions can be invoked manually using `callFunction()` which
-checks arguments against the parsed signature and then dispatches to a builtin
+The runtime executes the AST and registers enums, classes, functions and global
+variables. `execute()` optionally takes an entry point name. After the runtime is
+populated the specified function (or builtin) is invoked via `callFunction()`.
+Function bodies are not interpreted yet so only builtins will execute.
+You may also invoke any parsed function manually using `callFunction()`, which
+checks arguments against the stored signatures and dispatches to a builtin
 implementation if one exists.
+For example:
+
+```ts
+interpret('', { entryPoint: 'Print' });
+```
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
@@ -80,6 +87,16 @@ file and print the resulting runtime information:
 ```bash
 npx mql-interpreter path/to/file.mq4
 ```
+
+## Architecture
+
+1. **Preprocessing** – source code is passed through the preprocessor which
+   handles `#define`, conditional blocks, imports and properties. The result is a
+   list of tokens.
+2. **Parsing** – tokens are parsed into declarations such as enums, classes,
+   functions and global variables.
+3. **Execution** – `execute()` registers the parsed declarations in a runtime
+   structure. If an entry point is provided, `callFunction()` invokes it.
 
 ## Development
 

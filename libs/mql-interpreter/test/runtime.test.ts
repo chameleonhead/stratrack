@@ -1,7 +1,8 @@
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
 import { execute } from '../src/runtime';
-import { describe, it, expect } from 'vitest';
+import { preprocessWithProperties } from '../src/preprocess';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('execute', () => {
   it('evaluates enums', () => {
@@ -110,5 +111,33 @@ describe('execute', () => {
     expect(runtime.variables.g.storage).toBe('static');
     expect(runtime.variables.period.storage).toBe('input');
     expect(runtime.variables.period.initialValue).toBe('10');
+  });
+
+  it('executes entry point builtin', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const runtime = execute([], { entryPoint: 'Print' });
+    expect(runtime.enums).toEqual({});
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('throws when entry point missing', () => {
+    expect(() => execute([], { entryPoint: 'Unknown' })).toThrow('Function Unknown not found');
+  });
+
+  it('resolves extern variables across files', () => {
+    const code = '#import "defs.mqh"\n#import\nextern int E;';
+    const { tokens } = preprocessWithProperties(code, {
+      fileProvider: (p) => (p === 'defs.mqh' ? 'int E;' : undefined),
+    });
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.variables.E.type).toBe('int');
+  });
+
+  it('throws when extern variable missing', () => {
+    const tokens = lex('extern int E;');
+    const ast = parse(tokens);
+    expect(() => execute(ast)).toThrow('Extern variable E not defined');
   });
 });

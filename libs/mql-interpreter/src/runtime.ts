@@ -41,15 +41,16 @@ export function execute(
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
   const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {} };
+  const definedVars = new Set<string>();
 
-  // Extract entry point for future use. Execution of functions is not yet
-  // implemented, so this is currently ignored.
+  // Extract entry point. If provided, it will be invoked after the
+  // runtime is populated. Arguments are not supported yet.
   const entryPoint =
     typeof entryPointOrContext === 'string'
       ? entryPointOrContext
       : entryPointOrContext?.entryPoint;
-  // TODO: implement function invocation using `entryPoint` and an execution
-  // context when method parsing is available.
+  // TODO: support passing arguments and a full execution context
+  // when function bodies are interpreted.
 
   for (const decl of declarations) {
     if (decl.type === 'EnumDeclaration') {
@@ -97,12 +98,19 @@ export function execute(
       runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params });
     } else if (decl.type === 'VariableDeclaration') {
       const v = decl as VariableDeclaration;
+      if (runtime.variables[v.name] && v.storage === 'extern') {
+        // don't overwrite existing definition
+        continue;
+      }
       runtime.variables[v.name] = {
         type: v.varType,
         storage: v.storage,
         dimensions: v.dimensions,
         initialValue: v.initialValue,
       };
+      if (v.storage !== 'extern') {
+        definedVars.add(v.name);
+      }
     }
   }
 
@@ -111,6 +119,18 @@ export function execute(
     if (cls.base && !runtime.classes[cls.base]) {
       throw new Error(`Base class ${cls.base} not found for ${name}`);
     }
+  }
+
+  // Validate extern variables have corresponding definitions
+  for (const name in runtime.variables) {
+    const v = runtime.variables[name];
+    if (v.storage === 'extern' && !definedVars.has(name)) {
+      throw new Error(`Extern variable ${name} not defined`);
+    }
+  }
+
+  if (entryPoint) {
+    callFunction(runtime, entryPoint);
   }
 
   return runtime;

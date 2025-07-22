@@ -20,12 +20,12 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Support conditional compilation directives (#ifdef, #ifndef, #else, #endif)
  - [x] Support parameterized macros in the preprocessor
 - [ ] Parse and execute local variables including `static` lifetime rules
-- [ ] Resolve input and extern variables across multiple files
+- [x] Resolve input and extern variables across multiple files
 - [ ] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
 - [x] Create automated tests covering the lexer, parser and runtime
-- [ ] Document the interpreter architecture and usage examples
-- [ ] Execute functions via a specified entry point and manage an execution context
+- [x] Document the interpreter architecture and usage examples
+- [x] Execute functions via a specified entry point and manage an execution context
   - `callFunction()` helper performs argument checks and dispatches to builtins
 - [x] Parse class methods, constructors, destructors and access modifiers
 - [ ] Parse control-flow statements (if/else, loops, switch)
