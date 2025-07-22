@@ -38,6 +38,13 @@ The following tasks outline future work required to develop a functional MQL4/5 
       forms like `--a` vs `a--`. `evaluateExpression()` currently uses
       JavaScript semantics and handles basic cases but does not yet
       support statements or the `new`/`delete` operators.
+- [ ] Enforce identifier rules from the MQL documentation:
+      maximum length of 63 characters and disallow reserved words.
+      Expand the lexer keyword list based on
+      <https://docs.mql4.com/basis/syntax/reserved>.
+- [ ] Ensure comment syntax from
+      <https://docs.mql4.com/basis/syntax/commentaries> continues
+      to be tokenized correctly.
 - [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,
       `switch`) and implement `break`/`continue` behavior.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.

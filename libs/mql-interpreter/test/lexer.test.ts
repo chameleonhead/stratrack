@@ -86,4 +86,9 @@ describe('lex', () => {
   it('throws on unknown characters', () => {
     expect(() => lex('#')).toThrow();
   });
+
+  it('enforces identifier length limit', () => {
+    const longName = 'a'.repeat(64);
+    expect(() => lex(`${longName} = 1;`)).toThrow('Identifier too long');
+  });
 });

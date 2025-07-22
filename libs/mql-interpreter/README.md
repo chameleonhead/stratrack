@@ -48,6 +48,11 @@ Simple expression evaluation is provided via `evaluateExpression()`. It uses
 JavaScript semantics to honor operator precedence and properly handle prefix
 vs postfix forms like `--a` and `a--`.
 
+The lexer skips `//` single line comments and `/* ... */` blocks entirely so
+they do not appear in the token stream. Identifiers may contain letters,
+digits and underscores and must not exceed 63 characters; longer identifiers
+will cause lexing to fail.
+
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
 `Print`, `OrderSend` and `iMA`, all functions listed at

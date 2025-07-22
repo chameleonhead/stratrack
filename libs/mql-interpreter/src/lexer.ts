@@ -154,6 +154,9 @@ export function lex(source: string): Token[] {
       while (i < source.length && /[A-Za-z0-9_]/.test(source[i])) {
         value += source[i++];
       }
+      if (value.length > 63) {
+        throw new Error('Identifier too long');
+      }
       tokens.push({
         type: keywords.has(value) ? TokenType.Keyword : TokenType.Identifier,
         value,
