@@ -17,6 +17,7 @@ import {
   RuntimeFunctionParameter,
   callFunction,
   instantiate,
+  callMethod,
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
@@ -63,6 +64,7 @@ export {
   registerEnvBuiltins,
   callFunction,
   instantiate,
+  callMethod,
   evaluateExpression,
   executeStatements,
 };

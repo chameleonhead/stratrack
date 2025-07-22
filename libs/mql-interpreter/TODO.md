@@ -55,3 +55,5 @@ The following tasks outline future work required to develop a functional MQL4/5 
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
+- [x] Execute class and struct methods via `callMethod()`
+- [x] Maintain global variable values in `runtime.globalValues`

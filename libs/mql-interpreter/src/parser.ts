@@ -24,6 +24,10 @@ export interface ClassMethod {
   static?: boolean;
   virtual?: boolean;
   pure?: boolean;
+  /** Local variable declarations inside the method */
+  locals: VariableDeclaration[];
+  /** Raw statement body text used for execution */
+  body?: string;
 }
 
 export interface ClassDeclaration {
@@ -367,13 +371,51 @@ export function parse(tokens: Token[]): Declaration[] {
             pos = save;
           }
         }
+        const locals: VariableDeclaration[] = [];
+        let body: string | undefined;
         if (!isPure && !atEnd() && peek().value === '{') {
           consume(TokenType.Punctuation, '{');
-          skipBlock();
+          let bodyStart = pos;
+          while (!atEnd() && peek().value !== '}') {
+            const startPos = pos;
+            try {
+              const vd = parseVariable();
+              locals.push(vd);
+              bodyStart = pos;
+              continue;
+            } catch {
+              pos = startPos;
+            }
+            const tok = peek();
+            if (
+              tok.type === TokenType.Keyword &&
+              ['for', 'while', 'do', 'switch', 'if'].includes(tok.value)
+            ) {
+              parseControlStatement();
+            } else if (tok.value === '{') {
+              consume(TokenType.Punctuation, '{');
+              skipBlock();
+            } else {
+              skipStatement();
+            }
+          }
+          const bodyTokens = tokens.slice(bodyStart, pos);
+          body = bodyTokens.map((t) => t.value).join(' ');
+          consume(TokenType.Punctuation, '}');
         } else if (!isPure && !atEnd() && peek().value === ';') {
           consume(TokenType.Punctuation, ';');
         }
-        methods.push({ name: methodName, returnType, parameters, visibility, static: isStatic, virtual: isVirtual, pure: isPure });
+        methods.push({
+          name: methodName,
+          returnType,
+          parameters,
+          visibility,
+          static: isStatic,
+          virtual: isVirtual,
+          pure: isPure,
+          locals,
+          body,
+        });
         continue;
       }
       // unknown token inside class - skip

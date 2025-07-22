@@ -1,6 +1,6 @@
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
-import { execute, callFunction, instantiate } from '../src/runtime';
+import { execute, callFunction, instantiate, callMethod } from '../src/runtime';
 import { executeStatements } from '../src/statements';
 import { preprocessWithProperties } from '../src/preprocess';
 import { describe, it, expect, vi } from 'vitest';
@@ -197,5 +197,23 @@ describe('execute', () => {
     const code = 'int add(int a,int b){ int c=a+b; return c; }';
     const runtime = execute(parse(lex(code)));
     expect(callFunction(runtime, 'add', [2,3])).toBe(5);
+  });
+
+  it('executes class and struct methods', () => {
+    const code = 'class C{int v; void inc(){ v++; }} struct S{int v; int get(){ return v; }}';
+    const runtime = execute(parse(lex(code)));
+    const c = instantiate(runtime, 'C');
+    callMethod(runtime, 'C', 'inc', c);
+    expect(c.v).toBe(1);
+    const s = instantiate(runtime, 'S');
+    s.v = 3;
+    expect(callMethod(runtime, 'S', 'get', s)).toBe(3);
+  });
+
+  it('keeps global variables when locals share the same name', () => {
+    const code = 'int g=5; int f(){ int g=1; g++; return g; }';
+    const runtime = execute(parse(lex(code)));
+    expect(callFunction(runtime, 'f')).toBe(2);
+    expect(runtime.globalValues.g).toBe(5);
   });
 });

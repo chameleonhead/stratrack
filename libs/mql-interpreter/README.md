@@ -84,6 +84,18 @@ const obj = instantiate(runtime, 'C');
 // obj has properties a and b
 ```
 
+Methods declared inside classes and structs are stored with their bodies so they
+can be executed at runtime. Use `callMethod()` with the runtime, class name,
+method name and object instance:
+
+```ts
+class C{ int v; void inc(){ v++; }}
+const rt = interpret('class C{ int v; void inc(){ v++; } }');
+const c = instantiate(rt, 'C');
+callMethod(rt, 'C', 'inc', c);
+// c.v === 1
+```
+
 `evaluateExpression()` understands the `new` operator when passed the runtime,
 and also supports the `delete` operator to free a variable. These allow small
 object constructions and destructions inside expressions:
@@ -107,7 +119,10 @@ executeStatements('for(i=0;i<3;i++){ if(i==1) continue; sum+=i; }', env);
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under
-`runtime.variables` for later inspection.
+`runtime.variables` for later inspection. Their current values are stored in
+`runtime.globalValues` and are modified when functions update them.
+Locals with the same name temporarily shadow globals but do not overwrite their
+stored values.
 Function bodies are scanned for local variable declarations and the raw
 statement text is saved. `callFunction()` executes this body using
 `executeStatements`, which currently understands `if`, loops, `switch`,

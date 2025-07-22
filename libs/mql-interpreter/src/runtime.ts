@@ -20,6 +20,8 @@ export interface RuntimeClassMethod {
   static?: boolean;
   virtual?: boolean;
   pure?: boolean;
+  locals: VariableDeclaration[];
+  body?: string;
 }
 
 export interface Runtime {
@@ -30,6 +32,8 @@ export interface Runtime {
   properties: Record<string, string[]>;
   /** Stored values of static local variables keyed by function name */
   staticLocals: Record<string, Record<string, any>>;
+  /** Values of global variables */
+  globalValues: Record<string, any>;
 }
 
 import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
@@ -49,7 +53,7 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {} };
+  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {}, globalValues: {} };
   const definedVars = new Set<string>();
 
   // Extract entry point and arguments. If provided, the entry point will be
@@ -94,6 +98,8 @@ export function execute(
         static: m.static,
         virtual: m.virtual,
         pure: m.pure,
+        locals: m.locals,
+        body: m.body,
       }));
       runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, templateParams: classDecl.templateParams, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {
@@ -123,6 +129,15 @@ export function execute(
       };
       if (v.storage !== 'extern') {
         definedVars.add(v.name);
+        let val: any = undefined;
+        if (v.initialValue !== undefined) {
+          try {
+            val = cast(v.initialValue, v.varType as PrimitiveType);
+          } catch {
+            val = v.initialValue;
+          }
+        }
+        runtime.globalValues[v.name] = val;
       }
     }
   }
@@ -216,9 +231,21 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
       throw new Error(`Function ${name} has no implementation`);
     }
     const env: any = {};
+    for (const g in runtime.globalValues) {
+      Object.defineProperty(env, g, {
+        get() {
+          return runtime.globalValues[g];
+        },
+        set(v: any) {
+          runtime.globalValues[g] = v;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+    }
     for (let i = 0; i < decl.parameters.length; i++) {
       const p = decl.parameters[i];
-      env[p.name] = args[i];
+      Object.defineProperty(env, p.name, { value: args[i], writable: true, enumerable: true });
     }
     for (const local of decl.locals) {
       let val: any = undefined;
@@ -231,7 +258,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
           val = local.initialValue;
         }
       }
-      env[local.name] = val;
+      Object.defineProperty(env, local.name, { value: val, writable: true, enumerable: true });
     }
     const res = executeStatements(decl.body, env, runtime);
     for (const local of decl.locals) {
@@ -257,4 +284,94 @@ export function instantiate(runtime: Runtime, className: string): any {
     obj[fieldName] = field.dimensions.length > 0 ? [] : undefined;
   }
   return obj;
+}
+
+export function callMethod(
+  runtime: Runtime,
+  className: string,
+  methodName: string,
+  obj: any,
+  args: any[] = []
+): any {
+  let cls: any = runtime.classes[className];
+  while (cls) {
+    const method = cls.methods.find((m: RuntimeClassMethod) => m.name === methodName);
+    if (method) {
+      if (!method.body) throw new Error(`Method ${methodName} has no implementation`);
+      if (!runtime.staticLocals[`${className}::${methodName}`])
+        runtime.staticLocals[`${className}::${methodName}`] = {};
+      const key = `${className}::${methodName}`;
+      for (const local of method.locals) {
+        if (
+          local.storage === 'static' &&
+          runtime.staticLocals[key][local.name] === undefined
+        ) {
+          let val: any = undefined;
+          if (local.initialValue !== undefined) {
+            try {
+              val = cast(local.initialValue, local.varType as PrimitiveType);
+            } catch {
+              val = local.initialValue;
+            }
+          }
+          runtime.staticLocals[key][local.name] = val;
+        }
+      }
+      const env: any = {};
+      for (const g in runtime.globalValues) {
+        Object.defineProperty(env, g, {
+          get() {
+            return runtime.globalValues[g];
+          },
+          set(v: any) {
+            runtime.globalValues[g] = v;
+          },
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      Object.defineProperty(env, 'this', {
+        value: obj,
+        writable: false,
+        enumerable: true,
+      });
+      for (const field in cls.fields) {
+        Object.defineProperty(env, field, {
+          get() {
+            return obj[field];
+          },
+          set(v: any) {
+            obj[field] = v;
+          },
+          enumerable: true,
+        });
+      }
+      for (let i = 0; i < method.parameters.length; i++) {
+        Object.defineProperty(env, method.parameters[i].name, { value: args[i], writable: true, enumerable: true });
+      }
+      for (const local of method.locals) {
+        let val: any = undefined;
+        if (local.storage === 'static') {
+          val = runtime.staticLocals[key][local.name];
+        } else if (local.initialValue !== undefined) {
+          try {
+            val = cast(local.initialValue, local.varType as PrimitiveType);
+          } catch {
+            val = local.initialValue;
+          }
+        }
+        Object.defineProperty(env, local.name, { value: val, writable: true, enumerable: true });
+      }
+      const res = executeStatements(method.body!, env, runtime);
+      for (const local of method.locals) {
+        if (local.storage === 'static') {
+          runtime.staticLocals[key][local.name] = env[local.name];
+        }
+      }
+      return res.return;
+    }
+    if (!cls.base) break;
+    cls = runtime.classes[cls.base];
+  }
+  throw new Error(`Method ${methodName} not found on ${className}`);
 }
