@@ -19,11 +19,12 @@ export interface RuntimeClassMethod {
   visibility: 'public' | 'private' | 'protected';
   static?: boolean;
   virtual?: boolean;
+  pure?: boolean;
 }
 
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
+  classes: Record<string, { base?: string; abstract?: boolean; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
   functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
   properties: Record<string, string[]>;
@@ -91,8 +92,9 @@ export function execute(
         visibility: m.visibility,
         static: m.static,
         virtual: m.virtual,
+        pure: m.pure,
       }));
-      runtime.classes[decl.name] = { base: classDecl.base, fields, methods };
+      runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {
       const fn = decl as FunctionDeclaration;
       const params = fn.parameters.map((p) => ({

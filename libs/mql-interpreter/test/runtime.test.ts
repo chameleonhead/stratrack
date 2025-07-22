@@ -16,7 +16,7 @@ describe('execute', () => {
     const tokens = lex('class Parent {} class Child : Parent {}');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.Child).toEqual({ base: 'Parent', fields: {}, methods: [] });
+    expect(runtime.classes.Child).toEqual({ abstract: false, base: 'Parent', fields: {}, methods: [] });
   });
 
   it('stores class fields', () => {
@@ -24,6 +24,7 @@ describe('execute', () => {
     const ast = parse(tokens);
     const runtime = execute(ast);
     expect(runtime.classes.A).toEqual({
+      abstract: false,
       base: undefined,
       fields: {
         a: { type: 'int', dimensions: [], static: false },
@@ -60,6 +61,13 @@ describe('execute', () => {
     expect(runtime.classes.S.fields.c.static).toBe(true);
     expect(runtime.classes.S.methods[0].virtual).toBe(true);
     expect(runtime.classes.S.methods[1].static).toBe(true);
+  });
+
+  it('stores abstract and pure virtual info', () => {
+    const code = 'abstract class B{ virtual void f()=0; };';
+    const runtime = execute(parse(lex(code)));
+    expect(runtime.classes.B.abstract).toBe(true);
+    expect(runtime.classes.B.methods[0].pure).toBe(true);
   });
 
   it('stores class methods including operators', () => {

@@ -16,8 +16,9 @@ methods, including constructors, destructors and operator overloads like
 `operator+`. Only the method signatures are stored; method bodies are ignored
 during execution.
 Fields and methods may be marked `static`, and methods may be marked
-`virtual`. These flags are captured and appear in the runtime so you can inspect
-class layouts.
+`virtual`. Pure virtual methods using `=0` are recognized, and classes may be
+prefixed with `abstract`. These attributes are captured and appear in the
+runtime so you can inspect class layouts.
 A parameter can be prefixed with `&` to indicate it is passed by reference.
 Arrays are always treated as references. The runtime stores this information for
 each parameter.

@@ -23,12 +23,14 @@ export interface ClassMethod {
   visibility: 'public' | 'private' | 'protected';
   static?: boolean;
   virtual?: boolean;
+  pure?: boolean;
 }
 
 export interface ClassDeclaration {
   type: 'ClassDeclaration';
   name: string;
   base?: string;
+  abstract?: boolean;
   fields: ClassField[];
   methods: ClassMethod[];
 }
@@ -151,6 +153,11 @@ export function parse(tokens: Token[]): Declaration[] {
   }
 
   function parseClass(): ClassDeclaration {
+    let isAbstract = false;
+    if (!atEnd() && peek().type === TokenType.Keyword && peek().value === 'abstract') {
+      consume(TokenType.Keyword, 'abstract');
+      isAbstract = true;
+    }
     const keyword = consume(TokenType.Keyword);
     if (keyword.value !== 'class' && keyword.value !== 'struct') {
       throw new Error(`Expected class or struct keyword but found ${keyword.value}`);
@@ -298,13 +305,25 @@ export function parse(tokens: Token[]): Declaration[] {
           }
         }
         consume(TokenType.Punctuation, ')');
-        if (!atEnd() && peek().value === '{') {
+        let isPure = false;
+        if (!atEnd() && peek().value === '=') {
+          const save = pos;
+          consume(TokenType.Operator, '=');
+          if (!atEnd() && peek().type === TokenType.Number && peek().value === '0') {
+            consume(TokenType.Number, '0');
+            consume(TokenType.Punctuation, ';');
+            isPure = true;
+          } else {
+            pos = save;
+          }
+        }
+        if (!isPure && !atEnd() && peek().value === '{') {
           consume(TokenType.Punctuation, '{');
           skipBlock();
-        } else if (!atEnd() && peek().value === ';') {
+        } else if (!isPure && !atEnd() && peek().value === ';') {
           consume(TokenType.Punctuation, ';');
         }
-        methods.push({ name: methodName, returnType, parameters, visibility, static: isStatic, virtual: isVirtual });
+        methods.push({ name: methodName, returnType, parameters, visibility, static: isStatic, virtual: isVirtual, pure: isPure });
         continue;
       }
       // unknown token inside class - skip
@@ -319,7 +338,7 @@ export function parse(tokens: Token[]): Declaration[] {
     if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'ClassDeclaration', name: className, base, fields, methods };
+    return { type: 'ClassDeclaration', name: className, base, abstract: isAbstract, fields, methods };
   }
 
   function parseFunction(): FunctionDeclaration {
@@ -448,7 +467,9 @@ export function parse(tokens: Token[]): Declaration[] {
       declarations.push(parseEnum());
     } else if (
       token.type === TokenType.Keyword &&
-      (token.value === 'class' || token.value === 'struct')
+      (token.value === 'class' || token.value === 'struct' ||
+        (token.value === 'abstract' &&
+          (tokens[pos + 1]?.value === 'class' || tokens[pos + 1]?.value === 'struct')))
     ) {
       declarations.push(parseClass());
     } else if (

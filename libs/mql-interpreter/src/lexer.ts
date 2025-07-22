@@ -53,6 +53,7 @@ const keywords = new Set([
   'private',
   'protected',
   'virtual',
+  'abstract',
   'enum',
   'class',
   'struct',

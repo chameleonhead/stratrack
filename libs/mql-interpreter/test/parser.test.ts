@@ -64,6 +64,14 @@ describe('parse', () => {
     expect(decl.methods[1].static).toBe(true);
   });
 
+  it('parses abstract classes and pure virtual methods', () => {
+    const code = 'abstract class A{ virtual void f()=0; };';
+    const ast = parse(lex(code));
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.abstract).toBe(true);
+    expect(decl.methods[0].pure).toBe(true);
+  });
+
   it('parses class methods and operator overloads', () => {
     const tokens = lex('class X{public:int a; int Add(int v); double operator+(double b); X(); ~X();}');
     const ast = parse(tokens);
