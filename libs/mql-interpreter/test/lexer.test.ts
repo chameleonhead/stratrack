@@ -40,6 +40,34 @@ describe('lex', () => {
     ]);
   });
 
+  it('skips comments containing nested markers', () => {
+    const tokens = lex('int a; /* start /* inner */ int b;');
+    expect(tokens).toEqual([
+      { type: TokenType.Keyword, value: 'int' },
+      { type: TokenType.Identifier, value: 'a' },
+      { type: TokenType.Punctuation, value: ';' },
+      { type: TokenType.Keyword, value: 'int' },
+      { type: TokenType.Identifier, value: 'b' },
+      { type: TokenType.Punctuation, value: ';' },
+    ]);
+  });
+
+  it('allows single line comments inside block comments', () => {
+    const tokens = lex('int a; /* text // inner\nstill */ int b;');
+    expect(tokens).toEqual([
+      { type: TokenType.Keyword, value: 'int' },
+      { type: TokenType.Identifier, value: 'a' },
+      { type: TokenType.Punctuation, value: ';' },
+      { type: TokenType.Keyword, value: 'int' },
+      { type: TokenType.Identifier, value: 'b' },
+      { type: TokenType.Punctuation, value: ';' },
+    ]);
+  });
+
+  it('throws on unterminated block comment', () => {
+    expect(() => lex('/*')).toThrow();
+  });
+
   it('handles escape sequences and two-char operators', () => {
     const tokens = lex('"a\\"b"==');
     expect(tokens).toEqual([

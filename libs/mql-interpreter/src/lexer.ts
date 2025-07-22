@@ -129,7 +129,12 @@ export function lex(source: string): Token[] {
     // multi line comment
     if (char === '/' && source[i + 1] === '*') {
       i += 2;
-      while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) i++;
+      while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) {
+        i++;
+      }
+      if (i >= source.length) {
+        throw new Error('Unterminated comment');
+      }
       i += 2;
       continue;
     }

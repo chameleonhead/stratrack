@@ -42,7 +42,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
       maximum length of 63 characters and disallow reserved words.
       Expand the lexer keyword list based on
       <https://docs.mql4.com/basis/syntax/reserved>.
-- [ ] Ensure comment syntax from
+- [x] Ensure comment syntax from
       <https://docs.mql4.com/basis/syntax/commentaries> continues
       to be tokenized correctly.
 - [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,

@@ -49,10 +49,13 @@ JavaScript semantics to honor operator precedence and properly handle prefix
 vs postfix forms like `--a` and `a--`.
 
 The lexer skips `//` single line comments and `/* ... */` blocks entirely so
-they do not appear in the token stream. Identifiers may contain letters,
-digits and underscores and must not exceed 63 characters; longer identifiers
-will cause lexing to fail.  In addition, reserved words such as `for` or
-`typename` are recognized as keywords and cannot be used as identifiers.
+they do not appear in the token stream. Single line comments may appear
+inside block comments, while `/*` inside a block does not start a nested
+comment. Unterminated comments cause lexing to fail. Identifiers may contain
+letters, digits and underscores and must not exceed 63 characters; longer
+identifiers will cause lexing to fail.  In addition, reserved words such as
+`for` or `typename` are recognized as keywords and cannot be used as
+identifiers.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
