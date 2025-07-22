@@ -94,7 +94,7 @@ describe('execute', () => {
     const code =
       'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
     const runtime = execute(parse(lex(code)));
-    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, properties: {} });
+    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, variables: {}, properties: {} });
   });
 
   it('handles visibility specifiers', () => {
@@ -102,5 +102,13 @@ describe('execute', () => {
     const runtime = execute(parse(lex(code)));
     expect(Object.keys(runtime.classes.A.fields)).toEqual(['x', 'y']);
     expect(Object.keys(runtime.classes.S.fields)).toEqual(['a', 'b']);
+  });
+
+  it('stores global variables', () => {
+    const code = 'static double g; input int period=10;';
+    const runtime = execute(parse(lex(code)));
+    expect(runtime.variables.g.storage).toBe('static');
+    expect(runtime.variables.period.storage).toBe('input');
+    expect(runtime.variables.period.initialValue).toBe('10');
   });
 });

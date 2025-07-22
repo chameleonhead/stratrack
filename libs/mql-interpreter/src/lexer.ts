@@ -46,6 +46,8 @@ const keywords = new Set([
   'delete',
   'this',
   'static',
+  'input',
+  'extern',
   'const',
   'public',
   'private',

@@ -36,6 +36,12 @@ arrays and a comprehensive set of builtin function stubs. Besides
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.
 
+Global variables declared at the top level are parsed as well. Qualifiers
+like `static`, `input` and `extern` are recorded along with optional
+initial values and any array dimensions. The runtime exposes these under
+`runtime.variables` for later inspection. Local and static variable
+semantics during execution are not yet implemented.
+
 The preprocessor handles `#define` and `#undef` directives. Both simple
 constants and parameterized macros are expanded during lexing, allowing code like
 

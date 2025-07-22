@@ -22,10 +22,11 @@ export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
   functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }[]>;
+  variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
   properties: Record<string, string[]>;
 }
 
-import { Declaration, ClassDeclaration, FunctionDeclaration } from './parser';
+import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
 import { getBuiltin } from './builtins';
 import { cast, PrimitiveType } from './casting';
 
@@ -39,7 +40,7 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, properties: {} };
+  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {} };
 
   // Extract entry point for future use. Execution of functions is not yet
   // implemented, so this is currently ignored.
@@ -94,6 +95,14 @@ export function execute(
         runtime.functions[fn.name] = [];
       }
       runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params });
+    } else if (decl.type === 'VariableDeclaration') {
+      const v = decl as VariableDeclaration;
+      runtime.variables[v.name] = {
+        type: v.varType,
+        storage: v.storage,
+        dimensions: v.dimensions,
+        initialValue: v.initialValue,
+      };
     }
   }
 

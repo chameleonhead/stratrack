@@ -45,7 +45,20 @@ export interface FunctionDeclaration {
   parameters: FunctionParameter[];
 }
 
-export type Declaration = EnumDeclaration | ClassDeclaration | FunctionDeclaration;
+export interface VariableDeclaration {
+  type: 'VariableDeclaration';
+  storage?: 'static' | 'input' | 'extern';
+  varType: string;
+  name: string;
+  dimensions: Array<number | null>;
+  initialValue?: string;
+}
+
+export type Declaration =
+  | EnumDeclaration
+  | ClassDeclaration
+  | FunctionDeclaration
+  | VariableDeclaration;
 
 import { Token, TokenType } from './lexer';
 
@@ -103,6 +116,17 @@ export function parse(tokens: Token[]): Declaration[] {
       if (t.value === '}') {
         if (depth === 0) break;
         depth--;
+      }
+    }
+  }
+
+  function skipStatement() {
+    while (!atEnd()) {
+      const t = consume();
+      if (t.value === ';') break;
+      if (t.value === '{') {
+        skipBlock();
+        break;
       }
     }
   }
@@ -325,8 +349,44 @@ export function parse(tokens: Token[]): Declaration[] {
     return { type: 'FunctionDeclaration', returnType, name, parameters };
   }
 
+  function parseVariable(): VariableDeclaration {
+    let storage: 'static' | 'input' | 'extern' | undefined;
+    if (
+      peek().type === TokenType.Keyword &&
+      (peek().value === 'static' || peek().value === 'input' || peek().value === 'extern')
+    ) {
+      storage = consume(TokenType.Keyword).value as 'static' | 'input' | 'extern';
+    }
+    const varType = consume().value;
+    const name = consume(TokenType.Identifier).value;
+    const dims: Array<number | null> = [];
+    while (peek().value === '[') {
+      consume(TokenType.Punctuation, '[');
+      let size: number | null = null;
+      if (peek().type === TokenType.Number) {
+        size = parseInt(consume(TokenType.Number).value, 10);
+      }
+      consume(TokenType.Punctuation, ']');
+      dims.push(size);
+    }
+    let initialValue: string | undefined;
+    if (peek().value === '=') {
+      consume(TokenType.Operator, '=');
+      initialValue = consume().value;
+    }
+    consume(TokenType.Punctuation, ';');
+    return { type: 'VariableDeclaration', storage, varType, name, dimensions: dims, initialValue };
+  }
+
   while (!atEnd()) {
     const token = peek();
+    if (
+      token.type === TokenType.Keyword &&
+      ['for', 'while', 'do', 'switch', 'if'].includes(token.value)
+    ) {
+      skipStatement();
+      continue;
+    }
     if (token.type === TokenType.Keyword && token.value === 'enum') {
       declarations.push(parseEnum());
     } else if (
@@ -341,6 +401,18 @@ export function parse(tokens: Token[]): Declaration[] {
       (tokens[pos + 2]?.value === '(' || tokens[pos + 3]?.value === '(')
     ) {
       declarations.push(parseFunction());
+    } else if (
+      (token.type === TokenType.Keyword &&
+        ['static', 'input', 'extern'].includes(token.value)) ||
+      ((token.type === TokenType.Keyword || token.type === TokenType.Identifier) &&
+        tokens[pos + 1]?.type === TokenType.Identifier)
+    ) {
+      const start = pos;
+      try {
+        declarations.push(parseVariable());
+      } catch {
+        pos = start + 1;
+      }
     } else {
       pos++;
     }

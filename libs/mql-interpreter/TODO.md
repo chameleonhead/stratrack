@@ -19,6 +19,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Capture program properties using `#property`
 - [x] Support conditional compilation directives (#ifdef, #ifndef, #else, #endif)
  - [x] Support parameterized macros in the preprocessor
+- [ ] Parse and execute local variables including `static` lifetime rules
+- [ ] Resolve input and extern variables across multiple files
 - [ ] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
 - [x] Create automated tests covering the lexer, parser and runtime

@@ -113,7 +113,7 @@ describe('parse', () => {
   it('skips irrelevant tokens and parses class body', () => {
     const tokens = lex('int x; class D { int a; }');
     const ast = parse(tokens);
-    const decl = ast[0] as ClassDeclaration;
+    const decl = ast[1] as ClassDeclaration;
     expect(decl.name).toBe('D');
     expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
   });
@@ -161,5 +161,19 @@ describe('parse', () => {
   it('throws on wrong token value', () => {
     const tokens = lex('enum X ;');
     expect(() => parse(tokens)).toThrow();
+  });
+
+  it('parses global variable declarations', () => {
+    const tokens = lex('input int Period=14; extern double rate;');
+    const ast = parse(tokens);
+    const v1 = ast[0] as any;
+    const v2 = ast[1] as any;
+    expect(v1.type).toBe('VariableDeclaration');
+    expect(v1.storage).toBe('input');
+    expect(v1.varType).toBe('int');
+    expect(v1.name).toBe('Period');
+    expect(v1.initialValue).toBe('14');
+    expect(v2.storage).toBe('extern');
+    expect(v2.name).toBe('rate');
   });
 });
