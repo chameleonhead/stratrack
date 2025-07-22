@@ -43,6 +43,7 @@ export interface FunctionDeclaration {
   returnType: string;
   name: string;
   parameters: FunctionParameter[];
+  locals: VariableDeclaration[];
 }
 
 export interface VariableDeclaration {
@@ -54,11 +55,17 @@ export interface VariableDeclaration {
   initialValue?: string;
 }
 
+export interface ControlStatement {
+  type: 'ControlStatement';
+  keyword: 'if' | 'for' | 'while' | 'do' | 'switch';
+}
+
 export type Declaration =
   | EnumDeclaration
   | ClassDeclaration
   | FunctionDeclaration
-  | VariableDeclaration;
+  | VariableDeclaration
+  | ControlStatement;
 
 import { Token, TokenType } from './lexer';
 
@@ -129,6 +136,12 @@ export function parse(tokens: Token[]): Declaration[] {
         break;
       }
     }
+  }
+
+  function parseControlStatement(): ControlStatement {
+    const kw = consume(TokenType.Keyword).value as ControlStatement['keyword'];
+    skipStatement();
+    return { type: 'ControlStatement', keyword: kw };
   }
 
   function parseClass(): ClassDeclaration {
@@ -340,13 +353,36 @@ export function parse(tokens: Token[]): Declaration[] {
       }
     }
     consume(TokenType.Punctuation, ')');
+    const locals: VariableDeclaration[] = [];
     if (!atEnd() && peek().value === '{') {
       consume(TokenType.Punctuation, '{');
-      skipBlock();
+      while (!atEnd() && peek().value !== '}') {
+        const startPos = pos;
+        try {
+          const varDecl = parseVariable();
+          locals.push(varDecl);
+          continue;
+        } catch {
+          pos = startPos;
+        }
+        const t = peek();
+        if (
+          t.type === TokenType.Keyword &&
+          ['for', 'while', 'do', 'switch', 'if'].includes(t.value)
+        ) {
+          parseControlStatement();
+        } else if (t.value === '{') {
+          consume(TokenType.Punctuation, '{');
+          skipBlock();
+        } else {
+          skipStatement();
+        }
+      }
+      consume(TokenType.Punctuation, '}');
     } else if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'FunctionDeclaration', returnType, name, parameters };
+    return { type: 'FunctionDeclaration', returnType, name, parameters, locals };
   }
 
   function parseVariable(): VariableDeclaration {
@@ -384,7 +420,7 @@ export function parse(tokens: Token[]): Declaration[] {
       token.type === TokenType.Keyword &&
       ['for', 'while', 'do', 'switch', 'if'].includes(token.value)
     ) {
-      skipStatement();
+      declarations.push(parseControlStatement());
       continue;
     }
     if (token.type === TokenType.Keyword && token.value === 'enum') {

@@ -55,7 +55,10 @@ calling `registerEnvBuiltins()` before executing code.
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under
-`runtime.variables` for later inspection. Local and static variable
+`runtime.variables` for later inspection.
+Function bodies are scanned for local variable declarations, which are stored
+with each function. Control-flow statements such as `if`, `for` and `switch`
+are recognized and kept as placeholder nodes. Local and static variable
 semantics during execution are not yet implemented.
 
 The preprocessor handles `#define` and `#undef` directives. Both simple

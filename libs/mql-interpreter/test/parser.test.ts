@@ -176,4 +176,18 @@ describe('parse', () => {
     expect(v2.storage).toBe('extern');
     expect(v2.name).toBe('rate');
   });
+
+  it('parses control flow statements', () => {
+    const tokens = lex('for(int i=0;i<1;i++){}');
+    const ast = parse(tokens);
+    expect(ast[0]).toEqual({ type: 'ControlStatement', keyword: 'for' });
+  });
+
+  it('parses local variable declarations', () => {
+    const tokens = lex('void f(){ int a; static double b; }');
+    const ast = parse(tokens);
+    const fn = ast[0] as any;
+    expect(fn.locals.map((v: any) => v.name)).toEqual(['a', 'b']);
+    expect(fn.locals[1].storage).toBe('static');
+  });
 });

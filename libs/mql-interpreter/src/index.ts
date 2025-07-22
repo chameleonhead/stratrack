@@ -6,6 +6,7 @@ import {
   ClassField,
   ClassMethod,
   FunctionDeclaration,
+  ControlStatement,
   VariableDeclaration,
   FunctionParameter,
 } from './parser';
@@ -39,6 +40,7 @@ export {
   ClassMethod,
   FunctionDeclaration,
   FunctionParameter,
+  ControlStatement,
   VariableDeclaration,
   execute,
   Runtime,
