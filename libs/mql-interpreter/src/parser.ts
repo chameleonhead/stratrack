@@ -86,6 +86,9 @@ export function parse(tokens: Token[]): Declaration[] {
     if (value && token.value !== value) {
       throw new Error(`Expected token value ${value} but found ${token.value}`);
     }
+    if (type === TokenType.Identifier && token.type === TokenType.Keyword) {
+      throw new Error(`Reserved word ${token.value} cannot be used as identifier`);
+    }
     pos++;
     return token;
   };
@@ -459,7 +462,7 @@ export function parse(tokens: Token[]): Declaration[] {
       (token.type === TokenType.Keyword &&
         ['static', 'input', 'extern'].includes(token.value)) ||
       ((token.type === TokenType.Keyword || token.type === TokenType.Identifier) &&
-        tokens[pos + 1]?.type === TokenType.Identifier)
+        (tokens[pos + 1]?.type === TokenType.Identifier || tokens[pos + 1]?.type === TokenType.Keyword))
     ) {
       const start = pos;
       try {

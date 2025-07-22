@@ -1,4 +1,5 @@
 import { lex, TokenType } from '../src/lexer';
+import { parse } from '../src/parser';
 import { describe, it, expect } from 'vitest';
 
 describe('lex', () => {
@@ -90,5 +91,16 @@ describe('lex', () => {
   it('enforces identifier length limit', () => {
     const longName = 'a'.repeat(64);
     expect(() => lex(`${longName} = 1;`)).toThrow('Identifier too long');
+  });
+
+  it('treats reserved words as keywords', () => {
+    const tokens = lex('template<typename T> struct S {};');
+    expect(tokens[0]).toEqual({ type: TokenType.Keyword, value: 'template' });
+    expect(tokens[2]).toEqual({ type: TokenType.Keyword, value: 'typename' });
+  });
+
+  it('fails when reserved word used as identifier', () => {
+    const tokens = lex('int for = 1;');
+    expect(tokens[1]).toEqual({ type: TokenType.Keyword, value: 'for' });
   });
 });

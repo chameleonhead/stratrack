@@ -38,7 +38,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
       forms like `--a` vs `a--`. `evaluateExpression()` currently uses
       JavaScript semantics and handles basic cases but does not yet
       support statements or the `new`/`delete` operators.
-- [ ] Enforce identifier rules from the MQL documentation:
+- [x] Enforce identifier rules from the MQL documentation:
       maximum length of 63 characters and disallow reserved words.
       Expand the lexer keyword list based on
       <https://docs.mql4.com/basis/syntax/reserved>.

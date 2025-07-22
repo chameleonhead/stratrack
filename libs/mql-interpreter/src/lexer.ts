@@ -57,6 +57,16 @@ const keywords = new Set([
   'class',
   'struct',
   'operator',
+  'template',
+  'typename',
+  'strict',
+  'true',
+  'false',
+  'sizeof',
+  'const_cast',
+  'dynamic_cast',
+  'reinterpret_cast',
+  'static_cast',
 ]);
 
 // Supported operator tokens. Order matters so longer tokens are matched first.
