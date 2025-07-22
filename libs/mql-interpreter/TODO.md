@@ -35,4 +35,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Evaluate expressions using arithmetic, assignment, relational and
       boolean operators following MQL operator rules. This must honor
       the correct operator precedence and differentiate prefix/postfix
-      forms like `--a` vs `a--`.
+      forms like `--a` vs `a--`. `evaluateExpression()` currently uses
+      JavaScript semantics and handles basic cases but does not yet
+      support statements or the `new`/`delete` operators.
+- [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,
+      `switch`) and implement `break`/`continue` behavior.

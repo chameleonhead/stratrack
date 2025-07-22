@@ -20,6 +20,7 @@ import {
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
 import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
+import { evaluateExpression } from './expression';
 import {
   preprocess,
   preprocessWithProperties,
@@ -59,6 +60,7 @@ export {
   BuiltinFunction,
   registerEnvBuiltins,
   callFunction,
+  evaluateExpression,
 };
 
 export function interpret(

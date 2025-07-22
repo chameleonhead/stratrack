@@ -41,9 +41,9 @@ recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
 `switch` and more. Most arithmetic, assignment, relational and bitwise
 operators (e.g. `+=`, `<<`, `&&`) are tokenized as `Operator` tokens so the
 parser can handle expressions in the future.
-Expression evaluation itself, including operator precedence and the
-difference between prefix (`--a`) and postfix (`a--`) forms, is not yet
-implemented.
+Simple expression evaluation is provided via `evaluateExpression()`. It uses
+JavaScript semantics to honor operator precedence and properly handle prefix
+vs postfix forms like `--a` and `a--`.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
