@@ -26,8 +26,8 @@ describe('execute', () => {
     expect(runtime.classes.A).toEqual({
       base: undefined,
       fields: {
-        a: { type: 'int', dimensions: [] },
-        b: { type: 'string', dimensions: [] },
+        a: { type: 'int', dimensions: [], static: false },
+        b: { type: 'string', dimensions: [], static: false },
       },
       methods: [],
     });
@@ -37,14 +37,22 @@ describe('execute', () => {
     const tokens = lex('struct S { int a; };');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.S.fields.a).toEqual({ type: 'int', dimensions: [] });
+    expect(runtime.classes.S.fields.a).toEqual({ type: 'int', dimensions: [], static: false });
   });
 
   it('stores dynamic array fields', () => {
     const tokens = lex('class A { double arr[]; }');
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null] });
+    expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null], static: false });
+  });
+
+  it('stores static and virtual flags', () => {
+    const code = 'class S{ static int c; virtual void tick(); static void util(); }';
+    const runtime = execute(parse(lex(code)));
+    expect(runtime.classes.S.fields.c.static).toBe(true);
+    expect(runtime.classes.S.methods[0].virtual).toBe(true);
+    expect(runtime.classes.S.methods[1].static).toBe(true);
   });
 
   it('stores class methods including operators', () => {

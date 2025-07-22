@@ -40,3 +40,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
       support statements or the `new`/`delete` operators.
 - [ ] Execute control-flow statements (`if`, `for`, `while`, `do..while`,
       `switch`) and implement `break`/`continue` behavior.
+- [x] Parse `static` and `virtual` modifiers on class fields and methods.
+- [ ] Implement object instantiation, inheritance and polymorphic dispatch.
+- [ ] Support templates and class templates.
+- [ ] Support abstract classes and pure virtual methods.

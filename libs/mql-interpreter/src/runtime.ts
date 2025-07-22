@@ -1,6 +1,7 @@
 export interface RuntimeClassField {
   type: string;
   dimensions: Array<number | null>;
+  static?: boolean;
 }
 
 export interface RuntimeFunctionParameter {
@@ -16,6 +17,8 @@ export interface RuntimeClassMethod {
   returnType?: string;
   parameters: RuntimeFunctionParameter[];
   visibility: 'public' | 'private' | 'protected';
+  static?: boolean;
+  virtual?: boolean;
 }
 
 export interface Runtime {
@@ -73,7 +76,7 @@ export function execute(
       const classDecl = decl as ClassDeclaration;
       const fields: Record<string, RuntimeClassField> = {};
       for (const f of classDecl.fields) {
-        fields[f.name] = { type: f.fieldType, dimensions: f.dimensions };
+        fields[f.name] = { type: f.fieldType, dimensions: f.dimensions, static: f.static };
       }
       const methods: RuntimeClassMethod[] = classDecl.methods.map((m) => ({
         name: m.name,
@@ -86,6 +89,8 @@ export function execute(
           defaultValue: p.defaultValue,
         })),
         visibility: m.visibility,
+        static: m.static,
+        virtual: m.virtual,
       }));
       runtime.classes[decl.name] = { base: classDecl.base, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {

@@ -13,6 +13,7 @@ export interface ClassField {
   name: string;
   fieldType: string;
   dimensions: Array<number | null>;
+  static?: boolean;
 }
 
 export interface ClassMethod {
@@ -20,6 +21,8 @@ export interface ClassMethod {
   returnType?: string;
   parameters: FunctionParameter[];
   visibility: 'public' | 'private' | 'protected';
+  static?: boolean;
+  virtual?: boolean;
 }
 
 export interface ClassDeclaration {
@@ -173,10 +176,25 @@ export function parse(tokens: Token[]): Declaration[] {
         consume(TokenType.Punctuation, ':');
         continue;
       }
-      // field declaration possibly with array dimensions
+      let isStatic = false;
+      let isVirtual = false;
+      while (
+        !atEnd() &&
+        peek().type === TokenType.Keyword &&
+        (peek().value === 'static' || peek().value === 'virtual')
+      ) {
+        const kw = consume(TokenType.Keyword).value;
+        if (kw === 'static') isStatic = true;
+        if (kw === 'virtual') isVirtual = true;
+      }
+
+      const s = peek();
+      const n = tokens[pos + 1];
+      const t = tokens[pos + 2];
+
       if (
-        (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
-        next?.type === TokenType.Identifier
+        (s.type === TokenType.Keyword || s.type === TokenType.Identifier) &&
+        n?.type === TokenType.Identifier
       ) {
         let idx = pos + 2;
         while (tokens[idx]?.value === '[') {
@@ -202,18 +220,18 @@ export function parse(tokens: Token[]): Declaration[] {
             dims.push(size);
           }
           consume(TokenType.Punctuation, ';');
-          fields.push({ name: fieldName, fieldType, dimensions: dims });
+          fields.push({ name: fieldName, fieldType, dimensions: dims, static: isStatic });
           continue;
         }
       }
       const isConstructor =
-        start.type === TokenType.Identifier && start.value === className && next?.value === '(';
+        s.type === TokenType.Identifier && s.value === className && n?.value === '(';
       const isDestructor =
-        start.type === TokenType.Operator && start.value === '~' && next?.type === TokenType.Identifier && next.value === className && tokens[pos + 2]?.value === '(';
+        s.type === TokenType.Operator && s.value === '~' && n?.type === TokenType.Identifier && n.value === className && tokens[pos + 2]?.value === '(';
       const isMethod =
-        (start.type === TokenType.Keyword || start.type === TokenType.Identifier) &&
-        (next?.type === TokenType.Identifier || (next?.type === TokenType.Keyword && next.value === 'operator')) &&
-        (third?.value === '(' || tokens[pos + 3]?.value === '(');
+        (s.type === TokenType.Keyword || s.type === TokenType.Identifier) &&
+        (n?.type === TokenType.Identifier || (n?.type === TokenType.Keyword && n.value === 'operator')) &&
+        (t?.value === '(' || tokens[pos + 3]?.value === '(');
       if (isConstructor || isDestructor || isMethod) {
         let returnType: string | undefined;
         let methodName: string;
@@ -283,7 +301,7 @@ export function parse(tokens: Token[]): Declaration[] {
         } else if (!atEnd() && peek().value === ';') {
           consume(TokenType.Punctuation, ';');
         }
-        methods.push({ name: methodName, returnType, parameters, visibility });
+        methods.push({ name: methodName, returnType, parameters, visibility, static: isStatic, virtual: isVirtual });
         continue;
       }
       // unknown token inside class - skip

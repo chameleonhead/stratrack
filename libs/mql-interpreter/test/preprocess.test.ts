@@ -9,7 +9,7 @@ describe('preprocess', () => {
     const tokens = preprocess(code);
     const ast = parse(tokens);
     const runtime = execute(ast);
-    expect(runtime.classes.A.fields.arr).toEqual({ type: 'int', dimensions: [5] });
+    expect(runtime.classes.A.fields.arr).toEqual({ type: 'int', dimensions: [5], static: false });
   });
 
   it('supports undef', () => {

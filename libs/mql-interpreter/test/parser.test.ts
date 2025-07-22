@@ -39,8 +39,8 @@ describe('parse', () => {
     const ast = parse(tokens);
     const classDecl = ast[0] as ClassDeclaration;
     expect(classDecl.fields).toEqual([
-      { name: 'a', fieldType: 'int', dimensions: [] },
-      { name: 'b', fieldType: 'string', dimensions: [] },
+      { name: 'a', fieldType: 'int', dimensions: [], static: false },
+      { name: 'b', fieldType: 'string', dimensions: [], static: false },
     ]);
   });
 
@@ -49,9 +49,19 @@ describe('parse', () => {
     const ast = parse(tokens);
     const classDecl = ast[0] as ClassDeclaration;
     expect(classDecl.fields).toEqual([
-      { name: 'arr', fieldType: 'double', dimensions: [null] },
-      { name: 'matrix', fieldType: 'int', dimensions: [null, 10] },
+      { name: 'arr', fieldType: 'double', dimensions: [null], static: false },
+      { name: 'matrix', fieldType: 'int', dimensions: [null, 10], static: false },
     ]);
+  });
+
+  it('parses static and virtual members', () => {
+    const code = 'class S{ static int c; virtual void tick(); static void util(); }';
+    const ast = parse(lex(code));
+    const decl = ast[0] as ClassDeclaration;
+    expect(decl.fields[0]).toEqual({ name: 'c', fieldType: 'int', dimensions: [], static: true });
+    expect(decl.methods[0].name).toBe('tick');
+    expect(decl.methods[0].virtual).toBe(true);
+    expect(decl.methods[1].static).toBe(true);
   });
 
   it('parses class methods and operator overloads', () => {
@@ -115,7 +125,7 @@ describe('parse', () => {
     const ast = parse(tokens);
     const decl = ast[1] as ClassDeclaration;
     expect(decl.name).toBe('D');
-    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [], static: false }]);
   });
 
   it('handles nested blocks and semicolons', () => {
@@ -132,7 +142,7 @@ describe('parse', () => {
     const tokens = lex(code);
     const ast = parse(tokens);
     const decl = ast[0] as ClassDeclaration;
-    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [], static: false }]);
   });
 
   it('handles nested blocks inside methods', () => {
@@ -140,7 +150,7 @@ describe('parse', () => {
     const tokens = lex(code);
     const ast = parse(tokens);
     const decl = ast[0] as ClassDeclaration;
-    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [] }]);
+    expect(decl.fields).toEqual([{ name: 'a', fieldType: 'int', dimensions: [], static: false }]);
   });
 
   it('throws when void is used as field type', () => {
