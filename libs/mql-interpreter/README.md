@@ -81,10 +81,12 @@ const obj = instantiate(runtime, 'C');
 ```
 
 `evaluateExpression()` understands the `new` operator when passed the runtime,
-allowing small object constructions inside expressions:
+and also supports the `delete` operator to free a variable. These allow small
+object constructions and destructions inside expressions:
 
 ```ts
 const obj = evaluateExpression('new C', {}, runtime);
+evaluateExpression('delete obj', { obj }, runtime);
 ```
 
 Global variables declared at the top level are parsed as well. Qualifiers

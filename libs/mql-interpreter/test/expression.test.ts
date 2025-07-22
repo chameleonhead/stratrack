@@ -34,4 +34,10 @@ describe('evaluateExpression', () => {
     const obj = evaluateExpression('new A', {}, runtime);
     expect(obj).toEqual({ x: undefined });
   });
+
+  it('deletes variables', () => {
+    const env: any = { obj: { a: 1 } };
+    evaluateExpression('delete obj', env);
+    expect(env.obj).toBeUndefined();
+  });
 });

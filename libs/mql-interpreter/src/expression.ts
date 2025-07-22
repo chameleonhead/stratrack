@@ -101,6 +101,13 @@ export function evaluateExpression(
           case '~': return { value: ~res.value };
         }
       }
+      if (t.type === TokenType.Keyword && t.value === 'delete') {
+        consume(TokenType.Keyword, 'delete');
+        const res = parseUnary();
+        if (!res.ref) throw new Error('Invalid operand for delete');
+        delete env[res.ref];
+        return { value: undefined };
+      }
     }
     return parsePostfix();
   }
