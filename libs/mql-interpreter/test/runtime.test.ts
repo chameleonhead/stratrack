@@ -1,6 +1,6 @@
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
-import { execute } from '../src/runtime';
+import { execute, callFunction } from '../src/runtime';
 import { preprocessWithProperties } from '../src/preprocess';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -95,7 +95,7 @@ describe('execute', () => {
     const code =
       'for(int i=0;i<1;i++){continue;} while(true){break;} do{}while(false); switch(1){case 1: break; default: break;}';
     const runtime = execute(parse(lex(code)));
-    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, variables: {}, properties: {} });
+    expect(runtime).toEqual({ enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {} });
   });
 
   it('handles visibility specifiers', () => {
@@ -139,5 +139,17 @@ describe('execute', () => {
     const tokens = lex('extern int E;');
     const ast = parse(tokens);
     expect(() => execute(ast)).toThrow('Extern variable E not defined');
+  });
+
+  it('initializes and preserves static locals', () => {
+    const tokens = lex('void f(){ static int c=1; }');
+    const ast = parse(tokens);
+    const runtime = execute(ast);
+    expect(runtime.staticLocals.f).toBeUndefined();
+    expect(() => callFunction(runtime, 'f')).toThrow('Function f has no implementation');
+    expect(runtime.staticLocals.f.c).toBe(1);
+    runtime.staticLocals.f.c = 5;
+    expect(() => callFunction(runtime, 'f')).toThrow('Function f has no implementation');
+    expect(runtime.staticLocals.f.c).toBe(5);
   });
 });

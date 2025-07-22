@@ -21,9 +21,11 @@ export interface RuntimeClassMethod {
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<string, { base?: string; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
-  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[] }[]>;
+  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
   properties: Record<string, string[]>;
+  /** Stored values of static local variables keyed by function name */
+  staticLocals: Record<string, Record<string, any>>;
 }
 
 import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
@@ -40,7 +42,7 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {} };
+  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {} };
   const definedVars = new Set<string>();
 
   // Extract entry point. If provided, it will be invoked after the
@@ -95,7 +97,7 @@ export function execute(
       if (!runtime.functions[fn.name]) {
         runtime.functions[fn.name] = [];
       }
-      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params });
+      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals });
     } else if (decl.type === 'VariableDeclaration') {
       const v = decl as VariableDeclaration;
       if (runtime.variables[v.name] && v.storage === 'extern') {
@@ -144,7 +146,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     throw new Error(`Function ${name} not found`);
   }
 
-  let decl: { returnType: string; parameters: RuntimeFunctionParameter[] } | undefined;
+  let decl: { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[] } | undefined;
   if (overloads && overloads.length) {
     let required = 0;
     for (const candidate of overloads) {
@@ -155,6 +157,21 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
       }
     }
     if (decl) {
+      // initialize static local variables if needed
+      if (!runtime.staticLocals[name]) runtime.staticLocals[name] = {};
+      for (const local of decl.locals) {
+        if (local.storage === 'static' && runtime.staticLocals[name][local.name] === undefined) {
+          let val: any = undefined;
+          if (local.initialValue !== undefined) {
+            try {
+              val = cast(local.initialValue, local.varType as PrimitiveType);
+            } catch {
+              val = local.initialValue;
+            }
+          }
+          runtime.staticLocals[name][local.name] = val;
+        }
+      }
       const finalArgs: any[] = [];
       for (let i = 0; i < decl.parameters.length; i++) {
         const p = decl.parameters[i];

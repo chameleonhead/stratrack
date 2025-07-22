@@ -22,7 +22,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Support conditional compilation directives (#ifdef, #ifndef, #else, #endif)
  - [x] Support parameterized macros in the preprocessor
 - [x] Parse local variable declarations inside functions
-- [ ] Execute local variables with `static` lifetime rules
+ - [x] Execute local variables with `static` lifetime rules
 - [x] Resolve input and extern variables across multiple files
 - [x] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files

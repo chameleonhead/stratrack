@@ -58,8 +58,9 @@ initial values and any array dimensions. The runtime exposes these under
 `runtime.variables` for later inspection.
 Function bodies are scanned for local variable declarations, which are stored
 with each function. Control-flow statements such as `if`, `for` and `switch`
-are recognized and kept as placeholder nodes. Local and static variable
-semantics during execution are not yet implemented.
+are recognized and kept as placeholder nodes. Static local variables are
+initialized the first time a function is called and preserved across
+subsequent calls. Their values are stored in `runtime.staticLocals`.
 
 The preprocessor handles `#define` and `#undef` directives. Both simple
 constants and parameterized macros are expanded during lexing, allowing code like
