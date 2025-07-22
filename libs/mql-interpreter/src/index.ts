@@ -69,14 +69,43 @@ export {
   executeStatements,
 };
 
-export function interpret(
+export interface Compilation {
+  ast: Declaration[];
+  runtime: Runtime;
+  properties: PropertyMap;
+}
+
+export function compile(
   source: string,
-  entryPointOrContext?: string | ExecutionContext,
   options: PreprocessOptions = {}
-): Runtime {
+): Compilation {
   const { tokens, properties } = preprocessWithProperties(source, options);
   const ast = parse(tokens);
-  const runtime = execute(ast, entryPointOrContext);
+  const runtime = execute(ast);
   runtime.properties = properties;
+  return { ast, runtime, properties };
+}
+
+export function interpret(
+  source: string,
+  context?: ExecutionContext,
+  options: PreprocessOptions = {}
+): Runtime {
+  const { ast, runtime, properties } = compile(source, options);
+  runtime.properties = properties;
+  if (context) {
+    for (const name in runtime.variables) {
+      const info = runtime.variables[name];
+      if (info.storage === 'input' && context.inputValues?.[name] !== undefined) {
+        runtime.globalValues[name] = context.inputValues[name];
+      }
+      if (info.storage === 'extern' && context.externValues?.[name] !== undefined) {
+        runtime.globalValues[name] = context.externValues[name];
+      }
+    }
+    if (context.entryPoint) {
+      callFunction(runtime, context.entryPoint, context.args);
+    }
+  }
   return runtime;
 }

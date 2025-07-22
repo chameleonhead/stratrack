@@ -29,18 +29,22 @@ A reference argument must be an object, e.g. `{value: 10}`. Builtins like
 `StringTrimLeft` will mutate the passed object.
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
-The runtime executes the AST and registers enums, classes, functions and global
-variables. `execute()` can optionally invoke an entry point function after
-setup. Provide the name and arguments via `{ entryPoint, args }` and the
-function (or builtin) will be executed using `callFunction()`. Parsed function
-bodies are executed with `executeStatements`, so simple user code can run.
-You may also invoke any parsed function manually using `callFunction()`, which
-checks arguments against the stored signatures and dispatches to a builtin
-implementation if one exists.
+The interpreter can compile code without running it using `compile(source)`.
+This preprocesses and parses the code, returning a `runtime` object populated
+with enums, classes, functions and global variable declarations. Variables
+declared with `input` or `extern` appear in `runtime.variables` so a host can
+ask the user for their values before execution. After providing values in
+`inputValues` and `externValues`, call `interpret()` to run an entry point or
+invoke `callFunction()` directly. Parsed function bodies run via
+`executeStatements`.
+
 For example:
 
 ```ts
-interpret('', { entryPoint: 'Print', args: ['Hello'] });
+const { runtime } = compile('input int Period=10; void start(){ Print(Period); }');
+// Prompt user and set value
+runtime.globalValues.Period = 5;
+callFunction(runtime, 'start');
 ```
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
@@ -175,8 +179,10 @@ npx mql-interpreter path/to/file.mq4
    list of tokens.
 2. **Parsing** – tokens are parsed into declarations such as enums, classes,
    functions and global variables.
-3. **Execution** – `execute()` registers the parsed declarations in a runtime
-   structure. If an entry point is provided, `callFunction()` invokes it.
+3. **Compilation** – `execute()` registers the declarations in a runtime
+   structure without running any user code.
+4. **Execution** – `callFunction()` or `interpret()` may then invoke an entry
+   point using the populated runtime.
 
 ## Development
 

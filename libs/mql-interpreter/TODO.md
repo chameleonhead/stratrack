@@ -23,7 +23,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
  - [x] Support parameterized macros in the preprocessor
 - [x] Parse local variable declarations inside functions
  - [x] Execute local variables with `static` lifetime rules
-- [x] Resolve input and extern variables across multiple files
+- [x] Resolve input and extern variables via execution context
 - [x] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
 - [x] Create automated tests covering the lexer, parser and runtime

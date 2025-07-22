@@ -2,7 +2,6 @@ import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
 import { execute, callFunction, instantiate, callMethod } from '../src/runtime';
 import { executeStatements } from '../src/statements';
-import { preprocessWithProperties } from '../src/preprocess';
 import { describe, it, expect, vi } from 'vitest';
 
 describe('execute', () => {
@@ -168,20 +167,17 @@ describe('execute', () => {
     expect(() => execute([], { entryPoint: 'Unknown' })).toThrow('Function Unknown not found');
   });
 
-  it('resolves extern variables across files', () => {
-    const code = '#import "defs.mqh"\n#import\nextern int E;';
-    const { tokens } = preprocessWithProperties(code, {
-      fileProvider: (p) => (p === 'defs.mqh' ? 'int E;' : undefined),
-    });
-    const ast = parse(tokens);
-    const runtime = execute(ast);
-    expect(runtime.variables.E.type).toBe('int');
+  it('initializes extern and input values from context', () => {
+    const ast = parse(lex('extern int E; input double P=1.5;'));
+    const runtime = execute(ast, { externValues: { E: 3 }, inputValues: { P: 2 } });
+    expect(runtime.globalValues.E).toBe(3);
+    expect(runtime.globalValues.P).toBe(2);
   });
 
-  it('throws when extern variable missing', () => {
-    const tokens = lex('extern int E;');
-    const ast = parse(tokens);
-    expect(() => execute(ast)).toThrow('Extern variable E not defined');
+  it('leaves extern undefined when not supplied', () => {
+    const ast = parse(lex('extern int E;'));
+    const runtime = execute(ast);
+    expect(runtime.globalValues.E).toBeUndefined();
   });
 
   it('initializes and preserves static locals', () => {

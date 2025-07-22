@@ -47,6 +47,10 @@ export interface ExecutionContext {
   entryPoint?: string;
   /** Arguments to pass to the entry point. */
   args?: any[];
+  /** Values for variables declared with the `input` keyword. */
+  inputValues?: Record<string, any>;
+  /** Values for variables declared with the `extern` keyword. */
+  externValues?: Record<string, any>;
 }
 
 export function execute(
@@ -54,7 +58,6 @@ export function execute(
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
   const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {}, globalValues: {} };
-  const definedVars = new Set<string>();
 
   // Extract entry point and arguments. If provided, the entry point will be
   // invoked after the runtime is populated.
@@ -64,6 +67,8 @@ export function execute(
       : entryPointOrContext || { entryPoint: undefined, args: [] };
   const entryPoint = ctx.entryPoint;
   const entryArgs = ctx.args ?? [];
+  const inputVals = ctx.inputValues ?? {};
+  const externVals = ctx.externValues ?? {};
   // TODO: support a full execution context when function bodies are interpreted.
 
   for (const decl of declarations) {
@@ -127,9 +132,28 @@ export function execute(
         dimensions: v.dimensions,
         initialValue: v.initialValue,
       };
-      if (v.storage !== 'extern') {
-        definedVars.add(v.name);
-        let val: any = undefined;
+      let val: any = undefined;
+      if (v.storage === 'input') {
+        if (inputVals[v.name] !== undefined) {
+          val = inputVals[v.name];
+        } else if (v.initialValue !== undefined) {
+          try {
+            val = cast(v.initialValue, v.varType as PrimitiveType);
+          } catch {
+            val = v.initialValue;
+          }
+        }
+      } else if (v.storage === 'extern') {
+        if (externVals[v.name] !== undefined) {
+          val = externVals[v.name];
+        } else if (v.initialValue !== undefined) {
+          try {
+            val = cast(v.initialValue, v.varType as PrimitiveType);
+          } catch {
+            val = v.initialValue;
+          }
+        }
+      } else {
         if (v.initialValue !== undefined) {
           try {
             val = cast(v.initialValue, v.varType as PrimitiveType);
@@ -137,8 +161,8 @@ export function execute(
             val = v.initialValue;
           }
         }
-        runtime.globalValues[v.name] = val;
       }
+      runtime.globalValues[v.name] = val;
     }
   }
 
@@ -149,13 +173,7 @@ export function execute(
     }
   }
 
-  // Validate extern variables have corresponding definitions
-  for (const name in runtime.variables) {
-    const v = runtime.variables[name];
-    if (v.storage === 'extern' && !definedVars.has(name)) {
-      throw new Error(`Extern variable ${name} not defined`);
-    }
-  }
+
 
   if (entryPoint) {
     callFunction(runtime, entryPoint, entryArgs);
