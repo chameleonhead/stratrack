@@ -172,6 +172,14 @@ file and print the resulting runtime information:
 npx mql-interpreter path/to/file.mq4
 ```
 
+The CLI performs compilation first. If any type errors are detected they are
+printed and the process exits with a non-zero status:
+
+```bash
+npx mql-interpreter bad.mq4
+1:1 Unknown type Foo
+```
+
 ## Architecture
 
 1. **Preprocessing** – source code is passed through the preprocessor which

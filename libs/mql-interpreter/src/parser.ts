@@ -3,10 +3,16 @@ export interface EnumMember {
   value?: string;
 }
 
+export interface SourceLocation {
+  line: number;
+  column: number;
+}
+
 export interface EnumDeclaration {
   type: 'EnumDeclaration';
   name: string;
   members: EnumMember[];
+  loc?: SourceLocation;
 }
 
 export interface ClassField {
@@ -14,6 +20,7 @@ export interface ClassField {
   fieldType: string;
   dimensions: Array<number | null>;
   static?: boolean;
+  loc?: SourceLocation;
 }
 
 export interface ClassMethod {
@@ -28,6 +35,7 @@ export interface ClassMethod {
   locals: VariableDeclaration[];
   /** Raw statement body text used for execution */
   body?: string;
+  loc?: SourceLocation;
 }
 
 export interface ClassDeclaration {
@@ -38,6 +46,7 @@ export interface ClassDeclaration {
   templateParams?: string[];
   fields: ClassField[];
   methods: ClassMethod[];
+  loc?: SourceLocation;
 }
 
 export interface FunctionParameter {
@@ -57,6 +66,7 @@ export interface FunctionDeclaration {
   /** Raw statement text for the function body */
   body?: string;
   templateParams?: string[];
+  loc?: SourceLocation;
 }
 
 export interface VariableDeclaration {
@@ -66,11 +76,13 @@ export interface VariableDeclaration {
   name: string;
   dimensions: Array<number | null>;
   initialValue?: string;
+  loc?: SourceLocation;
 }
 
 export interface ControlStatement {
   type: 'ControlStatement';
   keyword: 'if' | 'for' | 'while' | 'do' | 'switch';
+  loc?: SourceLocation;
 }
 
 export type Declaration =
@@ -106,8 +118,9 @@ export function parse(tokens: Token[]): Declaration[] {
   const atEnd = () => pos >= tokens.length;
 
   function parseEnum(): EnumDeclaration {
-    consume(TokenType.Keyword, 'enum');
-    const name = consume(TokenType.Identifier).value;
+    const start = consume(TokenType.Keyword, 'enum');
+    const nameTok = consume(TokenType.Identifier);
+    const name = nameTok.value;
     consume(TokenType.Punctuation, '{');
     const members: EnumMember[] = [];
     while (!atEnd() && peek().value !== '}') {
@@ -128,7 +141,7 @@ export function parse(tokens: Token[]): Declaration[] {
     if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'EnumDeclaration', name, members };
+    return { type: 'EnumDeclaration', name, members, loc: { line: start.line, column: start.column } };
   }
 
   function skipBlock() {
@@ -201,15 +214,17 @@ export function parse(tokens: Token[]): Declaration[] {
   }
 
   function parseControlStatement(): ControlStatement {
-    const kw = consume(TokenType.Keyword).value as ControlStatement['keyword'];
+    const tok = consume(TokenType.Keyword);
+    const kw = tok.value as ControlStatement['keyword'];
     skipStatement();
-    return { type: 'ControlStatement', keyword: kw };
+    return { type: 'ControlStatement', keyword: kw, loc: { line: tok.line, column: tok.column } };
   }
 
   function parseClass(): ClassDeclaration {
     let isAbstract = false;
+    let start = peek();
     if (!atEnd() && peek().type === TokenType.Keyword && peek().value === 'abstract') {
-      consume(TokenType.Keyword, 'abstract');
+      start = consume(TokenType.Keyword, 'abstract');
       isAbstract = true;
     }
     const keyword = consume(TokenType.Keyword);
@@ -430,10 +445,11 @@ export function parse(tokens: Token[]): Declaration[] {
     if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'ClassDeclaration', name: className, base, abstract: isAbstract, fields, methods };
+    return { type: 'ClassDeclaration', name: className, base, abstract: isAbstract, fields, methods, loc: { line: start.line, column: start.column } };
   }
 
   function parseFunction(): FunctionDeclaration {
+    const start = peek();
     const returnType = consume().value;
     let nameToken = consume();
     let name = nameToken.value;
@@ -519,10 +535,11 @@ export function parse(tokens: Token[]): Declaration[] {
     } else if (!atEnd() && peek().value === ';') {
       consume(TokenType.Punctuation, ';');
     }
-    return { type: 'FunctionDeclaration', returnType, name, parameters, locals, body };
+    return { type: 'FunctionDeclaration', returnType, name, parameters, locals, body, loc: { line: start.line, column: start.column } };
   }
 
   function parseVariable(): VariableDeclaration {
+    const start = peek();
     const typeKeywords = new Set([
       'void','bool','char','uchar','short','ushort','int','uint','long','ulong',
       'float','double','color','datetime','string'
@@ -558,7 +575,7 @@ export function parse(tokens: Token[]): Declaration[] {
       initialValue = consume().value;
     }
     consume(TokenType.Punctuation, ';');
-    return { type: 'VariableDeclaration', storage, varType, name, dimensions: dims, initialValue };
+    return { type: 'VariableDeclaration', storage, varType, name, dimensions: dims, initialValue, loc: { line: start.line, column: start.column } };
   }
 
   while (!atEnd()) {

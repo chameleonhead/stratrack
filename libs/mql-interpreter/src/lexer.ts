@@ -10,6 +10,8 @@ export enum TokenType {
 export interface Token {
   type: TokenType;
   value: string;
+  line: number;
+  column: number;
 }
 
 // Common MQL built-in keywords. The list is based on the MQL5 documentation at
@@ -114,61 +116,85 @@ const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.', '
 export function lex(source: string): Token[] {
   const tokens: Token[] = [];
   let i = 0;
+  let line = 1;
+  let column = 1;
+
+  const advance = (n: number = 1) => {
+    while (n-- > 0) {
+      if (source[i] === '\n') {
+        line++;
+        column = 1;
+      } else {
+        column++;
+      }
+      i++;
+    }
+  };
+
   while (i < source.length) {
     const char = source[i];
     // skip whitespace
     if (/\s/.test(char)) {
-      i++;
+      advance();
       continue;
     }
     // single line comment
     if (char === '/' && source[i + 1] === '/') {
-      i += 2;
-      while (i < source.length && source[i] !== '\n') i++;
+      advance(2);
+      while (i < source.length && source[i] !== '\n') advance();
       continue;
     }
     // multi line comment
     if (char === '/' && source[i + 1] === '*') {
-      i += 2;
+      advance(2);
       while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) {
-        i++;
+        advance();
       }
       if (i >= source.length) {
         throw new Error('Unterminated comment');
       }
-      i += 2;
+      advance(2);
       continue;
     }
     // string literal
     if (char === '"') {
       let value = '';
-      i++; // skip opening quote
+      const startLine = line;
+      const startCol = column;
+      advance(); // skip opening quote
       while (i < source.length && source[i] !== '"') {
         // rudimentary escape handling
         if (source[i] === '\\') {
           value += source[i];
-          i++;
+          advance();
         }
-        value += source[i++];
+        value += source[i];
+        advance();
       }
-      i++; // skip closing quote
-      tokens.push({ type: TokenType.String, value });
+      advance(); // skip closing quote
+      tokens.push({ type: TokenType.String, value, line: startLine, column: startCol });
       continue;
     }
     // number literal
     if (/\d/.test(char)) {
       let value = '';
+      const startLine = line;
+      const startCol = column;
       while (i < source.length && /[0-9.]/.test(source[i])) {
-        value += source[i++];
+        value += source[i];
+        advance();
       }
-      tokens.push({ type: TokenType.Number, value });
+      tokens.push({ type: TokenType.Number, value, line: startLine, column: startCol });
       continue;
     }
     // identifier or keyword
     if (/[A-Za-z_]/.test(char)) {
       let value = '';
+      const startLine = line;
+      const startCol = column;
       while (i < source.length && /[A-Za-z0-9_]/.test(source[i])) {
-        value += source[i++];
+        value += source[i];
+        advance();
       }
       if (value.length > 63) {
         throw new Error('Identifier too long');
@@ -176,6 +202,8 @@ export function lex(source: string): Token[] {
       tokens.push({
         type: keywords.has(value) ? TokenType.Keyword : TokenType.Identifier,
         value,
+        line: startLine,
+        column: startCol,
       });
       continue;
     }
@@ -189,15 +217,15 @@ export function lex(source: string): Token[] {
         }
       }
       if (matched) {
-        tokens.push({ type: TokenType.Operator, value: matched });
-        i += matched.length;
+        tokens.push({ type: TokenType.Operator, value: matched, line, column });
+        advance(matched.length);
         continue;
       }
     }
     // punctuation
     if (punctuationChars.has(char)) {
-      tokens.push({ type: TokenType.Punctuation, value: char });
-      i++;
+      tokens.push({ type: TokenType.Punctuation, value: char, line, column });
+      advance();
       continue;
     }
     // unknown char

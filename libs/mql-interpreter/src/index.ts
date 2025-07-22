@@ -73,6 +73,54 @@ export interface Compilation {
   ast: Declaration[];
   runtime: Runtime;
   properties: PropertyMap;
+  errors: CompilationError[];
+}
+
+export interface CompilationError {
+  message: string;
+  line: number;
+  column: number;
+}
+
+function checkTypes(ast: Declaration[]): CompilationError[] {
+  const primitive = new Set([
+    'void','bool','char','uchar','short','ushort','int','uint','long','ulong',
+    'float','double','color','datetime','string'
+  ]);
+  const classes = new Set<string>();
+  const enums = new Set<string>();
+  for (const decl of ast) {
+    if (decl.type === 'ClassDeclaration') classes.add(decl.name);
+    if (decl.type === 'EnumDeclaration') enums.add(decl.name);
+  }
+  const errors: CompilationError[] = [];
+  const isKnown = (t: string) => primitive.has(t) || classes.has(t) || enums.has(t);
+  for (const decl of ast) {
+    if (decl.type === 'VariableDeclaration') {
+      if (!isKnown(decl.varType)) {
+        errors.push({ message: `Unknown type ${decl.varType}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+      }
+    } else if (decl.type === 'FunctionDeclaration') {
+      if (!isKnown(decl.returnType) && decl.returnType !== 'void') {
+        errors.push({ message: `Unknown return type ${decl.returnType}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+      }
+      for (const p of decl.parameters) {
+        if (!isKnown(p.paramType)) {
+          errors.push({ message: `Unknown type ${p.paramType} for parameter ${p.name}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+        }
+      }
+    } else if (decl.type === 'ClassDeclaration') {
+      if (decl.base && !classes.has(decl.base)) {
+        errors.push({ message: `Unknown base class ${decl.base}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+      }
+      for (const f of decl.fields) {
+        if (!isKnown(f.fieldType)) {
+          errors.push({ message: `Unknown type ${f.fieldType} for field ${f.name}`, line: f.loc?.line ?? 0, column: f.loc?.column ?? 0 });
+        }
+      }
+    }
+  }
+  return errors;
 }
 
 export function compile(
@@ -83,7 +131,8 @@ export function compile(
   const ast = parse(tokens);
   const runtime = execute(ast);
   runtime.properties = properties;
-  return { ast, runtime, properties };
+  const errors = checkTypes(ast);
+  return { ast, runtime, properties, errors };
 }
 
 export function interpret(
@@ -91,7 +140,11 @@ export function interpret(
   context?: ExecutionContext,
   options: PreprocessOptions = {}
 ): Runtime {
-  const { ast, runtime, properties } = compile(source, options);
+  const { ast, runtime, properties, errors } = compile(source, options);
+  if (errors.length) {
+    const msg = errors.map(e => `${e.line}:${e.column} ${e.message}`).join('\n');
+    throw new Error(`Compilation failed:\n${msg}`);
+  }
   runtime.properties = properties;
   if (context) {
     for (const name in runtime.variables) {

@@ -198,7 +198,8 @@ describe('parse', () => {
   it('parses control flow statements', () => {
     const tokens = lex('for(int i=0;i<1;i++){}');
     const ast = parse(tokens);
-    expect(ast[0]).toEqual({ type: 'ControlStatement', keyword: 'for' });
+    const { type, keyword } = ast[0] as any;
+    expect({ type, keyword }).toEqual({ type: 'ControlStatement', keyword: 'for' });
   });
 
   it('parses template class and function', () => {
