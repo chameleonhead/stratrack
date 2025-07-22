@@ -47,6 +47,29 @@ describe('lex', () => {
     ]);
   });
 
+  it('recognizes compound and multi-character operators', () => {
+    const tokens = lex('i+=2; j<<=1; k++; a?b:c;');
+    expect(tokens).toEqual([
+      { type: TokenType.Identifier, value: 'i' },
+      { type: TokenType.Operator, value: '+=' },
+      { type: TokenType.Number, value: '2' },
+      { type: TokenType.Punctuation, value: ';' },
+      { type: TokenType.Identifier, value: 'j' },
+      { type: TokenType.Operator, value: '<<=' },
+      { type: TokenType.Number, value: '1' },
+      { type: TokenType.Punctuation, value: ';' },
+      { type: TokenType.Identifier, value: 'k' },
+      { type: TokenType.Operator, value: '++' },
+      { type: TokenType.Punctuation, value: ';' },
+      { type: TokenType.Identifier, value: 'a' },
+      { type: TokenType.Operator, value: '?' },
+      { type: TokenType.Identifier, value: 'b' },
+      { type: TokenType.Punctuation, value: ':' },
+      { type: TokenType.Identifier, value: 'c' },
+      { type: TokenType.Punctuation, value: ';' },
+    ]);
+  });
+
   it('throws on unknown characters', () => {
     expect(() => lex('#')).toThrow();
   });

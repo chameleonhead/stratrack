@@ -32,3 +32,5 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - `callFunction()` helper performs argument checks and dispatches to builtins
 - [x] Parse class methods, constructors, destructors and access modifiers
 - [x] Parse control-flow statements (if/else, loops, switch)
+- [ ] Evaluate expressions using arithmetic, assignment, relational and
+      boolean operators following MQL operator rules

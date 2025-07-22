@@ -59,7 +59,45 @@ const keywords = new Set([
   'operator',
 ]);
 
-const operatorChars = new Set(['+', '-', '*', '/', '=', '>', '<', '!', '&', '|', '~']);
+// Supported operator tokens. Order matters so longer tokens are matched first.
+const operators = [
+  '>>=',
+  '<<=',
+  '++',
+  '--',
+  '+=',
+  '-=',
+  '*=',
+  '/=',
+  '%=',
+  '^=',
+  '&=',
+  '|=',
+  '==',
+  '!=',
+  '<=',
+  '>=',
+  '&&',
+  '||',
+  '<<',
+  '>>',
+  '->',
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+  '=',
+  '>',
+  '<',
+  '!',
+  '&',
+  '|',
+  '^',
+  '~',
+  '?',
+];
+const operatorStart = new Set(operators.map((op) => op[0]));
 const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.', ':']);
 
 export function lex(source: string): Token[] {
@@ -123,19 +161,19 @@ export function lex(source: string): Token[] {
       continue;
     }
     // operator
-    if (operatorChars.has(char)) {
-      let value = char;
-      i++;
-      // handle two-char operators like ==, !=, <=, >=, &&, ||
-      if (operatorChars.has(source[i])) {
-        const two = value + source[i];
-        if (['==', '!=', '<=', '>=', '&&', '||'].includes(two)) {
-          value = two;
-          i++;
+    if (operatorStart.has(char)) {
+      let matched: string | undefined;
+      for (const op of operators) {
+        if (source.startsWith(op, i)) {
+          matched = op;
+          break;
         }
       }
-      tokens.push({ type: TokenType.Operator, value });
-      continue;
+      if (matched) {
+        tokens.push({ type: TokenType.Operator, value: matched });
+        i += matched.length;
+        continue;
+      }
     }
     // punctuation
     if (punctuationChars.has(char)) {

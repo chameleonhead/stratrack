@@ -38,7 +38,9 @@ interpret('', { entryPoint: 'Print', args: ['Hello'] });
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
-`switch` and more.
+`switch` and more. Most arithmetic, assignment, relational and bitwise
+operators (e.g. `+=`, `<<`, `&&`) are tokenized as `Operator` tokens so the
+parser can handle expressions in the future.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
