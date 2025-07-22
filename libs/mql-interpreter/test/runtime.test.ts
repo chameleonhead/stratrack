@@ -121,6 +121,13 @@ describe('execute', () => {
     spy.mockRestore();
   });
 
+  it('passes arguments to entry point', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    execute([], { entryPoint: 'Print', args: ['a', 1] });
+    expect(spy).toHaveBeenCalledWith('a', 1);
+    spy.mockRestore();
+  });
+
   it('throws when entry point missing', () => {
     expect(() => execute([], { entryPoint: 'Unknown' })).toThrow('Function Unknown not found');
   });

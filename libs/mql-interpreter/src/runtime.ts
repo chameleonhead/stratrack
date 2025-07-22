@@ -36,6 +36,8 @@ import { cast, PrimitiveType } from './casting';
 export interface ExecutionContext {
   /** Entry point function name. */
   entryPoint?: string;
+  /** Arguments to pass to the entry point. */
+  args?: any[];
 }
 
 export function execute(
@@ -45,14 +47,15 @@ export function execute(
   const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {} };
   const definedVars = new Set<string>();
 
-  // Extract entry point. If provided, it will be invoked after the
-  // runtime is populated. Arguments are not supported yet.
-  const entryPoint =
+  // Extract entry point and arguments. If provided, the entry point will be
+  // invoked after the runtime is populated.
+  const ctx =
     typeof entryPointOrContext === 'string'
-      ? entryPointOrContext
-      : entryPointOrContext?.entryPoint;
-  // TODO: support passing arguments and a full execution context
-  // when function bodies are interpreted.
+      ? { entryPoint: entryPointOrContext, args: [] }
+      : entryPointOrContext || { entryPoint: undefined, args: [] };
+  const entryPoint = ctx.entryPoint;
+  const entryArgs = ctx.args ?? [];
+  // TODO: support a full execution context when function bodies are interpreted.
 
   for (const decl of declarations) {
     if (decl.type === 'EnumDeclaration') {
@@ -132,7 +135,7 @@ export function execute(
   }
 
   if (entryPoint) {
-    callFunction(runtime, entryPoint);
+    callFunction(runtime, entryPoint, entryArgs);
   }
 
   return runtime;

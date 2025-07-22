@@ -23,16 +23,17 @@ A reference argument must be an object, e.g. `{value: 10}`. Builtins like
 A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
 The runtime executes the AST and registers enums, classes, functions and global
-variables. `execute()` optionally takes an entry point name. After the runtime is
-populated the specified function (or builtin) is invoked via `callFunction()`.
-Function bodies are not interpreted yet so only builtins will execute.
+variables. `execute()` can optionally invoke an entry point function after
+setup. Provide the name and arguments via `{ entryPoint, args }` and the
+function (or builtin) will be executed using `callFunction()`. Function bodies
+are not interpreted yet so only builtins will execute.
 You may also invoke any parsed function manually using `callFunction()`, which
 checks arguments against the stored signatures and dispatches to a builtin
 implementation if one exists.
 For example:
 
 ```ts
-interpret('', { entryPoint: 'Print' });
+interpret('', { entryPoint: 'Print', args: ['Hello'] });
 ```
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
