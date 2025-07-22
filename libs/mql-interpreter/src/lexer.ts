@@ -14,6 +14,17 @@ export interface Token {
   column: number;
 }
 
+export interface LexError {
+  message: string;
+  line: number;
+  column: number;
+}
+
+export interface LexResult {
+  tokens: Token[];
+  errors: LexError[];
+}
+
 // Common MQL built-in keywords. The list is based on the MQL5 documentation at
 // https://www.mql5.com/ja/docs/basis/types and is not exhaustive but covers
 // the primitive types and a few basic statements.
@@ -113,8 +124,9 @@ const operators = [
 const operatorStart = new Set(operators.map((op) => op[0]));
 const punctuationChars = new Set(['(', ')', '{', '}', '[', ']', ';', ',', '.', ':']);
 
-export function lex(source: string): Token[] {
+export function lex(source: string): LexResult {
   const tokens: Token[] = [];
+  const errors: LexError[] = [];
   let i = 0;
   let line = 1;
   let column = 1;
@@ -151,7 +163,8 @@ export function lex(source: string): Token[] {
         advance();
       }
       if (i >= source.length) {
-        throw new Error('Unterminated comment');
+        errors.push({ message: 'Unterminated comment', line, column });
+        break;
       }
       advance(2);
       continue;
@@ -197,7 +210,7 @@ export function lex(source: string): Token[] {
         advance();
       }
       if (value.length > 63) {
-        throw new Error('Identifier too long');
+        errors.push({ message: 'Identifier too long', line: startLine, column: startCol });
       }
       tokens.push({
         type: keywords.has(value) ? TokenType.Keyword : TokenType.Identifier,
@@ -229,7 +242,8 @@ export function lex(source: string): Token[] {
       continue;
     }
     // unknown char
-    throw new Error(`Unexpected character: ${char}`);
+    errors.push({ message: `Unexpected character: ${char}`, line, column });
+    advance();
   }
-  return tokens;
+  return { tokens, errors };
 }

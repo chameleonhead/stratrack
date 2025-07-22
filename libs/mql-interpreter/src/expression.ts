@@ -22,7 +22,10 @@ export function evaluateExpression(
   env: EvalEnv = {},
   runtime?: Runtime
 ): any {
-  const tokens = lex(expr);
+  const { tokens, errors } = lex(expr);
+  if (errors.length) {
+    throw new Error(errors.map(e => e.message).join('\n'));
+  }
   let pos = 0;
 
   const peek = () => tokens[pos];

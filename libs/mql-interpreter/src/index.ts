@@ -1,4 +1,4 @@
-import { lex, Token, TokenType } from './lexer';
+import { lex, Token, TokenType, LexError, LexResult } from './lexer';
 import {
   parse,
   Declaration,
@@ -67,6 +67,8 @@ export {
   callMethod,
   evaluateExpression,
   executeStatements,
+  LexError,
+  LexResult,
 };
 
 export interface Compilation {
@@ -127,11 +129,11 @@ export function compile(
   source: string,
   options: PreprocessOptions = {}
 ): Compilation {
-  const { tokens, properties } = preprocessWithProperties(source, options);
+  const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
   const ast = parse(tokens);
   const runtime = execute(ast);
   runtime.properties = properties;
-  const errors = checkTypes(ast);
+  const errors = [...lexErrors, ...checkTypes(ast)];
   return { ast, runtime, properties, errors };
 }
 

@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 
 describe('lex', () => {
   it('tokenizes a simple declaration', () => {
-    const tokens = lex('int a = 5;');
+    const { tokens } = lex('int a = 5;');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Keyword, value: 'int' },
       { type: TokenType.Identifier, value: 'a' },
@@ -15,17 +15,17 @@ describe('lex', () => {
   });
 
   it('recognizes additional builtin types', () => {
-    const tokens = lex('bool flag;');
+    const { tokens } = lex('bool flag;');
     expect({ type: tokens[0].type, value: tokens[0].value }).toEqual({ type: TokenType.Keyword, value: 'bool' });
   });
 
   it('recognizes control statement keywords', () => {
-    const tokens = lex('for(i=0;i<10;i++){}');
+    const { tokens } = lex('for(i=0;i<10;i++){}');
     expect({ type: tokens[0].type, value: tokens[0].value }).toEqual({ type: TokenType.Keyword, value: 'for' });
   });
 
   it('ignores comments and strings', () => {
-    const tokens = lex('int a = 5; // comment\n/*multi*/string s="hi";');
+    const { tokens } = lex('int a = 5; // comment\n/*multi*/string s="hi";');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Keyword, value: 'int' },
       { type: TokenType.Identifier, value: 'a' },
@@ -41,7 +41,7 @@ describe('lex', () => {
   });
 
   it('skips comments containing nested markers', () => {
-    const tokens = lex('int a; /* start /* inner */ int b;');
+    const { tokens } = lex('int a; /* start /* inner */ int b;');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Keyword, value: 'int' },
       { type: TokenType.Identifier, value: 'a' },
@@ -53,7 +53,7 @@ describe('lex', () => {
   });
 
   it('allows single line comments inside block comments', () => {
-    const tokens = lex('int a; /* text // inner\nstill */ int b;');
+    const { tokens } = lex('int a; /* text // inner\nstill */ int b;');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Keyword, value: 'int' },
       { type: TokenType.Identifier, value: 'a' },
@@ -64,12 +64,13 @@ describe('lex', () => {
     ]);
   });
 
-  it('throws on unterminated block comment', () => {
-    expect(() => lex('/*')).toThrow();
+  it('reports unterminated block comment', () => {
+    const res = lex('/*');
+    expect(res.errors.length).toBeGreaterThan(0);
   });
 
   it('handles escape sequences and two-char operators', () => {
-    const tokens = lex('"a\\"b"==');
+    const { tokens } = lex('"a\\"b"==');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.String, value: 'a\\"b' },
       { type: TokenType.Operator, value: '==' }
@@ -77,7 +78,7 @@ describe('lex', () => {
   });
 
   it('recognizes compound and multi-character operators', () => {
-    const tokens = lex('i+=2; j<<=1; k++; a?b:c;');
+    const { tokens } = lex('i+=2; j<<=1; k++; a?b:c;');
     expect(tokens.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Identifier, value: 'i' },
       { type: TokenType.Operator, value: '+=' },
@@ -100,8 +101,8 @@ describe('lex', () => {
   });
 
   it('distinguishes prefix and postfix increment/decrement', () => {
-    const pre = lex('--a');
-    const post = lex('a++');
+    const { tokens: pre } = lex('--a');
+    const { tokens: post } = lex('a++');
     expect(pre.map(t => ({ type: t.type, value: t.value }))).toEqual([
       { type: TokenType.Operator, value: '--' },
       { type: TokenType.Identifier, value: 'a' },
@@ -112,23 +113,25 @@ describe('lex', () => {
     ]);
   });
 
-  it('throws on unknown characters', () => {
-    expect(() => lex('#')).toThrow();
+  it('reports unknown characters', () => {
+    const res = lex('#');
+    expect(res.errors.length).toBeGreaterThan(0);
   });
 
   it('enforces identifier length limit', () => {
     const longName = 'a'.repeat(64);
-    expect(() => lex(`${longName} = 1;`)).toThrow('Identifier too long');
+    const res = lex(`${longName} = 1;`);
+    expect(res.errors[0].message).toBe('Identifier too long');
   });
 
   it('treats reserved words as keywords', () => {
-    const tokens = lex('template<typename T> struct S {};');
+    const { tokens } = lex('template<typename T> struct S {};');
     expect({ type: tokens[0].type, value: tokens[0].value }).toEqual({ type: TokenType.Keyword, value: 'template' });
     expect({ type: tokens[2].type, value: tokens[2].value }).toEqual({ type: TokenType.Keyword, value: 'typename' });
   });
 
   it('fails when reserved word used as identifier', () => {
-    const tokens = lex('int for = 1;');
+    const { tokens } = lex('int for = 1;');
     expect({ type: tokens[1].type, value: tokens[1].value }).toEqual({ type: TokenType.Keyword, value: 'for' });
   });
 });
