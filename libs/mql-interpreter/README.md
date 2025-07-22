@@ -36,12 +36,15 @@ arrays and a comprehensive set of builtin function stubs. Besides
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.
 
-The preprocessor handles simple `#define` and `#undef` directives. Only
-parameterless constants are expanded during lexing, allowing code like
+The preprocessor handles `#define` and `#undef` directives. Both simple
+constants and parameterized macros are expanded during lexing, allowing code like
 
 ```mql
 #define SIZE 10
 class A { int arr[SIZE]; }
+
+#define SQR(x) ((x)*(x))
+int v = SQR(2);
 ```
 
 to be parsed correctly.

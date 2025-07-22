@@ -72,4 +72,10 @@ describe('preprocess', () => {
     const runtime = execute(ast);
     expect(Object.keys(runtime.classes)).toEqual(['C']);
   });
+
+  it('expands parameterized macros', () => {
+    const tokens = preprocess('#define ADD(x,y) x+y\nADD(1,2);');
+    const values = tokens.map((t) => t.value).join(' ');
+    expect(values).toBe('1 + 2 ;');
+  });
 });

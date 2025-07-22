@@ -1,5 +1,10 @@
+export interface Macro {
+  body: string;
+  params?: string[];
+}
+
 export interface MacroMap {
-  [name: string]: string;
+  [name: string]: Macro;
 }
 
 export interface PropertyMap {
@@ -21,10 +26,66 @@ export interface PreprocessOptions {
 
 import { lex, Token, TokenType } from './lexer';
 
+function expandTokens(tokens: Token[], macros: MacroMap): Token[] {
+  const out: Token[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const macro =
+      tok.type === TokenType.Identifier ? macros[tok.value] : undefined;
+    if (!macro) {
+      out.push(tok);
+      continue;
+    }
+    if (!macro.params) {
+      out.push(...expandTokens(lex(macro.body), macros));
+      continue;
+    }
+    if (tokens[i + 1]?.value !== '(') {
+      out.push(tok);
+      continue;
+    }
+    i += 2; // skip name and '('
+    const args: Token[][] = [];
+    let current: Token[] = [];
+    let depth = 0;
+    for (; i < tokens.length; i++) {
+      const t = tokens[i];
+      if (t.value === '(') {
+        depth++;
+        current.push(t);
+        continue;
+      }
+      if (t.value === ')' && depth === 0) {
+        args.push(current);
+        break;
+      }
+      if (t.value === ')' && depth > 0) {
+        depth--;
+        current.push(t);
+        continue;
+      }
+      if (t.value === ',' && depth === 0) {
+        args.push(current);
+        current = [];
+        continue;
+      }
+      current.push(t);
+    }
+    const argStrings = args.map((a) => a.map((t) => t.value).join(' '));
+    let body = macro.body;
+    macro.params.forEach((p, idx) => {
+      const re = new RegExp(`\\b${p}\\b`, 'g');
+      body = body.replace(re, argStrings[idx] ?? '');
+    });
+    out.push(...expandTokens(lex(body), macros));
+  }
+  return out;
+}
+
 /**
- * Preprocess the given source code, handling simple #define and #undef
- * directives. Only parameterless macros are supported. The resulting token
- * stream has all identifiers substituted with their macro values.
+ * Preprocess the given source code, handling #define/#undef directives.
+ * Both parameterless and parameterized macros are expanded in the resulting
+ * token stream.
  */
 export function preprocessWithProperties(
   source: string,
@@ -48,14 +109,7 @@ export function preprocessWithProperties(
   const flush = () => {
     if (codeLines.length === 0) return;
     const tokens = lex(codeLines.join('\n'));
-    for (const token of tokens) {
-      if (token.type === TokenType.Identifier && macros[token.value] !== undefined) {
-        const expansion = lex(macros[token.value]);
-        result.push(...expansion);
-      } else {
-        result.push(token);
-      }
-    }
+    result.push(...expandTokens(tokens, macros));
     codeLines = [];
   };
 
@@ -106,8 +160,18 @@ export function preprocessWithProperties(
     }
     if (trimmed.startsWith('#define')) {
       const rest = trimmed.slice('#define'.length).trim();
-      const [id, ...exprParts] = rest.split(/\s+/);
-      if (id) macros[id] = exprParts.join(' ');
+      const m = rest.match(/^([A-Za-z_][A-Za-z0-9_]*)(\(([^)]*)\))?\s*(.*)$/);
+      if (m) {
+        const id = m[1];
+        const params = m[3]
+          ? m[3]
+              .split(',')
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0)
+          : undefined;
+        const body = m[4] ?? '';
+        macros[id] = { body, params };
+      }
       continue;
     }
     if (trimmed.startsWith('#undef')) {
