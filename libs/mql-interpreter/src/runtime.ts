@@ -24,8 +24,8 @@ export interface RuntimeClassMethod {
 
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  classes: Record<string, { base?: string; abstract?: boolean; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
-  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[] }[]>;
+  classes: Record<string, { base?: string; abstract?: boolean; templateParams?: string[]; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
+  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; templateParams?: string[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
   properties: Record<string, string[]>;
   /** Stored values of static local variables keyed by function name */
@@ -94,7 +94,7 @@ export function execute(
         virtual: m.virtual,
         pure: m.pure,
       }));
-      runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, fields, methods };
+      runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, templateParams: classDecl.templateParams, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {
       const fn = decl as FunctionDeclaration;
       const params = fn.parameters.map((p) => ({
@@ -107,7 +107,7 @@ export function execute(
       if (!runtime.functions[fn.name]) {
         runtime.functions[fn.name] = [];
       }
-      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals });
+      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals, templateParams: fn.templateParams });
     } else if (decl.type === 'VariableDeclaration') {
       const v = decl as VariableDeclaration;
       if (runtime.variables[v.name] && v.storage === 'extern') {

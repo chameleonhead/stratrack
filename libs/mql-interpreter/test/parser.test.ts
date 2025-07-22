@@ -201,6 +201,15 @@ describe('parse', () => {
     expect(ast[0]).toEqual({ type: 'ControlStatement', keyword: 'for' });
   });
 
+  it('parses template class and function', () => {
+    const code = 'template<typename T> class Box {}; template<class U> U max(U a,U b);';
+    const ast = parse(lex(code));
+    const cls = ast[0] as any;
+    const fn = ast[1] as any;
+    expect(cls.templateParams).toEqual(['T']);
+    expect(fn.templateParams).toEqual(['U']);
+  });
+
   it('parses local variable declarations', () => {
     const tokens = lex('void f(){ int a; static double b; }');
     const ast = parse(tokens);

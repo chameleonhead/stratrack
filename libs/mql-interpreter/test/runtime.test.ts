@@ -107,6 +107,13 @@ describe('execute', () => {
     expect(runtime.functions.f.length).toBe(2);
   });
 
+  it('stores template parameters', () => {
+    const code = 'template<typename T> class Box{}; template<class U> U max(U a,U b);';
+    const runtime = execute(parse(lex(code)));
+    expect(runtime.classes.Box.templateParams).toEqual(['T']);
+    expect(runtime.functions.max[0].templateParams).toEqual(['U']);
+  });
+
 
   it('throws when base class is missing', () => {
     const tokens = lex('class Child : Parent {}');

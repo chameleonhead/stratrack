@@ -31,6 +31,7 @@ export interface ClassDeclaration {
   name: string;
   base?: string;
   abstract?: boolean;
+  templateParams?: string[];
   fields: ClassField[];
   methods: ClassMethod[];
 }
@@ -49,6 +50,7 @@ export interface FunctionDeclaration {
   name: string;
   parameters: FunctionParameter[];
   locals: VariableDeclaration[];
+  templateParams?: string[];
 }
 
 export interface VariableDeclaration {
@@ -144,6 +146,52 @@ export function parse(tokens: Token[]): Declaration[] {
         break;
       }
     }
+  }
+
+  function parseTemplateParameters(): string[] {
+    consume(TokenType.Keyword, 'template');
+    consume(TokenType.Operator, '<');
+    const params: string[] = [];
+    while (!atEnd()) {
+      const kw = consume(TokenType.Keyword).value;
+      if (kw !== 'class' && kw !== 'typename') {
+        throw new Error('Expected class or typename in template parameter');
+      }
+      const id = consume(TokenType.Identifier).value;
+      params.push(id);
+      if (peek().value === '>') {
+        consume(TokenType.Operator, '>');
+        break;
+      }
+      consume(TokenType.Punctuation, ',');
+    }
+    return params;
+  }
+
+  function parseTemplate(): Declaration {
+    const params = parseTemplateParameters();
+    const next = peek();
+    if (
+      next.type === TokenType.Keyword &&
+      (next.value === 'class' || next.value === 'struct' ||
+        (next.value === 'abstract' &&
+          (tokens[pos + 1]?.value === 'class' || tokens[pos + 1]?.value === 'struct')))
+    ) {
+      const cls = parseClass();
+      cls.templateParams = params;
+      return cls;
+    }
+    if (
+      (next.type === TokenType.Keyword || next.type === TokenType.Identifier) &&
+      (tokens[pos + 1]?.type === TokenType.Identifier ||
+        (tokens[pos + 1]?.type === TokenType.Keyword && tokens[pos + 1].value === 'operator')) &&
+      (tokens[pos + 2]?.value === '(' || tokens[pos + 3]?.value === '(')
+    ) {
+      const fn = parseFunction();
+      fn.templateParams = params;
+      return fn;
+    }
+    throw new Error('Unexpected template declaration');
   }
 
   function parseControlStatement(): ControlStatement {
@@ -461,6 +509,10 @@ export function parse(tokens: Token[]): Declaration[] {
       ['for', 'while', 'do', 'switch', 'if'].includes(token.value)
     ) {
       declarations.push(parseControlStatement());
+      continue;
+    }
+    if (token.type === TokenType.Keyword && token.value === 'template') {
+      declarations.push(parseTemplate());
       continue;
     }
     if (token.type === TokenType.Keyword && token.value === 'enum') {
