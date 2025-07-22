@@ -21,4 +21,10 @@ describe('evaluateExpression', () => {
     const result = evaluateExpression('a > 0 ? 10 : 5', env);
     expect(result).toBe(10);
   });
+
+  it('respects operator precedence', () => {
+    const env: any = { a: 1 };
+    const result = evaluateExpression('1 + 2 * 3 - a', env);
+    expect(result).toBe(6); // 1 + 6 - 1
+  });
 });

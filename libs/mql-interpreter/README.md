@@ -44,9 +44,10 @@ recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
 `switch` and more. Most arithmetic, assignment, relational and bitwise
 operators (e.g. `+=`, `<<`, `&&`) are tokenized as `Operator` tokens so the
 parser can handle expressions in the future.
-Simple expression evaluation is provided via `evaluateExpression()`. It uses
-JavaScript semantics to honor operator precedence and properly handle prefix
-vs postfix forms like `--a` and `a--`.
+Simple expression evaluation is provided via `evaluateExpression()`. It
+implements a small recursive‑descent parser that follows the MQL operator
+precedence and correctly distinguishes prefix from postfix forms such as
+`--a` and `a--`.
 
 The lexer skips `//` single line comments and `/* ... */` blocks entirely so
 they do not appear in the token stream. Single line comments may appear

@@ -32,12 +32,12 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - `callFunction()` helper performs argument checks and dispatches to builtins
 - [x] Parse class methods, constructors, destructors and access modifiers
 - [x] Parse control-flow statements (if/else, loops, switch)
-- [ ] Evaluate expressions using arithmetic, assignment, relational and
-      boolean operators following MQL operator rules. This must honor
-      the correct operator precedence and differentiate prefix/postfix
-      forms like `--a` vs `a--`. `evaluateExpression()` currently uses
-      JavaScript semantics and handles basic cases but does not yet
-      support statements or the `new`/`delete` operators.
+- [x] Evaluate expressions using arithmetic, assignment, relational and
+      boolean operators following MQL operator rules. A custom
+      recursive-descent parser now honors operator precedence and
+      distinguishes prefix from postfix forms like `--a` vs `a--`.
+      Statement execution and the `new`/`delete` operators remain
+      unimplemented.
 - [x] Enforce identifier rules from the MQL documentation:
       maximum length of 63 characters and disallow reserved words.
       Expand the lexer keyword list based on
