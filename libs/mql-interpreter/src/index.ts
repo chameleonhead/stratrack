@@ -16,6 +16,7 @@ import {
   ExecutionContext,
   RuntimeFunctionParameter,
   callFunction,
+  instantiate,
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
 import { ArrayResize } from './arrayResize';
@@ -60,6 +61,7 @@ export {
   BuiltinFunction,
   registerEnvBuiltins,
   callFunction,
+  instantiate,
   evaluateExpression,
 };
 

@@ -1,6 +1,6 @@
 import { lex } from '../src/lexer';
 import { parse } from '../src/parser';
-import { execute, callFunction } from '../src/runtime';
+import { execute, callFunction, instantiate } from '../src/runtime';
 import { preprocessWithProperties } from '../src/preprocess';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -45,6 +45,13 @@ describe('execute', () => {
     const ast = parse(tokens);
     const runtime = execute(ast);
     expect(runtime.classes.A.fields.arr).toEqual({ type: 'double', dimensions: [null], static: false });
+  });
+
+  it('instantiates classes with inheritance', () => {
+    const code = 'class P{int a;} class C:P{double b;}';
+    const runtime = execute(parse(lex(code)));
+    const obj = instantiate(runtime, 'C');
+    expect(Object.keys(obj)).toEqual(['a', 'b']);
   });
 
   it('stores static and virtual flags', () => {

@@ -215,3 +215,17 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
 
   return builtin(...args);
 }
+
+export function instantiate(runtime: Runtime, className: string): any {
+  const cls = runtime.classes[className];
+  if (!cls) throw new Error(`Class ${className} not found`);
+  let obj: any = {};
+  if (cls.base) {
+    obj = { ...instantiate(runtime, cls.base) };
+  }
+  for (const fieldName in cls.fields) {
+    const field = cls.fields[fieldName];
+    obj[fieldName] = field.dimensions.length > 0 ? [] : undefined;
+  }
+  return obj;
+}

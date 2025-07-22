@@ -71,6 +71,15 @@ Others like `iMA` or `AccountBalance` depend on trading platform data and
 default to no-ops.  Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
 
+To create an instance of a parsed class, use `instantiate()` with the runtime
+and class name. Inherited fields are included in the resulting object:
+
+```ts
+const runtime = interpret('class P{int a;} class C:P{double b;}');
+const obj = instantiate(runtime, 'C');
+// obj has properties a and b
+```
+
 Global variables declared at the top level are parsed as well. Qualifiers
 like `static`, `input` and `extern` are recorded along with optional
 initial values and any array dimensions. The runtime exposes these under
