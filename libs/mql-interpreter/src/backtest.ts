@@ -3,6 +3,11 @@ import type { PreprocessOptions } from './preprocess';
 import type { BuiltinFunction } from './builtins';
 import { Broker } from './broker';
 
+export interface Tick {
+  time: number;
+  price: number;
+}
+
 export interface Candle {
   time: number;
   open: number;
@@ -30,6 +35,36 @@ export function parseCsv(data: string): Candle[] {
     if (volume !== undefined) candle.volume = Number(volume);
     candles.push(candle);
   }
+  return candles;
+}
+
+/** Convert a sequence of ticks into candles. `timeframe` specifies the duration
+ *  of each candle in the same units as tick timestamps. */
+export function ticksToCandles(ticks: Tick[], timeframe: number): Candle[] {
+  if (!ticks.length) return [];
+  const sorted = [...ticks].sort((a, b) => a.time - b.time);
+  const candles: Candle[] = [];
+  let start = Math.floor(sorted[0].time / timeframe) * timeframe;
+  let open = sorted[0].price;
+  let high = open;
+  let low = open;
+  for (let i = 0; i < sorted.length; i++) {
+    const t = sorted[i];
+    const bucket = Math.floor(t.time / timeframe) * timeframe;
+    if (bucket !== start) {
+      const prev = sorted[i - 1];
+      candles.push({ time: start, open, high, low, close: prev.price });
+      start = bucket;
+      open = t.price;
+      high = t.price;
+      low = t.price;
+    } else {
+      if (t.price > high) high = t.price;
+      if (t.price < low) low = t.price;
+    }
+  }
+  const last = sorted[sorted.length - 1];
+  candles.push({ time: start, open, high, low, close: last.price });
   return candles;
 }
 
@@ -126,6 +161,12 @@ export class BacktestRunner {
 
   getBroker(): Broker {
     return this.broker;
+  }
+
+  getAccountMetrics() {
+    const bid = this.runtime.globalValues.Bid;
+    const ask = this.runtime.globalValues.Ask;
+    return this.broker.getAccountMetrics(bid, ask);
   }
 }
 

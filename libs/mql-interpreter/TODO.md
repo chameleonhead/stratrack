@@ -77,7 +77,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Generate analysis reports using the same pipeline as live executions
  - [x] Maintain global variables `Bid` and `Ask` reflecting the current tick price
  - [x] Introduce a `Broker` component responsible for order execution and trade history
- - [x] Update `OrderSend` and related builtins to route through the broker and record fills
- - [ ] Expose executed orders and account metrics for analysis reports
- - [ ] Allow supplying raw tick data to generate candles automatically
- - [ ] Support limit orders and automatically trigger stop loss / take profit while advancing time
+- [x] Update `OrderSend` and related builtins to route through the broker and record fills
+- [x] Expose executed orders and account metrics for analysis reports
+- [x] Allow supplying raw tick data to generate candles automatically
+- [x] Support limit orders and automatically trigger stop loss / take profit while advancing time

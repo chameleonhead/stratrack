@@ -23,6 +23,7 @@ export interface Order {
 
 export class Broker {
   private orders: Order[] = [];
+  private balance = 0;
 
   /**
    * Create a new order. `cmd` follows the MT4 enumeration where
@@ -97,6 +98,7 @@ export class Broker {
           order.profit =
             (order.type === 'buy' ? price - order.price : order.price - price) *
             order.volume;
+          this.balance += order.profit;
         }
       }
     }
@@ -109,6 +111,7 @@ export class Broker {
     o.closeTime = time;
     o.state = 'closed';
     o.profit = (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
+    this.balance += o.profit;
   }
 
   getOpenOrders(): Order[] {
@@ -122,5 +125,35 @@ export class Broker {
 
   getHistory(): Order[] {
     return this.orders.filter((o) => o.state === 'closed');
+  }
+
+  getBalance(): number {
+    return this.balance;
+  }
+
+  /**
+   * Calculate account metrics using the current bid/ask price for open orders.
+   */
+  getAccountMetrics(bid: number, ask: number): {
+    balance: number;
+    equity: number;
+    closedProfit: number;
+    openProfit: number;
+  } {
+    let openProfit = 0;
+    for (const o of this.orders) {
+      if (o.state !== 'open') continue;
+      const price = o.type === 'buy' ? bid : ask;
+      openProfit += (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
+    }
+    const closedProfit = this.orders
+      .filter((o) => o.state === 'closed')
+      .reduce((sum, o) => sum + (o.profit || 0), 0);
+    return {
+      balance: this.balance,
+      equity: this.balance + openProfit,
+      closedProfit,
+      openProfit,
+    };
   }
 }

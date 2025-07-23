@@ -33,7 +33,7 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from './preprocess';
-import { BacktestRunner, parseCsv, Candle } from './backtest';
+import { BacktestRunner, parseCsv, Candle, Tick, ticksToCandles } from './backtest';
 import { Broker, OrderState } from './broker';
 
 export {
@@ -77,6 +77,8 @@ export {
   Broker,
   OrderState,
   parseCsv,
+  Tick,
+  ticksToCandles,
 };
 
 export interface Compilation {

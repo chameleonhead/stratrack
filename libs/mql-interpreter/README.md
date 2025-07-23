@@ -209,7 +209,10 @@ exposes builtins such as `iOpen` and `iClose` so code can access bar data while
 `OrderSend` are routed to an internal `Broker`. The broker now supports market
 and limit orders with optional stop loss and take profit levels. It advances
 with each step so pending orders may be triggered and open trades closed
-automatically. All executed orders can be inspected after running.
+automatically. All executed orders can be inspected after running and account
+metrics like balance and equity are available via `runner.getAccountMetrics()`.
+If you have raw tick data you can convert it to candles using
+`ticksToCandles(ticks, timeframe)`.
 
 ```ts
 import { BacktestRunner } from 'mql-interpreter';
