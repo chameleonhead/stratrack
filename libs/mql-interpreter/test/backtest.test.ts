@@ -68,9 +68,9 @@ describe('BacktestRunner', () => {
 
   it('converts ticks to candles', () => {
     const ticks = [
-      { time: 0, price: 1 },
-      { time: 30, price: 2 },
-      { time: 61, price: 3 },
+      { time: 0, bid: 1, ask: 1 },
+      { time: 30, bid: 2, ask: 2 },
+      { time: 61, bid: 3, ask: 3 },
     ];
     const candles = ticksToCandles(ticks, 60);
     expect(candles.length).toBe(2);

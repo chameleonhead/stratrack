@@ -212,7 +212,16 @@ with each step so pending orders may be triggered and open trades closed
 automatically. All executed orders can be inspected after running and account
 metrics like balance and equity are available via `runner.getAccountMetrics()`.
 If you have raw tick data you can convert it to candles using
-`ticksToCandles(ticks, timeframe)`.
+`ticksToCandles(ticks, timeframe)`. Each tick object should provide
+`bid` and `ask` prices in addition to the timestamp:
+
+```ts
+const ticks = [
+  { time: 0, bid: 1.0, ask: 1.1 },
+  { time: 1, bid: 1.05, ask: 1.15 },
+];
+const candles = ticksToCandles(ticks, 60);
+```
 
 ```ts
 import { BacktestRunner } from 'mql-interpreter';

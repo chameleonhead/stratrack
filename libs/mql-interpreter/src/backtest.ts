@@ -5,7 +5,8 @@ import { Broker } from './broker';
 
 export interface Tick {
   time: number;
-  price: number;
+  bid: number;
+  ask: number;
 }
 
 export interface Candle {
@@ -44,27 +45,29 @@ export function ticksToCandles(ticks: Tick[], timeframe: number): Candle[] {
   if (!ticks.length) return [];
   const sorted = [...ticks].sort((a, b) => a.time - b.time);
   const candles: Candle[] = [];
+  const mid = (t: Tick) => (t.bid + t.ask) / 2;
   let start = Math.floor(sorted[0].time / timeframe) * timeframe;
-  let open = sorted[0].price;
+  let open = mid(sorted[0]);
   let high = open;
   let low = open;
   for (let i = 0; i < sorted.length; i++) {
     const t = sorted[i];
+    const price = mid(t);
     const bucket = Math.floor(t.time / timeframe) * timeframe;
     if (bucket !== start) {
       const prev = sorted[i - 1];
-      candles.push({ time: start, open, high, low, close: prev.price });
+      candles.push({ time: start, open, high, low, close: mid(prev) });
       start = bucket;
-      open = t.price;
-      high = t.price;
-      low = t.price;
+      open = price;
+      high = price;
+      low = price;
     } else {
-      if (t.price > high) high = t.price;
-      if (t.price < low) low = t.price;
+      if (price > high) high = price;
+      if (price < low) low = price;
     }
   }
   const last = sorted[sorted.length - 1];
-  candles.push({ time: start, open, high, low, close: last.price });
+  candles.push({ time: start, open, high, low, close: mid(last) });
   return candles;
 }
 
