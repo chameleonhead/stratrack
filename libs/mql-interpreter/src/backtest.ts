@@ -1,6 +1,7 @@
 import { compile, callFunction, Runtime, registerEnvBuiltins } from './index';
 import type { PreprocessOptions } from './preprocess';
 import type { BuiltinFunction } from './builtins';
+import { Broker } from './broker';
 
 export interface Candle {
   time: number;
@@ -40,6 +41,7 @@ export interface BacktestOptions {
 export class BacktestRunner {
   private runtime: Runtime;
   private index = 0;
+  private broker = new Broker();
   constructor(
     private source: string,
     private candles: Candle[],
@@ -77,12 +79,35 @@ export class BacktestRunner {
         const c = this.candles[this.index - (shift ?? 0)];
         return c ? c.time : 0;
       },
+      OrderSend: (
+        symbol: string,
+        cmd: number,
+        volume: number,
+        price: number,
+        slippage: number,
+        sl: number,
+        tp: number
+      ) => {
+        const type = cmd === 0 ? 'buy' : 'sell';
+        return this.broker.sendOrder({
+          symbol,
+          type,
+          volume,
+          price,
+          sl,
+          tp,
+          time: this.candles[this.index].time,
+        });
+      },
     };
   }
 
   step(): void {
     const entry = this.options.entryPoint || 'OnTick';
     if (this.index >= this.candles.length) return;
+    const candle = this.candles[this.index];
+    this.runtime.globalValues.Bid = candle.close;
+    this.runtime.globalValues.Ask = candle.close;
     callFunction(this.runtime, entry);
     this.index++;
   }
@@ -95,6 +120,10 @@ export class BacktestRunner {
 
   getRuntime(): Runtime {
     return this.runtime;
+  }
+
+  getBroker(): Broker {
+    return this.broker;
   }
 }
 

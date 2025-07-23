@@ -34,6 +34,7 @@ import {
   PreprocessOptions,
 } from './preprocess';
 import { BacktestRunner, parseCsv, Candle } from './backtest';
+import { Broker } from './broker';
 
 export {
   lex,
@@ -73,6 +74,7 @@ export {
   LexResult,
   Candle,
   BacktestRunner,
+  Broker,
   parseCsv,
 };
 

@@ -205,6 +205,9 @@ The library provides a small helper to replay historical market data. Use
 `BacktestRunner` with a sequence of candles and your MQL source. The runner
 exposes builtins such as `iOpen` and `iClose` so code can access bar data while
 `step()` or `run()` executes the specified entry point for each candle.
+`Bid` and `Ask` variables are updated on every step. Orders placed through
+`OrderSend` are recorded by an internal `Broker` so results can be inspected
+after running.
 
 ```ts
 import { BacktestRunner } from 'mql-interpreter';

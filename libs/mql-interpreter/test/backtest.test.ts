@@ -28,4 +28,19 @@ describe('BacktestRunner', () => {
     const val2 = callFunction(rt, 'iClose', ['', 0, 0]);
     expect(val2).toBe(456);
   });
+
+  it('updates Bid/Ask and records orders', () => {
+    const code = 'void OnTick(){ return; }';
+    const candles = [
+      { time: 10, open: 1, high: 1, low: 1, close: 1 },
+      { time: 20, open: 2, high: 2, low: 2, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    expect(runner.getRuntime().globalValues.Bid).toBe(1);
+    callFunction(runner.getRuntime(), 'OrderSend', ['', 0, 1, runner.getRuntime().globalValues.Bid, 0, 0, 0]);
+    const orders = runner.getBroker().getOpenOrders();
+    expect(orders.length).toBe(1);
+    expect(orders[0].price).toBe(1);
+  });
 });
