@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { compile, callFunction, Runtime, registerEnvBuiltins } from './index';
 import type { PreprocessOptions } from './preprocess';
 import type { BuiltinFunction } from './builtins';
@@ -13,9 +11,11 @@ export interface Candle {
   volume?: number;
 }
 
-export function loadCsv(filePath: string): Candle[] {
-  const content = fs.readFileSync(path.resolve(filePath), 'utf8');
-  const lines = content.split(/\r?\n/).filter((l: string) => l.trim().length);
+/** Parse CSV formatted candle data. Each line should contain
+ *  `time,open,high,low,close[,volume]` values.
+ */
+export function parseCsv(data: string): Candle[] {
+  const lines = data.split(/\r?\n/).filter((l: string) => l.trim().length);
   const candles: Candle[] = [];
   for (const line of lines) {
     const [time, open, high, low, close, volume] = line.split(',');
