@@ -70,3 +70,14 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Expose error and type-checking results through the public library API so other tools can consume them.
 - [x] Add tests covering common error scenarios (undefined identifiers, invalid casts, incompatible types).
 - [x] Document the new error reporting workflow in the README with examples for both library and CLI usage.
+
+- [x] Develop a backtesting runner that drives the interpreter with market data
+- [x] Support feeding historical candles and ticks to mimic real terminal behavior
+- [x] Load time series from various formats and replay them to the runtime
+- [x] Generate analysis reports using the same pipeline as live executions
+ - [x] Maintain global variables `Bid` and `Ask` reflecting the current tick price
+ - [x] Introduce a `Broker` component responsible for order execution and trade history
+- [x] Update `OrderSend` and related builtins to route through the broker and record fills
+- [x] Expose executed orders and account metrics for analysis reports
+- [x] Allow supplying raw tick data to generate candles automatically
+- [x] Support limit orders and automatically trigger stop loss / take profit while advancing time
