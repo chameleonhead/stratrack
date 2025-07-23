@@ -206,8 +206,10 @@ The library provides a small helper to replay historical market data. Use
 exposes builtins such as `iOpen` and `iClose` so code can access bar data while
 `step()` or `run()` executes the specified entry point for each candle.
 `Bid` and `Ask` variables are updated on every step. Orders placed through
-`OrderSend` are recorded by an internal `Broker` so results can be inspected
-after running.
+`OrderSend` are routed to an internal `Broker`. The broker now supports market
+and limit orders with optional stop loss and take profit levels. It advances
+with each step so pending orders may be triggered and open trades closed
+automatically. All executed orders can be inspected after running.
 
 ```ts
 import { BacktestRunner } from 'mql-interpreter';

@@ -29,7 +29,7 @@ describe('BacktestRunner', () => {
     expect(val2).toBe(456);
   });
 
-  it('updates Bid/Ask and records orders', () => {
+  it('updates Bid/Ask and records market orders', () => {
     const code = 'void OnTick(){ return; }';
     const candles = [
       { time: 10, open: 1, high: 1, low: 1, close: 1 },
@@ -38,9 +38,30 @@ describe('BacktestRunner', () => {
     const runner = new BacktestRunner(code, candles);
     runner.step();
     expect(runner.getRuntime().globalValues.Bid).toBe(1);
-    callFunction(runner.getRuntime(), 'OrderSend', ['', 0, 1, runner.getRuntime().globalValues.Bid, 0, 0, 0]);
+    callFunction(runner.getRuntime(), 'OrderSend', ['', 0, 1, 0, 0, 0, 0]);
     const orders = runner.getBroker().getOpenOrders();
     expect(orders.length).toBe(1);
+    expect(orders[0].state).toBe('open');
     expect(orders[0].price).toBe(1);
+  });
+
+  it('triggers limit orders and tp/sl automatically', () => {
+    const code = 'void OnTick(){ return; }';
+    const candles = [
+      { time: 10, open: 1, high: 1, low: 1, close: 1 },
+      { time: 20, open: 2, high: 2, low: 0.5, close: 1.5 },
+      { time: 30, open: 3, high: 3, low: 1.4, close: 3 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    // place buy limit at 1.2 with tp 2 and sl 0.8
+    callFunction(runner.getRuntime(), 'OrderSend', ['', 2, 1, 1.2, 0, 0.8, 2]);
+    // first step should not open yet
+    runner.step();
+    expect(runner.getBroker().getActiveOrders()[0].state).toBe('pending');
+    // second candle hits limit price and also TP
+    runner.step();
+    const history = runner.getBroker().getHistory();
+    expect(history.length).toBe(1);
+    expect(history[0].profit).toBeCloseTo(0.8); // 2 - 1.2
   });
 });

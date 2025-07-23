@@ -86,17 +86,18 @@ export class BacktestRunner {
         price: number,
         slippage: number,
         sl: number,
-        tp: number
+        tp: number,
       ) => {
-        const type = cmd === 0 ? 'buy' : 'sell';
         return this.broker.sendOrder({
           symbol,
-          type,
+          cmd,
           volume,
           price,
           sl,
           tp,
           time: this.candles[this.index].time,
+          bid: this.runtime.globalValues.Bid,
+          ask: this.runtime.globalValues.Ask,
         });
       },
     };
@@ -108,6 +109,7 @@ export class BacktestRunner {
     const candle = this.candles[this.index];
     this.runtime.globalValues.Bid = candle.close;
     this.runtime.globalValues.Ask = candle.close;
+    this.broker.update(candle);
     callFunction(this.runtime, entry);
     this.index++;
   }
