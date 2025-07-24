@@ -1,4 +1,4 @@
-import { ArrayResize } from '../../src/builtins/impl/helpers/arrayResize';
+import { ArrayResize } from '../../src/builtins/impl/ArrayResize';
 import { describe, it, expect } from 'vitest';
 
 describe('ArrayResize', () => {
