@@ -1,7 +1,7 @@
 import type { BuiltinFunction } from '../types';
-import { ArrayResize as ArrayResizeHelper } from '../../arrayResize';
+import { resizeArray } from '../../resizeArray';
 
 export const ArrayResize: BuiltinFunction = (arr: any[], newSize: number) => {
-  ArrayResizeHelper(arr, newSize);
+  resizeArray(arr, newSize);
   return arr.length;
 };
