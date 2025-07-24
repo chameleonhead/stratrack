@@ -21,7 +21,7 @@ import {
   callMethod,
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
-import { resizeArray } from './resizeArray';
+import { ArrayResize } from './builtins/impl/helpers/arrayResize';
 import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
 import { evaluateExpression } from './expression';
 import { executeStatements } from './statements';
@@ -55,7 +55,7 @@ export {
   ExecutionContext,
   cast,
   PrimitiveType,
-  resizeArray,
+  ArrayResize,
   preprocess,
   preprocessWithProperties,
   MacroMap,

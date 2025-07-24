@@ -1,4 +1,4 @@
-export function resizeArray<T>(
+export function ArrayResize<T>(
   arr: T[],
   newSize: number,
   defaultValue?: T,
