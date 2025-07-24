@@ -1,5 +1,5 @@
 import type { BuiltinFunction } from '../types';
-import { format } from 'util';
+import { formatString } from './format';
 
 export const Print: BuiltinFunction = (...args: any[]) => {
   console.log(...args);
@@ -17,15 +17,17 @@ export const Comment: BuiltinFunction = (...args: any[]) => {
 };
 
 export const PrintFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
-  console.log(format(fmt, ...args));
+  console.log(formatString(fmt, ...args));
   return 0;
 };
 
 export const GetTickCount: BuiltinFunction = () => Date.now();
 
 export const Sleep: BuiltinFunction = (ms: number) => {
-  const arr = new Int32Array(new SharedArrayBuffer(4));
-  Atomics.wait(arr, 0, 0, ms);
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    /* busy wait */
+  }
   return 0;
 };
 
@@ -39,8 +41,11 @@ export const DebugBreak: BuiltinFunction = () => 0;
 export const MessageBox: BuiltinFunction = (_text: string, _caption?: string, _flags?: number) => 1;
 export const GetTickCount64: BuiltinFunction = () => BigInt(Date.now());
 export const GetMicrosecondCount: BuiltinFunction = () => {
-  const [sec, nano] = process.hrtime();
-  return sec * 1_000_000 + Math.floor(nano / 1_000);
+  const t =
+    typeof performance !== 'undefined'
+      ? performance.now()
+      : Date.now();
+  return Math.floor(t * 1000);
 };
 
 export const WebRequest: BuiltinFunction = (

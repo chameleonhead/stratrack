@@ -1,4 +1,5 @@
 import type { BuiltinFunction } from '../types';
+import { formatString } from './format';
 
 export const CharToString: BuiltinFunction = (ch: number | string) => {
   if (typeof ch === 'number') return String.fromCharCode(ch);
@@ -33,7 +34,7 @@ export const StringToInteger: BuiltinFunction = (s: string, base = 10) => {
 };
 
 export const StringFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
-  return require('util').format(fmt, ...args);
+  return formatString(fmt, ...args);
 };
 
 export const StringToCharArray: BuiltinFunction = (
