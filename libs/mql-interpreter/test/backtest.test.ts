@@ -28,6 +28,8 @@ describe('BacktestRunner', () => {
     runner.step();
     const val2 = callFunction(rt, 'iClose', ['', 0, 0]);
     expect(val2).toBe(456);
+    expect(rt.globalValues.Open[0]).toBe(1);
+    expect(rt.globalValues.Close[1]).toBe(456);
   });
 
   it('updates Bid/Ask and records market orders', () => {
@@ -91,5 +93,16 @@ describe('BacktestRunner', () => {
     const metrics = runner.getAccountMetrics();
     expect(metrics.openProfit).toBe(1);
     expect(metrics.equity).toBe(1);
+  });
+
+  it('initializes predefined variables and ResetLastError', () => {
+    const code = 'void OnTick(){ ResetLastError(); }';
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    const rt = runner.getRuntime();
+    expect(rt.globalValues._Digits).toBe(5);
+    rt.globalValues._LastError = 5;
+    callFunction(rt, 'ResetLastError');
+    expect(rt.globalValues._LastError).toBe(0);
   });
 });

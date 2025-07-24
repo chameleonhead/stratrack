@@ -57,7 +57,35 @@ export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
 ): Runtime {
-  const runtime: Runtime = { enums: {}, classes: {}, functions: {}, variables: {}, properties: {}, staticLocals: {}, globalValues: {} };
+  const runtime: Runtime = {
+    enums: {},
+    classes: {},
+    functions: {},
+    variables: {},
+    properties: {},
+    staticLocals: {},
+    globalValues: {
+      _Digits: 0,
+      _Point: 0,
+      _LastError: 0,
+      _Period: 0,
+      _RandomSeed: 0,
+      _StopFlag: 0,
+      _Symbol: '',
+      _UninitReason: 0,
+      Bid: 0,
+      Ask: 0,
+      Bars: 0,
+      Digits: 0,
+      Point: 0,
+      Open: [],
+      High: [],
+      Low: [],
+      Close: [],
+      Time: [],
+      Volume: [],
+    },
+  };
 
   // Extract entry point and arguments. If provided, the entry point will be
   // invoked after the runtime is populated.
