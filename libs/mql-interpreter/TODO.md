@@ -81,3 +81,27 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Expose executed orders and account metrics for analysis reports
 - [x] Allow supplying raw tick data to generate candles automatically
 - [x] Support limit orders and automatically trigger stop loss / take profit while advancing time
+
+- [ ] Integrate predefined variables from <https://docs.mql4.com/predefined>
+ - [ ] Provide runtime constants `_Digits`, `_Point`, `_LastError`, `_Period`,
+       `_RandomSeed`, `_StopFlag`, `_Symbol` and `_UninitReason`
+ - [ ] Expose price series arrays `Open`, `High`, `Low`, `Close`, `Time` and
+       `Volume` as well as `Bid`, `Ask`, `Bars`, `Digits` and `Point`
+ - [ ] Keep `_LastError` synchronized and implement the `ResetLastError` builtin
+ - [ ] Update values when running with `BacktestRunner` or a real MT4 runtime
+
+- [ ] Implement the common functions listed at <https://docs.mql4.com/common>
+ - [ ] Add builtins such as `Alert`, `Comment`, `GetTickCount`, `Sleep`,
+       `PrintFormat`, `WebRequest` and others
+ - [ ] Distinguish platform dependent logic using `registerEnvBuiltins`
+ - [ ] Create tests covering predefined variables and new builtins
+- [ ] Implement array utilities from <https://docs.mql4.com/array>
+  - [ ] Provide builtins for `ArrayCopy`, `ArrayResize`, `ArraySetAsSeries` and others
+- [ ] Implement conversion helpers from <https://docs.mql4.com/convert>
+  - [ ] Provide builtins for `CharToString`, `StringToTime`, `NormalizeDouble` and similar
+- [ ] Implement math functions from <https://docs.mql4.com/math>
+  - [ ] Provide builtins for `MathAbs`, `MathPow`, `MathSqrt` and related operations
+- [ ] Implement string manipulation from <https://docs.mql4.com/strings>
+  - [ ] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
+- [ ] Implement date and time functions from <https://docs.mql4.com/dateandtime>
+  - [ ] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others
