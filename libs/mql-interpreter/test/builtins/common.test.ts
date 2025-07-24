@@ -1,4 +1,21 @@
-import { Print, Alert, Comment, PrintFormat, GetTickCount, Sleep } from '../../src/builtins/impl/common';
+import {
+  Print,
+  Alert,
+  Comment,
+  PrintFormat,
+  GetTickCount,
+  GetTickCount64,
+  GetMicrosecondCount,
+  Sleep,
+  PlaySound,
+  SendMail,
+  SendNotification,
+  SendFTP,
+  TerminalClose,
+  ExpertRemove,
+  DebugBreak,
+  MessageBox,
+} from '../../src/builtins/impl/common';
 import { describe, it, expect } from 'vitest';
 
 describe('common builtins', () => {
@@ -26,6 +43,19 @@ describe('common builtins', () => {
     const start = Date.now();
     Sleep(10);
     expect(Date.now() - start >= 10).toBe(true);
+  });
+
+  it('new helpers return default values', () => {
+    expect(typeof GetTickCount64()).toBe('bigint');
+    expect(GetMicrosecondCount()).toBeTypeOf('number');
+    expect(PlaySound('a.wav')).toBe(true);
+    expect(SendMail('a', 'b', 'c')).toBe(true);
+    expect(SendNotification('n')).toBe(true);
+    expect(SendFTP('f', 'ftp')).toBe(true);
+    expect(TerminalClose()).toBe(true);
+    expect(ExpertRemove()).toBe(true);
+    expect(DebugBreak()).toBe(0);
+    expect(MessageBox('text')).toBe(1);
   });
 
 });

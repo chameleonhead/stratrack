@@ -105,4 +105,15 @@ describe('BacktestRunner', () => {
     callFunction(rt, 'ResetLastError');
     expect(rt.globalValues._LastError).toBe(0);
   });
+
+  it('exposes GetLastError and IsStopped', () => {
+    const code = 'void OnTick(){ return; }';
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    const rt = runner.getRuntime();
+    rt.globalValues._LastError = 7;
+    expect(callFunction(rt, 'GetLastError', [])).toBe(7);
+    rt.globalValues._StopFlag = 1;
+    expect(callFunction(rt, 'IsStopped', [])).toBe(1);
+  });
 });

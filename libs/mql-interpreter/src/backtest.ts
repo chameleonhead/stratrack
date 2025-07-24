@@ -141,6 +141,8 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
+      GetLastError: () => this.runtime.globalValues._LastError,
+      IsStopped: () => this.runtime.globalValues._StopFlag,
       OrderSend: (
         symbol: string,
         cmd: number,

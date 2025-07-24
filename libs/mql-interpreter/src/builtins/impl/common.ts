@@ -24,11 +24,23 @@ export const PrintFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
 export const GetTickCount: BuiltinFunction = () => Date.now();
 
 export const Sleep: BuiltinFunction = (ms: number) => {
-  const end = Date.now() + ms;
-  while (Date.now() < end) {
-    // busy wait
-  }
+  const arr = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(arr, 0, 0, ms);
   return 0;
+};
+
+export const PlaySound: BuiltinFunction = (_file: string) => true;
+export const SendMail: BuiltinFunction = (_to: string, _subj: string, _body: string) => true;
+export const SendNotification: BuiltinFunction = (_msg: string) => true;
+export const SendFTP: BuiltinFunction = (_file: string, _ftp: string) => true;
+export const TerminalClose: BuiltinFunction = () => true;
+export const ExpertRemove: BuiltinFunction = () => true;
+export const DebugBreak: BuiltinFunction = () => 0;
+export const MessageBox: BuiltinFunction = (_text: string, _caption?: string, _flags?: number) => 1;
+export const GetTickCount64: BuiltinFunction = () => BigInt(Date.now());
+export const GetMicrosecondCount: BuiltinFunction = () => {
+  const [sec, nano] = process.hrtime();
+  return sec * 1_000_000 + Math.floor(nano / 1_000);
 };
 
 export const WebRequest: BuiltinFunction = (
