@@ -2,7 +2,25 @@ import type { BuiltinFunction } from '../types';
 import * as AccountInfo from './AccountInfo';
 import { OrderSend } from './OrderSend';
 import { iMA } from './iMA';
-import { ArrayResize, ArrayCopy, ArraySetAsSeries } from './array';
+import {
+  ArrayResize,
+  ArrayCopy,
+  ArraySetAsSeries,
+  ArrayGetAsSeries,
+  ArrayIsSeries,
+  ArrayIsDynamic,
+  ArraySize,
+  ArrayRange,
+  ArrayDimension,
+  ArrayFree,
+  ArrayInitialize,
+  ArrayFill,
+  ArraySort,
+  ArrayMaximum,
+  ArrayMinimum,
+  ArrayBsearch,
+  ArrayCompare,
+} from './array';
 import { CharToString, StringToTime, NormalizeDouble } from './convert';
 import { MathAbs, MathPow, MathSqrt } from './math';
 import { StringTrimLeft, StringTrimRight, StringLen, StringSubstr } from './strings';
@@ -78,6 +96,20 @@ export {
   ArrayResize,
   ArrayCopy,
   ArraySetAsSeries,
+  ArrayGetAsSeries,
+  ArrayIsSeries,
+  ArrayIsDynamic,
+  ArraySize,
+  ArrayRange,
+  ArrayDimension,
+  ArrayFree,
+  ArrayInitialize,
+  ArrayFill,
+  ArraySort,
+  ArrayMaximum,
+  ArrayMinimum,
+  ArrayBsearch,
+  ArrayCompare,
   StringTrimLeft,
   StringTrimRight,
   StringLen,

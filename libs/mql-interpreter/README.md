@@ -71,8 +71,8 @@ arrays and a comprehensive set of builtin function stubs. Besides
 `Print`, `OrderSend` and `iMA`, all functions listed at
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`,
-`GetTickCount64` and `PlaySound` have working implementations alongside
-string and math utilities.
+`ArraySort`, `GetTickCount64` and `PlaySound` have working implementations
+alongside string, math and other array utilities.
 
 Builtins fall into two categories. **Core** builtins are environment
 independent and always behave the same (e.g. `ArrayResize` or `Print`).

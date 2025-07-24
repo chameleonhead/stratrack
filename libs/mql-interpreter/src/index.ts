@@ -21,7 +21,25 @@ import {
   callMethod,
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
-import { ArrayResize } from './builtins/impl/array';
+import {
+  ArrayResize,
+  ArrayCopy,
+  ArraySetAsSeries,
+  ArrayGetAsSeries,
+  ArrayIsSeries,
+  ArrayIsDynamic,
+  ArraySize,
+  ArrayRange,
+  ArrayDimension,
+  ArrayFree,
+  ArrayInitialize,
+  ArrayFill,
+  ArraySort,
+  ArrayMaximum,
+  ArrayMinimum,
+  ArrayBsearch,
+  ArrayCompare,
+} from './builtins/impl/array';
 import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
 import { evaluateExpression } from './expression';
 import { executeStatements } from './statements';
@@ -56,6 +74,22 @@ export {
   cast,
   PrimitiveType,
   ArrayResize,
+  ArrayCopy,
+  ArraySetAsSeries,
+  ArrayGetAsSeries,
+  ArrayIsSeries,
+  ArrayIsDynamic,
+  ArraySize,
+  ArrayRange,
+  ArrayDimension,
+  ArrayFree,
+  ArrayInitialize,
+  ArrayFill,
+  ArraySort,
+  ArrayMaximum,
+  ArrayMinimum,
+  ArrayBsearch,
+  ArrayCompare,
   preprocess,
   preprocessWithProperties,
   MacroMap,
