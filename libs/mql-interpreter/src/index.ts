@@ -21,7 +21,7 @@ import {
   callMethod,
 } from './runtime';
 import { cast, PrimitiveType } from './casting';
-import { ArrayResize } from './builtins/impl/ArrayResize';
+import { ArrayResize } from './builtins/impl/array';
 import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
 import { evaluateExpression } from './expression';
 import { executeStatements } from './statements';

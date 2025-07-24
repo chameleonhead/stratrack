@@ -2,29 +2,12 @@ import type { BuiltinFunction } from '../types';
 import * as AccountInfo from './AccountInfo';
 import { OrderSend } from './OrderSend';
 import { iMA } from './iMA';
-import { ArrayResize } from './ArrayResize';
-import { ArrayCopy } from './ArrayCopy';
-import { ArraySetAsSeries } from './ArraySetAsSeries';
-import { StringTrimLeft } from './StringTrimLeft';
-import { StringTrimRight } from './StringTrimRight';
-import { StringLen } from './StringLen';
-import { StringSubstr } from './StringSubstr';
-import { Print } from './Print';
-import { Alert } from './Alert';
-import { PrintFormat } from './PrintFormat';
-import { Comment } from './Comment';
-import { GetTickCount } from './GetTickCount';
-import { Sleep } from './Sleep';
-import { CharToString } from './CharToString';
-import { StringToTime } from './StringToTime';
-import { NormalizeDouble } from './NormalizeDouble';
-import { MathAbs } from './MathAbs';
-import { MathPow } from './MathPow';
-import { MathSqrt } from './MathSqrt';
-import { Day } from './Day';
-import { Hour } from './Hour';
-import { TimeCurrent } from './TimeCurrent';
-import { TimeToStruct } from './TimeToStruct';
+import { ArrayResize, ArrayCopy, ArraySetAsSeries } from './array';
+import { CharToString, StringToTime, NormalizeDouble } from './convert';
+import { MathAbs, MathPow, MathSqrt } from './math';
+import { StringTrimLeft, StringTrimRight, StringLen, StringSubstr } from './strings';
+import { Day, Hour, TimeCurrent, TimeToStruct } from './datetime';
+import { Print, Alert, PrintFormat, Comment, GetTickCount, Sleep } from './common';
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   Print,
