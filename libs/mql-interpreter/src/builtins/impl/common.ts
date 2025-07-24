@@ -30,3 +30,15 @@ export const Sleep: BuiltinFunction = (ms: number) => {
   }
   return 0;
 };
+
+export const WebRequest: BuiltinFunction = (
+  _method: string,
+  _url: string,
+  _headers: string[] = [],
+  _data: string = '',
+  _timeout: number = 5000,
+  result?: { value: string },
+) => {
+  if (result) result.value = '';
+  return -1;
+};

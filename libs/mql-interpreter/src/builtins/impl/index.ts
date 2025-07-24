@@ -7,7 +7,7 @@ import { CharToString, StringToTime, NormalizeDouble } from './convert';
 import { MathAbs, MathPow, MathSqrt } from './math';
 import { StringTrimLeft, StringTrimRight, StringLen, StringSubstr } from './strings';
 import { Day, Hour, TimeCurrent, TimeToStruct } from './datetime';
-import { Print, Alert, PrintFormat, Comment, GetTickCount, Sleep } from './common';
+import { Print, Alert, PrintFormat, Comment, GetTickCount, Sleep, WebRequest } from './common';
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   Print,
@@ -23,6 +23,7 @@ export const coreBuiltins: Record<string, BuiltinFunction> = {
   Comment,
   GetTickCount,
   Sleep,
+  WebRequest,
   CharToString,
   StringToTime,
   NormalizeDouble,
@@ -57,6 +58,7 @@ export {
   Comment,
   GetTickCount,
   Sleep,
+  WebRequest,
   CharToString,
   StringToTime,
   NormalizeDouble,
