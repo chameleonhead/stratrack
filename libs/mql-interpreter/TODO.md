@@ -93,6 +93,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Implement the common functions listed at <https://docs.mql4.com/common>
  - [x] Add builtins such as `Alert`, `Comment`, `GetTickCount`, `Sleep`,
        `PrintFormat`, `WebRequest` and others
+ - [x] Provide global variable helpers like `GlobalVariableSet` and friends
  - [x] Distinguish platform dependent logic using `registerEnvBuiltins`
  - [x] Create tests covering predefined variables and new builtins
 - [x] Implement array utilities from <https://docs.mql4.com/array>

@@ -15,6 +15,15 @@ import {
   ExpertRemove,
   DebugBreak,
   MessageBox,
+  GlobalVariableSet,
+  GlobalVariableGet,
+  GlobalVariableDel,
+  GlobalVariableCheck,
+  GlobalVariablesDeleteAll,
+  GlobalVariablesTotal,
+  GlobalVariableName,
+  GlobalVariableTime,
+  GlobalVariableSetOnCondition,
 } from '../../src/builtins/impl/common';
 import { describe, it, expect } from 'vitest';
 
@@ -56,6 +65,23 @@ describe('common builtins', () => {
     expect(ExpertRemove()).toBe(true);
     expect(DebugBreak()).toBe(0);
     expect(MessageBox('text')).toBe(1);
+  });
+
+  it('manages global variables', () => {
+    GlobalVariablesDeleteAll();
+    expect(GlobalVariablesTotal()).toBe(0);
+    GlobalVariableSet('x', 5);
+    expect(GlobalVariableGet('x')).toBe(5);
+    expect(GlobalVariableCheck('x')).toBe(true);
+    expect(GlobalVariableName(0)).toBe('x');
+    expect(GlobalVariablesTotal()).toBe(1);
+    const t = GlobalVariableTime('x');
+    expect(t).toBeGreaterThan(0);
+    expect(GlobalVariableSetOnCondition('x', 6, 5)).toBe(true);
+    expect(GlobalVariableGet('x')).toBe(6);
+    expect(GlobalVariableSetOnCondition('x', 7, 5)).toBe(false);
+    expect(GlobalVariableDel('x')).toBe(true);
+    expect(GlobalVariablesTotal()).toBe(0);
   });
 
 });

@@ -72,7 +72,7 @@ arrays and a comprehensive set of builtin function stubs. Besides
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`,
 `ArraySort`, `GetTickCount64` and `PlaySound` have working implementations
-alongside string, math and other array utilities.
+alongside string, math and global variable helpers such as `GlobalVariableSet`.
 
 Builtins fall into two categories. **Core** builtins are environment
 independent and always behave the same (e.g. `ArrayResize` or `Print`).
