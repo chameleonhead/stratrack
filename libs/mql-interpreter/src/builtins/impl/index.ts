@@ -148,6 +148,7 @@ import {
   IsTradeAllowed,
   IsTradeContextBusy,
   UninitializeReason,
+  setTerminal,
 } from './common';
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
@@ -419,4 +420,5 @@ export {
   TimeSeconds,
   TimeYear,
   AccountInfo,
+  setTerminal,
 };

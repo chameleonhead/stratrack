@@ -1,13 +1,11 @@
 import { compile, callFunction, Runtime, registerEnvBuiltins } from './index';
 import type { PreprocessOptions } from './preprocess';
 import type { BuiltinFunction } from './builtins';
-import { Broker } from './broker';
-
-export interface Tick {
-  time: number;
-  bid: number;
-  ask: number;
-}
+import { Broker, Order } from './broker';
+import { Account, AccountMetrics } from './account';
+import { MarketData, Tick } from './market';
+import { VirtualTerminal } from './terminal';
+import { setTerminal } from './builtins/impl/common';
 
 export interface Candle {
   time: number;
@@ -16,6 +14,11 @@ export interface Candle {
   low: number;
   close: number;
   volume?: number;
+}
+
+export interface BacktestSession {
+  broker: Broker;
+  account: Account;
 }
 
 /** Parse CSV formatted candle data. Each line should contain
@@ -74,12 +77,20 @@ export function ticksToCandles(ticks: Tick[], timeframe: number): Candle[] {
 export interface BacktestOptions {
   entryPoint?: string;
   preprocessOptions?: PreprocessOptions;
+  initialBalance?: number;
+  /** Tick data for each tradable symbol */
+  ticks?: Record<string, Tick[]>;
+  /** Primary symbol for this backtest */
+  symbol?: string;
 }
 
 export class BacktestRunner {
   private runtime: Runtime;
   private index = 0;
-  private broker = new Broker();
+  private session: BacktestSession;
+  private market: MarketData;
+  private terminal: VirtualTerminal;
+  private selectedOrder?: Order;
   constructor(
     private source: string,
     private candles: Candle[],
@@ -91,6 +102,15 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = compilation.runtime;
+    const broker = new Broker();
+    const account = new Account(options.initialBalance ?? 0);
+    this.session = { broker, account };
+    this.terminal = new VirtualTerminal();
+    setTerminal(this.terminal);
+    const symbol = options.symbol ?? 'TEST';
+    const baseTicks = candles.map(c => ({ time: c.time, bid: c.close, ask: c.close }));
+    const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
+    this.market = new MarketData(ticks);
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
     registerEnvBuiltins(builtins);
@@ -107,15 +127,43 @@ export class BacktestRunner {
     rt.Bars = this.candles.length;
     rt.Digits = rt._Digits = 5;
     rt.Point = rt._Point = Math.pow(10, -5);
-    rt.Bid = this.candles[0]?.close ?? 0;
-    rt.Ask = this.candles[0]?.close ?? 0;
-    rt._Symbol = 'TEST';
+    const symbol = this.options.symbol ?? 'TEST';
+    const tick = this.market.getTick(symbol, this.candles[0]?.time ?? 0);
+    rt.Bid = tick?.bid ?? 0;
+    rt.Ask = tick?.ask ?? 0;
+    rt._Symbol = symbol;
     if (this.candles.length > 1) {
       rt._Period = this.candles[1].time - this.candles[0].time;
     }
   }
 
   private buildBuiltins(): Record<string, BuiltinFunction> {
+    const metrics = () =>
+      this.session.account.getMetrics(
+        this.session.broker,
+        this.runtime.globalValues.Bid,
+        this.runtime.globalValues.Ask,
+      );
+
+    const marketInfo = (symbol: string, type: number): number => {
+      const time = this.candles[Math.min(this.index, this.candles.length - 1)].time;
+      const tick = this.market.getTick(symbol, time);
+      switch (type) {
+        case 9: // MODE_BID
+          return tick?.bid ?? 0;
+        case 10: // MODE_ASK
+          return tick?.ask ?? 0;
+        case 11: // MODE_POINT
+          return this.runtime.globalValues.Point;
+        case 12: // MODE_DIGITS
+          return this.runtime.globalValues.Digits;
+        case 13: // MODE_SPREAD
+          return tick ? Math.round((tick.ask - tick.bid) / this.runtime.globalValues.Point) : 0;
+        default:
+          return 0;
+      }
+    };
+
     return {
       iOpen: (_symbol: any, _tf: any, shift: number) => {
         const c = this.candles[this.index - (shift ?? 0)];
@@ -152,7 +200,7 @@ export class BacktestRunner {
         sl: number,
         tp: number,
       ) => {
-        return this.broker.sendOrder({
+        return this.session.broker.sendOrder({
           symbol,
           cmd,
           volume,
@@ -164,6 +212,55 @@ export class BacktestRunner {
           ask: this.runtime.globalValues.Ask,
         });
       },
+      MarketInfo: (sym: string, type: number) => marketInfo(sym, type),
+      SymbolsTotal: (selected = false) =>
+        this.market.getSymbols(Boolean(selected)).length,
+      SymbolName: (index: number, selected = false) => {
+        const list = this.market.getSymbols(Boolean(selected));
+        return list[index] ?? '';
+      },
+      SymbolSelect: (sym: string, enable: boolean) => this.market.select(sym, enable),
+      OrdersTotal: () => this.session.broker.getActiveOrders().length,
+      OrdersHistoryTotal: () => this.session.broker.getHistory().length,
+      OrderSelect: (index: number, select: number, pool = 0) => {
+        const byTicket = select === 1;
+        const arr = pool === 1 ? this.session.broker.getHistory() : this.session.broker.getActiveOrders();
+        this.selectedOrder = byTicket ? this.session.broker.getOrder(index) : arr[index];
+        return this.selectedOrder ? 1 : 0;
+      },
+      OrderType: () => (this.selectedOrder ? (this.selectedOrder.type === 'buy' ? 0 : 1) : -1),
+      OrderTicket: () => (this.selectedOrder ? this.selectedOrder.ticket : -1),
+      OrderSymbol: () => this.selectedOrder?.symbol ?? '',
+      OrderLots: () => this.selectedOrder?.volume ?? 0,
+      OrderOpenPrice: () => this.selectedOrder?.price ?? 0,
+      OrderOpenTime: () => this.selectedOrder?.openTime ?? 0,
+      OrderClosePrice: () => this.selectedOrder?.closePrice ?? 0,
+      OrderCloseTime: () => this.selectedOrder?.closeTime ?? 0,
+      OrderProfit: () => this.selectedOrder?.profit ?? 0,
+      OrderClose: (ticket: number, lots: number, price: number) => {
+        const t = ticket >= 0 ? ticket : this.selectedOrder?.ticket ?? -1;
+        if (t < 0) return 0;
+        const p = price > 0 ? price : this.runtime.globalValues.Bid;
+        const pr = this.session.broker.close(t, p, this.candles[this.index].time);
+        if (pr) this.session.account.applyProfit(pr);
+        return pr ? 1 : 0;
+      },
+      AccountBalance: () => metrics().balance,
+      AccountEquity: () => metrics().equity,
+      AccountProfit: () => metrics().openProfit + metrics().closedProfit,
+      AccountFreeMargin: () => metrics().equity,
+      AccountCredit: () => 0,
+      AccountCompany: () => 'Backtest',
+      AccountCurrency: () => 'USD',
+      AccountLeverage: () => 1,
+      AccountMargin: () => 0,
+      AccountName: () => 'Backtest',
+      AccountNumber: () => 1,
+      AccountServer: () => 'Backtest',
+      AccountFreeMarginCheck: () => metrics().equity,
+      AccountFreeMarginMode: () => 0,
+      AccountStopoutLevel: () => 0,
+      AccountStopoutMode: () => 0,
     };
   }
 
@@ -171,9 +268,14 @@ export class BacktestRunner {
     const entry = this.options.entryPoint || 'OnTick';
     if (this.index >= this.candles.length) return;
     const candle = this.candles[this.index];
-    this.runtime.globalValues.Bid = candle.close;
-    this.runtime.globalValues.Ask = candle.close;
-    this.broker.update(candle);
+    const symbol = this.options.symbol ?? 'TEST';
+    const tick = this.market.getTick(symbol, candle.time);
+    this.runtime.globalValues.Bid = tick?.bid ?? candle.close;
+    this.runtime.globalValues.Ask = tick?.ask ?? candle.close;
+    const profit = this.session.broker.update(candle);
+    if (profit) {
+      this.session.account.applyProfit(profit);
+    }
     callFunction(this.runtime, entry);
     this.index++;
   }
@@ -189,13 +291,25 @@ export class BacktestRunner {
   }
 
   getBroker(): Broker {
-    return this.broker;
+    return this.session.broker;
   }
 
   getAccountMetrics() {
     const bid = this.runtime.globalValues.Bid;
     const ask = this.runtime.globalValues.Ask;
-    return this.broker.getAccountMetrics(bid, ask);
+    return this.session.account.getMetrics(this.session.broker, bid, ask);
+  }
+
+  getAccount(): Account {
+    return this.session.account;
+  }
+
+  getMarketData(): MarketData {
+    return this.market;
+  }
+
+  getTerminal(): VirtualTerminal {
+    return this.terminal;
   }
 }
 

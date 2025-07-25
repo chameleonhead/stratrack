@@ -1,23 +1,34 @@
 import type { BuiltinFunction } from '../types';
 import { formatString } from './format';
+import type { VirtualTerminal } from '../../terminal';
+
+let terminal: VirtualTerminal | null = null;
+export function setTerminal(t: VirtualTerminal | null): void {
+  terminal = t;
+}
 
 export const Print: BuiltinFunction = (...args: any[]) => {
+  if (terminal) return terminal.print(...args);
   console.log(...args);
   return 0;
 };
 
 export const Alert: BuiltinFunction = (...args: any[]) => {
+  if (terminal) return terminal.alert(...args);
   console.log(...args);
   return true;
 };
 
 export const Comment: BuiltinFunction = (...args: any[]) => {
+  if (terminal) return terminal.comment(...args);
   console.log(...args);
   return 0;
 };
 
 export const PrintFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
-  console.log(formatString(fmt, ...args));
+  const text = formatString(fmt, ...args);
+  if (terminal) return terminal.print(text);
+  console.log(text);
   return 0;
 };
 
@@ -31,7 +42,9 @@ export const Sleep: BuiltinFunction = (ms: number) => {
   return 0;
 };
 
-export const PlaySound: BuiltinFunction = (_file: string) => true;
+export const PlaySound: BuiltinFunction = (file: string) => {
+  return terminal ? terminal.playSound(file) : true;
+};
 export const SendMail: BuiltinFunction = (_to: string, _subj: string, _body: string) => true;
 export const SendNotification: BuiltinFunction = (_msg: string) => true;
 export const SendFTP: BuiltinFunction = (_file: string, _ftp: string) => true;
@@ -66,29 +79,35 @@ export const GlobalVariableSet: BuiltinFunction = (
   name: string,
   value: number,
 ) => {
+  if (terminal) return terminal.setGlobalVariable(name, value);
   globalVars[name] = { value, time: Math.floor(Date.now() / 1000) };
   return value;
 };
 
 export const GlobalVariableGet: BuiltinFunction = (name: string) => {
+  if (terminal) return terminal.getGlobalVariable(name);
   return globalVars[name]?.value ?? 0;
 };
 
 export const GlobalVariableDel: BuiltinFunction = (name: string) => {
+  if (terminal) return terminal.deleteGlobalVariable(name);
   const existed = name in globalVars;
   delete globalVars[name];
   return existed;
 };
 
 export const GlobalVariableCheck: BuiltinFunction = (name: string) => {
+  if (terminal) return terminal.checkGlobalVariable(name);
   return name in globalVars;
 };
 
 export const GlobalVariableTime: BuiltinFunction = (name: string) => {
+  if (terminal) return terminal.getGlobalVariableTime(name);
   return globalVars[name]?.time ?? 0;
 };
 
 export const GlobalVariablesDeleteAll: BuiltinFunction = (prefix = '') => {
+  if (terminal) return terminal.deleteAllGlobalVariables(prefix);
   let count = 0;
   for (const k of Object.keys(globalVars)) {
     if (!prefix || k.startsWith(prefix)) {
@@ -100,10 +119,12 @@ export const GlobalVariablesDeleteAll: BuiltinFunction = (prefix = '') => {
 };
 
 export const GlobalVariablesTotal: BuiltinFunction = () => {
+  if (terminal) return terminal.globalVariablesTotal();
   return Object.keys(globalVars).length;
 };
 
 export const GlobalVariableName: BuiltinFunction = (index: number) => {
+  if (terminal) return terminal.getGlobalVariableName(index);
   const names = Object.keys(globalVars);
   return names[index] ?? '';
 };
@@ -118,6 +139,7 @@ export const GlobalVariableSetOnCondition: BuiltinFunction = (
   value: number,
   check: number,
 ) => {
+  if (terminal) return terminal.setGlobalVariableOnCondition(name, value, check);
   if (!globalVars[name] || globalVars[name].value === check) {
     globalVars[name] = { value, time: Math.floor(Date.now() / 1000) };
     return true;
@@ -125,7 +147,10 @@ export const GlobalVariableSetOnCondition: BuiltinFunction = (
   return false;
 };
 
-export const GlobalVariablesFlush: BuiltinFunction = () => 0;
+export const GlobalVariablesFlush: BuiltinFunction = () => {
+  if (terminal) return terminal.flushGlobalVariables();
+  return 0;
+};
 
 export const TerminalCompany: BuiltinFunction = () => 'MetaQuotes Software Corp.';
 export const TerminalName: BuiltinFunction = () => 'MetaTrader';

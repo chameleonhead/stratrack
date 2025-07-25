@@ -106,3 +106,68 @@ The following tasks outline future work required to develop a functional MQL4/5 
  - [x] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
 - [x] Implement date and time functions from <https://docs.mql4.com/dateandtime>
  - [x] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others
+
+# Account information
+
+- [ ] Implement the account information helpers listed at <https://docs.mql4.com/account>.
+  - [ ] Expose runtime accessors like `AccountBalance`, `AccountEquity` and `AccountProfit` using broker data.
+  - [ ] Provide default values for `AccountName`, `AccountNumber`, `AccountCurrency` and others when running in the backtest environment.
+  - [ ] Introduce an optional `initialBalance` setting for `BacktestRunner` so tests can start with a known deposit.
+
+# Terminal state checks
+
+- [ ] Implement the terminal and program state helpers listed at <https://docs.mql4.com/check>.
+  - [ ] Provide builtins for functions like `GetLastError`, `IsStopped`, `Symbol`, `Period` and others.
+  - [ ] Support environment queries such as `TerminalInfoInteger`, `IsConnected`, `IsOptimization` and `IsTesting`.
+
+# Market information
+
+- [ ] Implement market information helpers from <https://docs.mql4.com/marketinformation>.
+  - [ ] Provide a `MarketData` service storing tick data per symbol for backtests.
+  - [ ] Support builtins like `MarketInfo`, `SymbolsTotal`, `SymbolName` and `SymbolSelect` using this service.
+  - [ ] Restrict data retrieval to the available time range and encapsulate implementation for future real-time support.
+
+# Trading functions
+
+- [ ] Implement trading helpers from <https://docs.mql4.com/trading>.
+  - [ ] Provide builtins for order enumeration such as `OrdersTotal` and `OrdersHistoryTotal`.
+  - [ ] Add `OrderSelect`, `OrderType`, `OrderLots`, `OrderProfit` and related accessors.
+- [ ] Support closing orders via `OrderClose`.
+
+# Indicator functions
+
+- [ ] Implement standard indicator helpers from <https://docs.mql4.com/indicators>.
+  - [ ] Provide builtins like `iMA`, `iMACD`, `iRSI` and others using backtest candle data.
+  - [ ] Ensure indicators operate on the selected symbol and timeframe when running a session.
+  - [ ] Reuse the `MarketData` service for any price series needed by these functions.
+
+# Custom indicator helpers
+
+- [ ] Design a framework for executing custom indicators as described at <https://docs.mql4.com/customind>.
+  - [ ] Support loading compiled indicators and calling them via `iCustom`.
+  - [ ] Manage indicator buffers using helpers like `SetIndexBuffer` and `IndicatorBuffers`.
+  - [ ] Expose initialization callbacks (`OnInit`, `OnCalculate`) for custom indicator scripts.
+  - [ ] Allow backtests to attach indicators while keeping implementation details encapsulated.
+
+# Terminal global variables
+
+- [x] Provide builtins like `GlobalVariableSet`, `GlobalVariableGet`,
+  `GlobalVariableCheck`, `GlobalVariableDel`, `GlobalVariableTime`,
+  `GlobalVariableName`, `GlobalVariablesDeleteAll`, `GlobalVariablesTotal`,
+  `GlobalVariableTemp`, `GlobalVariableSetOnCondition` and
+  `GlobalVariablesFlush` as described at <https://docs.mql4.com/globals>.
+- [ ] Maintain variables across sessions and expire them four weeks after the
+  last access.
+- [ ] Persist global variables on disk so `GlobalVariablesFlush` can save them.
+
+# Program structure and virtual terminal
+
+- [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
+  - [ ] Distinguish expert advisors, scripts and indicators based on entry points.
+  - [ ] Automatically call `OnInit` before execution and `OnDeinit` after completion.
+  - [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [ ] Provide a `VirtualTerminal` abstraction.
+  - [ ] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
+  - [ ] Keep the terminal modular so real-time implementations can replace parts like file access or network I/O.
+  - [ ] Split terminal services into separate "cards" (file, network, ui) for easy replacement.
+  - [ ] Implement UI features like chart and window operations when running against the real terminal.
