@@ -10,6 +10,26 @@ export class VirtualTerminal {
   private handles: Record<number, VirtualFile> = {};
   private nextHandle = 1;
   private globalVars: Record<string, { value: number; time: number }> = {};
+  private storagePath?: string;
+
+  constructor(storagePath?: string) {
+    this.storagePath = storagePath;
+    if (storagePath) {
+      try {
+        const json = require('fs').readFileSync(storagePath, 'utf8');
+        const data = JSON.parse(json) as Record<string, { value: number; time: number }>;
+        const now = Math.floor(Date.now() / 1000);
+        const fourWeeks = 28 * 24 * 60 * 60;
+        for (const [k, v] of Object.entries(data)) {
+          if (now - v.time < fourWeeks) {
+            this.globalVars[k] = v;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
 
   /** Open or create a file and return a handle. */
   open(name: string, mode: string = 'r'): number {
@@ -66,7 +86,14 @@ export class VirtualTerminal {
   }
 
   getGlobalVariable(name: string): number {
-    return this.globalVars[name]?.value ?? 0;
+    const data = this.globalVars[name];
+    if (!data) return 0;
+    const now = Math.floor(Date.now() / 1000);
+    if (now - data.time > 28 * 24 * 60 * 60) {
+      delete this.globalVars[name];
+      return 0;
+    }
+    return data.value;
   }
 
   deleteGlobalVariable(name: string): boolean {
@@ -76,7 +103,8 @@ export class VirtualTerminal {
   }
 
   checkGlobalVariable(name: string): boolean {
-    return name in this.globalVars;
+    const val = this.getGlobalVariable(name);
+    return val !== 0 || name in this.globalVars;
   }
 
   getGlobalVariableTime(name: string): number {
@@ -116,8 +144,21 @@ export class VirtualTerminal {
   }
 
   flushGlobalVariables(): number {
-    // persistence not implemented
-    return 0;
+    if (!this.storagePath) return 0;
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const fourWeeks = 28 * 24 * 60 * 60;
+      for (const [k, v] of Object.entries(this.globalVars)) {
+        if (now - v.time > fourWeeks) delete this.globalVars[k];
+      }
+      require('fs').writeFileSync(
+        this.storagePath,
+        JSON.stringify(this.globalVars, null, 2),
+      );
+      return Object.keys(this.globalVars).length;
+    } catch {
+      return 0;
+    }
   }
 
   // ----- ui helpers -----

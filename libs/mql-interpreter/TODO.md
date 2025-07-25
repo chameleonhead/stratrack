@@ -109,30 +109,30 @@ The following tasks outline future work required to develop a functional MQL4/5 
 
 # Account information
 
-- [ ] Implement the account information helpers listed at <https://docs.mql4.com/account>.
-  - [ ] Expose runtime accessors like `AccountBalance`, `AccountEquity` and `AccountProfit` using broker data.
-  - [ ] Provide default values for `AccountName`, `AccountNumber`, `AccountCurrency` and others when running in the backtest environment.
-  - [ ] Introduce an optional `initialBalance` setting for `BacktestRunner` so tests can start with a known deposit.
+- [x] Implement the account information helpers listed at <https://docs.mql4.com/account>.
+  - [x] Expose runtime accessors like `AccountBalance`, `AccountEquity` and `AccountProfit` using broker data.
+  - [x] Provide default values for `AccountName`, `AccountNumber`, `AccountCurrency` and others when running in the backtest environment.
+  - [x] Introduce an optional `initialBalance` setting for `BacktestRunner` so tests can start with a known deposit.
 
 # Terminal state checks
 
-- [ ] Implement the terminal and program state helpers listed at <https://docs.mql4.com/check>.
-  - [ ] Provide builtins for functions like `GetLastError`, `IsStopped`, `Symbol`, `Period` and others.
-  - [ ] Support environment queries such as `TerminalInfoInteger`, `IsConnected`, `IsOptimization` and `IsTesting`.
+- [x] Implement the terminal and program state helpers listed at <https://docs.mql4.com/check>.
+  - [x] Provide builtins for functions like `GetLastError`, `IsStopped`, `Symbol`, `Period` and others.
+  - [x] Support environment queries such as `TerminalInfoInteger`, `IsConnected`, `IsOptimization` and `IsTesting`.
 
 # Market information
 
-- [ ] Implement market information helpers from <https://docs.mql4.com/marketinformation>.
-  - [ ] Provide a `MarketData` service storing tick data per symbol for backtests.
-  - [ ] Support builtins like `MarketInfo`, `SymbolsTotal`, `SymbolName` and `SymbolSelect` using this service.
-  - [ ] Restrict data retrieval to the available time range and encapsulate implementation for future real-time support.
+- [x] Implement market information helpers from <https://docs.mql4.com/marketinformation>.
+  - [x] Provide a `MarketData` service storing tick data per symbol for backtests.
+  - [x] Support builtins like `MarketInfo`, `SymbolsTotal`, `SymbolName` and `SymbolSelect` using this service.
+  - [x] Restrict data retrieval to the available time range and encapsulate implementation for future real-time support.
 
 # Trading functions
 
-- [ ] Implement trading helpers from <https://docs.mql4.com/trading>.
-  - [ ] Provide builtins for order enumeration such as `OrdersTotal` and `OrdersHistoryTotal`.
-  - [ ] Add `OrderSelect`, `OrderType`, `OrderLots`, `OrderProfit` and related accessors.
-- [ ] Support closing orders via `OrderClose`.
+- [x] Implement trading helpers from <https://docs.mql4.com/trading>.
+  - [x] Provide builtins for order enumeration such as `OrdersTotal` and `OrdersHistoryTotal`.
+  - [x] Add `OrderSelect`, `OrderType`, `OrderLots`, `OrderProfit` and related accessors.
+- [x] Support closing orders via `OrderClose`.
 
 # Indicator functions
 
@@ -156,9 +156,9 @@ The following tasks outline future work required to develop a functional MQL4/5 
   `GlobalVariableName`, `GlobalVariablesDeleteAll`, `GlobalVariablesTotal`,
   `GlobalVariableTemp`, `GlobalVariableSetOnCondition` and
   `GlobalVariablesFlush` as described at <https://docs.mql4.com/globals>.
-- [ ] Maintain variables across sessions and expire them four weeks after the
+- [x] Maintain variables across sessions and expire them four weeks after the
   last access.
-- [ ] Persist global variables on disk so `GlobalVariablesFlush` can save them.
+- [x] Persist global variables on disk so `GlobalVariablesFlush` can save them.
 
 # Program structure and virtual terminal
 

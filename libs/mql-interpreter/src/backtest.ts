@@ -191,6 +191,17 @@ export class BacktestRunner {
       },
       GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
+      Symbol: () => this.runtime.globalValues._Symbol,
+      Period: () => this.runtime.globalValues._Period,
+      PeriodSeconds: () => this.runtime.globalValues._Period,
+      IsTesting: () => true,
+      IsOptimization: () => false,
+      IsConnected: () => true,
+      TerminalInfoInteger: (prop: number) => {
+        // basic subset: TERMINAL_CONNECTED = 7
+        if (prop === 7) return 1;
+        return 0;
+      },
       OrderSend: (
         symbol: string,
         cmd: number,

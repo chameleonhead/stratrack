@@ -13,7 +13,10 @@ describe('VirtualTerminal', () => {
   });
 
   it('manages global variables', () => {
-    const term = new VirtualTerminal();
+    const path = 'globals.json';
+    const fs = require('fs');
+    try { fs.unlinkSync(path); } catch {}
+    const term = new VirtualTerminal(path);
     term.setGlobalVariable('x', 5);
     expect(term.getGlobalVariable('x')).toBe(5);
     expect(term.checkGlobalVariable('x')).toBe(true);
@@ -25,5 +28,11 @@ describe('VirtualTerminal', () => {
     expect(term.setGlobalVariableOnCondition('x', 7, 5)).toBe(false);
     expect(term.deleteGlobalVariable('x')).toBe(true);
     expect(term.globalVariablesTotal()).toBe(0);
+
+    term.setGlobalVariable('y', 2);
+    term.flushGlobalVariables();
+    const term2 = new VirtualTerminal(path);
+    expect(term2.getGlobalVariable('y')).toBe(2);
+    fs.unlinkSync(path);
   });
 });

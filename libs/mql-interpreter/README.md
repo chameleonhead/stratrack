@@ -256,3 +256,5 @@ MQL programs follow an event-driven model as described in [Structure of a Normal
 
 To simplify testing, a `VirtualTerminal` provides an in-memory file system. Helpers like `FileOpen` or `FileReadString` can use this terminal without touching the host file system. The terminal implementation is encapsulated so it can later be replaced with real-time logic.
 The terminal also stores global variables used by helpers such as `GlobalVariableSet` and exposes basic UI stubs like `Alert` and `PlaySound`. Chart and window operations are currently no-ops in the backtest implementation but can be swapped out when running against a real terminal.
+Global variables are kept across sessions when a storage path is provided to `VirtualTerminal`. The `GlobalVariablesFlush` builtin writes them to disk and values expire after four weeks without access.
+Additional helpers like `Symbol`, `Period`, `IsTesting` and `TerminalInfoInteger` report the current environment state during backtests.

@@ -116,4 +116,17 @@ describe('BacktestRunner', () => {
     rt.globalValues._StopFlag = 1;
     expect(callFunction(rt, 'IsStopped', [])).toBe(1);
   });
+
+  it('provides Symbol, Period and testing state', () => {
+    const code = 'void OnTick(){}';
+    const candles = [
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 2, high: 2, low: 2, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles, { symbol: 'EURUSD' });
+    const rt = runner.getRuntime();
+    expect(callFunction(rt, 'Symbol')).toBe('EURUSD');
+    expect(callFunction(rt, 'Period')).toBe(candles[1].time - candles[0].time);
+    expect(callFunction(rt, 'IsTesting')).toBe(true);
+  });
 });
