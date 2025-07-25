@@ -91,8 +91,28 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = compilation.runtime;
+    this.initializeGlobals();
     const builtins = this.buildBuiltins();
     registerEnvBuiltins(builtins);
+  }
+
+  private initializeGlobals(): void {
+    const rt = this.runtime.globalValues;
+    rt.Open = this.candles.map(c => c.open);
+    rt.High = this.candles.map(c => c.high);
+    rt.Low = this.candles.map(c => c.low);
+    rt.Close = this.candles.map(c => c.close);
+    rt.Time = this.candles.map(c => c.time);
+    rt.Volume = this.candles.map(c => c.volume ?? 0);
+    rt.Bars = this.candles.length;
+    rt.Digits = rt._Digits = 5;
+    rt.Point = rt._Point = Math.pow(10, -5);
+    rt.Bid = this.candles[0]?.close ?? 0;
+    rt.Ask = this.candles[0]?.close ?? 0;
+    rt._Symbol = 'TEST';
+    if (this.candles.length > 1) {
+      rt._Period = this.candles[1].time - this.candles[0].time;
+    }
   }
 
   private buildBuiltins(): Record<string, BuiltinFunction> {
@@ -117,6 +137,12 @@ export class BacktestRunner {
         const c = this.candles[this.index - (shift ?? 0)];
         return c ? c.time : 0;
       },
+      ResetLastError: () => {
+        this.runtime.globalValues._LastError = 0;
+        return 0;
+      },
+      GetLastError: () => this.runtime.globalValues._LastError,
+      IsStopped: () => this.runtime.globalValues._StopFlag,
       OrderSend: (
         symbol: string,
         cmd: number,

@@ -81,3 +81,28 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Expose executed orders and account metrics for analysis reports
 - [x] Allow supplying raw tick data to generate candles automatically
 - [x] Support limit orders and automatically trigger stop loss / take profit while advancing time
+
+- [x] Integrate predefined variables from <https://docs.mql4.com/predefined>
+ - [x] Provide runtime constants `_Digits`, `_Point`, `_LastError`, `_Period`,
+       `_RandomSeed`, `_StopFlag`, `_Symbol` and `_UninitReason`
+ - [x] Expose price series arrays `Open`, `High`, `Low`, `Close`, `Time` and
+       `Volume` as well as `Bid`, `Ask`, `Bars`, `Digits` and `Point`
+ - [x] Keep `_LastError` synchronized and implement the `ResetLastError` builtin
+ - [x] Update values when running with `BacktestRunner` or a real MT4 runtime
+
+- [x] Implement the common functions listed at <https://docs.mql4.com/common>
+ - [x] Add builtins such as `Alert`, `Comment`, `GetTickCount`, `Sleep`,
+       `PrintFormat`, `WebRequest` and others
+ - [x] Provide global variable helpers like `GlobalVariableSet` and friends
+ - [x] Distinguish platform dependent logic using `registerEnvBuiltins`
+ - [x] Create tests covering predefined variables and new builtins
+- [x] Implement array utilities from <https://docs.mql4.com/array>
+ - [x] Provide builtins for `ArrayCopy`, `ArrayResize`, `ArraySetAsSeries` and others
+- [x] Implement conversion helpers from <https://docs.mql4.com/convert>
+ - [x] Provide builtins for `CharToString`, `StringToTime`, `NormalizeDouble` and similar
+- [x] Implement math functions from <https://docs.mql4.com/math>
+ - [x] Provide builtins for `MathAbs`, `MathPow`, `MathSqrt` and related operations
+- [x] Implement string manipulation from <https://docs.mql4.com/strings>
+ - [x] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
+- [x] Implement date and time functions from <https://docs.mql4.com/dateandtime>
+ - [x] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others

@@ -17,6 +17,12 @@ describe('builtins', () => {
     expect(fn).toBeTypeOf('function');
   });
 
+  it('implements math and string helpers', () => {
+    expect(getBuiltin('MathPow')?.(2, 3)).toBe(8);
+    expect(getBuiltin('StringLen')?.('abc')).toBe(3);
+    expect(getBuiltin('PlaySound')?.('x')).toBe(true);
+  });
+
   it('allows overriding environment builtins', () => {
     registerEnvBuiltins({ iMA: () => 42 });
     const fn = getBuiltin('iMA');
