@@ -118,7 +118,7 @@ describe('BacktestRunner', () => {
   });
 
   it('provides Symbol, Period and testing state', () => {
-    const code = 'void OnTick(){}';
+    const code = 'void OnTick(){return;}';
     const candles = [
       { time: 1, open: 1, high: 1, low: 1, close: 1 },
       { time: 2, open: 2, high: 2, low: 2, close: 2 },
@@ -128,5 +128,14 @@ describe('BacktestRunner', () => {
     expect(callFunction(rt, 'Symbol')).toBe('EURUSD');
     expect(callFunction(rt, 'Period')).toBe(candles[1].time - candles[0].time);
     expect(callFunction(rt, 'IsTesting')).toBe(true);
+  });
+  it('runs OnInit and OnDeinit automatically', () => {
+    const code = 'int init; int deinit; void OnInit(){init++;} void OnDeinit(){deinit++;} void OnTick(){return;}';
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.init).toBe(1);
+    expect(gv.deinit).toBe(1);
   });
 });

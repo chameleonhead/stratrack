@@ -91,6 +91,8 @@ export class BacktestRunner {
   private market: MarketData;
   private terminal: VirtualTerminal;
   private selectedOrder?: Order;
+  private initialized = false;
+  private deinitialized = false;
   constructor(
     private source: string,
     private candles: Candle[],
@@ -189,6 +191,25 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
+      iMA: (_symbol: any, _tf: any, period: number, maShift: number, _maMethod: number, applied: number, shift: number) => {
+        const idx = this.index - (shift ?? 0) - maShift;
+        if (idx < period - 1) return 0;
+        const start = idx - period + 1;
+        const slice = this.candles.slice(start, idx + 1);
+        const val = (c: Candle) => {
+          switch (applied) {
+            case 1: return c.open;
+            case 2: return c.high;
+            case 3: return c.low;
+            case 4: return (c.high + c.low) / 2;
+            case 5: return (c.high + c.low + c.close) / 3;
+            case 6: return (c.high + c.low + 2 * c.close) / 4;
+            default: return c.close;
+          }
+        };
+        const sum = slice.reduce((s, c) => s + val(c), 0);
+        return sum / slice.length;
+      },
       GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
       Symbol: () => this.runtime.globalValues._Symbol,
@@ -274,9 +295,24 @@ export class BacktestRunner {
       AccountStopoutMode: () => 0,
     };
   }
+  private callInit(): void {
+    if (!this.initialized && this.runtime.functions["OnInit"]) {
+      try { callFunction(this.runtime, "OnInit"); } catch {}
+    }
+    this.initialized = true;
+  }
+
+  private callDeinit(): void {
+    if (!this.deinitialized && this.runtime.functions["OnDeinit"]) {
+      try { callFunction(this.runtime, "OnDeinit"); } catch {}
+    }
+    this.deinitialized = true;
+  }
+
 
   step(): void {
     const entry = this.options.entryPoint || 'OnTick';
+    this.callInit();
     if (this.index >= this.candles.length) return;
     const candle = this.candles[this.index];
     const symbol = this.options.symbol ?? 'TEST';
@@ -289,12 +325,15 @@ export class BacktestRunner {
     }
     callFunction(this.runtime, entry);
     this.index++;
+    if (this.index >= this.candles.length) this.callDeinit();
   }
 
   run(): void {
+    this.callInit();
     while (this.index < this.candles.length) {
       this.step();
     }
+    this.callDeinit();
   }
 
   getRuntime(): Runtime {

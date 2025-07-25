@@ -137,7 +137,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 # Indicator functions
 
 - [ ] Implement standard indicator helpers from <https://docs.mql4.com/indicators>.
-  - [ ] Provide builtins like `iMA`, `iMACD`, `iRSI` and others using backtest candle data.
+  - [x] Implement `iMA` using backtest candle data.
+  - [ ] Provide `iMACD`, `iRSI` and other helpers.
   - [ ] Ensure indicators operate on the selected symbol and timeframe when running a session.
   - [ ] Reuse the `MarketData` service for any price series needed by these functions.
 
@@ -164,7 +165,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 
 - [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
   - [ ] Distinguish expert advisors, scripts and indicators based on entry points.
-  - [ ] Automatically call `OnInit` before execution and `OnDeinit` after completion.
+  - [x] Automatically call `OnInit` before execution and `OnDeinit` after completion.
   - [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
 - [ ] Provide a `VirtualTerminal` abstraction.
   - [ ] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
