@@ -129,12 +129,12 @@ The following tasks outline future work required to develop a functional MQL4/5 
 
 # Timeseries functions
 
-- [ ] Implement series access helpers from <https://docs.mql4.com/series>.
-  - [ ] Provide builtins like `CopyRates`, `CopyOpen`, `CopyClose`, `CopyHigh`,
+- [x] Implement series access helpers from <https://docs.mql4.com/series>.
+  - [x] Provide builtins like `CopyRates`, `CopyOpen`, `CopyClose`, `CopyHigh`,
         `CopyLow`, `CopyTime` and `CopyTickVolume` that copy bar data into arrays.
-  - [ ] Add `Bars`, `iBars`, `iBarShift`, `iOpen`, `iClose`, `iHigh`, `iLow`,
+  - [x] Add `Bars`, `iBars`, `iBarShift`, `iOpen`, `iClose`, `iHigh`, `iLow`,
         `iTime` and `iVolume` for direct timeseries queries.
-  - [ ] Support `SeriesInfoInteger` and `RefreshRates` to manage historical data
+  - [x] Support `SeriesInfoInteger` and `RefreshRates` to manage historical data
         state during backtests.
 
 
