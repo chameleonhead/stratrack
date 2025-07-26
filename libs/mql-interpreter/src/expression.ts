@@ -15,7 +15,7 @@ const assignmentOps = new Set([
 ]);
 
 import type { Runtime } from './runtime';
-import { instantiate } from './runtime';
+import { instantiate, callFunction } from './runtime';
 
 export function evaluateExpression(
   expr: string,
@@ -52,7 +52,26 @@ export function evaluateExpression(
     }
     if (t.type === TokenType.Identifier) {
       consume();
-      return { value: env[t.value], ref: t.value };
+      const name = t.value;
+      if (!atEnd() && peek().value === '(') {
+        if (!runtime) throw new Error('Runtime required for function call');
+        consume(TokenType.Punctuation, '(');
+        const args: any[] = [];
+        if (peek().value !== ')') {
+          while (true) {
+            const arg = parseAssignment();
+            args.push(arg.value);
+            if (peek().value === ',') {
+              consume(TokenType.Punctuation, ',');
+            } else {
+              break;
+            }
+          }
+        }
+        consume(TokenType.Punctuation, ')');
+        return { value: callFunction(runtime, name, args) };
+      }
+      return { value: env[name], ref: name };
     }
     if (t.type === TokenType.Keyword && t.value === 'new') {
       consume(TokenType.Keyword, 'new');
