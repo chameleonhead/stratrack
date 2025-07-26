@@ -127,6 +127,17 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - [x] Support builtins like `MarketInfo`, `SymbolsTotal`, `SymbolName` and `SymbolSelect` using this service.
   - [x] Restrict data retrieval to the available time range and encapsulate implementation for future real-time support.
 
+# Timeseries functions
+
+- [ ] Implement series access helpers from <https://docs.mql4.com/series>.
+  - [ ] Provide builtins like `CopyRates`, `CopyOpen`, `CopyClose`, `CopyHigh`,
+        `CopyLow`, `CopyTime` and `CopyTickVolume` that copy bar data into arrays.
+  - [ ] Add `Bars`, `iBars`, `iBarShift`, `iOpen`, `iClose`, `iHigh`, `iLow`,
+        `iTime` and `iVolume` for direct timeseries queries.
+  - [ ] Support `SeriesInfoInteger` and `RefreshRates` to manage historical data
+        state during backtests.
+
+
 # Trading functions
 
 - [x] Implement trading helpers from <https://docs.mql4.com/trading>.

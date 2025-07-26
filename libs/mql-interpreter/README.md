@@ -212,7 +212,10 @@ See [TODO.md](TODO.md) for planned features and tasks.
 The library provides a small helper to replay historical market data. Use
 `BacktestRunner` with a sequence of candles and your MQL source. The runner
 exposes builtins such as `iOpen` and `iClose` so code can access bar data while
-`step()` or `run()` executes the specified entry point for each candle.
+`step()` or `run()` executes the specified entry point for each candle. Series
+helpers like `CopyOpen`, `CopyClose`, `CopyHigh`, `CopyLow`, `CopyTime` and
+`CopyTickVolume` can copy ranges of values into arrays. Functions like `Bars`,
+`iBars` and `iBarShift` report information about the available history.
 Standard indicators like `iMA`, `iMACD` and `iRSI` are available for basic analysis.
 `Bid` and `Ask` variables are updated on every step. Orders placed through
 `OrderSend` are routed to an internal `Broker`. The broker now supports market

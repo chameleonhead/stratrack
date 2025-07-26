@@ -167,6 +167,17 @@ export class BacktestRunner {
     };
 
     return {
+      Bars: (_symbol: any, _tf: any) => this.candles.length,
+      iBars: (_symbol: any, _tf: any) => this.candles.length,
+      iBarShift: (_symbol: any, _tf: any, time: number, exact?: boolean) => {
+        for (let i = 0; i < this.candles.length; i++) {
+          const c = this.candles[i];
+          const next = this.candles[i + 1];
+          if (c.time === time) return i;
+          if (!exact && next && c.time < time && time < next.time) return i;
+        }
+        return -1;
+      },
       iOpen: (_symbol: any, _tf: any, shift: number) => {
         const c = this.candles[this.index - (shift ?? 0)];
         return c ? c.open : 0;
@@ -187,6 +198,58 @@ export class BacktestRunner {
         const c = this.candles[this.index - (shift ?? 0)];
         return c ? c.time : 0;
       },
+      iVolume: (_symbol: any, _tf: any, shift: number) => {
+        const c = this.candles[this.index - (shift ?? 0)];
+        return c ? c.volume ?? 0 : 0;
+      },
+      CopyTime: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].time;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyOpen: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].open;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyHigh: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].high;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyLow: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].low;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyClose: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].close;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyTickVolume: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          dst[i] = this.candles[start + i].volume ?? 0;
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      CopyRates: (_symbol: any, _tf: any, start: number, count: number, dst: any[]) => {
+        for (let i = 0; i < count && start + i < this.candles.length; i++) {
+          const c = this.candles[start + i];
+          dst[i] = { open: c.open, high: c.high, low: c.low, close: c.close, tick_volume: c.volume ?? 0, time: c.time };
+        }
+        return Math.min(count, this.candles.length - start);
+      },
+      SeriesInfoInteger: (_symbol: any, _tf: any, prop: number) => {
+        if (prop === 0) return this.candles.length;
+        return 0;
+      },
+      RefreshRates: () => 1,
       ResetLastError: () => {
         this.runtime.globalValues._LastError = 0;
         return 0;
