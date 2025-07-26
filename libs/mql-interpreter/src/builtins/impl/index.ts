@@ -2,6 +2,8 @@ import type { BuiltinFunction } from '../types';
 import * as AccountInfo from './AccountInfo';
 import { OrderSend } from './OrderSend';
 import { iMA } from './iMA';
+import { iMACD } from './iMACD';
+import { iRSI } from './iRSI';
 import {
   ArrayResize,
   ArrayCopy,
@@ -279,6 +281,8 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
   ...AccountInfo,
   OrderSend,
   iMA,
+  iMACD,
+  iRSI,
 };
 
 export {
@@ -286,6 +290,8 @@ export {
   Alert,
   OrderSend,
   iMA,
+  iMACD,
+  iRSI,
   ArrayResize,
   ArrayCopy,
   ArraySetAsSeries,

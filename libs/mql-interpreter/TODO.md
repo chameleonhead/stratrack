@@ -138,7 +138,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 
 - [ ] Implement standard indicator helpers from <https://docs.mql4.com/indicators>.
   - [x] Implement `iMA` using backtest candle data.
-  - [ ] Provide `iMACD`, `iRSI` and other helpers.
+  - [x] Provide `iMACD`, `iRSI` and other helpers.
   - [ ] Ensure indicators operate on the selected symbol and timeframe when running a session.
   - [ ] Reuse the `MarketData` service for any price series needed by these functions.
 

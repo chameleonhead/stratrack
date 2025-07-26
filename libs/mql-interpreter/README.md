@@ -68,7 +68,7 @@ identifiers.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
-`Print`, `OrderSend` and `iMA`, all functions listed at
+`Print`, `OrderSend` and indicator helpers like `iMA`, `iMACD` and `iRSI`, all functions listed at
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`,
 `ArraySort`, `GetTickCount64` and `PlaySound` have working implementations
@@ -76,7 +76,7 @@ alongside string, math and global variable helpers such as `GlobalVariableSet`.
 
 Builtins fall into two categories. **Core** builtins are environment
 independent and always behave the same (e.g. `ArrayResize` or `Print`).
-Others like `iMA` or `AccountBalance` depend on trading platform data and
+Others like `iMA`, `iMACD`, `iRSI` or `AccountBalance` depend on trading platform data and
 default to no-ops.  Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
 
@@ -213,7 +213,7 @@ The library provides a small helper to replay historical market data. Use
 `BacktestRunner` with a sequence of candles and your MQL source. The runner
 exposes builtins such as `iOpen` and `iClose` so code can access bar data while
 `step()` or `run()` executes the specified entry point for each candle.
-A simple moving average helper `iMA` is available for basic indicator logic.
+Standard indicators like `iMA`, `iMACD` and `iRSI` are available for basic analysis.
 `Bid` and `Ask` variables are updated on every step. Orders placed through
 `OrderSend` are routed to an internal `Broker`. The broker now supports market
 and limit orders with optional stop loss and take profit levels. It advances

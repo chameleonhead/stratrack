@@ -210,6 +210,68 @@ export class BacktestRunner {
         const sum = slice.reduce((s, c) => s + val(c), 0);
         return sum / slice.length;
       },
+      iMACD: (_symbol: any, _tf: any, fast: number, slow: number, signal: number, applied: number, mode: number, shift: number) => {
+        const idx = this.index - (shift ?? 0);
+        if (idx < Math.max(fast, slow)) return 0;
+        const val = (c: Candle) => {
+          switch (applied) {
+            case 1: return c.open;
+            case 2: return c.high;
+            case 3: return c.low;
+            case 4: return (c.high + c.low) / 2;
+            case 5: return (c.high + c.low + c.close) / 3;
+            case 6: return (c.high + c.low + 2 * c.close) / 4;
+            default: return c.close;
+          }
+        };
+        const kFast = 2 / (fast + 1);
+        const kSlow = 2 / (slow + 1);
+        const kSig = 2 / (signal + 1);
+        let emaFast = val(this.candles[0]);
+        let emaSlow = val(this.candles[0]);
+        const macdVals: number[] = [emaFast - emaSlow];
+        for (let i = 1; i <= idx; i++) {
+          const price = val(this.candles[i]);
+          emaFast = price * kFast + emaFast * (1 - kFast);
+          emaSlow = price * kSlow + emaSlow * (1 - kSlow);
+          macdVals.push(emaFast - emaSlow);
+        }
+        let sig = macdVals[0];
+        for (let i = 1; i < macdVals.length; i++) {
+          sig = macdVals[i] * kSig + sig * (1 - kSig);
+        }
+        const macd = macdVals[macdVals.length - 1];
+        return mode === 1 ? sig : macd;
+      },
+      iRSI: (_symbol: any, _tf: any, period: number, applied: number, shift: number) => {
+        const idx = this.index - (shift ?? 0);
+        if (idx < period) return 0;
+        const val = (c: Candle) => {
+          switch (applied) {
+            case 1: return c.open;
+            case 2: return c.high;
+            case 3: return c.low;
+            case 4: return (c.high + c.low) / 2;
+            case 5: return (c.high + c.low + c.close) / 3;
+            case 6: return (c.high + c.low + 2 * c.close) / 4;
+            default: return c.close;
+          }
+        };
+        let gains = 0;
+        let losses = 0;
+        for (let i = idx - period + 1; i <= idx; i++) {
+          const cur = val(this.candles[i]);
+          const prev = val(this.candles[i - 1]);
+          const diff = cur - prev;
+          if (diff > 0) gains += diff; else losses -= diff;
+        }
+        const avgGain = gains / period;
+        const avgLoss = losses / period;
+        if (avgLoss === 0) return 100;
+        if (avgGain === 0) return 0;
+        const rs = avgGain / avgLoss;
+        return 100 - 100 / (1 + rs);
+      },
       GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
       Symbol: () => this.runtime.globalValues._Symbol,
