@@ -63,7 +63,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Implement compile-time type checking to validate variable declarations, expressions and function calls.
   - [x] Detect mismatched types in assignments and arguments.
 - [x] Verify builtin functions are called with correct argument types and counts.
-- [ ] Validate builtin calls during compilation once function call parsing is available.
+- [ ] Validate builtin calls during compilation once function call parsing is available. Only the existence of builtin names is currently checked.
 - [x] Accumulate compile errors instead of throwing immediately.
   - [x] Introduce a `CompilationError` interface with source location and message.
   - [x] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.

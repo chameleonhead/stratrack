@@ -126,6 +126,7 @@ import { Broker, OrderState } from './broker';
 import { Account } from './account';
 import { VirtualTerminal } from './terminal';
 import { setTerminal } from './builtins/impl/common';
+import { builtinNames } from './builtins/stubNames';
 
 export {
   lex,
@@ -309,6 +310,68 @@ function checkTypes(ast: Declaration[]): CompilationError[] {
   return errors;
 }
 
+function validateFunctionCalls(ast: Declaration[], runtime: Runtime): CompilationError[] {
+  const errors: CompilationError[] = [];
+  const builtinSet = new Set(builtinNames);
+
+  const scanBody = (body: string | undefined, loc?: { line: number; column: number }) => {
+    if (!body) return;
+    const { tokens } = lex(body);
+    for (let i = 0; i < tokens.length - 1; i++) {
+      const t = tokens[i];
+      if (t.type === TokenType.Identifier && tokens[i + 1].value === '(') {
+        const name = t.value;
+        let j = i + 2;
+        let depth = 1;
+        let args = 0;
+        let expecting = true;
+        while (j < tokens.length && depth > 0) {
+          const tok = tokens[j];
+          if (tok.value === '(') {
+            depth++;
+            if (depth === 1) expecting = true;
+          } else if (tok.value === ')') {
+            depth--;
+            if (depth === 0) {
+              if (!expecting) args++;
+              break;
+            }
+          } else if (tok.value === ',' && depth === 1) {
+            args++;
+            expecting = true;
+          } else if (depth === 1) {
+            expecting = false;
+          }
+          j++;
+        }
+        const overloads = runtime.functions[name];
+        const isBuiltin = builtinSet.has(name);
+        if (!overloads && !isBuiltin) {
+          errors.push({ message: `Unknown function ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+        } else if (overloads) {
+          const required = Math.min(...overloads.map(o => o.parameters.filter(p => p.defaultValue === undefined).length));
+          const max = Math.max(...overloads.map(o => o.parameters.length));
+          if (args < required || args > max) {
+            errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+          }
+        }
+      }
+    }
+  };
+
+  for (const decl of ast) {
+    if (decl.type === 'FunctionDeclaration') {
+      scanBody(decl.body, decl.loc);
+    } else if (decl.type === 'ClassDeclaration') {
+      for (const m of decl.methods) {
+        scanBody(m.body, m.loc);
+      }
+    }
+  }
+
+  return errors;
+}
+
 export function compile(
   source: string,
   options: PreprocessOptions = {}
@@ -334,6 +397,7 @@ export function compile(
     errors.push(parseError);
   } else {
     errors.push(...checkTypes(ast));
+    errors.push(...validateFunctionCalls(ast, runtime));
   }
   return { ast, runtime, properties, errors };
 }
