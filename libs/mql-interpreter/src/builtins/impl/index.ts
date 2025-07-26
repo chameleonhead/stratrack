@@ -2,6 +2,8 @@ import type { BuiltinFunction } from '../types';
 import * as AccountInfo from './AccountInfo';
 import { OrderSend } from './OrderSend';
 import { iMA } from './iMA';
+import { iMACD } from './iMACD';
+import { iRSI } from './iRSI';
 import {
   ArrayResize,
   ArrayCopy,
@@ -109,6 +111,26 @@ import {
   TimeYear,
 } from './datetime';
 import {
+  Bars,
+  iBars,
+  iBarShift,
+  iOpen,
+  iHigh,
+  iLow,
+  iClose,
+  iTime,
+  iVolume,
+  CopyRates,
+  CopyTime,
+  CopyOpen,
+  CopyHigh,
+  CopyLow,
+  CopyClose,
+  CopyTickVolume,
+  SeriesInfoInteger,
+  RefreshRates,
+} from './series';
+import {
   Print,
   Alert,
   PrintFormat,
@@ -148,6 +170,7 @@ import {
   IsTradeAllowed,
   IsTradeContextBusy,
   UninitializeReason,
+  setTerminal,
 } from './common';
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
@@ -278,6 +301,26 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
   ...AccountInfo,
   OrderSend,
   iMA,
+  iMACD,
+  iRSI,
+  Bars,
+  iBars,
+  iBarShift,
+  iOpen,
+  iHigh,
+  iLow,
+  iClose,
+  iTime,
+  iVolume,
+  CopyRates,
+  CopyTime,
+  CopyOpen,
+  CopyHigh,
+  CopyLow,
+  CopyClose,
+  CopyTickVolume,
+  SeriesInfoInteger,
+  RefreshRates,
 };
 
 export {
@@ -285,6 +328,8 @@ export {
   Alert,
   OrderSend,
   iMA,
+  iMACD,
+  iRSI,
   ArrayResize,
   ArrayCopy,
   ArraySetAsSeries,
@@ -418,5 +463,24 @@ export {
   TimeMonth,
   TimeSeconds,
   TimeYear,
+  Bars,
+  iBars,
+  iBarShift,
+  iOpen,
+  iHigh,
+  iLow,
+  iClose,
+  iTime,
+  iVolume,
+  CopyRates,
+  CopyTime,
+  CopyOpen,
+  CopyHigh,
+  CopyLow,
+  CopyClose,
+  CopyTickVolume,
+  SeriesInfoInteger,
+  RefreshRates,
   AccountInfo,
+  setTerminal,
 };

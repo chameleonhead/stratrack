@@ -106,3 +106,80 @@ The following tasks outline future work required to develop a functional MQL4/5 
  - [x] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
 - [x] Implement date and time functions from <https://docs.mql4.com/dateandtime>
  - [x] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others
+
+# Account information
+
+- [x] Implement the account information helpers listed at <https://docs.mql4.com/account>.
+  - [x] Expose runtime accessors like `AccountBalance`, `AccountEquity` and `AccountProfit` using broker data.
+  - [x] Provide default values for `AccountName`, `AccountNumber`, `AccountCurrency` and others when running in the backtest environment.
+  - [x] Introduce an optional `initialBalance` setting for `BacktestRunner` so tests can start with a known deposit.
+
+# Terminal state checks
+
+- [x] Implement the terminal and program state helpers listed at <https://docs.mql4.com/check>.
+  - [x] Provide builtins for functions like `GetLastError`, `IsStopped`, `Symbol`, `Period` and others.
+  - [x] Support environment queries such as `TerminalInfoInteger`, `IsConnected`, `IsOptimization` and `IsTesting`.
+
+# Market information
+
+- [x] Implement market information helpers from <https://docs.mql4.com/marketinformation>.
+  - [x] Provide a `MarketData` service storing tick data per symbol for backtests.
+  - [x] Support builtins like `MarketInfo`, `SymbolsTotal`, `SymbolName` and `SymbolSelect` using this service.
+  - [x] Restrict data retrieval to the available time range and encapsulate implementation for future real-time support.
+
+# Timeseries functions
+
+- [x] Implement series access helpers from <https://docs.mql4.com/series>.
+  - [x] Provide builtins like `CopyRates`, `CopyOpen`, `CopyClose`, `CopyHigh`,
+        `CopyLow`, `CopyTime` and `CopyTickVolume` that copy bar data into arrays.
+  - [x] Add `Bars`, `iBars`, `iBarShift`, `iOpen`, `iClose`, `iHigh`, `iLow`,
+        `iTime` and `iVolume` for direct timeseries queries.
+  - [x] Support `SeriesInfoInteger` and `RefreshRates` to manage historical data
+        state during backtests.
+
+
+# Trading functions
+
+- [x] Implement trading helpers from <https://docs.mql4.com/trading>.
+  - [x] Provide builtins for order enumeration such as `OrdersTotal` and `OrdersHistoryTotal`.
+  - [x] Add `OrderSelect`, `OrderType`, `OrderLots`, `OrderProfit` and related accessors.
+- [x] Support closing orders via `OrderClose`.
+
+# Indicator functions
+
+- [ ] Implement standard indicator helpers from <https://docs.mql4.com/indicators>.
+  - [x] Implement `iMA` using backtest candle data.
+  - [x] Provide `iMACD`, `iRSI` and other helpers.
+  - [ ] Ensure indicators operate on the selected symbol and timeframe when running a session.
+  - [ ] Reuse the `MarketData` service for any price series needed by these functions.
+
+# Custom indicator helpers
+
+- [ ] Design a framework for executing custom indicators as described at <https://docs.mql4.com/customind>.
+  - [ ] Support loading compiled indicators and calling them via `iCustom`.
+  - [ ] Manage indicator buffers using helpers like `SetIndexBuffer` and `IndicatorBuffers`.
+  - [ ] Expose initialization callbacks (`OnInit`, `OnCalculate`) for custom indicator scripts.
+  - [ ] Allow backtests to attach indicators while keeping implementation details encapsulated.
+
+# Terminal global variables
+
+- [x] Provide builtins like `GlobalVariableSet`, `GlobalVariableGet`,
+  `GlobalVariableCheck`, `GlobalVariableDel`, `GlobalVariableTime`,
+  `GlobalVariableName`, `GlobalVariablesDeleteAll`, `GlobalVariablesTotal`,
+  `GlobalVariableTemp`, `GlobalVariableSetOnCondition` and
+  `GlobalVariablesFlush` as described at <https://docs.mql4.com/globals>.
+- [x] Maintain variables across sessions and expire them four weeks after the
+  last access.
+- [x] Persist global variables on disk so `GlobalVariablesFlush` can save them.
+
+# Program structure and virtual terminal
+
+- [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
+  - [ ] Distinguish expert advisors, scripts and indicators based on entry points.
+  - [x] Automatically call `OnInit` before execution and `OnDeinit` after completion.
+  - [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [ ] Provide a `VirtualTerminal` abstraction.
+  - [ ] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
+  - [ ] Keep the terminal modular so real-time implementations can replace parts like file access or network I/O.
+  - [ ] Split terminal services into separate "cards" (file, network, ui) for easy replacement.
+  - [ ] Implement UI features like chart and window operations when running against the real terminal.

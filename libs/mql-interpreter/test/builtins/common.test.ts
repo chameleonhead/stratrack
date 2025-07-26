@@ -24,10 +24,16 @@ import {
   GlobalVariableName,
   GlobalVariableTime,
   GlobalVariableSetOnCondition,
+  setTerminal,
 } from '../../src/builtins/impl/common';
-import { describe, it, expect } from 'vitest';
+import { VirtualTerminal } from '../../src/terminal';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('common builtins', () => {
+  beforeEach(() => {
+    const term = new VirtualTerminal();
+    setTerminal(term);
+  });
   it('Print and Comment output and return 0', () => {
     expect(Print('a')).toBe(0);
     expect(Comment('b')).toBe(0);
