@@ -41,6 +41,17 @@ import { getBuiltin } from './builtins';
 import { cast, PrimitiveType } from './casting';
 import { executeStatements } from './statements';
 
+const numericTypes = new Set([
+  'char','uchar','short','ushort','int','uint','long','ulong','float','double','color','datetime'
+]);
+
+function checkPrimitive(value: any, type: string): boolean {
+  if (numericTypes.has(type)) return typeof value === 'number';
+  if (type === 'bool') return typeof value === 'boolean' || typeof value === 'number';
+  if (type === 'string') return typeof value === 'string';
+  return true;
+}
+
 /** Options for executing code. */
 export interface ExecutionContext {
   /** Entry point function name. */
@@ -265,6 +276,9 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
           if (typeof args[i] !== 'object' || args[i] === null) {
             throw new Error(`Argument ${decl.parameters[i].name} must be passed by reference`);
           }
+        }
+        if (!decl.parameters[i].byRef && !checkPrimitive(args[i], decl.parameters[i].type)) {
+          throw new Error(`Argument ${decl.parameters[i].name} expected ${decl.parameters[i].type}`);
         }
       }
     } else if (!builtin) {
