@@ -2,30 +2,31 @@ import type { BuiltinFunction } from '../types';
 
 const toDate = (t?: number) => (t === undefined ? new Date() : new Date(t * 1000));
 
-export const Day: BuiltinFunction = (t?: number) => toDate(t).getDate();
-export const DayOfWeek: BuiltinFunction = (t?: number) => toDate(t).getDay();
+export const Day: BuiltinFunction = (t?: number) => toDate(t).getUTCDate();
+export const DayOfWeek: BuiltinFunction = (t?: number) => toDate(t).getUTCDay();
 export const DayOfYear: BuiltinFunction = (t?: number) => {
   const d = toDate(t);
-  const start = Date.UTC(d.getFullYear(), 0, 1);
-  return Math.floor((d.getTime() - start) / 86400000) + 1;
+  const start = Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Math.ceil((d.getTime() - start) / 86400000);
 };
 
-export const Hour: BuiltinFunction = (t?: number) => toDate(t).getHours();
-export const Minute: BuiltinFunction = (t?: number) => toDate(t).getMinutes();
-export const Month: BuiltinFunction = (t?: number) => toDate(t).getMonth() + 1;
-export const Seconds: BuiltinFunction = (t?: number) => toDate(t).getSeconds();
-export const Year: BuiltinFunction = (t?: number) => toDate(t).getFullYear();
+export const Hour: BuiltinFunction = (t?: number) => toDate(t).getUTCHours();
+export const Minute: BuiltinFunction = (t?: number) => toDate(t).getUTCMinutes();
+export const Month: BuiltinFunction = (t?: number) => toDate(t).getUTCMonth() + 1;
+export const Seconds: BuiltinFunction = (t?: number) => toDate(t).getUTCSeconds();
+export const Year: BuiltinFunction = (t?: number) => toDate(t).getUTCFullYear();
 
 export const TimeCurrent: BuiltinFunction = () => Math.floor(Date.now() / 1000);
-export const TimeLocal: BuiltinFunction = TimeCurrent;
-export const TimeGMT: BuiltinFunction = () =>
-  Math.floor(Date.now() / 1000) - new Date().getTimezoneOffset() * 60;
+export const TimeLocal: BuiltinFunction = () => TimeCurrent() + TimeGMTOffset();
+export const TimeGMT: BuiltinFunction = () => TimeDaylightSavings() === 0 ? TimeCurrent() : TimeCurrent() - 3600;
 export const TimeDaylightSavings: BuiltinFunction = () => {
-  const now = new Date();
-  const jan = new Date(now.getFullYear(), 0, 1);
-  const jul = new Date(now.getFullYear(), 6, 1);
-  const std = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-  return now.getTimezoneOffset() < std ? 1 : 0;
+  // Get current time in UTC
+  const utc = new Date().toLocaleString('en-US', { timeZone: "UTC", timeStyle: 'short', hourCycle: 'h23' })
+  const [utchours] = utc.split(':').map(Number);
+  // Get current time in GMT (London timezone)
+  const gmt = new Date().toLocaleString('en-US', { timeZone: "Europe/London", timeStyle: 'short', hourCycle: 'h23' })
+  const [gmthours] = gmt.split(':').map(Number);
+  return utchours === gmthours ? 0 : 1;
 };
 export const TimeGMTOffset: BuiltinFunction = () =>
   -new Date().getTimezoneOffset() * 60;
