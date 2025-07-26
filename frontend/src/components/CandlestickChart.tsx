@@ -2,6 +2,7 @@ import React from "react";
 import { ResponsiveContainer } from "recharts";
 import { line as d3Line } from "d3-shape";
 import { scaleLinear, scaleTime } from "d3-scale";
+import { timeFormat } from "d3-time-format";
 
 export type Candle = {
   date: Date;
@@ -33,6 +34,8 @@ export type CandlestickChartProps = {
   onRangeChange?: (range: { from: number; to: number }) => void;
 };
 
+const AXIS_HEIGHT = 20;
+
 const CandlestickChart = ({
   data,
   width,
@@ -50,11 +53,16 @@ const CandlestickChart = ({
   const [size, setSize] = React.useState({ width: 0, height: 0 });
   const onResize = (w: number, h: number) => setSize({ width: w, height: h });
 
+  const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
+
   const xScale = scaleTime().domain([from, to]).range([0, size.width]);
   const minLow = Math.min(...filtered.map((d) => d.low));
   const maxHigh = Math.max(...filtered.map((d) => d.high));
-  const yScale = scaleLinear().domain([minLow, maxHigh]).range([size.height, 0]).nice();
+  const yScale = scaleLinear().domain([minLow, maxHigh]).range([chartHeight, 0]).nice();
   const candleW = filtered.length > 0 ? Math.max(1, size.width / filtered.length / 1.5) : 1;
+
+  const ticks = xScale.ticks(5);
+  const formatTick = timeFormat("%m/%d %H:%M");
 
   const indLines = indicators?.map((ind) => ({
     color: ind.color || "#0ea5e9",
@@ -66,7 +74,7 @@ const CandlestickChart = ({
   const tradeItems = trades?.filter((t) => t.date.getTime() >= from && t.date.getTime() <= to);
 
   return (
-    <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight }}>
+    <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight + AXIS_HEIGHT }}>
       <ResponsiveContainer width="100%" height="100%" onResize={onResize}>
         <svg width={size.width} height={size.height} style={{ overflow: "visible" }}>
           {filtered.map((c, i) => {
@@ -101,6 +109,17 @@ const CandlestickChart = ({
                 ? `${x},${y - size} ${x - size},${y + size} ${x + size},${y + size}`
                 : `${x},${y + size} ${x - size},${y - size} ${x + size},${y - size}`;
             return <polygon key={idx} points={points} fill="#eab308" />;
+          })}
+          {ticks.map((t, idx) => {
+            const x = xScale(t.getTime());
+            return (
+              <g key={`tick-${idx}`}>
+                <line x1={x} x2={x} y1={chartHeight} y2={chartHeight + 4} stroke="#94a3b8" />
+                <text x={x} y={chartHeight + 14} textAnchor="middle" fontSize={10} fill="#64748b">
+                  {formatTick(t)}
+                </text>
+              </g>
+            );
           })}
         </svg>
       </ResponsiveContainer>
