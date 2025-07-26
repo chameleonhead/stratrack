@@ -120,8 +120,12 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from './preprocess';
-import { BacktestRunner, parseCsv, Candle, Tick, ticksToCandles } from './backtest';
+import { BacktestRunner, parseCsv, Candle, ticksToCandles } from './backtest';
+import { MarketData, Tick } from './market';
 import { Broker, OrderState } from './broker';
+import { Account } from './account';
+import { VirtualTerminal } from './terminal';
+import { setTerminal } from './builtins/impl/common';
 
 export {
   lex,
@@ -197,6 +201,8 @@ export {
   Candle,
   BacktestRunner,
   Broker,
+  Account,
+  MarketData,
   OrderState,
   parseCsv,
   Tick,
@@ -245,6 +251,8 @@ export {
   TimeMonth,
   TimeSeconds,
   TimeYear,
+  VirtualTerminal,
+  setTerminal,
 };
 
 export interface Compilation {
