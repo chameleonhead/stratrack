@@ -68,7 +68,7 @@ identifiers.
 
 Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
-`Print`, `OrderSend` and `iMA`, all functions listed at
+`Print`, `OrderSend` and indicator helpers like `iMA`, `iMACD` and `iRSI`, all functions listed at
 <https://docs.mql4.com/function_indices> are available as no-ops and can
 be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`,
 `ArraySort`, `GetTickCount64` and `PlaySound` have working implementations
@@ -76,9 +76,16 @@ alongside string, math and global variable helpers such as `GlobalVariableSet`.
 
 Builtins fall into two categories. **Core** builtins are environment
 independent and always behave the same (e.g. `ArrayResize` or `Print`).
-Others like `iMA` or `AccountBalance` depend on trading platform data and
+Others like `iMA`, `iMACD`, `iRSI` or `AccountBalance` depend on trading platform data and
 default to no-ops.  Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
+
+Global variable helpers described at
+<https://docs.mql4.com/globals> are included. Use functions such as
+`GlobalVariableSet`, `GlobalVariableGet` and `GlobalVariablesTotal` to
+share values across scripts while the interpreter runs. These variables are
+kept in memory and may be flushed with `GlobalVariablesFlush` when a
+persistent store is added.
 
 To create an instance of a parsed class, use `instantiate()` with the runtime
 and class name. Inherited fields are included in the resulting object:
@@ -205,13 +212,27 @@ See [TODO.md](TODO.md) for planned features and tasks.
 The library provides a small helper to replay historical market data. Use
 `BacktestRunner` with a sequence of candles and your MQL source. The runner
 exposes builtins such as `iOpen` and `iClose` so code can access bar data while
-`step()` or `run()` executes the specified entry point for each candle.
+`step()` or `run()` executes the specified entry point for each candle. Series
+helpers like `CopyOpen`, `CopyClose`, `CopyHigh`, `CopyLow`, `CopyTime` and
+`CopyTickVolume` can copy ranges of values into arrays. Functions like `Bars`,
+`iBars` and `iBarShift` report information about the available history.
+Standard indicators like `iMA`, `iMACD` and `iRSI` are available for basic analysis.
 `Bid` and `Ask` variables are updated on every step. Orders placed through
 `OrderSend` are routed to an internal `Broker`. The broker now supports market
 and limit orders with optional stop loss and take profit levels. It advances
 with each step so pending orders may be triggered and open trades closed
-automatically. All executed orders can be inspected after running and account
-metrics like balance and equity are available via `runner.getAccountMetrics()`.
+automatically. The runner manages a session composed of a test broker, account
+and market data storage so each backtest is isolated. All executed orders can be
+inspected after running and account metrics like balance and equity are
+available via `runner.getAccountMetrics()`. The underlying broker, account and
+market data instances are accessible with `runner.getBroker()`,
+`runner.getAccount()` and `runner.getMarketData()` respectively. Market
+information helpers such as `MarketInfo` query this in-memory data and only
+return values for time ranges covered by the provided ticks.
+Basic trading helpers are available as well. Use `OrdersTotal`,
+`OrdersHistoryTotal`, `OrderSelect` and property functions like
+`OrderType` or `OrderProfit` to inspect and close orders within a
+backtest.
 If you have raw tick data you can convert it to candles using
 `ticksToCandles(ticks, timeframe)`. Each tick object should provide
 `bid` and `ask` prices in addition to the timestamp:
@@ -232,3 +253,11 @@ runner.run();
 console.log(runner.getRuntime().globalValues.count); // 1
 ```
 
+
+## Program structure and virtual terminal
+
+BacktestRunner automatically calls `OnInit` before processing the first candle and invokes `OnDeinit` after the session ends.
+To simplify testing, a `VirtualTerminal` provides an in-memory file system. Helpers like `FileOpen` or `FileReadString` can use this terminal without touching the host file system. The terminal implementation is encapsulated so it can later be replaced with real-time logic.
+The terminal also stores global variables used by helpers such as `GlobalVariableSet` and exposes basic UI stubs like `Alert` and `PlaySound`. Chart and window operations are currently no-ops in the backtest implementation but can be swapped out when running against a real terminal.
+Global variables are kept across sessions when a storage path is provided to `VirtualTerminal`. The `GlobalVariablesFlush` builtin writes them to disk and values expire after four weeks without access.
+Additional helpers like `Symbol`, `Period`, `IsTesting` and `TerminalInfoInteger` report the current environment state during backtests.

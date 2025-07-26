@@ -1,6 +1,8 @@
 export type OrderState = 'pending' | 'open' | 'closed';
 
 export interface Order {
+  /** Ticket number (index) */
+  ticket: number;
   type: 'buy' | 'sell';
   symbol: string;
   volume: number;
@@ -23,7 +25,8 @@ export interface Order {
 
 export class Broker {
   private orders: Order[] = [];
-  private balance = 0;
+
+  constructor() {}
 
   /**
    * Create a new order. `cmd` follows the MT4 enumeration where
@@ -44,6 +47,7 @@ export class Broker {
     const type = cmd === 1 || cmd === 3 ? 'sell' : 'buy';
     const pending = cmd === 2 || cmd === 3;
     const order: Order = {
+      ticket: this.orders.length,
       symbol,
       type,
       volume,
@@ -65,7 +69,8 @@ export class Broker {
    * Update all orders against the latest candle. Pending orders may be opened
    * and open orders checked for TP/SL conditions.
    */
-  update(candle: { time: number; high: number; low: number; close: number }): void {
+  update(candle: { time: number; high: number; low: number; close: number }): number {
+    let closedProfit = 0;
     for (const order of this.orders) {
       if (order.state === 'closed') continue;
 
@@ -98,24 +103,29 @@ export class Broker {
           order.profit =
             (order.type === 'buy' ? price - order.price : order.price - price) *
             order.volume;
-          this.balance += order.profit;
+          closedProfit += order.profit;
         }
       }
     }
+    return closedProfit;
   }
 
-  close(index: number, price: number, time: number): void {
-    const o = this.orders[index];
-    if (!o || o.state === 'closed') return;
+  close(ticket: number, price: number, time: number): number {
+    const o = this.orders[ticket];
+    if (!o || o.state === 'closed') return 0;
     o.closePrice = price;
     o.closeTime = time;
     o.state = 'closed';
     o.profit = (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
-    this.balance += o.profit;
+    return o.profit;
   }
 
   getOpenOrders(): Order[] {
     return this.orders.filter((o) => o.state === 'open');
+  }
+
+  getOrder(ticket: number): Order | undefined {
+    return this.orders[ticket];
   }
 
   /** Pending and open orders */
@@ -123,37 +133,31 @@ export class Broker {
     return this.orders.filter((o) => o.state !== 'closed');
   }
 
+  /** Direct access for tests or builtins */
+  getAllOrders(): Order[] {
+    return this.orders;
+  }
+
   getHistory(): Order[] {
     return this.orders.filter((o) => o.state === 'closed');
   }
 
-  getBalance(): number {
-    return this.balance;
-  }
-
   /**
-   * Calculate account metrics using the current bid/ask price for open orders.
+   * Calculate profit for open orders using the current bid/ask price.
    */
-  getAccountMetrics(bid: number, ask: number): {
-    balance: number;
-    equity: number;
-    closedProfit: number;
-    openProfit: number;
-  } {
+  calculateOpenProfit(bid: number, ask: number): number {
     let openProfit = 0;
     for (const o of this.orders) {
       if (o.state !== 'open') continue;
       const price = o.type === 'buy' ? bid : ask;
       openProfit += (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
     }
-    const closedProfit = this.orders
+    return openProfit;
+  }
+
+  getClosedProfit(): number {
+    return this.orders
       .filter((o) => o.state === 'closed')
       .reduce((sum, o) => sum + (o.profit || 0), 0);
-    return {
-      balance: this.balance,
-      equity: this.balance + openProfit,
-      closedProfit,
-      openProfit,
-    };
   }
 }
