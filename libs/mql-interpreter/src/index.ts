@@ -120,8 +120,8 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from './preprocess';
-import { BacktestRunner, parseCsv, Candle, ticksToCandles } from './backtest';
-import { MarketData, Tick } from './market';
+import { BacktestRunner, parseCsv } from './backtest';
+import { MarketData, Tick, Candle, ticksToCandles } from './market';
 import { Broker, OrderState } from './broker';
 import { Account } from './account';
 import { VirtualTerminal } from './terminal';

@@ -3,18 +3,9 @@ import type { PreprocessOptions } from './preprocess';
 import type { BuiltinFunction } from './builtins';
 import { Broker, Order } from './broker';
 import { Account, AccountMetrics } from './account';
-import { MarketData, Tick } from './market';
+import { MarketData, ticksToCandles, Candle, Tick } from './market';
 import { VirtualTerminal } from './terminal';
 import { setTerminal } from './builtins/impl/common';
-
-export interface Candle {
-  time: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume?: number;
-}
 
 export interface BacktestSession {
   broker: Broker;
@@ -39,38 +30,6 @@ export function parseCsv(data: string): Candle[] {
     if (volume !== undefined) candle.volume = Number(volume);
     candles.push(candle);
   }
-  return candles;
-}
-
-/** Convert a sequence of ticks into candles. `timeframe` specifies the duration
- *  of each candle in the same units as tick timestamps. */
-export function ticksToCandles(ticks: Tick[], timeframe: number): Candle[] {
-  if (!ticks.length) return [];
-  const sorted = [...ticks].sort((a, b) => a.time - b.time);
-  const candles: Candle[] = [];
-  const mid = (t: Tick) => (t.bid + t.ask) / 2;
-  let start = Math.floor(sorted[0].time / timeframe) * timeframe;
-  let open = mid(sorted[0]);
-  let high = open;
-  let low = open;
-  for (let i = 0; i < sorted.length; i++) {
-    const t = sorted[i];
-    const price = mid(t);
-    const bucket = Math.floor(t.time / timeframe) * timeframe;
-    if (bucket !== start) {
-      const prev = sorted[i - 1];
-      candles.push({ time: start, open, high, low, close: mid(prev) });
-      start = bucket;
-      open = price;
-      high = price;
-      low = price;
-    } else {
-      if (price > high) high = price;
-      if (price < low) low = price;
-    }
-  }
-  const last = sorted[sorted.length - 1];
-  candles.push({ time: start, open, high, low, close: mid(last) });
   return candles;
 }
 
@@ -110,9 +69,11 @@ export class BacktestRunner {
     this.terminal = new VirtualTerminal();
     setTerminal(this.terminal);
     const symbol = options.symbol ?? 'TEST';
+    const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;
     const baseTicks = candles.map(c => ({ time: c.time, bid: c.close, ask: c.close }));
     const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
-    this.market = new MarketData(ticks);
+    const candleData = { [symbol]: { [period]: candles } } as Record<string, Record<number, Candle[]>>;
+    this.market = new MarketData(ticks, candleData);
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
     registerEnvBuiltins(builtins);
@@ -147,8 +108,38 @@ export class BacktestRunner {
         this.runtime.globalValues.Ask,
       );
 
+    const currentTime = () =>
+      this.candles[Math.min(this.index, this.candles.length - 1)].time;
+
+    const candlesFor = (sym: any, tf: any): Candle[] => {
+      const symbol = sym && String(sym).length ? String(sym) : (this.options.symbol ?? 'TEST');
+      const timeframe = Number(tf) || this.runtime.globalValues._Period;
+      return this.market.getCandles(symbol, timeframe);
+    };
+
+    const findIndex = (candles: Candle[], time: number): number => {
+      let lo = 0, hi = candles.length - 1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (candles[mid].time <= time) lo = mid + 1; else hi = mid - 1;
+      }
+      return hi;
+    };
+
+    const priceVal = (c: Candle, applied: number): number => {
+      switch (applied) {
+        case 1: return c.open;
+        case 2: return c.high;
+        case 3: return c.low;
+        case 4: return (c.high + c.low) / 2;
+        case 5: return (c.high + c.low + c.close) / 3;
+        case 6: return (c.high + c.low + 2 * c.close) / 4;
+        default: return c.close;
+      }
+    };
+
     const marketInfo = (symbol: string, type: number): number => {
-      const time = this.candles[Math.min(this.index, this.candles.length - 1)].time;
+      const time = currentTime();
       const tick = this.market.getTick(symbol, time);
       switch (type) {
         case 9: // MODE_BID
@@ -167,86 +158,89 @@ export class BacktestRunner {
     };
 
     return {
-      Bars: (_symbol: any, _tf: any) => this.candles.length,
-      iBars: (_symbol: any, _tf: any) => this.candles.length,
-      iBarShift: (_symbol: any, _tf: any, time: number, exact?: boolean) => {
-        for (let i = 0; i < this.candles.length; i++) {
-          const c = this.candles[i];
-          const next = this.candles[i + 1];
+      Bars: (sym: any, tf: any) => candlesFor(sym, tf).length,
+      iBars: (sym: any, tf: any) => candlesFor(sym, tf).length,
+      iBarShift: (sym: any, tf: any, time: number, exact?: boolean) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < arr.length; i++) {
+          const c = arr[i];
+          const next = arr[i + 1];
           if (c.time === time) return i;
           if (!exact && next && c.time < time && time < next.time) return i;
         }
         return -1;
       },
-      iOpen: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.open : 0;
+      iOpen: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.open ?? 0;
       },
-      iHigh: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.high : 0;
+      iHigh: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.high ?? 0;
       },
-      iLow: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.low : 0;
+      iLow: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.low ?? 0;
       },
-      iClose: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.close : 0;
+      iClose: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.close ?? 0;
       },
-      iTime: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.time : 0;
+      iTime: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.time ?? 0;
       },
-      iVolume: (_symbol: any, _tf: any, shift: number) => {
-        const c = this.candles[this.index - (shift ?? 0)];
-        return c ? c.volume ?? 0 : 0;
+      iVolume: (sym: any, tf: any, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        return arr[idx]?.volume ?? 0;
       },
-      CopyTime: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].time;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyTime: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].time;
+        return Math.min(count, arr.length - start);
       },
-      CopyOpen: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].open;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyOpen: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].open;
+        return Math.min(count, arr.length - start);
       },
-      CopyHigh: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].high;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyHigh: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].high;
+        return Math.min(count, arr.length - start);
       },
-      CopyLow: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].low;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyLow: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].low;
+        return Math.min(count, arr.length - start);
       },
-      CopyClose: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].close;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyClose: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].close;
+        return Math.min(count, arr.length - start);
       },
-      CopyTickVolume: (_symbol: any, _tf: any, start: number, count: number, dst: number[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          dst[i] = this.candles[start + i].volume ?? 0;
-        }
-        return Math.min(count, this.candles.length - start);
+      CopyTickVolume: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].volume ?? 0;
+        return Math.min(count, arr.length - start);
       },
-      CopyRates: (_symbol: any, _tf: any, start: number, count: number, dst: any[]) => {
-        for (let i = 0; i < count && start + i < this.candles.length; i++) {
-          const c = this.candles[start + i];
+      CopyRates: (sym: any, tf: any, start: number, count: number, dst: any[]) => {
+        const arr = candlesFor(sym, tf);
+        for (let i = 0; i < count && start + i < arr.length; i++) {
+          const c = arr[start + i];
           dst[i] = { open: c.open, high: c.high, low: c.low, close: c.close, tick_volume: c.volume ?? 0, time: c.time };
         }
-        return Math.min(count, this.candles.length - start);
+        return Math.min(count, arr.length - start);
       },
-      SeriesInfoInteger: (_symbol: any, _tf: any, prop: number) => {
-        if (prop === 0) return this.candles.length;
+      SeriesInfoInteger: (sym: any, tf: any, prop: number) => {
+        const arr = candlesFor(sym, tf);
+        if (prop === 0) return arr.length;
         return 0;
       },
       RefreshRates: () => 1,
@@ -254,47 +248,27 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
-      iMA: (_symbol: any, _tf: any, period: number, maShift: number, _maMethod: number, applied: number, shift: number) => {
-        const idx = this.index - (shift ?? 0) - maShift;
+      iMA: (sym: any, tf: any, period: number, maShift: number, _maMethod: number, applied: number, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0) - maShift;
         if (idx < period - 1) return 0;
         const start = idx - period + 1;
-        const slice = this.candles.slice(start, idx + 1);
-        const val = (c: Candle) => {
-          switch (applied) {
-            case 1: return c.open;
-            case 2: return c.high;
-            case 3: return c.low;
-            case 4: return (c.high + c.low) / 2;
-            case 5: return (c.high + c.low + c.close) / 3;
-            case 6: return (c.high + c.low + 2 * c.close) / 4;
-            default: return c.close;
-          }
-        };
-        const sum = slice.reduce((s, c) => s + val(c), 0);
+        const slice = arr.slice(start, idx + 1);
+        const sum = slice.reduce((s, c) => s + priceVal(c, applied), 0);
         return sum / slice.length;
       },
-      iMACD: (_symbol: any, _tf: any, fast: number, slow: number, signal: number, applied: number, mode: number, shift: number) => {
-        const idx = this.index - (shift ?? 0);
+      iMACD: (sym: any, tf: any, fast: number, slow: number, signal: number, applied: number, mode: number, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
         if (idx < Math.max(fast, slow)) return 0;
-        const val = (c: Candle) => {
-          switch (applied) {
-            case 1: return c.open;
-            case 2: return c.high;
-            case 3: return c.low;
-            case 4: return (c.high + c.low) / 2;
-            case 5: return (c.high + c.low + c.close) / 3;
-            case 6: return (c.high + c.low + 2 * c.close) / 4;
-            default: return c.close;
-          }
-        };
         const kFast = 2 / (fast + 1);
         const kSlow = 2 / (slow + 1);
         const kSig = 2 / (signal + 1);
-        let emaFast = val(this.candles[0]);
-        let emaSlow = val(this.candles[0]);
+        let emaFast = priceVal(arr[0], applied);
+        let emaSlow = priceVal(arr[0], applied);
         const macdVals: number[] = [emaFast - emaSlow];
         for (let i = 1; i <= idx; i++) {
-          const price = val(this.candles[i]);
+          const price = priceVal(arr[i], applied);
           emaFast = price * kFast + emaFast * (1 - kFast);
           emaSlow = price * kSlow + emaSlow * (1 - kSlow);
           macdVals.push(emaFast - emaSlow);
@@ -306,25 +280,15 @@ export class BacktestRunner {
         const macd = macdVals[macdVals.length - 1];
         return mode === 1 ? sig : macd;
       },
-      iRSI: (_symbol: any, _tf: any, period: number, applied: number, shift: number) => {
-        const idx = this.index - (shift ?? 0);
+      iRSI: (sym: any, tf: any, period: number, applied: number, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
         if (idx < period) return 0;
-        const val = (c: Candle) => {
-          switch (applied) {
-            case 1: return c.open;
-            case 2: return c.high;
-            case 3: return c.low;
-            case 4: return (c.high + c.low) / 2;
-            case 5: return (c.high + c.low + c.close) / 3;
-            case 6: return (c.high + c.low + 2 * c.close) / 4;
-            default: return c.close;
-          }
-        };
         let gains = 0;
         let losses = 0;
         for (let i = idx - period + 1; i <= idx; i++) {
-          const cur = val(this.candles[i]);
-          const prev = val(this.candles[i - 1]);
+          const cur = priceVal(arr[i], applied);
+          const prev = priceVal(arr[i - 1], applied);
           const diff = cur - prev;
           if (diff > 0) gains += diff; else losses -= diff;
         }
@@ -487,4 +451,6 @@ export class BacktestRunner {
     return this.terminal;
   }
 }
+
+export { ticksToCandles, Candle, Tick } from './market';
 
