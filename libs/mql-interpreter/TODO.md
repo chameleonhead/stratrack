@@ -62,7 +62,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 
 - [x] Implement compile-time type checking to validate variable declarations, expressions and function calls.
   - [x] Detect mismatched types in assignments and arguments.
-  - [x] Verify builtin functions are called with correct argument types and counts.
+- [x] Verify builtin functions are called with correct argument types and counts.
+- [ ] Validate builtin calls during compilation once function call parsing is available.
 - [x] Accumulate compile errors instead of throwing immediately.
   - [x] Introduce a `CompilationError` interface with source location and message.
   - [x] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.
@@ -150,14 +151,14 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Implement standard indicator helpers from <https://docs.mql4.com/indicators>.
   - [x] Implement `iMA` using backtest candle data.
   - [x] Provide `iMACD`, `iRSI` and other helpers.
-  - [ ] Ensure indicators operate on the selected symbol and timeframe when running a session.
-  - [ ] Reuse the `MarketData` service for any price series needed by these functions.
+  - [x] Ensure indicators operate on the selected symbol and timeframe when running a session.
+  - [x] Reuse the `MarketData` service for any price series needed by these functions.
 
 # Custom indicator helpers
 
 - [ ] Design a framework for executing custom indicators as described at <https://docs.mql4.com/customind>.
   - [ ] Support loading compiled indicators and calling them via `iCustom`.
-  - [ ] Manage indicator buffers using helpers like `SetIndexBuffer` and `IndicatorBuffers`.
+  - [x] Manage indicator buffers using helpers like `SetIndexBuffer` and `IndicatorBuffers`.
   - [ ] Expose initialization callbacks (`OnInit`, `OnCalculate`) for custom indicator scripts.
   - [ ] Allow backtests to attach indicators while keeping implementation details encapsulated.
 

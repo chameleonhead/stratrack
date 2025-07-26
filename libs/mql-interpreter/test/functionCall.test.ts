@@ -39,6 +39,12 @@ describe('callFunction', () => {
     expect(() => callFunction(r, 'mod', [1])).toThrow('Argument v must be passed by reference');
   });
 
+  it('validates primitive argument types', () => {
+    const r = execute(parse(lex('void foo(int a, string b);').tokens));
+    expect(() => callFunction(r, 'foo', ['x', 'y'])).toThrow('Argument a expected int');
+    expect(() => callFunction(r, 'foo', [1, 2])).toThrow('Argument b expected string');
+  });
+
   it('passes reference object to builtin', () => {
     const r = execute(parse(lex('void StringTrimLeft(string &s);').tokens));
     const ref = { value: '  hi' };

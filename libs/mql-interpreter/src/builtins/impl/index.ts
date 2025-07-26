@@ -5,6 +5,16 @@ import { iMA } from './iMA';
 import { iMACD } from './iMACD';
 import { iRSI } from './iRSI';
 import {
+  IndicatorBuffers,
+  SetIndexBuffer,
+  IndicatorCounted,
+  IndicatorDigits,
+  IndicatorSetDouble,
+  IndicatorSetInteger,
+  IndicatorSetString,
+  IndicatorShortName,
+} from './indicator';
+import {
   ArrayResize,
   ArrayCopy,
   ArraySetAsSeries,
@@ -321,6 +331,14 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
   CopyTickVolume,
   SeriesInfoInteger,
   RefreshRates,
+  IndicatorBuffers,
+  SetIndexBuffer,
+  IndicatorCounted,
+  IndicatorDigits,
+  IndicatorSetDouble,
+  IndicatorSetInteger,
+  IndicatorSetString,
+  IndicatorShortName,
 };
 
 export {
@@ -481,6 +499,14 @@ export {
   CopyTickVolume,
   SeriesInfoInteger,
   RefreshRates,
+  IndicatorBuffers,
+  SetIndexBuffer,
+  IndicatorCounted,
+  IndicatorDigits,
+  IndicatorSetDouble,
+  IndicatorSetInteger,
+  IndicatorSetString,
+  IndicatorShortName,
   AccountInfo,
   setTerminal,
 };

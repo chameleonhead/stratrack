@@ -220,6 +220,10 @@ and `iVolume` report information about the available history. `SeriesInfoInteger
 returns series properties such as the number of loaded bars and `RefreshRates`
 updates the latest tick values.
 Standard indicators like `iMA`, `iMACD` and `iRSI` are available for basic analysis.
+These indicators respect the symbol and timeframe arguments by retrieving price
+series from the `MarketData` service, allowing backtests to query multiple
+symbols or periods. Helpers like `IndicatorBuffers` and `SetIndexBuffer` are
+available for future custom indicator support.
 `Bid` and `Ask` variables are updated on every step. Orders placed through
 `OrderSend` are routed to an internal `Broker`. The broker now supports market
 and limit orders with optional stop loss and take profit levels. It advances
