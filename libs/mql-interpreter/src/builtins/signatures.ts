@@ -8,7 +8,9 @@ export interface BuiltinSignature {
   variadic?: boolean;
 }
 
-export const builtinSignatures: Record<string, BuiltinSignature> = {
+export type BuiltinSignaturesMap = Record<string, BuiltinSignature | BuiltinSignature[]>;
+
+export const builtinSignatures: BuiltinSignaturesMap = {
   Print: { parameters: [], variadic: true },
   Alert: { parameters: [], variadic: true },
   Comment: { parameters: [], variadic: true },
@@ -182,14 +184,22 @@ export const builtinSignatures: Record<string, BuiltinSignature> = {
       { type: 'int', optional: true },
     ],
   },
-  ArrayCopy: {
-    parameters: [
-      { type: 'any[]' },
-      { type: 'any[]' },
-      { type: 'int', optional: true },
-      { type: 'int', optional: true },
-    ],
-  },
+  ArrayCopy: [
+    {
+      parameters: [
+        { type: 'any[]' },
+        { type: 'any[]' },
+      ],
+    },
+    {
+      parameters: [
+        { type: 'any[]' },
+        { type: 'any[]' },
+        { type: 'int' },
+        { type: 'int' },
+      ],
+    },
+  ],
   ArrayResize: {
     parameters: [
       { type: 'any[]' },

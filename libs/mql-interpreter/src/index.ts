@@ -347,7 +347,7 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
         }
         const overloads = runtime.functions[name];
         const sig = builtinSignatures[name];
-        const isBuiltin = builtinSet.has(name) || sig;
+        const isBuiltin = builtinSet.has(name) || !!sig;
         if (!overloads && !isBuiltin) {
           errors.push({ message: `Unknown function ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
         } else if (overloads) {
@@ -357,9 +357,17 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
             errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
           }
         } else if (sig) {
-          const required = sig.parameters.filter(p => !p.optional).length;
-          const max = sig.variadic ? Infinity : sig.parameters.length;
-          if (args < required || args > max) {
+          const sigs = Array.isArray(sig) ? sig : [sig];
+          let match = false;
+          for (const s of sigs) {
+            const required = s.parameters.filter(p => !p.optional).length;
+            const max = s.variadic ? Infinity : s.parameters.length;
+            if (args >= required && args <= max) {
+              match = true;
+              break;
+            }
+          }
+          if (!match) {
             errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
           }
         }

@@ -59,4 +59,13 @@ describe('evaluateExpression', () => {
     const found = result.errors.some(e => e.message.includes('Incorrect argument count'));
     expect(found).toBe(true);
   });
+
+  it('validates overloaded builtin signatures', () => {
+    const ok = compile('void start(){ int a[]; int b[]; ArrayCopy(a,b); }');
+    const okErr = ok.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(okErr).toBe(false);
+    const bad = compile('void start(){ int a[]; int b[]; ArrayCopy(a,b,1); }');
+    const found = bad.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(found).toBe(true);
+  });
 });
