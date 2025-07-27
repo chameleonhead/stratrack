@@ -439,6 +439,7 @@ export function interpret(
         runtime.globalValues[name] = context.externValues[name];
       }
     }
+    runtime.context = context;
     if (context.entryPoint) {
       callFunction(runtime, context.entryPoint, context.args);
     }

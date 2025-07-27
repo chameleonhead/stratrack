@@ -32,6 +32,9 @@ import {
   GlobalVariableName,
   GlobalVariableTime,
   GlobalVariableSetOnCondition,
+  GlobalVariableTemp,
+  GlobalVariablesFlush,
+  WebRequest,
   setTerminal,
 } from "../../src/builtins/impl/common";
 import { builtinSignatures } from "../../src/builtins/signatures";
@@ -109,6 +112,16 @@ describe("common builtins", () => {
     expect(GlobalVariableSetOnCondition("x", 7, 5)).toBe(false);
     expect(GlobalVariableDel("x")).toBe(true);
     expect(GlobalVariablesTotal()).toBe(0);
+  });
+
+  it("misc helpers handle requests and flush", () => {
+    const res = { value: "foo" };
+    expect(WebRequest("GET", "http://example.com", ["h"], "", 1000, res)).toBe(-1);
+    expect(res.value).toBe("");
+    GlobalVariableSet("tmp", 1);
+    GlobalVariableTemp("tmp", 2);
+    expect(GlobalVariableGet("tmp")).toBe(2);
+    expect(GlobalVariablesFlush()).toBe(0);
   });
 });
 
