@@ -29,3 +29,11 @@ export const Default: Story = {
     await expect(args.onRangeChange).toHaveBeenCalled();
   },
 };
+
+export const LongData: Story = {
+  args: {
+    width: 300,
+    height: 150,
+    data: Array.from({ length: 150 }, (_, i) => ({ x: i, y: Math.sin(i / 10) })),
+  },
+};

@@ -22,8 +22,14 @@ export type LineChartProps = {
 const LineChart = ({ width, height = 300, data, range, onRangeChange }: LineChartProps) => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const resolvedHeight = isMobile ? 200 : height;
-  const from = range?.from ?? data[0]?.x ?? 0;
-  const to = range?.to ?? data[data.length - 1]?.x ?? 0;
+  const defaultRange = React.useMemo(() => {
+    if (data.length === 0) return { from: 0, to: 0 };
+    const endIdx = data.length - 1;
+    const startIdx = Math.max(0, endIdx - 99);
+    return { from: data[startIdx].x, to: data[endIdx].x };
+  }, [data]);
+  const from = range?.from ?? defaultRange.from;
+  const to = range?.to ?? defaultRange.to;
   const filtered = data.filter((p) => p.x >= from && p.x <= to);
   const [size, setSize] = React.useState({ width: 0, height: 0 });
   const onResize = (w: number, h: number) => setSize({ width: w, height: h });

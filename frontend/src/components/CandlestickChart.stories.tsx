@@ -45,3 +45,22 @@ export const Default: Story = {
     await expect(args.onRangeChange).toHaveBeenCalled();
   },
 };
+
+export const Tooltip: Story = {
+  args: {
+    width: 300,
+    height: 200,
+    data: Array.from({ length: 120 }, (_, i) => ({
+      date: new Date(i * 60 * 1000),
+      open: 1 + Math.sin(i / 10) * 0.05,
+      high: 1.1 + Math.sin(i / 10) * 0.05,
+      low: 0.9 + Math.sin(i / 10) * 0.05,
+      close: 1 + Math.sin((i + 1) / 10) * 0.05,
+    })),
+  },
+  play: async ({ canvasElement }) => {
+    const firstBar = canvasElement.querySelector("rect") as SVGRectElement;
+    fireEvent.click(firstBar);
+    await expect(canvasElement.querySelector("foreignObject")).not.toBeNull();
+  },
+};

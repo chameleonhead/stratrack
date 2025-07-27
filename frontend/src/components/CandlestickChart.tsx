@@ -48,13 +48,25 @@ const CandlestickChart = ({
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const resolvedHeight = isMobile ? 200 : height;
   const sorted = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
-  const from = range?.from ?? sorted[0]?.date.getTime() ?? 0;
-  const to = range?.to ?? sorted[sorted.length - 1]?.date.getTime() ?? 0;
+  const defaultRange = React.useMemo(() => {
+    if (sorted.length === 0) return { from: 0, to: 0 };
+    const endIdx = sorted.length - 1;
+    const startIdx = Math.max(0, endIdx - 99);
+    return {
+      from: sorted[startIdx].date.getTime(),
+      to: sorted[endIdx].date.getTime(),
+    };
+  }, [sorted]);
+  const from = range?.from ?? defaultRange.from;
+  const to = range?.to ?? defaultRange.to;
   const filtered = sorted.filter((c) => c.date.getTime() >= from && c.date.getTime() <= to);
   const [size, setSize] = React.useState({ width: 0, height: 0 });
   const onResize = (w: number, h: number) => setSize({ width: w, height: h });
   const dragStart = React.useRef<number | null>(null);
   const dragRange = React.useRef<{ from: number; to: number } | null>(null);
+  const [tooltip, setTooltip] = React.useState<{ x: number; y: number; candle: Candle } | null>(
+    null
+  );
 
   const moveRange = (ratio: number) => {
     if (!onRangeChange) return;
@@ -72,6 +84,7 @@ const CandlestickChart = ({
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     dragStart.current = e.clientX;
     dragRange.current = { from, to };
+    setTooltip(null);
   };
 
   const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -85,9 +98,14 @@ const CandlestickChart = ({
     });
   };
 
+  const handleBarClick = (c: Candle, x: number, y: number) => {
+    setTooltip({ x, y, candle: c });
+  };
+
   const endDrag = () => {
     dragStart.current = null;
     dragRange.current = null;
+    setTooltip(null);
   };
 
   const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
@@ -98,8 +116,16 @@ const CandlestickChart = ({
   const yScale = scaleLinear().domain([minLow, maxHigh]).range([chartHeight, 0]).nice();
   const candleW = filtered.length > 0 ? Math.max(1, size.width / filtered.length / 1.5) : 1;
 
-  const ticks = xScale.ticks(5);
-  const formatTick = timeFormat("%m/%d %H:%M");
+  const ticks = xScale.ticks(Math.max(2, Math.floor(size.width / 80)));
+  const candleMs = sorted.length > 1 ? sorted[1].date.getTime() - sorted[0].date.getTime() : 0;
+  const formatTick = timeFormat(
+    candleMs >= 24 * 60 * 60 * 1000
+      ? "%Y-%m-%d"
+      : candleMs >= 60 * 60 * 1000
+        ? "%m/%d %H:%M"
+        : "%H:%M:%S"
+  );
+  const yTicks = yScale.ticks(5);
 
   const indLines = indicators?.map((ind) => ({
     color: ind.color || "#0ea5e9",
@@ -131,7 +157,7 @@ const CandlestickChart = ({
             const lowY = yScale(c.low);
             const color = c.close >= c.open ? "#16a34a" : "#ef4444";
             return (
-              <g key={i}>
+              <g key={i} onClick={() => handleBarClick(c, x, Math.min(openY, closeY))}>
                 <line x1={x} x2={x} y1={highY} y2={lowY} stroke={color} />
                 <rect
                   x={x - candleW / 2}
@@ -156,6 +182,17 @@ const CandlestickChart = ({
                 : `${x},${y + size} ${x - size},${y - size} ${x + size},${y - size}`;
             return <polygon key={idx} points={points} fill="#eab308" />;
           })}
+          {yTicks.map((p, idx) => {
+            const y = yScale(p);
+            return (
+              <g key={`ytick-${idx}`}>
+                <line x1={0} x2={size.width} y1={y} y2={y} stroke="#e5e7eb" strokeDasharray="2 2" />
+                <text x={-4} y={y + 3} textAnchor="end" fontSize={10} fill="#64748b">
+                  {p.toFixed(2)}
+                </text>
+              </g>
+            );
+          })}
           {ticks.map((t, idx) => {
             const x = xScale(t.getTime());
             return (
@@ -167,6 +204,29 @@ const CandlestickChart = ({
               </g>
             );
           })}
+          {tooltip && (
+            <foreignObject
+              x={tooltip.x}
+              y={tooltip.y - 45}
+              width={100}
+              height={40}
+              style={{ pointerEvents: "none" }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #94a3b8",
+                  fontSize: 10,
+                  padding: 2,
+                }}
+              >
+                <div>O:{tooltip.candle.open}</div>
+                <div>H:{tooltip.candle.high}</div>
+                <div>L:{tooltip.candle.low}</div>
+                <div>C:{tooltip.candle.close}</div>
+              </div>
+            </foreignObject>
+          )}
         </svg>
       </ResponsiveContainer>
     </div>
