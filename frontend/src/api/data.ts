@@ -62,6 +62,43 @@ export async function getDataStream(
   return res.text();
 }
 
+export type HistoryOhlc = {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+};
+
+export type HistoryResponse = {
+  data: HistoryOhlc[];
+  startTime: string;
+  endTime: string;
+  prev?: string;
+};
+
+export async function getDataHistory(
+  dataSourceId: string,
+  timeframe: string,
+  time?: string
+): Promise<HistoryResponse> {
+  const params = new URLSearchParams();
+  params.append("timeframe", timeframe);
+  if (time) params.append("time", time);
+  const url = `${API_BASE_URL}/api/data-sources/${dataSourceId}/history?${params.toString()}`;
+  const res = await fetch(url, { headers: { "x-functions-key": API_KEY } });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch data history: ${res.status}`);
+  }
+  const startTime = res.headers.get("X-Start-Time") ?? "";
+  const endTime = res.headers.get("X-End-Time") ?? "";
+  const link = res.headers.get("Link") ?? "";
+  const prevMatch = /<([^>]+)>;\s*rel="prev"/.exec(link);
+  const prev = prevMatch ? prevMatch[1] : undefined;
+  const data = await res.json();
+  return { data, startTime, endTime, prev };
+}
+
 export async function deleteDataChunks(dataSourceId: string, startTime?: string, endTime?: string) {
   const params = new URLSearchParams();
   if (startTime) params.append("startTime", startTime);
