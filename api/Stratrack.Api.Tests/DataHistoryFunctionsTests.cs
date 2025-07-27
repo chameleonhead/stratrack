@@ -85,4 +85,42 @@ public class DataHistoryFunctionsTests
         Assert.IsNotNull(points);
         Assert.AreEqual(0, points.Count);
     }
+
+    [TestMethod]
+    public async Task GetDataHistory_TickTimeframe_ReturnsTicks()
+    {
+        using var provider = CreateProvider();
+        var dsId = await CreateDataSourceAsync(provider);
+        var chunkFunc = provider.GetRequiredService<DataChunkFunctions>();
+        var csv = new StringBuilder();
+        csv.AppendLine("time,bid,ask");
+        csv.AppendLine("2024-01-01T00:00:00Z,1,2");
+        csv.AppendLine("2024-01-01T00:10:00Z,1.1,2.1");
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(csv.ToString()));
+        var uploadReq = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/chunks")
+            .WithMethod(HttpMethod.Post)
+            .WithBody(JsonSerializer.Serialize(new CsvChunkUploadRequest
+            {
+                StartTime = new DateTimeOffset(2024,1,1,0,0,0,TimeSpan.Zero),
+                EndTime = new DateTimeOffset(2024,1,1,1,0,0,TimeSpan.Zero),
+                Base64Data = data
+            }))
+            .Build();
+        await chunkFunc.PostDataChunk(uploadReq, dsId, CancellationToken.None);
+
+        var histFunc = provider.GetRequiredService<DataHistoryFunctions>();
+        var req = new HttpRequestDataBuilder()
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/history?timeframe=tick&time=2024-01-01T00:30:00Z")
+            .WithMethod(HttpMethod.Get)
+            .Build();
+        var res = await histFunc.GetDataHistory(req, dsId, CancellationToken.None);
+        Assert.AreEqual(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.ReadAsStringAsync();
+        var points = JsonSerializer.Deserialize<List<HistoryTick>>(body);
+        Assert.IsNotNull(points);
+        Assert.AreEqual(2, points!.Count);
+        Assert.AreEqual(1m, points[0].Bid);
+        Assert.AreEqual(2m, points[0].Ask);
+    }
 }
