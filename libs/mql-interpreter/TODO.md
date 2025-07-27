@@ -65,6 +65,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Verify builtin functions are called with correct argument types and counts.
 - [x] Validate builtin calls during compilation. Argument counts are now checked for builtins with signatures; argument types remain unverified.
 - [x] Provide builtin function signatures via metadata to enable parameter checking for common builtins.
+- [x] Expand builtin signature coverage across array, string, math and time helpers.
 - [x] Accumulate compile errors instead of throwing immediately.
   - [x] Introduce a `CompilationError` interface with source location and message.
   - [x] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.
