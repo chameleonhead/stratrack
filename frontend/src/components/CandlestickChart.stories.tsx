@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn, fireEvent, expect } from "storybook/test";
 import CandlestickChart from "./CandlestickChart";
 
 const meta: Meta<typeof CandlestickChart> = {
   component: CandlestickChart,
+  args: {
+    onRangeChange: fn(),
+  },
 };
 export default meta;
 
@@ -34,5 +38,10 @@ export const Default: Story = {
       { date: new Date(1), price: 1.1, type: "buy" },
       { date: new Date(2), price: 1.15, type: "sell" },
     ],
+  },
+  play: async ({ canvasElement, args }) => {
+    const svg = canvasElement.querySelector("svg") as SVGSVGElement;
+    fireEvent.wheel(svg, { deltaY: 100 });
+    await expect(args.onRangeChange).toHaveBeenCalled();
   },
 };

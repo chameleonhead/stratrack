@@ -43,6 +43,7 @@ const CandlestickChart = ({
   range,
   indicators,
   trades,
+  onRangeChange,
 }: CandlestickChartProps) => {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const resolvedHeight = isMobile ? 200 : height;
@@ -52,6 +53,42 @@ const CandlestickChart = ({
   const filtered = sorted.filter((c) => c.date.getTime() >= from && c.date.getTime() <= to);
   const [size, setSize] = React.useState({ width: 0, height: 0 });
   const onResize = (w: number, h: number) => setSize({ width: w, height: h });
+  const dragStart = React.useRef<number | null>(null);
+  const dragRange = React.useRef<{ from: number; to: number } | null>(null);
+
+  const moveRange = (ratio: number) => {
+    if (!onRangeChange) return;
+    const widthMs = to - from;
+    onRangeChange({ from: from + widthMs * ratio, to: to + widthMs * ratio });
+  };
+
+  const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+    if (!onRangeChange) return;
+    e.preventDefault();
+    const ratio = (e.deltaY > 0 ? 1 : -1) * 0.1;
+    moveRange(ratio);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    dragStart.current = e.clientX;
+    dragRange.current = { from, to };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (dragStart.current == null || !dragRange.current || !onRangeChange) return;
+    const dx = e.clientX - dragStart.current;
+    const ratio = -dx / size.width;
+    const widthMs = dragRange.current.to - dragRange.current.from;
+    onRangeChange({
+      from: dragRange.current.from + widthMs * ratio,
+      to: dragRange.current.to + widthMs * ratio,
+    });
+  };
+
+  const endDrag = () => {
+    dragStart.current = null;
+    dragRange.current = null;
+  };
 
   const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
 
@@ -76,7 +113,16 @@ const CandlestickChart = ({
   return (
     <div style={{ width: width ? `${width}px` : "100%", height: resolvedHeight + AXIS_HEIGHT }}>
       <ResponsiveContainer width="100%" height="100%" onResize={onResize}>
-        <svg width={size.width} height={size.height} style={{ overflow: "visible" }}>
+        <svg
+          width={size.width}
+          height={size.height}
+          style={{ overflow: "visible" }}
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
+        >
           {filtered.map((c, i) => {
             const x = xScale(c.date.getTime());
             const openY = yScale(c.open);
