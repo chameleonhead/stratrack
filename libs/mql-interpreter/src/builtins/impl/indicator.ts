@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
 export const IndicatorBuffers: BuiltinFunction = (_count: number) => 0;
 export const SetIndexBuffer: BuiltinFunction = (_index: number, _arr: any[]) => true;

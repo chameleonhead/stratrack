@@ -157,7 +157,7 @@ describe("execute", () => {
   });
 
   it("executes entry point builtin", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => { });
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     const runtime = execute([], { entryPoint: "Print" });
     expect(runtime.enums).toEqual({});
     expect(spy).toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe("execute", () => {
   });
 
   it("passes arguments to entry point", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => { });
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     execute([], { entryPoint: "Print", args: ["a", 1] });
     expect(spy).toHaveBeenCalledWith("a", 1);
     spy.mockRestore();

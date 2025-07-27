@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
 export const ArrayCopy: BuiltinFunction = (
   dst: any[],
@@ -35,7 +35,7 @@ export const ArrayIsSeries: BuiltinFunction = (arr: any[]) => {
   return (arr as any).__asSeries ? 1 : 0;
 };
 
-export const ArrayIsDynamic: BuiltinFunction = (_arr: any[]) => 1;
+export const ArrayIsDynamic: BuiltinFunction = () => 1;
 
 export const ArraySize: BuiltinFunction = (arr: any[]) => arr.length;
 

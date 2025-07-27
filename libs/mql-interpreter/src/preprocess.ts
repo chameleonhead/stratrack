@@ -25,7 +25,7 @@ export interface PreprocessOptions {
   fileProvider?: (path: string) => string | undefined;
 }
 
-import { lex, Token, TokenType, LexError } from "./lexer";
+import { lex, Token, TokenType, LexError } from "./lexer.js";
 
 function expandTokens(tokens: Token[], macros: MacroMap, errors: LexError[]): Token[] {
   const out: Token[] = [];

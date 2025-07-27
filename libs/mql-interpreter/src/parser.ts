@@ -92,7 +92,7 @@ export type Declaration =
   | VariableDeclaration
   | ControlStatement;
 
-import { Token, TokenType } from "./lexer";
+import { Token, TokenType } from "./lexer.js";
 
 export class ParseError extends Error {
   line: number;
@@ -285,7 +285,6 @@ export function parse(tokens: Token[]): Declaration[] {
     while (!atEnd() && peek().value !== "}") {
       const start = peek();
       const next = tokens[pos + 1];
-      const third = tokens[pos + 2];
       if (
         start.type === TokenType.Keyword &&
         (start.value === "public" || start.value === "private" || start.value === "protected") &&
@@ -373,7 +372,7 @@ export function parse(tokens: Token[]): Declaration[] {
           methodName = "~" + className;
         } else {
           returnType = consume().value;
-          let nameTok = consume();
+          const nameTok = consume();
           methodName = nameTok.value;
           if (nameTok.type === TokenType.Keyword && nameTok.value === "operator") {
             methodName = "operator";
@@ -509,7 +508,7 @@ export function parse(tokens: Token[]): Declaration[] {
   function parseFunction(): FunctionDeclaration {
     const start = peek();
     const returnType = consume().value;
-    let nameToken = consume();
+    const nameToken = consume();
     let name = nameToken.value;
     if (nameToken.type === TokenType.Keyword && nameToken.value === "operator") {
       name = "operator";

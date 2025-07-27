@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
 const toDate = (t?: number) => (t === undefined ? new Date() : new Date(t * 1000));
 

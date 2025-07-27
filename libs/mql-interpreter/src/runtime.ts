@@ -64,11 +64,16 @@ export interface Runtime {
   context?: ExecutionContext;
 }
 
-import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from "./parser";
-import { getBuiltin } from "./builtins";
-import { cast, PrimitiveType } from "./casting";
-import { executeStatements } from "./statements";
-import { lex, Token, TokenType } from "./lexer";
+import {
+  Declaration,
+  ClassDeclaration,
+  FunctionDeclaration,
+  VariableDeclaration,
+} from "./parser.js";
+import { getBuiltin } from "./builtins/index.js";
+import { cast, PrimitiveType } from "./casting.js";
+import { executeStatements } from "./statements.js";
+import { lex, Token, TokenType } from "./lexer.js";
 
 const numericTypes = new Set([
   "char",

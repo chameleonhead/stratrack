@@ -1,5 +1,4 @@
 import { lex, TokenType } from "../src/lexer";
-import { parse } from "../src/parser";
 import { describe, it, expect } from "vitest";
 
 describe("lex", () => {

@@ -1,11 +1,11 @@
-import { compile, callFunction, Runtime, registerEnvBuiltins } from "./index";
-import type { PreprocessOptions } from "./preprocess";
-import type { BuiltinFunction } from "./builtins";
-import { Broker, Order } from "./broker";
-import { Account, AccountMetrics } from "./account";
-import { MarketData, ticksToCandles, Candle, Tick } from "./market";
-import { VirtualTerminal } from "./terminal";
-import { setTerminal } from "./builtins/impl/common";
+import { compile, callFunction, Runtime, registerEnvBuiltins } from "./index.js";
+import type { PreprocessOptions } from "./preprocess.js";
+import type { BuiltinFunction } from "./builtins/index.js";
+import { Broker, Order } from "./broker.js";
+import { Account, AccountMetrics } from "./account.js";
+import { MarketData, Candle, Tick } from "./market.js";
+import { VirtualTerminal } from "./terminal.js";
+import { setTerminal } from "./builtins/impl/common.js";
 
 export interface BacktestSession {
   broker: Broker;
@@ -442,7 +442,10 @@ export class BacktestRunner {
     if (!this.initialized && this.runtime.functions["OnInit"]) {
       try {
         callFunction(this.runtime, "OnInit");
-      } catch {}
+      } catch (_err) {
+        void _err;
+        // ignore initialization errors
+      }
     }
     this.initialized = true;
   }
@@ -451,7 +454,10 @@ export class BacktestRunner {
     if (!this.deinitialized && this.runtime.functions["OnDeinit"]) {
       try {
         callFunction(this.runtime, "OnDeinit");
-      } catch {}
+      } catch (_err) {
+        void _err;
+        // ignore deinitialization errors
+      }
     }
     this.deinitialized = true;
   }
@@ -517,4 +523,4 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles, Candle, Tick } from "./market";
+export { ticksToCandles, Candle, Tick } from "./market.js";

@@ -1,8 +1,5 @@
 import {
   MathAbs,
-  MathArccos,
-  MathArcsin,
-  MathArctan,
   MathCeil,
   MathCos,
   MathExp,

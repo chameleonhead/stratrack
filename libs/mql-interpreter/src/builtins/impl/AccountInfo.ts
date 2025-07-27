@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
 export const AccountBalance: BuiltinFunction = () => 0;
 export const AccountCompany: BuiltinFunction = () => "";

@@ -1,3 +1,3 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
-export const OrderSend: BuiltinFunction = (..._args: any[]) => 0;
+export const OrderSend: BuiltinFunction = () => 0;
