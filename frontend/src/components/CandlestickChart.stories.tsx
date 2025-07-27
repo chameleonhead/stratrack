@@ -64,3 +64,41 @@ export const Tooltip: Story = {
     await expect(canvasElement.querySelector("foreignObject")).not.toBeNull();
   },
 };
+
+export const WithSubchart: Story = {
+  args: {
+    width: 300,
+    height: 150,
+    data: Array.from({ length: 50 }, (_, i) => ({
+      date: new Date(i * 60 * 1000),
+      open: 1 + Math.sin(i / 5) * 0.05,
+      high: 1.1 + Math.sin(i / 5) * 0.05,
+      low: 0.9 + Math.sin(i / 5) * 0.05,
+      close: 1 + Math.sin((i + 1) / 5) * 0.05,
+    })),
+    indicators: [
+      {
+        name: "MA",
+        color: "#3b82f6",
+        data: Array.from({ length: 50 }, (_, i) => ({
+          date: new Date(i * 60 * 1000),
+          value: 1 + Math.sin(i / 5) * 0.04,
+        })),
+      },
+      {
+        name: "RSI",
+        color: "#10b981",
+        pane: 1,
+        data: Array.from({ length: 50 }, (_, i) => ({
+          date: new Date(i * 60 * 1000),
+          value: 50 + Math.sin(i / 5) * 10,
+        })),
+      },
+    ],
+  },
+  play: async ({ canvasElement, args }) => {
+    const svgs = canvasElement.querySelectorAll("svg");
+    fireEvent.wheel(svgs[1], { deltaY: 100 });
+    await expect(args.onRangeChange).toHaveBeenCalled();
+  },
+};
