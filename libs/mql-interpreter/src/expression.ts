@@ -2,7 +2,7 @@ export interface EvalEnv {
   [name: string]: any;
 }
 
-import { lex, Token, TokenType } from "./lexer";
+import { lex, Token, TokenType } from "./lexer.js";
 
 interface EvalResult {
   value: any;
@@ -12,8 +12,8 @@ interface EvalResult {
 // Operators for assignment
 const assignmentOps = new Set(["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="]);
 
-import type { Runtime } from "./runtime";
-import { instantiate, callFunction } from "./runtime";
+import type { Runtime } from "./runtime.js";
+import { instantiate, callFunction } from "./runtime.js";
 
 export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Runtime): any {
   const { tokens, errors } = lex(expr);
@@ -232,7 +232,6 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
   }
 
   function parseAssignment(): EvalResult {
-    const leftStart = pos;
     let left = parseConditional();
     if (!atEnd() && peek().type === TokenType.Operator && assignmentOps.has(peek().value)) {
       const op = consume(TokenType.Operator).value;

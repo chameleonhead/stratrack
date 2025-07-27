@@ -4,6 +4,8 @@ export interface VirtualFile {
   position: number;
 }
 
+import { readFileSync, writeFileSync } from "fs";
+
 /** Simple in-memory terminal used during backtests. */
 export class VirtualTerminal {
   private files: Record<string, VirtualFile> = {};
@@ -16,7 +18,7 @@ export class VirtualTerminal {
     this.storagePath = storagePath;
     if (storagePath) {
       try {
-        const json = require("fs").readFileSync(storagePath, "utf8");
+        const json = readFileSync(storagePath, "utf8");
         const data = JSON.parse(json) as Record<string, { value: number; time: number }>;
         const now = Math.floor(Date.now() / 1000);
         const fourWeeks = 28 * 24 * 60 * 60;
@@ -151,7 +153,7 @@ export class VirtualTerminal {
       for (const [k, v] of Object.entries(this.globalVars)) {
         if (now - v.time > fourWeeks) delete this.globalVars[k];
       }
-      require("fs").writeFileSync(this.storagePath, JSON.stringify(this.globalVars, null, 2));
+      writeFileSync(this.storagePath, JSON.stringify(this.globalVars, null, 2));
       return Object.keys(this.globalVars).length;
     } catch {
       return 0;

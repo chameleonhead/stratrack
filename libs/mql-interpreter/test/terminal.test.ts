@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { VirtualTerminal } from "../src/terminal";
+import { unlinkSync } from "fs";
 
 describe("VirtualTerminal", () => {
   it("can write and read files in memory", () => {
@@ -14,10 +15,12 @@ describe("VirtualTerminal", () => {
 
   it("manages global variables", () => {
     const path = "globals.json";
-    const fs = require("fs");
     try {
-      fs.unlinkSync(path);
-    } catch {}
+      unlinkSync(path);
+    } catch (_err) {
+      void _err;
+      // ignore missing file
+    }
     const term = new VirtualTerminal(path);
     term.setGlobalVariable("x", 5);
     expect(term.getGlobalVariable("x")).toBe(5);
@@ -35,6 +38,6 @@ describe("VirtualTerminal", () => {
     term.flushGlobalVariables();
     const term2 = new VirtualTerminal(path);
     expect(term2.getGlobalVariable("y")).toBe(2);
-    fs.unlinkSync(path);
+    unlinkSync(path);
   });
 });

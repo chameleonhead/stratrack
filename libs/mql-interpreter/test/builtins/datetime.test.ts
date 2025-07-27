@@ -1,12 +1,7 @@
 import {
   Day,
-  DayOfWeek,
-  DayOfYear,
   Hour,
   Minute,
-  Month,
-  Seconds,
-  Year,
   TimeCurrent,
   TimeLocal,
   TimeGMT,

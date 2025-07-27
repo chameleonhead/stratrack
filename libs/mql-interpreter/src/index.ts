@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./lexer";
+import { lex, Token, TokenType, LexError, LexResult } from "./lexer.js";
 import {
   parse,
   Declaration,
@@ -10,7 +10,7 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./parser";
+} from "./parser.js";
 import {
   execute,
   Runtime,
@@ -19,8 +19,8 @@ import {
   callFunction,
   instantiate,
   callMethod,
-} from "./runtime";
-import { cast, PrimitiveType } from "./casting";
+} from "./runtime.js";
+import { cast, PrimitiveType } from "./casting.js";
 import {
   ArrayResize,
   ArrayCopy,
@@ -39,7 +39,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./builtins/impl/array";
+} from "./builtins/impl/array.js";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -60,10 +60,10 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./builtins/impl/strings";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./builtins";
-import { evaluateExpression } from "./expression";
-import { executeStatements } from "./statements";
+} from "./builtins/impl/strings.js";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./builtins/index.js";
+import { evaluateExpression } from "./expression.js";
+import { executeStatements } from "./statements.js";
 import {
   MathAbs,
   MathArccos,
@@ -86,7 +86,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./builtins/impl/math";
+} from "./builtins/impl/math.js";
 import {
   Day,
   DayOfWeek,
@@ -111,7 +111,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./builtins/impl/datetime";
+} from "./builtins/impl/datetime.js";
 import {
   preprocess,
   preprocessWithProperties,
@@ -119,15 +119,15 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./preprocess";
-import { BacktestRunner, parseCsv, BacktestReport } from "./backtest";
-import { MarketData, Tick, Candle, ticksToCandles } from "./market";
-import { Broker, OrderState } from "./broker";
-import { Account } from "./account";
-import { VirtualTerminal } from "./terminal";
-import { setTerminal } from "./builtins/impl/common";
-import { builtinNames } from "./builtins/stubNames";
-import { builtinSignatures } from "./builtins/signatures";
+} from "./preprocess.js";
+import { BacktestRunner, parseCsv, BacktestReport } from "./backtest.js";
+import { MarketData, Tick, Candle, ticksToCandles } from "./market.js";
+import { Broker, OrderState } from "./broker.js";
+import { Account } from "./account.js";
+import { VirtualTerminal } from "./terminal.js";
+import { setTerminal } from "./builtins/impl/common.js";
+import { builtinNames } from "./builtins/stubNames.js";
+import { builtinSignatures } from "./builtins/signatures.js";
 
 export {
   lex,
@@ -468,7 +468,7 @@ export function interpret(
   context?: ExecutionContext,
   options: PreprocessOptions = {}
 ): Runtime {
-  const { ast, runtime, properties, errors } = compile(source, options);
+  const { runtime, properties, errors } = compile(source, options);
   if (errors.length) {
     const msg = errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
     throw new Error(`Compilation failed:\n${msg}`);

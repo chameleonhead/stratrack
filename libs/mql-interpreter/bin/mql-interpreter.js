@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
-import { interpret, compile, BacktestRunner, parseCsv } from "../dist/index";
+import { interpret, compile, BacktestRunner, parseCsv } from "../dist/index.js";
 
 const args = process.argv.slice(2);
 const file = args.shift();

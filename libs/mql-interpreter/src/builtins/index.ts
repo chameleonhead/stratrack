@@ -1,9 +1,9 @@
-import { builtinNames } from "./stubNames";
-import { coreBuiltins, envBuiltins } from "./impl";
-export { builtinSignatures } from "./signatures";
-import type { BuiltinFunction } from "./types";
+import { builtinNames } from "./stubNames.js";
+import { coreBuiltins, envBuiltins } from "./impl/index.js";
+export { builtinSignatures } from "./signatures.js";
+import type { BuiltinFunction } from "./types.js";
 
-export type { BuiltinFunction } from "./types";
+export type { BuiltinFunction } from "./types.js";
 
 const noop: BuiltinFunction = () => 0;
 

@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types";
+import type { BuiltinFunction } from "../types.js";
 
 export const StringTrimLeft: BuiltinFunction = (str: { value: string }) => {
   str.value = str.value.replace(/^\s+/, "");

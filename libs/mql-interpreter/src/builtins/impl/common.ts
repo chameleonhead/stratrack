@@ -1,6 +1,6 @@
-import type { BuiltinFunction } from "../types";
-import { formatString } from "./format";
-import type { VirtualTerminal } from "../../terminal";
+import type { BuiltinFunction } from "../types.js";
+import { formatString } from "./format.js";
+import type { VirtualTerminal } from "../../terminal.js";
 
 let terminal: VirtualTerminal | null = null;
 export function setTerminal(t: VirtualTerminal | null): void {
