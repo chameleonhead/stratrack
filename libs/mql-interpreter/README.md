@@ -191,7 +191,8 @@ npx mql-interpreter bad.mq4
 
 To run a quick backtest, supply the `--backtest` option with candle data in CSV
 format. Optionally set `--data-dir` to mimic the MT4 data folder so global
-variables persist between runs. Results are printed as JSON by default or as an
+variables persist between runs. Results now include account metrics and the
+executed order list in addition to globals. Output is JSON by default or an
 HTML snippet when `--format html` is provided:
 
 ```bash

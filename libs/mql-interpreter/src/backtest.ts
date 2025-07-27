@@ -47,6 +47,12 @@ export interface BacktestOptions {
   storagePath?: string;
 }
 
+export interface BacktestReport {
+  globals: Record<string, any>;
+  metrics: AccountMetrics;
+  orders: Order[];
+}
+
 export class BacktestRunner {
   private runtime: Runtime;
   private index = 0;
@@ -460,6 +466,14 @@ export class BacktestRunner {
 
   getTerminal(): VirtualTerminal {
     return this.terminal;
+  }
+
+  getReport(): BacktestReport {
+    return {
+      globals: this.runtime.globalValues,
+      metrics: this.getAccountMetrics(),
+      orders: this.session.broker.getAllOrders(),
+    };
   }
 }
 

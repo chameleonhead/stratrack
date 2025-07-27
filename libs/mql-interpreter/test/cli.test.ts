@@ -17,7 +17,8 @@ describe('CLI backtest', () => {
     writeFileSync(csvPath, '1,1,1,1,1\n2,2,2,2,2\n3,3,3,3,3\n');
     const res = spawnSync('node', [bin, codePath, '--backtest', csvPath, '--data-dir', dir], { encoding: 'utf8' });
     const out = JSON.parse(res.stdout.trim());
-    expect(out.Bars).toBe(3);
+    expect(out.globals.Bars).toBe(3);
+    expect(out.metrics.balance).toBe(0);
     const gv = JSON.parse(readFileSync(path.join(dir, 'MQL4', 'Files', 'globals.json'), 'utf8'));
     expect(gv.x.value).toBe(3);
   });

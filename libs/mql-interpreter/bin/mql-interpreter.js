@@ -49,7 +49,8 @@ if (backtestFile) {
   const runner = new BacktestRunner(code, candles, { storagePath });
   runner.run();
   runner.getTerminal().flushGlobalVariables();
-  const json = JSON.stringify(runner.getRuntime().globalValues, null, 2);
+  const report = runner.getReport();
+  const json = JSON.stringify(report, null, 2);
   if (format === 'html') {
     const escaped = json
       .replace(/&/g, '&amp;')
