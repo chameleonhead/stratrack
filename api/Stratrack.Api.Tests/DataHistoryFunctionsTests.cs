@@ -50,7 +50,7 @@ public class DataHistoryFunctionsTests
     }
 
     [TestMethod]
-    public async Task GetDataHistory_ReturnsCsv()
+    public async Task GetDataHistory_ReturnsJson()
     {
         using var provider = CreateProvider();
         var dsId = await CreateDataSourceAsync(provider);
@@ -70,12 +70,14 @@ public class DataHistoryFunctionsTests
 
         var histFunc = provider.GetRequiredService<DataHistoryFunctions>();
         var req = new HttpRequestDataBuilder()
-            .WithUrl($"http://localhost/api/data-sources/{dsId}/history?timeframe=1m&endTime=2024-01-01T01:00:00Z")
+            .WithUrl($"http://localhost/api/data-sources/{dsId}/history?timeframe=1m&startTime=2024-01-01T00:00:00Z&endTime=2024-01-01T01:00:00Z")
             .WithMethod(HttpMethod.Get)
             .Build();
         var res = await histFunc.GetDataHistory(req, dsId, CancellationToken.None);
         Assert.AreEqual(HttpStatusCode.OK, res.StatusCode);
         var body = await res.ReadAsStringAsync();
-        Assert.IsTrue(body.StartsWith("time,open,high,low,close"));
+        var points = JsonSerializer.Deserialize<List<HistoryOhlc>>(body);
+        Assert.IsNotNull(points);
+        Assert.AreEqual(0, points.Count);
     }
 }

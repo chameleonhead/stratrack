@@ -11,6 +11,7 @@ using EventFlow.Queries;
 using System.Net;
 using System.Text;
 using System.Linq;
+using Stratrack.Api.Models;
 
 namespace Stratrack.Api.Functions;
 
@@ -28,8 +29,9 @@ public class DataHistoryFunctions(
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
     [OpenApiParameter(name: "timeframe", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
+    [OpenApiParameter(name: "startTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
     [OpenApiParameter(name: "endTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/csv", bodyType: typeof(string))]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
     public async Task<HttpResponseData> GetDataHistory(
@@ -39,6 +41,7 @@ public class DataHistoryFunctions(
     {
         var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
         var timeframe = query.Get("timeframe");
+        var startStr = query.Get("startTime");
         var endStr = query.Get("endTime");
 
         var dsId = Guid.Parse(dataSourceId);
@@ -50,19 +53,38 @@ public class DataHistoryFunctions(
         }
 
         timeframe ??= dataSource.Timeframe;
-        DateTimeOffset end = endStr != null ? DateTimeOffset.Parse(endStr) : DateTimeOffset.UtcNow;
-        var start = end - GetDefaultRange(timeframe);
+        DateTimeOffset? start = startStr != null ? DateTimeOffset.Parse(startStr) : null;
+        DateTimeOffset? end = endStr != null ? DateTimeOffset.Parse(endStr) : null;
+        if (start == null && end == null)
+        {
+            end = DateTimeOffset.UtcNow;
+            start = end - GetDefaultRange(timeframe);
+        }
+        else if (start == null)
+        {
+            start = end - GetDefaultRange(timeframe);
+        }
+        else if (end == null)
+        {
+            end = start + GetDefaultRange(timeframe);
+        }
+        if (start >= end)
+        {
+            return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
+        }
 
+        var e = end.Value;
+        var s = start.Value;
         var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dsId), token).ConfigureAwait(false);
         var target = chunks
-            .Where(c => c.StartTime < end && c.EndTime > start)
+            .Where(c => c.StartTime < e && c.EndTime > s)
             .OrderBy(c => c.StartTime)
             .ToList();
 
         if (target.Count == 0)
         {
             var prev = chunks
-                .Where(c => c.EndTime <= start)
+                .Where(c => c.EndTime <= s)
                 .OrderByDescending(c => c.EndTime)
                 .FirstOrDefault();
             if (prev != null)
@@ -84,32 +106,44 @@ public class DataHistoryFunctions(
             var parts = l.Split(',');
             if (parts.Length < 2) return false;
             var time = DateTimeOffset.Parse(parts[0]);
-            return time >= start && time < end;
+            return time >= s && time < e;
         });
 
-        var sb = new StringBuilder();
+        var response = req.CreateResponse(HttpStatusCode.OK);
         if (timeframe == "tick")
         {
-            sb.AppendLine("time,bid,ask");
-            foreach (var line in filtered.OrderBy(l => DateTimeOffset.Parse(l.Split(',')[0])))
-            {
-                sb.AppendLine(line);
-            }
+            var ticks = filtered
+                .OrderBy(l => DateTimeOffset.Parse(l.Split(',')[0]))
+                .Select(l =>
+                {
+                    var parts = l.Split(',');
+                    decimal bid = decimal.Parse(parts[1]);
+                    decimal ask = parts.Length > 2 ? decimal.Parse(parts[2]) : bid;
+                    return new HistoryTick
+                    {
+                        Time = DateTimeOffset.Parse(parts[0]),
+                        Bid = bid,
+                        Ask = ask
+                    };
+                })
+                .ToList();
+            await response.WriteAsJsonAsync(ticks, token).ConfigureAwait(false);
         }
         else
         {
-            sb.AppendLine("time,open,high,low,close");
             int tfMinutes = ParseTimeframeMinutes(timeframe);
-            var ohlc = BuildOhlc(filtered, dataSource.Format, tfMinutes, start, end);
-            foreach (var c in ohlc)
-            {
-                sb.AppendLine($"{c.Time:o},{c.Open},{c.High},{c.Low},{c.Close}");
-            }
+            var ohlc = BuildOhlc(filtered, dataSource.Format, tfMinutes, s, e)
+                .Select(c => new HistoryOhlc
+                {
+                    Time = c.Time,
+                    Open = c.Open,
+                    High = c.High,
+                    Low = c.Low,
+                    Close = c.Close
+                })
+                .ToList();
+            await response.WriteAsJsonAsync(ohlc, token).ConfigureAwait(false);
         }
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "text/csv");
-        await response.WriteStringAsync(sb.ToString(), token).ConfigureAwait(false);
         return response;
     }
 
