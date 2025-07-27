@@ -26,6 +26,8 @@ export interface RuntimeClassMethod {
 
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
+  /** Lookup table of enumeration member names to numeric values */
+  enumMembers: Record<string, number>;
   classes: Record<string, { base?: string; abstract?: boolean; templateParams?: string[]; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
   functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string; templateParams?: string[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
@@ -70,6 +72,7 @@ export function execute(
 ): Runtime {
   const runtime: Runtime = {
     enums: {},
+    enumMembers: {},
     classes: {},
     functions: {},
     variables: {},
@@ -119,6 +122,7 @@ export function execute(
           current = parseInt(member.value, 10);
         }
         members[member.name] = current;
+        runtime.enumMembers[member.name] = current;
         current++;
       }
       runtime.enums[decl.name] = members;

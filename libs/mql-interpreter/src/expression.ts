@@ -50,6 +50,10 @@ export function evaluateExpression(
       consume();
       return { value: t.value };
     }
+    if (t.type === TokenType.Keyword && (t.value === 'true' || t.value === 'false')) {
+      consume();
+      return { value: t.value === 'true' ? 1 : 0 };
+    }
     if (t.type === TokenType.Identifier) {
       consume();
       const name = t.value;
@@ -70,6 +74,9 @@ export function evaluateExpression(
         }
         consume(TokenType.Punctuation, ')');
         return { value: callFunction(runtime, name, args) };
+      }
+      if (runtime && runtime.enumMembers[name] !== undefined) {
+        return { value: runtime.enumMembers[name] };
       }
       return { value: env[name], ref: name };
     }
