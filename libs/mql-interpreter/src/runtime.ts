@@ -34,6 +34,8 @@ export interface Runtime {
   staticLocals: Record<string, Record<string, any>>;
   /** Values of global variables */
   globalValues: Record<string, any>;
+  /** Execution context used when running entry points */
+  context?: ExecutionContext;
 }
 
 import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
@@ -129,7 +131,7 @@ export function execute(
   const entryArgs = ctx.args ?? [];
   const inputVals = ctx.inputValues ?? {};
   const externVals = ctx.externValues ?? {};
-  // TODO: support a full execution context when function bodies are interpreted.
+  runtime.context = ctx;
   const enumMembers: Record<string, number> = {};
 
   for (const decl of declarations) {

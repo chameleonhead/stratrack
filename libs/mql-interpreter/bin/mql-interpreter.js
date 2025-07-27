@@ -1,15 +1,68 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { interpret, compile } = require('../dist/index');
+const {
+  interpret,
+  compile,
+  BacktestRunner,
+  parseCsv,
+} = require('../dist/index');
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const file = args.shift();
 if (!file) {
-  console.error('Usage: mql-interpreter <file.mq4>');
+  console.error('Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>] [--format html|json]');
   process.exit(1);
 }
 
+let backtestFile;
+let dataDir;
+let format = 'json';
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--backtest') {
+    backtestFile = args[i + 1];
+    i++;
+  } else if (args[i] === '--data-dir') {
+    dataDir = args[i + 1];
+    i++;
+  } else if (args[i] === '--format') {
+    format = args[i + 1];
+    i++;
+  } else if (args[i] === '--html') {
+    format = 'html';
+  } else if (args[i] === '--json') {
+    format = 'json';
+  }
+}
+
 const code = fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
+
+if (backtestFile) {
+  const csv = fs.readFileSync(path.resolve(process.cwd(), backtestFile), 'utf8');
+  const candles = parseCsv(csv);
+  let storagePath;
+  if (dataDir) {
+    const dir = path.join(dataDir, 'MQL4', 'Files');
+    fs.mkdirSync(dir, { recursive: true });
+    storagePath = path.join(dir, 'globals.json');
+  }
+  const runner = new BacktestRunner(code, candles, { storagePath });
+  runner.run();
+  runner.getTerminal().flushGlobalVariables();
+  const report = runner.getReport();
+  const json = JSON.stringify(report, null, 2);
+  if (format === 'html') {
+    const escaped = json
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    console.log(`<!doctype html><html><body><pre>${escaped}</pre></body></html>`);
+  } else {
+    console.log(json);
+  }
+  process.exit(0);
+}
+
 const compilation = compile(code, {
   fileProvider: (p) => {
     try {
@@ -35,4 +88,10 @@ const runtime = interpret(code, undefined, {
     }
   },
 });
-console.log(JSON.stringify(runtime, null, 2));
+const out = JSON.stringify(runtime, null, 2);
+if (format === 'html') {
+  const escaped = out.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  console.log(`<!doctype html><html><body><pre>${escaped}</pre></body></html>`);
+} else {
+  console.log(out);
+}
