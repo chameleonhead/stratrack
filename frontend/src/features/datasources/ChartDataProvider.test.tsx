@@ -39,9 +39,11 @@ describe("ChartDataProvider", () => {
 
   it("loads data on mount", async () => {
     vi.mocked(apiDs.getDataSource).mockResolvedValue(dsDetail);
-    vi.mocked(apiData.getDataStream).mockResolvedValue(
-      "time,open,high,low,close\n2024-01-01T00:00:00Z,1,2,0,1"
-    );
+    vi.mocked(apiData.getDataHistory).mockResolvedValue({
+      data: [{ time: "2024-01-01T00:00:00Z", open: 1, high: 2, low: 0, close: 1 }],
+      startTime: "2023-12-31T00:00:00Z",
+      endTime: "2024-01-01T00:00:00Z",
+    });
     vi.mocked(idb.loadCandles).mockResolvedValue([]);
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
     vi.mocked(idb.saveCandles).mockResolvedValue();
@@ -61,7 +63,7 @@ describe("ChartDataProvider", () => {
     });
 
     expect(apiDs.getDataSource).toHaveBeenCalledWith("ds");
-    expect(apiData.getDataStream).toHaveBeenCalled();
+    expect(apiData.getDataHistory).toHaveBeenCalled();
     expect(ctx?.candleData.length).toBe(1);
   });
 
@@ -94,13 +96,13 @@ describe("ChartDataProvider", () => {
       await Promise.resolve();
     });
 
-    expect(apiData.getDataStream).not.toHaveBeenCalled();
+    expect(apiData.getDataHistory).not.toHaveBeenCalled();
     expect(ctx?.candleData[0].open).toBe(1);
   });
 
   it("sets error when data fetch fails", async () => {
     vi.mocked(apiDs.getDataSource).mockResolvedValue(dsDetail);
-    vi.mocked(apiData.getDataStream).mockRejectedValue(new Error("fail"));
+    vi.mocked(apiData.getDataHistory).mockRejectedValue(new Error("fail"));
     vi.mocked(idb.loadCandles).mockResolvedValue([]);
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
 
@@ -168,9 +170,11 @@ describe("ChartDataProvider", () => {
       endTime: new Date(baseTime + 2 * 86400000).toISOString(),
     };
     vi.mocked(apiDs.getDataSource).mockResolvedValue(extendedDs);
-    vi.mocked(apiData.getDataStream).mockResolvedValue(
-      "time,open,high,low,close\n2024-01-02T00:00:00Z,1,2,0,1"
-    );
+    vi.mocked(apiData.getDataHistory).mockResolvedValue({
+      data: [{ time: "2024-01-02T00:00:00Z", open: 1, high: 2, low: 0, close: 1 }],
+      startTime: "2024-01-01T00:00:00Z",
+      endTime: "2024-01-02T00:00:00Z",
+    });
     vi.mocked(idb.loadCandles).mockResolvedValue([]);
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
     vi.mocked(idb.saveCandles).mockResolvedValue();
@@ -189,7 +193,7 @@ describe("ChartDataProvider", () => {
       await Promise.resolve();
     });
 
-    expect(apiData.getDataStream).toHaveBeenCalledTimes(1);
+    expect(apiData.getDataHistory).toHaveBeenCalledTimes(1);
     const initialRange = ctx!.range!;
 
     await act(async () => {
@@ -202,6 +206,6 @@ describe("ChartDataProvider", () => {
       await Promise.resolve();
     });
 
-    expect(apiData.getDataStream).toHaveBeenCalledTimes(2);
+    expect(apiData.getDataHistory).toHaveBeenCalledTimes(2);
   });
 });
