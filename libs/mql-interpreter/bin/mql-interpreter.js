@@ -11,12 +11,13 @@ const {
 const args = process.argv.slice(2);
 const file = args.shift();
 if (!file) {
-  console.error('Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>]');
+  console.error('Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>] [--format html|json]');
   process.exit(1);
 }
 
 let backtestFile;
 let dataDir;
+let format = 'json';
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--backtest') {
     backtestFile = args[i + 1];
@@ -24,6 +25,13 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === '--data-dir') {
     dataDir = args[i + 1];
     i++;
+  } else if (args[i] === '--format') {
+    format = args[i + 1];
+    i++;
+  } else if (args[i] === '--html') {
+    format = 'html';
+  } else if (args[i] === '--json') {
+    format = 'json';
   }
 }
 
@@ -41,7 +49,16 @@ if (backtestFile) {
   const runner = new BacktestRunner(code, candles, { storagePath });
   runner.run();
   runner.getTerminal().flushGlobalVariables();
-  console.log(JSON.stringify(runner.getRuntime().globalValues, null, 2));
+  const json = JSON.stringify(runner.getRuntime().globalValues, null, 2);
+  if (format === 'html') {
+    const escaped = json
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    console.log(`<!doctype html><html><body><pre>${escaped}</pre></body></html>`);
+  } else {
+    console.log(json);
+  }
   process.exit(0);
 }
 
@@ -70,4 +87,10 @@ const runtime = interpret(code, undefined, {
     }
   },
 });
-console.log(JSON.stringify(runtime, null, 2));
+const out = JSON.stringify(runtime, null, 2);
+if (format === 'html') {
+  const escaped = out.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  console.log(`<!doctype html><html><body><pre>${escaped}</pre></body></html>`);
+} else {
+  console.log(out);
+}
