@@ -163,6 +163,12 @@ describe('execute', () => {
     spy.mockRestore();
   });
 
+  it('stores execution context on the runtime', () => {
+    const ctx = { entryPoint: 'Print', args: ['x'] };
+    const runtime = execute([], ctx);
+    expect(runtime.context).toEqual(expect.objectContaining(ctx));
+  });
+
   it('throws when entry point missing', () => {
     expect(() => execute([], { entryPoint: 'Unknown' })).toThrow('Function Unknown not found');
   });

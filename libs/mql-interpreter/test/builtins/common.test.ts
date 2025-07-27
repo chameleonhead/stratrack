@@ -15,6 +15,17 @@ import {
   ExpertRemove,
   DebugBreak,
   MessageBox,
+  TerminalCompany,
+  TerminalName,
+  TerminalPath,
+  IsConnected,
+  IsTesting,
+  IsOptimization,
+  IsVisualMode,
+  IsTradeAllowed,
+  IsTradeContextBusy,
+  IsDemo,
+  UninitializeReason,
   GlobalVariableSet,
   GlobalVariableGet,
   GlobalVariableDel,
@@ -24,6 +35,9 @@ import {
   GlobalVariableName,
   GlobalVariableTime,
   GlobalVariableSetOnCondition,
+  GlobalVariableTemp,
+  GlobalVariablesFlush,
+  WebRequest,
   setTerminal,
 } from "../../src/builtins/impl/common";
 import { builtinSignatures } from "../../src/builtins/signatures";
@@ -75,6 +89,20 @@ describe("common builtins", () => {
     expect(MessageBox("text")).toBe(1);
   });
 
+  it("terminal info helpers return defaults", () => {
+    expect(TerminalCompany()).toBe("MetaQuotes Software Corp.");
+    expect(TerminalName()).toBe("MetaTrader");
+    expect(TerminalPath()).toBe("");
+    expect(IsConnected()).toBe(true);
+    expect(IsTesting()).toBe(false);
+    expect(IsOptimization()).toBe(false);
+    expect(IsVisualMode()).toBe(false);
+    expect(IsDemo()).toBe(false);
+    expect(IsTradeAllowed()).toBe(true);
+    expect(IsTradeContextBusy()).toBe(false);
+    expect(UninitializeReason()).toBe(0);
+  });
+
   it("manages global variables", () => {
     GlobalVariablesDeleteAll();
     expect(GlobalVariablesTotal()).toBe(0);
@@ -90,6 +118,19 @@ describe("common builtins", () => {
     expect(GlobalVariableSetOnCondition("x", 7, 5)).toBe(false);
     expect(GlobalVariableDel("x")).toBe(true);
     expect(GlobalVariablesTotal()).toBe(0);
+    GlobalVariableSet("pref_y", 1);
+    GlobalVariableSet("pref_z", 1);
+    expect(GlobalVariablesDeleteAll("pref_")).toBe(2);
+  });
+
+  it("misc helpers handle requests and flush", () => {
+    const res = { value: "foo" };
+    expect(WebRequest("GET", "http://example.com", ["h"], "", 1000, res)).toBe(-1);
+    expect(res.value).toBe("");
+    GlobalVariableSet("tmp", 1);
+    GlobalVariableTemp("tmp", 2);
+    expect(GlobalVariableGet("tmp")).toBe(2);
+    expect(GlobalVariablesFlush()).toBe(0);
   });
 });
 

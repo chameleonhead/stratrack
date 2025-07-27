@@ -120,7 +120,7 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from './preprocess';
-import { BacktestRunner, parseCsv } from './backtest';
+import { BacktestRunner, parseCsv, BacktestReport } from './backtest';
 import { MarketData, Tick, Candle, ticksToCandles } from './market';
 import { Broker, OrderState } from './broker';
 import { Account } from './account';
@@ -202,6 +202,7 @@ export {
   LexResult,
   Candle,
   BacktestRunner,
+  BacktestReport,
   Broker,
   Account,
   MarketData,
@@ -439,6 +440,7 @@ export function interpret(
         runtime.globalValues[name] = context.externValues[name];
       }
     }
+    runtime.context = context;
     if (context.entryPoint) {
       callFunction(runtime, context.entryPoint, context.args);
     }

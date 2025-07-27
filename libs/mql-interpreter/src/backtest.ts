@@ -41,6 +41,16 @@ export interface BacktestOptions {
   ticks?: Record<string, Tick[]>;
   /** Primary symbol for this backtest */
   symbol?: string;
+  /** Path to a directory mimicking the MT4 data folder */
+  dataDir?: string;
+  /** File path used by VirtualTerminal for global variable storage */
+  storagePath?: string;
+}
+
+export interface BacktestReport {
+  globals: Record<string, any>;
+  metrics: AccountMetrics;
+  orders: Order[];
 }
 
 export class BacktestRunner {
@@ -66,7 +76,14 @@ export class BacktestRunner {
     const broker = new Broker();
     const account = new Account(options.initialBalance ?? 0);
     this.session = { broker, account };
-    this.terminal = new VirtualTerminal();
+    let storagePath: string | undefined;
+    if (options.storagePath) {
+      storagePath = options.storagePath;
+    } else if (options.dataDir) {
+      const base = options.dataDir.replace(/[\\/]+$/, '');
+      storagePath = base + '/MQL4/Files/globals.json';
+    }
+    this.terminal = new VirtualTerminal(storagePath);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? 'TEST';
     const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;
@@ -449,6 +466,14 @@ export class BacktestRunner {
 
   getTerminal(): VirtualTerminal {
     return this.terminal;
+  }
+
+  getReport(): BacktestReport {
+    return {
+      globals: this.runtime.globalValues,
+      metrics: this.getAccountMetrics(),
+      orders: this.session.broker.getAllOrders(),
+    };
   }
 }
 

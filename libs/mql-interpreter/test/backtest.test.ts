@@ -138,4 +138,15 @@ describe('BacktestRunner', () => {
     expect(gv.init).toBe(1);
     expect(gv.deinit).toBe(1);
   });
+
+  it('provides a backtest report', () => {
+    const code = 'void OnTick(){return;}';
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const report = runner.getReport();
+    expect(report.globals.Bars).toBe(1);
+    expect(report.metrics.balance).toBe(0);
+    expect(report.orders.length).toBe(0);
+  });
 });
