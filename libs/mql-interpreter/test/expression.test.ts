@@ -53,4 +53,10 @@ describe('evaluateExpression', () => {
     const found = result.errors.some(e => e.message.includes('Incorrect argument count'));
     expect(found).toBe(true);
   });
+
+  it('validates builtin argument count during compilation', () => {
+    const result = compile('void start(){ Sleep(); }');
+    const found = result.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(found).toBe(true);
+  });
 });

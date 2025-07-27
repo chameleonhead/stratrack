@@ -127,6 +127,7 @@ import { Account } from './account';
 import { VirtualTerminal } from './terminal';
 import { setTerminal } from './builtins/impl/common';
 import { builtinNames } from './builtins/stubNames';
+import { builtinSignatures } from './builtins/signatures';
 
 export {
   lex,
@@ -345,12 +346,19 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
           j++;
         }
         const overloads = runtime.functions[name];
-        const isBuiltin = builtinSet.has(name);
+        const sig = builtinSignatures[name];
+        const isBuiltin = builtinSet.has(name) || sig;
         if (!overloads && !isBuiltin) {
           errors.push({ message: `Unknown function ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
         } else if (overloads) {
           const required = Math.min(...overloads.map(o => o.parameters.filter(p => p.defaultValue === undefined).length));
           const max = Math.max(...overloads.map(o => o.parameters.length));
+          if (args < required || args > max) {
+            errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+          }
+        } else if (sig) {
+          const required = sig.parameters.filter(p => !p.optional).length;
+          const max = sig.variadic ? Infinity : sig.parameters.length;
           if (args < required || args > max) {
             errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
           }
