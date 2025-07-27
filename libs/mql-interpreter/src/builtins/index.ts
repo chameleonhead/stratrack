@@ -1,5 +1,6 @@
 import { builtinNames } from './stubNames';
 import { coreBuiltins, envBuiltins } from './impl';
+export { builtinSignatures } from './signatures';
 import type { BuiltinFunction } from './types';
 
 export type { BuiltinFunction } from './types';

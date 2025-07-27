@@ -1,5 +1,5 @@
 import { evaluateExpression } from '../src/expression';
-import { interpret } from '../src/index';
+import { compile, interpret } from '../src/index';
 import { describe, it, expect } from 'vitest';
 
 describe('evaluateExpression', () => {
@@ -39,5 +39,33 @@ describe('evaluateExpression', () => {
     const env: any = { obj: { a: 1 } };
     evaluateExpression('delete obj', env);
     expect(env.obj).toBeUndefined();
+  });
+
+  it('reports unknown function during compilation', () => {
+    const result = compile('void start(){ Foo(); }');
+    const found = result.errors.some(e => e.message.includes('Unknown function Foo'));
+    expect(found).toBe(true);
+  });
+
+  it('checks argument count during compilation', () => {
+    const src = 'void f(int a, int b=1); void start(){ f(); }';
+    const result = compile(src);
+    const found = result.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(found).toBe(true);
+  });
+
+  it('validates builtin argument count during compilation', () => {
+    const result = compile('void start(){ Sleep(); }');
+    const found = result.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(found).toBe(true);
+  });
+
+  it('validates overloaded builtin signatures', () => {
+    const ok = compile('void start(){ int a[]; int b[]; ArrayCopy(a,b); }');
+    const okErr = ok.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(okErr).toBe(false);
+    const bad = compile('void start(){ int a[]; int b[]; ArrayCopy(a,b,1); }');
+    const found = bad.errors.some(e => e.message.includes('Incorrect argument count'));
+    expect(found).toBe(true);
   });
 });
