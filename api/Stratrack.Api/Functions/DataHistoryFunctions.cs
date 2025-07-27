@@ -11,6 +11,7 @@ using EventFlow.Queries;
 using System.Net;
 using System.Text;
 using System.Linq;
+using System;
 using Stratrack.Api.Models;
 
 namespace Stratrack.Api.Functions;
@@ -29,8 +30,7 @@ public class DataHistoryFunctions(
     [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-functions-key")]
     [OpenApiParameter(name: "dataSourceId", In = ParameterLocation.Path, Required = true, Type = typeof(string))]
     [OpenApiParameter(name: "timeframe", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
-    [OpenApiParameter(name: "startTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
-    [OpenApiParameter(name: "endTime", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
+    [OpenApiParameter(name: "time", In = ParameterLocation.Query, Required = false, Type = typeof(string))]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object))]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.UnprocessableEntity, Description = "Unprocessable entity")]
@@ -41,8 +41,7 @@ public class DataHistoryFunctions(
     {
         var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
         var timeframe = query.Get("timeframe");
-        var startStr = query.Get("startTime");
-        var endStr = query.Get("endTime");
+        var timeStr = query.Get("time");
 
         var dsId = Guid.Parse(dataSourceId);
         var sources = await _queryProcessor.ProcessAsync(new DataSourceReadModelSearchQuery(), token).ConfigureAwait(false);
@@ -53,28 +52,9 @@ public class DataHistoryFunctions(
         }
 
         timeframe ??= dataSource.Timeframe;
-        DateTimeOffset? start = startStr != null ? DateTimeOffset.Parse(startStr) : null;
-        DateTimeOffset? end = endStr != null ? DateTimeOffset.Parse(endStr) : null;
-        if (start == null && end == null)
-        {
-            end = DateTimeOffset.UtcNow;
-            start = end - GetDefaultRange(timeframe);
-        }
-        else if (start == null)
-        {
-            start = end - GetDefaultRange(timeframe);
-        }
-        else if (end == null)
-        {
-            end = start + GetDefaultRange(timeframe);
-        }
-        if (start >= end)
-        {
-            return req.CreateResponse(HttpStatusCode.UnprocessableEntity);
-        }
-
-        var e = end.Value;
-        var s = start.Value;
+        DateTimeOffset time = timeStr != null ? DateTimeOffset.Parse(timeStr) : DateTimeOffset.UtcNow;
+        var e = time;
+        var s = e - GetDefaultRange(timeframe);
         var chunks = await _queryProcessor.ProcessAsync(new DataChunkReadModelSearchQuery(dsId), token).ConfigureAwait(false);
         var target = chunks
             .Where(c => c.StartTime < e && c.EndTime > s)
@@ -110,6 +90,12 @@ public class DataHistoryFunctions(
         });
 
         var response = req.CreateResponse(HttpStatusCode.OK);
+        response.Headers.Add("X-Start-Time", s.UtcDateTime.ToString("o"));
+        response.Headers.Add("X-End-Time", e.UtcDateTime.ToString("o"));
+        var prevTime = s.UtcDateTime.ToString("o");
+        var baseUrl = req.Url.GetLeftPart(UriPartial.Path);
+        var prevHref = $"{baseUrl}?timeframe={Uri.EscapeDataString(timeframe)}&time={Uri.EscapeDataString(prevTime)}";
+        response.Headers.Add("Link", $"<{prevHref}>; rel=\"prev\"");
         if (timeframe == "tick")
         {
             var ticks = filtered
