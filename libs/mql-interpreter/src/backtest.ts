@@ -6,8 +6,6 @@ import { Account, AccountMetrics } from './account';
 import { MarketData, ticksToCandles, Candle, Tick } from './market';
 import { VirtualTerminal } from './terminal';
 import { setTerminal } from './builtins/impl/common';
-import fs from 'fs';
-import path from 'path';
 
 export interface BacktestSession {
   broker: Broker;
@@ -45,6 +43,8 @@ export interface BacktestOptions {
   symbol?: string;
   /** Path to a directory mimicking the MT4 data folder */
   dataDir?: string;
+  /** File path used by VirtualTerminal for global variable storage */
+  storagePath?: string;
 }
 
 export class BacktestRunner {
@@ -71,10 +71,11 @@ export class BacktestRunner {
     const account = new Account(options.initialBalance ?? 0);
     this.session = { broker, account };
     let storagePath: string | undefined;
-    if (options.dataDir) {
-      const dir = path.join(options.dataDir, 'MQL4', 'Files');
-      fs.mkdirSync(dir, { recursive: true });
-      storagePath = path.join(dir, 'globals.json');
+    if (options.storagePath) {
+      storagePath = options.storagePath;
+    } else if (options.dataDir) {
+      const base = options.dataDir.replace(/[\\/]+$/, '');
+      storagePath = base + '/MQL4/Files/globals.json';
     }
     this.terminal = new VirtualTerminal(storagePath);
     setTerminal(this.terminal);

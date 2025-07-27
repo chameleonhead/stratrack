@@ -32,7 +32,13 @@ const code = fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
 if (backtestFile) {
   const csv = fs.readFileSync(path.resolve(process.cwd(), backtestFile), 'utf8');
   const candles = parseCsv(csv);
-  const runner = new BacktestRunner(code, candles, { dataDir });
+  let storagePath;
+  if (dataDir) {
+    const dir = path.join(dataDir, 'MQL4', 'Files');
+    fs.mkdirSync(dir, { recursive: true });
+    storagePath = path.join(dir, 'globals.json');
+  }
+  const runner = new BacktestRunner(code, candles, { storagePath });
   runner.run();
   runner.getTerminal().flushGlobalVariables();
   console.log(JSON.stringify(runner.getRuntime().globalValues, null, 2));
