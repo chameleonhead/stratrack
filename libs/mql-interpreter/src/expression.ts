@@ -75,9 +75,6 @@ export function evaluateExpression(
         consume(TokenType.Punctuation, ')');
         return { value: callFunction(runtime, name, args) };
       }
-      if (runtime && runtime.enumMembers[name] !== undefined) {
-        return { value: runtime.enumMembers[name] };
-      }
       return { value: env[name], ref: name };
     }
     if (t.type === TokenType.Keyword && t.value === 'new') {

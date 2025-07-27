@@ -26,8 +26,6 @@ export interface RuntimeClassMethod {
 
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  /** Lookup table of enumeration member names to numeric values */
-  enumMembers: Record<string, number>;
   classes: Record<string, { base?: string; abstract?: boolean; templateParams?: string[]; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
   functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string; templateParams?: string[] }[]>;
   variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
@@ -42,10 +40,31 @@ import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration
 import { getBuiltin } from './builtins';
 import { cast, PrimitiveType } from './casting';
 import { executeStatements } from './statements';
+import { lex, Token, TokenType } from './lexer';
 
 const numericTypes = new Set([
   'char','uchar','short','ushort','int','uint','long','ulong','float','double','color','datetime'
 ]);
+
+function replaceEnumConstants(source: string, enums: Record<string, number>): string {
+  if (!source) return source;
+  const { tokens } = lex(source);
+  const out: Token[] = [];
+  for (const t of tokens) {
+    if (t.type === TokenType.Identifier && enums[t.value] !== undefined) {
+      out.push({ type: TokenType.Number, value: String(enums[t.value]), line: t.line, column: t.column });
+    } else {
+      out.push(t);
+    }
+  }
+  return out.map(tok => tok.value).join(' ');
+}
+
+function resolveValue(value: string | undefined, enums: Record<string, number>): string | undefined {
+  if (value === undefined) return value;
+  if (enums[value] !== undefined) return String(enums[value]);
+  return value;
+}
 
 function checkPrimitive(value: any, type: string): boolean {
   if (numericTypes.has(type)) return typeof value === 'number';
@@ -72,7 +91,6 @@ export function execute(
 ): Runtime {
   const runtime: Runtime = {
     enums: {},
-    enumMembers: {},
     classes: {},
     functions: {},
     variables: {},
@@ -112,6 +130,7 @@ export function execute(
   const inputVals = ctx.inputValues ?? {};
   const externVals = ctx.externValues ?? {};
   // TODO: support a full execution context when function bodies are interpreted.
+  const enumMembers: Record<string, number> = {};
 
   for (const decl of declarations) {
     if (decl.type === 'EnumDeclaration') {
@@ -122,10 +141,16 @@ export function execute(
           current = parseInt(member.value, 10);
         }
         members[member.name] = current;
-        runtime.enumMembers[member.name] = current;
+        enumMembers[member.name] = current;
         current++;
       }
       runtime.enums[decl.name] = members;
+    }
+  }
+
+  for (const decl of declarations) {
+    if (decl.type === 'EnumDeclaration') {
+      continue;
     } else if (decl.type === 'ClassDeclaration') {
       const classDecl = decl as ClassDeclaration;
       const fields: Record<string, RuntimeClassField> = {};
@@ -140,14 +165,17 @@ export function execute(
           byRef: p.byRef,
           name: p.name,
           dimensions: p.dimensions,
-          defaultValue: p.defaultValue,
+          defaultValue: resolveValue(p.defaultValue, enumMembers),
         })),
         visibility: m.visibility,
         static: m.static,
         virtual: m.virtual,
         pure: m.pure,
-        locals: m.locals,
-        body: m.body,
+        locals: m.locals.map((l) => ({
+          ...l,
+          initialValue: resolveValue(l.initialValue, enumMembers),
+        })),
+        body: replaceEnumConstants(m.body ?? '', enumMembers),
       }));
       runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, templateParams: classDecl.templateParams, fields, methods };
     } else if (decl.type === 'FunctionDeclaration') {
@@ -157,51 +185,58 @@ export function execute(
         byRef: p.byRef,
         name: p.name,
         dimensions: p.dimensions,
-        defaultValue: p.defaultValue,
+        defaultValue: resolveValue(p.defaultValue, enumMembers),
       }));
       if (!runtime.functions[fn.name]) {
         runtime.functions[fn.name] = [];
       }
-      runtime.functions[fn.name].push({ returnType: fn.returnType, parameters: params, locals: fn.locals, body: fn.body, templateParams: fn.templateParams });
+      runtime.functions[fn.name].push({
+        returnType: fn.returnType,
+        parameters: params,
+        locals: fn.locals.map(l => ({ ...l, initialValue: resolveValue(l.initialValue, enumMembers) })),
+        body: replaceEnumConstants(fn.body ?? '', enumMembers),
+        templateParams: fn.templateParams,
+      });
     } else if (decl.type === 'VariableDeclaration') {
       const v = decl as VariableDeclaration;
       if (runtime.variables[v.name] && v.storage === 'extern') {
         // don't overwrite existing definition
         continue;
       }
+      const initValStr = resolveValue(v.initialValue, enumMembers);
       runtime.variables[v.name] = {
         type: v.varType,
         storage: v.storage,
         dimensions: v.dimensions,
-        initialValue: v.initialValue,
+        initialValue: initValStr,
       };
       let val: any = undefined;
       if (v.storage === 'input') {
         if (inputVals[v.name] !== undefined) {
           val = inputVals[v.name];
-        } else if (v.initialValue !== undefined) {
+        } else if (initValStr !== undefined) {
           try {
-            val = cast(v.initialValue, v.varType as PrimitiveType);
+            val = cast(initValStr, v.varType as PrimitiveType);
           } catch {
-            val = v.initialValue;
+            val = initValStr;
           }
         }
       } else if (v.storage === 'extern') {
         if (externVals[v.name] !== undefined) {
           val = externVals[v.name];
-        } else if (v.initialValue !== undefined) {
+        } else if (initValStr !== undefined) {
           try {
-            val = cast(v.initialValue, v.varType as PrimitiveType);
+            val = cast(initValStr, v.varType as PrimitiveType);
           } catch {
-            val = v.initialValue;
+            val = initValStr;
           }
         }
       } else {
-        if (v.initialValue !== undefined) {
+        if (initValStr !== undefined) {
           try {
-            val = cast(v.initialValue, v.varType as PrimitiveType);
+            val = cast(initValStr, v.varType as PrimitiveType);
           } catch {
-            val = v.initialValue;
+            val = initValStr;
           }
         }
       }
