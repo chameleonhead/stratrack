@@ -19,6 +19,9 @@ import {
   TerminalName,
   TerminalPath,
   IsConnected,
+  IsTesting,
+  IsOptimization,
+  IsVisualMode,
   IsTradeAllowed,
   IsTradeContextBusy,
   IsDemo,
@@ -91,6 +94,9 @@ describe("common builtins", () => {
     expect(TerminalName()).toBe("MetaTrader");
     expect(TerminalPath()).toBe("");
     expect(IsConnected()).toBe(true);
+    expect(IsTesting()).toBe(false);
+    expect(IsOptimization()).toBe(false);
+    expect(IsVisualMode()).toBe(false);
     expect(IsDemo()).toBe(false);
     expect(IsTradeAllowed()).toBe(true);
     expect(IsTradeContextBusy()).toBe(false);
@@ -112,6 +118,9 @@ describe("common builtins", () => {
     expect(GlobalVariableSetOnCondition("x", 7, 5)).toBe(false);
     expect(GlobalVariableDel("x")).toBe(true);
     expect(GlobalVariablesTotal()).toBe(0);
+    GlobalVariableSet("pref_y", 1);
+    GlobalVariableSet("pref_z", 1);
+    expect(GlobalVariablesDeleteAll("pref_")).toBe(2);
   });
 
   it("misc helpers handle requests and flush", () => {

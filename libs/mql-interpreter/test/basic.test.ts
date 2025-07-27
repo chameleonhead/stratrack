@@ -11,6 +11,12 @@ describe('interpret', () => {
     expect(result.properties).toEqual({ copyright: ['"test"'] });
   });
 
+  it('stores execution context when provided', () => {
+    const ctx = { entryPoint: 'Print', args: ['hi'] };
+    const runtime = interpret('', ctx);
+    expect(runtime.context).toEqual(expect.objectContaining(ctx));
+  });
+
   it('compiles without executing', () => {
     const { runtime } = compile('input int A=1;');
     expect(runtime.variables.A.storage).toBe('input');
