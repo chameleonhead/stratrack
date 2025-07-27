@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getDataSource } from "../../api/datasources";
-import { getDataStream } from "../../api/data";
+import { getDataHistory } from "../../api/data";
 import { loadCandles, saveCandles, hasCandles } from "../../idb";
 import { Candle } from "../../components/CandlestickChart";
 
@@ -58,27 +58,18 @@ export const ChartDataProvider = ({
           }));
         }
 
-        const csv = await getDataStream(
+        const { data } = await getDataHistory(
           dataSourceId,
-          new Date(fromMs).toISOString(),
-          new Date(toMs).toISOString(),
-          "ohlc",
-          timeframe
+          timeframe,
+          new Date(toMs).toISOString()
         );
-        const lines = csv
-          .split(/\r?\n/)
-          .map((l) => l.replace(/^data:\s*/, ""))
-          .filter((l) => l && !l.startsWith("time"));
-        const candles: Candle[] = lines.map((l) => {
-          const [t, o, h, low, c] = l.split(",");
-          return {
-            date: new Date(t),
-            open: parseFloat(o),
-            high: parseFloat(h),
-            low: parseFloat(low),
-            close: parseFloat(c),
-          };
-        });
+        const candles: Candle[] = data.map((d) => ({
+          date: new Date(d.time),
+          open: d.open,
+          high: d.high,
+          low: d.low,
+          close: d.close,
+        }));
         await saveCandles(
           dataSourceId,
           timeframe,
@@ -93,7 +84,10 @@ export const ChartDataProvider = ({
           }))
         );
         setError(null);
-        return candles;
+        const filtered = candles.filter(
+          (c) => c.date.getTime() >= fromMs && c.date.getTime() <= toMs
+        );
+        return filtered;
       } catch (e) {
         setError((e as Error).message);
         return [];
