@@ -15,6 +15,14 @@ import {
   ExpertRemove,
   DebugBreak,
   MessageBox,
+  TerminalCompany,
+  TerminalName,
+  TerminalPath,
+  IsConnected,
+  IsTradeAllowed,
+  IsTradeContextBusy,
+  IsDemo,
+  UninitializeReason,
   GlobalVariableSet,
   GlobalVariableGet,
   GlobalVariableDel,
@@ -73,6 +81,17 @@ describe("common builtins", () => {
     expect(ExpertRemove()).toBe(true);
     expect(DebugBreak()).toBe(0);
     expect(MessageBox("text")).toBe(1);
+  });
+
+  it("terminal info helpers return defaults", () => {
+    expect(TerminalCompany()).toBe("MetaQuotes Software Corp.");
+    expect(TerminalName()).toBe("MetaTrader");
+    expect(TerminalPath()).toBe("");
+    expect(IsConnected()).toBe(true);
+    expect(IsDemo()).toBe(false);
+    expect(IsTradeAllowed()).toBe(true);
+    expect(IsTradeContextBusy()).toBe(false);
+    expect(UninitializeReason()).toBe(0);
   });
 
   it("manages global variables", () => {
