@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from './lexer';
+import { lex, Token, TokenType, LexError, LexResult } from "./lexer";
 import {
   parse,
   Declaration,
@@ -10,7 +10,7 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from './parser';
+} from "./parser";
 import {
   execute,
   Runtime,
@@ -19,8 +19,8 @@ import {
   callFunction,
   instantiate,
   callMethod,
-} from './runtime';
-import { cast, PrimitiveType } from './casting';
+} from "./runtime";
+import { cast, PrimitiveType } from "./casting";
 import {
   ArrayResize,
   ArrayCopy,
@@ -39,7 +39,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from './builtins/impl/array';
+} from "./builtins/impl/array";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -60,10 +60,10 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from './builtins/impl/strings';
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from './builtins';
-import { evaluateExpression } from './expression';
-import { executeStatements } from './statements';
+} from "./builtins/impl/strings";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./builtins";
+import { evaluateExpression } from "./expression";
+import { executeStatements } from "./statements";
 import {
   MathAbs,
   MathArccos,
@@ -86,7 +86,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from './builtins/impl/math';
+} from "./builtins/impl/math";
 import {
   Day,
   DayOfWeek,
@@ -111,7 +111,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from './builtins/impl/datetime';
+} from "./builtins/impl/datetime";
 import {
   preprocess,
   preprocessWithProperties,
@@ -119,15 +119,15 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from './preprocess';
-import { BacktestRunner, parseCsv } from './backtest';
-import { MarketData, Tick, Candle, ticksToCandles } from './market';
-import { Broker, OrderState } from './broker';
-import { Account } from './account';
-import { VirtualTerminal } from './terminal';
-import { setTerminal } from './builtins/impl/common';
-import { builtinNames } from './builtins/stubNames';
-import { builtinSignatures } from './builtins/signatures';
+} from "./preprocess";
+import { BacktestRunner, parseCsv, BacktestReport } from "./backtest";
+import { MarketData, Tick, Candle, ticksToCandles } from "./market";
+import { Broker, OrderState } from "./broker";
+import { Account } from "./account";
+import { VirtualTerminal } from "./terminal";
+import { setTerminal } from "./builtins/impl/common";
+import { builtinNames } from "./builtins/stubNames";
+import { builtinSignatures } from "./builtins/signatures";
 
 export {
   lex,
@@ -202,6 +202,7 @@ export {
   LexResult,
   Candle,
   BacktestRunner,
+  BacktestReport,
   Broker,
   Account,
   MarketData,
@@ -272,38 +273,71 @@ export interface CompilationError {
 
 function checkTypes(ast: Declaration[]): CompilationError[] {
   const primitive = new Set([
-    'void','bool','char','uchar','short','ushort','int','uint','long','ulong',
-    'float','double','color','datetime','string'
+    "void",
+    "bool",
+    "char",
+    "uchar",
+    "short",
+    "ushort",
+    "int",
+    "uint",
+    "long",
+    "ulong",
+    "float",
+    "double",
+    "color",
+    "datetime",
+    "string",
   ]);
   const classes = new Set<string>();
   const enums = new Set<string>();
   for (const decl of ast) {
-    if (decl.type === 'ClassDeclaration') classes.add(decl.name);
-    if (decl.type === 'EnumDeclaration') enums.add(decl.name);
+    if (decl.type === "ClassDeclaration") classes.add(decl.name);
+    if (decl.type === "EnumDeclaration") enums.add(decl.name);
   }
   const errors: CompilationError[] = [];
   const isKnown = (t: string) => primitive.has(t) || classes.has(t) || enums.has(t);
   for (const decl of ast) {
-    if (decl.type === 'VariableDeclaration') {
+    if (decl.type === "VariableDeclaration") {
       if (!isKnown(decl.varType)) {
-        errors.push({ message: `Unknown type ${decl.varType}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+        errors.push({
+          message: `Unknown type ${decl.varType}`,
+          line: decl.loc?.line ?? 0,
+          column: decl.loc?.column ?? 0,
+        });
       }
-    } else if (decl.type === 'FunctionDeclaration') {
-      if (!isKnown(decl.returnType) && decl.returnType !== 'void') {
-        errors.push({ message: `Unknown return type ${decl.returnType}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+    } else if (decl.type === "FunctionDeclaration") {
+      if (!isKnown(decl.returnType) && decl.returnType !== "void") {
+        errors.push({
+          message: `Unknown return type ${decl.returnType}`,
+          line: decl.loc?.line ?? 0,
+          column: decl.loc?.column ?? 0,
+        });
       }
       for (const p of decl.parameters) {
         if (!isKnown(p.paramType)) {
-          errors.push({ message: `Unknown type ${p.paramType} for parameter ${p.name}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+          errors.push({
+            message: `Unknown type ${p.paramType} for parameter ${p.name}`,
+            line: decl.loc?.line ?? 0,
+            column: decl.loc?.column ?? 0,
+          });
         }
       }
-    } else if (decl.type === 'ClassDeclaration') {
+    } else if (decl.type === "ClassDeclaration") {
       if (decl.base && !classes.has(decl.base)) {
-        errors.push({ message: `Unknown base class ${decl.base}`, line: decl.loc?.line ?? 0, column: decl.loc?.column ?? 0 });
+        errors.push({
+          message: `Unknown base class ${decl.base}`,
+          line: decl.loc?.line ?? 0,
+          column: decl.loc?.column ?? 0,
+        });
       }
       for (const f of decl.fields) {
         if (!isKnown(f.fieldType)) {
-          errors.push({ message: `Unknown type ${f.fieldType} for field ${f.name}`, line: f.loc?.line ?? 0, column: f.loc?.column ?? 0 });
+          errors.push({
+            message: `Unknown type ${f.fieldType} for field ${f.name}`,
+            line: f.loc?.line ?? 0,
+            column: f.loc?.column ?? 0,
+          });
         }
       }
     }
@@ -320,7 +354,7 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
     const { tokens } = lex(body);
     for (let i = 0; i < tokens.length - 1; i++) {
       const t = tokens[i];
-      if (t.type === TokenType.Identifier && tokens[i + 1].value === '(') {
+      if (t.type === TokenType.Identifier && tokens[i + 1].value === "(") {
         const name = t.value;
         let j = i + 2;
         let depth = 1;
@@ -328,16 +362,16 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
         let expecting = true;
         while (j < tokens.length && depth > 0) {
           const tok = tokens[j];
-          if (tok.value === '(') {
+          if (tok.value === "(") {
             depth++;
             if (depth === 1) expecting = true;
-          } else if (tok.value === ')') {
+          } else if (tok.value === ")") {
             depth--;
             if (depth === 0) {
               if (!expecting) args++;
               break;
             }
-          } else if (tok.value === ',' && depth === 1) {
+          } else if (tok.value === "," && depth === 1) {
             args++;
             expecting = true;
           } else if (depth === 1) {
@@ -349,18 +383,28 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
         const sig = builtinSignatures[name];
         const isBuiltin = builtinSet.has(name) || !!sig;
         if (!overloads && !isBuiltin) {
-          errors.push({ message: `Unknown function ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+          errors.push({
+            message: `Unknown function ${name}`,
+            line: loc?.line ?? 0,
+            column: loc?.column ?? 0,
+          });
         } else if (overloads) {
-          const required = Math.min(...overloads.map(o => o.parameters.filter(p => p.defaultValue === undefined).length));
-          const max = Math.max(...overloads.map(o => o.parameters.length));
+          const required = Math.min(
+            ...overloads.map((o) => o.parameters.filter((p) => p.defaultValue === undefined).length)
+          );
+          const max = Math.max(...overloads.map((o) => o.parameters.length));
           if (args < required || args > max) {
-            errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+            errors.push({
+              message: `Incorrect argument count for ${name}`,
+              line: loc?.line ?? 0,
+              column: loc?.column ?? 0,
+            });
           }
         } else if (sig) {
           const sigs = Array.isArray(sig) ? sig : [sig];
           let match = false;
           for (const s of sigs) {
-            const required = s.parameters.filter(p => !p.optional).length;
+            const required = s.parameters.filter((p) => !p.optional).length;
             const max = s.variadic ? Infinity : s.parameters.length;
             if (args >= required && args <= max) {
               match = true;
@@ -368,7 +412,11 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
             }
           }
           if (!match) {
-            errors.push({ message: `Incorrect argument count for ${name}`, line: loc?.line ?? 0, column: loc?.column ?? 0 });
+            errors.push({
+              message: `Incorrect argument count for ${name}`,
+              line: loc?.line ?? 0,
+              column: loc?.column ?? 0,
+            });
           }
         }
       }
@@ -376,9 +424,9 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   };
 
   for (const decl of ast) {
-    if (decl.type === 'FunctionDeclaration') {
+    if (decl.type === "FunctionDeclaration") {
       scanBody(decl.body, decl.loc);
-    } else if (decl.type === 'ClassDeclaration') {
+    } else if (decl.type === "ClassDeclaration") {
       for (const m of decl.methods) {
         scanBody(m.body, m.loc);
       }
@@ -388,10 +436,7 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   return errors;
 }
 
-export function compile(
-  source: string,
-  options: PreprocessOptions = {}
-): Compilation {
+export function compile(source: string, options: PreprocessOptions = {}): Compilation {
   const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
   let parseError: CompilationError | null = null;
@@ -425,20 +470,21 @@ export function interpret(
 ): Runtime {
   const { ast, runtime, properties, errors } = compile(source, options);
   if (errors.length) {
-    const msg = errors.map(e => `${e.line}:${e.column} ${e.message}`).join('\n');
+    const msg = errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
     throw new Error(`Compilation failed:\n${msg}`);
   }
   runtime.properties = properties;
   if (context) {
     for (const name in runtime.variables) {
       const info = runtime.variables[name];
-      if (info.storage === 'input' && context.inputValues?.[name] !== undefined) {
+      if (info.storage === "input" && context.inputValues?.[name] !== undefined) {
         runtime.globalValues[name] = context.inputValues[name];
       }
-      if (info.storage === 'extern' && context.externValues?.[name] !== undefined) {
+      if (info.storage === "extern" && context.externValues?.[name] !== undefined) {
         runtime.globalValues[name] = context.externValues[name];
       }
     }
+    runtime.context = context;
     if (context.entryPoint) {
       callFunction(runtime, context.entryPoint, context.args);
     }

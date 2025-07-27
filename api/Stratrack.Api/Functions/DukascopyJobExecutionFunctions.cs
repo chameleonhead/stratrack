@@ -195,10 +195,6 @@ public class DukascopyJobExecutionFunctions(
             .ConfigureAwait(false);
 
         var startTime = input.StartTime;
-        if (summary == null)
-        {
-            return startTime;
-        }
         if (summary.OldestFailureTime.HasValue && summary.OldestFailureTime >= input.StartTime)
         {
             return summary.OldestFailureTime;

@@ -1,14 +1,14 @@
 export function formatString(fmt: string, ...args: any[]): string {
   let idx = 0;
   return fmt.replace(/%%|%[sdif]/g, (token) => {
-    if (token === '%%') return '%';
+    if (token === "%%") return "%";
     const arg = args[idx++];
     switch (token) {
-      case '%d':
+      case "%d":
         return Math.trunc(arg).toString();
-      case '%f':
+      case "%f":
         return Number(arg).toString();
-      case '%s':
+      case "%s":
         return String(arg);
       default:
         return String(arg);

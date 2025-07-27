@@ -8,10 +8,7 @@ export interface BuiltinSignature {
   variadic?: boolean;
 }
 
-export type BuiltinSignaturesMap = Record<
-  string,
-  BuiltinSignature | BuiltinSignature[]
->;
+export type BuiltinSignaturesMap = Record<string, BuiltinSignature | BuiltinSignature[]>;
 
 export const builtinSignatures: BuiltinSignaturesMap = {
   Print: { parameters: [], variadic: true },
@@ -42,33 +39,21 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   StringTrimRight: { parameters: [{ type: "string" }] },
   StringLen: { parameters: [{ type: "string" }] },
   StringSubstr: {
-    parameters: [
-      { type: "string" },
-      { type: "int" },
-      { type: "int", optional: true },
-    ],
+    parameters: [{ type: "string" }, { type: "int" }, { type: "int", optional: true }],
   },
   StringAdd: {
     parameters: [{ type: "string" }, { type: "string" }],
   },
   StringBufferLen: { parameters: [{ type: "string" }] },
   StringCompare: {
-    parameters: [
-      { type: "string" },
-      { type: "string" },
-      { type: "bool", optional: true },
-    ],
+    parameters: [{ type: "string" }, { type: "string" }, { type: "bool", optional: true }],
   },
   StringConcatenate: { parameters: [], variadic: true },
   StringFill: {
     parameters: [{ type: "string" }, { type: "int" }],
   },
   StringFind: {
-    parameters: [
-      { type: "string" },
-      { type: "string" },
-      { type: "int", optional: true },
-    ],
+    parameters: [{ type: "string" }, { type: "string" }, { type: "int", optional: true }],
   },
   StringGetChar: {
     parameters: [{ type: "string" }, { type: "int" }],
@@ -77,21 +62,13 @@ export const builtinSignatures: BuiltinSignaturesMap = {
     parameters: [{ type: "string" }, { type: "int" }, { type: "int" }],
   },
   StringInit: {
-    parameters: [
-      { type: "string" },
-      { type: "int" },
-      { type: "int", optional: true },
-    ],
+    parameters: [{ type: "string" }, { type: "int" }, { type: "int", optional: true }],
   },
   StringReplace: {
     parameters: [{ type: "string" }, { type: "string" }, { type: "string" }],
   },
   StringSplit: {
-    parameters: [
-      { type: "string" },
-      { type: "int" },
-      { type: "string[]", optional: true },
-    ],
+    parameters: [{ type: "string" }, { type: "int" }, { type: "string[]", optional: true }],
   },
   StringToLower: { parameters: [{ type: "string" }] },
   StringToUpper: { parameters: [{ type: "string" }] },
@@ -147,20 +124,11 @@ export const builtinSignatures: BuiltinSignaturesMap = {
       parameters: [{ type: "any[]" }, { type: "any[]" }],
     },
     {
-      parameters: [
-        { type: "any[]" },
-        { type: "any[]" },
-        { type: "int" },
-        { type: "int" },
-      ],
+      parameters: [{ type: "any[]" }, { type: "any[]" }, { type: "int" }, { type: "int" }],
     },
   ],
   ArrayResize: {
-    parameters: [
-      { type: "any[]" },
-      { type: "int" },
-      { type: "any", optional: true },
-    ],
+    parameters: [{ type: "any[]" }, { type: "int" }, { type: "any", optional: true }],
   },
   ArraySetAsSeries: {
     parameters: [{ type: "any[]" }, { type: "bool" }],
@@ -178,12 +146,7 @@ export const builtinSignatures: BuiltinSignaturesMap = {
     parameters: [{ type: "any[]" }, { type: "any" }],
   },
   ArrayFill: {
-    parameters: [
-      { type: "any[]" },
-      { type: "int" },
-      { type: "int" },
-      { type: "any" },
-    ],
+    parameters: [{ type: "any[]" }, { type: "int" }, { type: "int" }, { type: "any" }],
   },
   ArraySort: {
     parameters: [{ type: "any[]" }, { type: "int", optional: true }],

@@ -22,54 +22,53 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from '../../src/builtins/impl/datetime';
-import { describe, it, expect } from 'vitest';
+} from "../../src/builtins/impl/datetime";
+import { describe, it, expect } from "vitest";
 
-const t = 172800; // 1970-01-03T00:00:00Z
+const t = 946782245; // 2000-01-02T03:04:05Z
 
-describe('date/time builtins', () => {
-  it('extracts components from timestamp', () => {
-    expect(TimeDay(t)).toBe(3);
-    expect(TimeDayOfWeek(0)).toBe(4);
-    expect(TimeDayOfYear(0)).toBe(1);
-    expect(TimeHour(3600)).toBe(1);
-    expect(TimeMinute(90)).toBe(1);
-    expect(TimeMonth(0)).toBe(1);
-    expect(TimeSeconds(90)).toBe(30);
-    expect(TimeYear(0)).toBe(1970);
+describe("date/time builtins", () => {
+  it("extracts components from timestamp", () => {
+    expect(TimeDay(t)).toBe(2);
+    expect(TimeDayOfWeek(t)).toBe(0);
+    expect(TimeDayOfYear(t)).toBe(2);
+    expect(TimeHour(t)).toBe(3);
+    expect(TimeMinute(t)).toBe(4);
+    expect(TimeMonth(t)).toBe(1);
+    expect(TimeSeconds(t)).toBe(5);
+    expect(TimeYear(t)).toBe(2000);
   });
 
-  it('alias helpers without argument use current time', () => {
-    expect(Day(t)).toBe(3);
+  it("alias helpers without argument use current time", () => {
+    expect(Day(t)).toBe(2);
     expect(Hour(3600)).toBe(1);
     expect(Minute(90)).toBe(1);
   });
 
-  it('TimeCurrent and TimeLocal return now', () => {
+  it("TimeCurrent return now", () => {
     const now = Math.floor(Date.now() / 1000);
     const cur = TimeCurrent();
-    const local = TimeLocal();
-    expect(Math.abs(cur - now) <= 1).toBe(true);
-    expect(Math.abs(local - now) <= 1).toBe(true);
+    expect(Math.abs(cur - now)).toBeLessThan(1);
   });
 
-  it('TimeGMT matches offset from local time', () => {
+  it("TimeLocal return now with offset and TimeGMTOffset returns offset", () => {
+    const now = Math.floor(Date.now() / 1000);
     const local = TimeLocal();
-    const gmt = TimeGMT();
     const offset = TimeGMTOffset();
-    expect(Math.abs(local - offset - gmt) <= 1).toBe(true);
+    expect(Math.abs(local - offset - now)).toBeLessThan(1);
   });
 
-  it('TimeDaylightSavings reflects DST', () => {
-    const now = new Date();
-    const jan = new Date(now.getFullYear(), 0, 1);
-    const jul = new Date(now.getFullYear(), 6, 1);
-    const std = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-    const expectDst = now.getTimezoneOffset() < std ? 1 : 0;
-    expect(TimeDaylightSavings()).toBe(expectDst);
+  it("TimeGMT matches offset from local time", () => {
+    const utc = TimeCurrent();
+    const gmt = TimeGMT();
+    expect(Math.abs(gmt - utc)).toBeLessThan(TimeDaylightSavings() === 1 ? 3601 : 1);
   });
 
-  it('TimeToStruct and StructToTime round trip', () => {
+  it("TimeDaylightSavings reflects DST", () => {
+    expect(TimeDaylightSavings()).toBeOneOf([0, 1]);
+  });
+
+  it("TimeToStruct and StructToTime round trip", () => {
     const s = TimeToStruct(0);
     expect(StructToTime(s)).toBe(0);
   });

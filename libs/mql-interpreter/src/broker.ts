@@ -1,9 +1,9 @@
-export type OrderState = 'pending' | 'open' | 'closed';
+export type OrderState = "pending" | "open" | "closed";
 
 export interface Order {
   /** Ticket number (index) */
   ticket: number;
-  type: 'buy' | 'sell';
+  type: "buy" | "sell";
   symbol: string;
   volume: number;
   /**
@@ -44,7 +44,7 @@ export class Broker {
     ask: number;
   }): number {
     const { symbol, cmd, volume, price, sl, tp, time, bid, ask } = args;
-    const type = cmd === 1 || cmd === 3 ? 'sell' : 'buy';
+    const type = cmd === 1 || cmd === 3 ? "sell" : "buy";
     const pending = cmd === 2 || cmd === 3;
     const order: Order = {
       ticket: this.orders.length,
@@ -54,12 +54,12 @@ export class Broker {
       price,
       sl: sl > 0 ? sl : undefined,
       tp: tp > 0 ? tp : undefined,
-      state: pending ? 'pending' : 'open',
+      state: pending ? "pending" : "open",
       openTime: pending ? undefined : time,
     };
     // For market orders use the current bid/ask as execution price
     if (!pending) {
-      order.price = type === 'buy' ? ask : bid;
+      order.price = type === "buy" ? ask : bid;
     }
     this.orders.push(order);
     return this.orders.length - 1; // ticket number
@@ -72,37 +72,35 @@ export class Broker {
   update(candle: { time: number; high: number; low: number; close: number }): number {
     let closedProfit = 0;
     for (const order of this.orders) {
-      if (order.state === 'closed') continue;
+      if (order.state === "closed") continue;
 
-      if (order.state === 'pending') {
-        const withinRange =
-          candle.low <= order.price && candle.high >= order.price;
+      if (order.state === "pending") {
+        const withinRange = candle.low <= order.price && candle.high >= order.price;
         if (withinRange) {
-          order.state = 'open';
+          order.state = "open";
           order.openTime = candle.time;
         } else {
           continue;
         }
       }
 
-      if (order.state === 'open') {
+      if (order.state === "open") {
         const tpHit =
           order.tp !== undefined &&
-          ((order.type === 'buy' && candle.high >= order.tp) ||
-            (order.type === 'sell' && candle.low <= order.tp));
+          ((order.type === "buy" && candle.high >= order.tp) ||
+            (order.type === "sell" && candle.low <= order.tp));
         const slHit =
           order.sl !== undefined &&
-          ((order.type === 'buy' && candle.low <= order.sl) ||
-            (order.type === 'sell' && candle.high >= order.sl));
+          ((order.type === "buy" && candle.low <= order.sl) ||
+            (order.type === "sell" && candle.high >= order.sl));
 
         if (tpHit || slHit) {
           const price = tpHit ? order.tp! : order.sl!;
           order.closePrice = price;
           order.closeTime = candle.time;
-          order.state = 'closed';
+          order.state = "closed";
           order.profit =
-            (order.type === 'buy' ? price - order.price : order.price - price) *
-            order.volume;
+            (order.type === "buy" ? price - order.price : order.price - price) * order.volume;
           closedProfit += order.profit;
         }
       }
@@ -112,16 +110,16 @@ export class Broker {
 
   close(ticket: number, price: number, time: number): number {
     const o = this.orders[ticket];
-    if (!o || o.state === 'closed') return 0;
+    if (!o || o.state === "closed") return 0;
     o.closePrice = price;
     o.closeTime = time;
-    o.state = 'closed';
-    o.profit = (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
+    o.state = "closed";
+    o.profit = (o.type === "buy" ? price - o.price : o.price - price) * o.volume;
     return o.profit;
   }
 
   getOpenOrders(): Order[] {
-    return this.orders.filter((o) => o.state === 'open');
+    return this.orders.filter((o) => o.state === "open");
   }
 
   getOrder(ticket: number): Order | undefined {
@@ -130,7 +128,7 @@ export class Broker {
 
   /** Pending and open orders */
   getActiveOrders(): Order[] {
-    return this.orders.filter((o) => o.state !== 'closed');
+    return this.orders.filter((o) => o.state !== "closed");
   }
 
   /** Direct access for tests or builtins */
@@ -139,7 +137,7 @@ export class Broker {
   }
 
   getHistory(): Order[] {
-    return this.orders.filter((o) => o.state === 'closed');
+    return this.orders.filter((o) => o.state === "closed");
   }
 
   /**
@@ -148,16 +146,16 @@ export class Broker {
   calculateOpenProfit(bid: number, ask: number): number {
     let openProfit = 0;
     for (const o of this.orders) {
-      if (o.state !== 'open') continue;
-      const price = o.type === 'buy' ? bid : ask;
-      openProfit += (o.type === 'buy' ? price - o.price : o.price - price) * o.volume;
+      if (o.state !== "open") continue;
+      const price = o.type === "buy" ? bid : ask;
+      openProfit += (o.type === "buy" ? price - o.price : o.price - price) * o.volume;
     }
     return openProfit;
   }
 
   getClosedProfit(): number {
     return this.orders
-      .filter((o) => o.state === 'closed')
+      .filter((o) => o.state === "closed")
       .reduce((sum, o) => sum + (o.profit || 0), 0);
   }
 }

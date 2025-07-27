@@ -1,8 +1,8 @@
-import type { BuiltinFunction } from '../types';
-import { formatString } from './format';
+import type { BuiltinFunction } from "../types";
+import { formatString } from "./format";
 
 export const CharToString: BuiltinFunction = (ch: number | string) => {
-  if (typeof ch === 'number') return String.fromCharCode(ch);
+  if (typeof ch === "number") return String.fromCharCode(ch);
   return ch.charAt(0);
 };
 
@@ -41,7 +41,7 @@ export const StringToCharArray: BuiltinFunction = (
   s: string,
   buffer: number[] = [],
   start = 0,
-  count = s.length,
+  count = s.length
 ) => {
   for (let i = 0; i < count && i < s.length; i++) {
     buffer[start + i] = s.charCodeAt(i);
@@ -52,7 +52,7 @@ export const StringToCharArray: BuiltinFunction = (
 export const CharArrayToString: BuiltinFunction = (
   arr: number[],
   start = 0,
-  count = arr.length - start,
+  count = arr.length - start
 ) => {
   return String.fromCharCode(...arr.slice(start, start + count));
 };

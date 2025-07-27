@@ -7,10 +7,10 @@ namespace Stratrack.Api.Domain.Dukascopy.Queries;
 public class DukascopyJobFetchResultReadModelGetExecutionSummaryQueryHandler(IDbContextProvider<StratrackDbContext> dbContextProvider) :
     IQueryHandler<DukascopyJobFetchResultReadModelGetExecutionSummaryQuery, DukascopyJobFetchResultReadModelGetExecutionSummaryQueryResult>
 {
-    public async Task<DukascopyJobFetchResultReadModelGetExecutionSummaryQueryResult?> ExecuteQueryAsync(DukascopyJobFetchResultReadModelGetExecutionSummaryQuery query, CancellationToken cancellationToken)
+    public async Task<DukascopyJobFetchResultReadModelGetExecutionSummaryQueryResult> ExecuteQueryAsync(DukascopyJobFetchResultReadModelGetExecutionSummaryQuery query, CancellationToken cancellationToken)
     {
         using var context = dbContextProvider.CreateContext();
-        return await context.Set<DukascopyJobFetchResultReadModel>().Where(e => e.JobId == query.JobId)
+        var result = await context.Set<DukascopyJobFetchResultReadModel>().Where(e => e.JobId == query.JobId)
             .GroupBy(r => r.JobId)
             .Select(r => new DukascopyJobFetchResultReadModelGetExecutionSummaryQueryResult
             {
@@ -26,5 +26,13 @@ public class DukascopyJobFetchResultReadModelGetExecutionSummaryQueryHandler(IDb
             })
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
+        return result ?? new DukascopyJobFetchResultReadModelGetExecutionSummaryQueryResult
+        {
+            LastSuccessTime = null,
+            OldestFailureTime = null,
+            TotalFetchCount = 0,
+            TotalSuccessCount = 0,
+            TotalFailureCount = 0
+        };
     }
 }

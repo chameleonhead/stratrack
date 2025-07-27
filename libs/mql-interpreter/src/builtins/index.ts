@@ -1,9 +1,9 @@
-import { builtinNames } from './stubNames';
-import { coreBuiltins, envBuiltins } from './impl';
-export { builtinSignatures } from './signatures';
-import type { BuiltinFunction } from './types';
+import { builtinNames } from "./stubNames";
+import { coreBuiltins, envBuiltins } from "./impl";
+export { builtinSignatures } from "./signatures";
+import type { BuiltinFunction } from "./types";
 
-export type { BuiltinFunction } from './types';
+export type { BuiltinFunction } from "./types";
 
 const noop: BuiltinFunction = () => 0;
 
@@ -19,12 +19,7 @@ for (const name of builtinNames) {
 }
 
 export function getBuiltin(name: string): BuiltinFunction | undefined {
-  return (
-    customEnvBuiltins[name] ||
-    envBuiltins[name] ||
-    coreBuiltins[name] ||
-    stubBuiltins[name]
-  );
+  return customEnvBuiltins[name] || envBuiltins[name] || coreBuiltins[name] || stubBuiltins[name];
 }
 
 export { coreBuiltins, envBuiltins };

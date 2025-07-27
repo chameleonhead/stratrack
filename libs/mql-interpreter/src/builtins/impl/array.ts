@@ -1,10 +1,10 @@
-import type { BuiltinFunction } from '../types';
+import type { BuiltinFunction } from "../types";
 
 export const ArrayCopy: BuiltinFunction = (
   dst: any[],
   src: any[],
   start = 0,
-  count = src.length - start,
+  count = src.length - start
 ) => {
   for (let i = 0; i < count && start + i < src.length; i++) {
     dst[i] = src[start + i];
@@ -12,12 +12,8 @@ export const ArrayCopy: BuiltinFunction = (
   return count;
 };
 
-export const ArrayResize: BuiltinFunction = (
-  arr: any[],
-  newSize: number,
-  defaultValue?: any,
-) => {
-  if (newSize < 0) throw new Error('newSize must be >= 0');
+export const ArrayResize: BuiltinFunction = (arr: any[], newSize: number, defaultValue?: any) => {
+  if (newSize < 0) throw new Error("newSize must be >= 0");
   if (arr.length > newSize) {
     arr.length = newSize;
   } else {
@@ -76,7 +72,7 @@ export const ArrayFill: BuiltinFunction = (
   arr: any[],
   start: number,
   count: number,
-  value: any,
+  value: any
 ) => {
   for (let i = 0; i < count && start + i < arr.length; i++) {
     arr[start + i] = value;
@@ -92,7 +88,7 @@ export const ArraySort: BuiltinFunction = (arr: any[], dir = 0) => {
 export const ArrayMaximum: BuiltinFunction = (
   arr: number[],
   start = 0,
-  count = arr.length - start,
+  count = arr.length - start
 ) => {
   let maxIdx = start;
   for (let i = 1; i < count && start + i < arr.length; i++) {
@@ -104,7 +100,7 @@ export const ArrayMaximum: BuiltinFunction = (
 export const ArrayMinimum: BuiltinFunction = (
   arr: number[],
   start = 0,
-  count = arr.length - start,
+  count = arr.length - start
 ) => {
   let minIdx = start;
   for (let i = 1; i < count && start + i < arr.length; i++) {
@@ -117,7 +113,7 @@ export const ArrayBsearch: BuiltinFunction = (
   arr: number[],
   value: number,
   count = arr.length,
-  start = 0,
+  start = 0
 ) => {
   let lo = start;
   let hi = start + count - 1;
@@ -136,7 +132,7 @@ export const ArrayCompare: BuiltinFunction = (
   arr2: any[],
   start1 = 0,
   start2 = 0,
-  len = Math.min(arr1.length - start1, arr2.length - start2),
+  len = Math.min(arr1.length - start1, arr2.length - start2)
 ) => {
   for (let i = 0; i < len; i++) {
     if (arr1[start1 + i] < arr2[start2 + i]) return -1;

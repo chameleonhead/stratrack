@@ -16,7 +16,7 @@ export class VirtualTerminal {
     this.storagePath = storagePath;
     if (storagePath) {
       try {
-        const json = require('fs').readFileSync(storagePath, 'utf8');
+        const json = require("fs").readFileSync(storagePath, "utf8");
         const data = JSON.parse(json) as Record<string, { value: number; time: number }>;
         const now = Math.floor(Date.now() / 1000);
         const fourWeeks = 28 * 24 * 60 * 60;
@@ -32,13 +32,13 @@ export class VirtualTerminal {
   }
 
   /** Open or create a file and return a handle. */
-  open(name: string, mode: string = 'r'): number {
+  open(name: string, mode: string = "r"): number {
     let file = this.files[name];
     if (!file) {
-      file = this.files[name] = { name, data: '', position: 0 };
+      file = this.files[name] = { name, data: "", position: 0 };
     }
-    if (mode.includes('w')) {
-      file.data = '';
+    if (mode.includes("w")) {
+      file.data = "";
       file.position = 0;
     }
     const handle = this.nextHandle++;
@@ -111,7 +111,7 @@ export class VirtualTerminal {
     return this.globalVars[name]?.time ?? 0;
   }
 
-  deleteAllGlobalVariables(prefix = ''): number {
+  deleteAllGlobalVariables(prefix = ""): number {
     let count = 0;
     for (const k of Object.keys(this.globalVars)) {
       if (!prefix || k.startsWith(prefix)) {
@@ -128,7 +128,7 @@ export class VirtualTerminal {
 
   getGlobalVariableName(index: number): string {
     const names = Object.keys(this.globalVars);
-    return names[index] ?? '';
+    return names[index] ?? "";
   }
 
   setGlobalVariableTemp(name: string, value: number): number {
@@ -151,10 +151,7 @@ export class VirtualTerminal {
       for (const [k, v] of Object.entries(this.globalVars)) {
         if (now - v.time > fourWeeks) delete this.globalVars[k];
       }
-      require('fs').writeFileSync(
-        this.storagePath,
-        JSON.stringify(this.globalVars, null, 2),
-      );
+      require("fs").writeFileSync(this.storagePath, JSON.stringify(this.globalVars, null, 2));
       return Object.keys(this.globalVars).length;
     } catch {
       return 0;
