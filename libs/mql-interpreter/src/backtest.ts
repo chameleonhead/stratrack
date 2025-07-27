@@ -6,6 +6,8 @@ import { Account, AccountMetrics } from './account';
 import { MarketData, ticksToCandles, Candle, Tick } from './market';
 import { VirtualTerminal } from './terminal';
 import { setTerminal } from './builtins/impl/common';
+import fs from 'fs';
+import path from 'path';
 
 export interface BacktestSession {
   broker: Broker;
@@ -41,6 +43,8 @@ export interface BacktestOptions {
   ticks?: Record<string, Tick[]>;
   /** Primary symbol for this backtest */
   symbol?: string;
+  /** Path to a directory mimicking the MT4 data folder */
+  dataDir?: string;
 }
 
 export class BacktestRunner {
@@ -66,7 +70,13 @@ export class BacktestRunner {
     const broker = new Broker();
     const account = new Account(options.initialBalance ?? 0);
     this.session = { broker, account };
-    this.terminal = new VirtualTerminal();
+    let storagePath: string | undefined;
+    if (options.dataDir) {
+      const dir = path.join(options.dataDir, 'MQL4', 'Files');
+      fs.mkdirSync(dir, { recursive: true });
+      storagePath = path.join(dir, 'globals.json');
+    }
+    this.terminal = new VirtualTerminal(storagePath);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? 'TEST';
     const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;

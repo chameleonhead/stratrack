@@ -1,15 +1,44 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { interpret, compile } = require('../dist/index');
+const {
+  interpret,
+  compile,
+  BacktestRunner,
+  parseCsv,
+} = require('../dist/index');
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const file = args.shift();
 if (!file) {
-  console.error('Usage: mql-interpreter <file.mq4>');
+  console.error('Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>]');
   process.exit(1);
 }
 
+let backtestFile;
+let dataDir;
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--backtest') {
+    backtestFile = args[i + 1];
+    i++;
+  } else if (args[i] === '--data-dir') {
+    dataDir = args[i + 1];
+    i++;
+  }
+}
+
 const code = fs.readFileSync(path.resolve(process.cwd(), file), 'utf8');
+
+if (backtestFile) {
+  const csv = fs.readFileSync(path.resolve(process.cwd(), backtestFile), 'utf8');
+  const candles = parseCsv(csv);
+  const runner = new BacktestRunner(code, candles, { dataDir });
+  runner.run();
+  runner.getTerminal().flushGlobalVariables();
+  console.log(JSON.stringify(runner.getRuntime().globalValues, null, 2));
+  process.exit(0);
+}
+
 const compilation = compile(code, {
   fileProvider: (p) => {
     try {
