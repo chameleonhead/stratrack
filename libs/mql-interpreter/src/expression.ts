@@ -50,6 +50,10 @@ export function evaluateExpression(
       consume();
       return { value: t.value };
     }
+    if (t.type === TokenType.Keyword && (t.value === 'true' || t.value === 'false')) {
+      consume();
+      return { value: t.value === 'true' ? 1 : 0 };
+    }
     if (t.type === TokenType.Identifier) {
       consume();
       const name = t.value;
