@@ -14,15 +14,15 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Implement the `ArrayResize` helper for manipulating arrays
 - [x] Provide a command‑line interface for running MQL scripts within Node.js
 - [x] Implement the full set of builtin functions listed at
-  <https://docs.mql4.com/function_indices>
+      <https://docs.mql4.com/function_indices>
 - [x] Distinguish environment dependent builtins and allow overriding them with
-  `registerEnvBuiltins()`
+      `registerEnvBuiltins()`
 - [x] Handle simple `#define` and `#undef` preprocessing directives
 - [x] Capture program properties using `#property`
 - [x] Support conditional compilation directives (#ifdef, #ifndef, #else, #endif)
- - [x] Support parameterized macros in the preprocessor
+- [x] Support parameterized macros in the preprocessor
 - [x] Parse local variable declarations inside functions
- - [x] Execute local variables with `static` lifetime rules
+- [x] Execute local variables with `static` lifetime rules
 - [x] Resolve input and extern variables via execution context
 - [x] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
@@ -51,7 +51,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Integrate statement execution with parsed function bodies so user
       defined functions can run.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
- - [x] Implement object instantiation and inheritance through `instantiate()`
+- [x] Implement object instantiation and inheritance through `instantiate()`
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
@@ -66,6 +66,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Validate builtin calls during compilation. Argument counts are now checked for builtins with signatures; argument types remain unverified.
 - [x] Provide builtin function signatures via metadata to enable parameter checking for common builtins.
 - [x] Expand builtin signature coverage across array, string, math and time helpers.
+- [ ] Ensure `builtinSignatures` includes every builtin and keep it synchronized with implementations.
 - [x] Accumulate compile errors instead of throwing immediately.
   - [x] Introduce a `CompilationError` interface with source location and message.
   - [x] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.
@@ -78,37 +79,37 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Support feeding historical candles and ticks to mimic real terminal behavior
 - [x] Load time series from various formats and replay them to the runtime
 - [x] Generate analysis reports using the same pipeline as live executions
- - [x] Maintain global variables `Bid` and `Ask` reflecting the current tick price
- - [x] Introduce a `Broker` component responsible for order execution and trade history
+- [x] Maintain global variables `Bid` and `Ask` reflecting the current tick price
+- [x] Introduce a `Broker` component responsible for order execution and trade history
 - [x] Update `OrderSend` and related builtins to route through the broker and record fills
 - [x] Expose executed orders and account metrics for analysis reports
 - [x] Allow supplying raw tick data to generate candles automatically
 - [x] Support limit orders and automatically trigger stop loss / take profit while advancing time
 
 - [x] Integrate predefined variables from <https://docs.mql4.com/predefined>
- - [x] Provide runtime constants `_Digits`, `_Point`, `_LastError`, `_Period`,
-       `_RandomSeed`, `_StopFlag`, `_Symbol` and `_UninitReason`
- - [x] Expose price series arrays `Open`, `High`, `Low`, `Close`, `Time` and
-       `Volume` as well as `Bid`, `Ask`, `Bars`, `Digits` and `Point`
- - [x] Keep `_LastError` synchronized and implement the `ResetLastError` builtin
- - [x] Update values when running with `BacktestRunner` or a real MT4 runtime
+- [x] Provide runtime constants `_Digits`, `_Point`, `_LastError`, `_Period`,
+      `_RandomSeed`, `_StopFlag`, `_Symbol` and `_UninitReason`
+- [x] Expose price series arrays `Open`, `High`, `Low`, `Close`, `Time` and
+      `Volume` as well as `Bid`, `Ask`, `Bars`, `Digits` and `Point`
+- [x] Keep `_LastError` synchronized and implement the `ResetLastError` builtin
+- [x] Update values when running with `BacktestRunner` or a real MT4 runtime
 
 - [x] Implement the common functions listed at <https://docs.mql4.com/common>
- - [x] Add builtins such as `Alert`, `Comment`, `GetTickCount`, `Sleep`,
-       `PrintFormat`, `WebRequest` and others
- - [x] Provide global variable helpers like `GlobalVariableSet` and friends
- - [x] Distinguish platform dependent logic using `registerEnvBuiltins`
- - [x] Create tests covering predefined variables and new builtins
+- [x] Add builtins such as `Alert`, `Comment`, `GetTickCount`, `Sleep`,
+      `PrintFormat`, `WebRequest` and others
+- [x] Provide global variable helpers like `GlobalVariableSet` and friends
+- [x] Distinguish platform dependent logic using `registerEnvBuiltins`
+- [x] Create tests covering predefined variables and new builtins
 - [x] Implement array utilities from <https://docs.mql4.com/array>
- - [x] Provide builtins for `ArrayCopy`, `ArrayResize`, `ArraySetAsSeries` and others
+- [x] Provide builtins for `ArrayCopy`, `ArrayResize`, `ArraySetAsSeries` and others
 - [x] Implement conversion helpers from <https://docs.mql4.com/convert>
- - [x] Provide builtins for `CharToString`, `StringToTime`, `NormalizeDouble` and similar
+- [x] Provide builtins for `CharToString`, `StringToTime`, `NormalizeDouble` and similar
 - [x] Implement math functions from <https://docs.mql4.com/math>
- - [x] Provide builtins for `MathAbs`, `MathPow`, `MathSqrt` and related operations
+- [x] Provide builtins for `MathAbs`, `MathPow`, `MathSqrt` and related operations
 - [x] Implement string manipulation from <https://docs.mql4.com/strings>
- - [x] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
+- [x] Provide builtins for `StringLen`, `StringSubstr`, `StringTrimRight`, `StringTrimLeft`
 - [x] Implement date and time functions from <https://docs.mql4.com/dateandtime>
- - [x] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others
+- [x] Provide builtins for `Day`, `Hour`, `TimeCurrent`, `TimeToStruct` and others
 
 # Account information
 
@@ -140,7 +141,6 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - [x] Support `SeriesInfoInteger` and `RefreshRates` to manage historical data
         state during backtests.
 
-
 # Trading functions
 
 - [x] Implement trading helpers from <https://docs.mql4.com/trading>.
@@ -167,12 +167,12 @@ The following tasks outline future work required to develop a functional MQL4/5 
 # Terminal global variables
 
 - [x] Provide builtins like `GlobalVariableSet`, `GlobalVariableGet`,
-  `GlobalVariableCheck`, `GlobalVariableDel`, `GlobalVariableTime`,
-  `GlobalVariableName`, `GlobalVariablesDeleteAll`, `GlobalVariablesTotal`,
-  `GlobalVariableTemp`, `GlobalVariableSetOnCondition` and
-  `GlobalVariablesFlush` as described at <https://docs.mql4.com/globals>.
+      `GlobalVariableCheck`, `GlobalVariableDel`, `GlobalVariableTime`,
+      `GlobalVariableName`, `GlobalVariablesDeleteAll`, `GlobalVariablesTotal`,
+      `GlobalVariableTemp`, `GlobalVariableSetOnCondition` and
+      `GlobalVariablesFlush` as described at <https://docs.mql4.com/globals>.
 - [x] Maintain variables across sessions and expire them four weeks after the
-  last access.
+      last access.
 - [x] Persist global variables on disk so `GlobalVariablesFlush` can save them.
 
 # Program structure and virtual terminal
