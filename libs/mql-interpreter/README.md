@@ -41,11 +41,12 @@ invoke `callFunction()` directly. Parsed function bodies run via
 For example:
 
 ```ts
-const { runtime } = compile('input int Period=10; void start(){ Print(Period); }');
+const { runtime } = compile("input int Period=10; void start(){ Print(Period); }");
 // Prompt user and set value
 runtime.globalValues.Period = 5;
-callFunction(runtime, 'start');
+callFunction(runtime, "start");
 ```
+
 It also provides a simple `cast()` helper for converting primitive values
 between built-in types as described in the MQL documentation. The lexer
 recognizes many control‑flow keywords from MQL/C++, such as `for`, `while`,
@@ -62,7 +63,7 @@ they do not appear in the token stream. Single line comments may appear
 inside block comments, while `/*` inside a block does not start a nested
 comment. Unterminated comments cause lexing to fail. Identifiers may contain
 letters, digits and underscores and must not exceed 63 characters; longer
-identifiers will cause lexing to fail.  In addition, reserved words such as
+identifiers will cause lexing to fail. In addition, reserved words such as
 `for` or `typename` are recognized as keywords and cannot be used as
 identifiers.
 
@@ -70,14 +71,14 @@ Utility helpers include `ArrayResize()` to change the length of dynamic
 arrays and a comprehensive set of builtin function stubs. Besides
 `Print`, `OrderSend` and indicator helpers like `iMA`, `iMACD` and `iRSI`, all functions listed at
 <https://docs.mql4.com/function_indices> are available as no-ops and can
-be accessed through `getBuiltin()`.  A few helpers such as `ArrayResize`,
+be accessed through `getBuiltin()`. A few helpers such as `ArrayResize`,
 `ArraySort`, `GetTickCount64` and `PlaySound` have working implementations
 alongside string, math and global variable helpers such as `GlobalVariableSet`.
 
 Builtins fall into two categories. **Core** builtins are environment
 independent and always behave the same (e.g. `ArrayResize` or `Print`).
 Others like `iMA`, `iMACD`, `iRSI` or `AccountBalance` depend on trading platform data and
-default to no-ops.  Host applications may provide real implementations by
+default to no-ops. Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
 
 Global variable helpers described at
@@ -91,8 +92,8 @@ To create an instance of a parsed class, use `instantiate()` with the runtime
 and class name. Inherited fields are included in the resulting object:
 
 ```ts
-const runtime = interpret('class P{int a;} class C:P{double b;}');
-const obj = instantiate(runtime, 'C');
+const runtime = interpret("class P{int a;} class C:P{double b;}");
+const obj = instantiate(runtime, "C");
 // obj has properties a and b
 ```
 
@@ -113,8 +114,8 @@ and also supports the `delete` operator to free a variable. These allow small
 object constructions and destructions inside expressions:
 
 ```ts
-const obj = evaluateExpression('new C', {}, runtime);
-evaluateExpression('delete obj', { obj }, runtime);
+const obj = evaluateExpression("new C", {}, runtime);
+evaluateExpression("delete obj", { obj }, runtime);
 ```
 
 A companion helper `executeStatements()` can interpret a small subset of MQL
@@ -124,7 +125,7 @@ and `continue`. It executes statements against a plain object environment using
 
 ```ts
 const env: any = { sum: 0, i: 0 };
-executeStatements('for(i=0;i<3;i++){ if(i==1) continue; sum+=i; }', env);
+executeStatements("for(i=0;i<3;i++){ if(i==1) continue; sum+=i; }", env);
 // env.sum === 3
 ```
 
@@ -162,9 +163,9 @@ preprocessing, so you can enable or disable sections based on defined macros.
 to collect program properties before parsing. When using `interpret()`, the
 collected properties are returned in `runtime.properties`.
 
-The preprocessor also supports a simplified `#import "file"` directive.  Files
+The preprocessor also supports a simplified `#import "file"` directive. Files
 must be provided via a `fileProvider` callback passed to `preprocess` or
-`interpret`.  This keeps the interpreter free of Node.js dependencies so the
+`interpret`. This keeps the interpreter free of Node.js dependencies so the
 same logic works in the browser.
 
 ```ts
@@ -263,13 +264,12 @@ const candles = ticksToCandles(ticks, 60);
 ```
 
 ```ts
-import { BacktestRunner } from 'mql-interpreter';
+import { BacktestRunner } from "mql-interpreter";
 const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
-const runner = new BacktestRunner('int count; void OnTick(){count++;}', candles);
+const runner = new BacktestRunner("int count; void OnTick(){count++;}", candles);
 runner.run();
 console.log(runner.getRuntime().globalValues.count); // 1
 ```
-
 
 ## Program structure and virtual terminal
 

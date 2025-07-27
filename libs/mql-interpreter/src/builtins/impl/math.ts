@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from '../types';
+import type { BuiltinFunction } from "../types";
 
 export const MathAbs: BuiltinFunction = (v: number) => Math.abs(v);
 export const MathArccos: BuiltinFunction = (v: number) => Math.acos(v);

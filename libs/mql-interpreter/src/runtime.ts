@@ -16,7 +16,7 @@ export interface RuntimeClassMethod {
   name: string;
   returnType?: string;
   parameters: RuntimeFunctionParameter[];
-  visibility: 'public' | 'private' | 'protected';
+  visibility: "public" | "private" | "protected";
   static?: boolean;
   virtual?: boolean;
   pure?: boolean;
@@ -26,9 +26,35 @@ export interface RuntimeClassMethod {
 
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
-  classes: Record<string, { base?: string; abstract?: boolean; templateParams?: string[]; fields: Record<string, RuntimeClassField>; methods: RuntimeClassMethod[] }>;
-  functions: Record<string, { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string; templateParams?: string[] }[]>;
-  variables: Record<string, { type: string; storage?: 'static' | 'input' | 'extern'; dimensions: Array<number | null>; initialValue?: string }>;
+  classes: Record<
+    string,
+    {
+      base?: string;
+      abstract?: boolean;
+      templateParams?: string[];
+      fields: Record<string, RuntimeClassField>;
+      methods: RuntimeClassMethod[];
+    }
+  >;
+  functions: Record<
+    string,
+    {
+      returnType: string;
+      parameters: RuntimeFunctionParameter[];
+      locals: VariableDeclaration[];
+      body?: string;
+      templateParams?: string[];
+    }[]
+  >;
+  variables: Record<
+    string,
+    {
+      type: string;
+      storage?: "static" | "input" | "extern";
+      dimensions: Array<number | null>;
+      initialValue?: string;
+    }
+  >;
   properties: Record<string, string[]>;
   /** Stored values of static local variables keyed by function name */
   staticLocals: Record<string, Record<string, any>>;
@@ -38,14 +64,25 @@ export interface Runtime {
   context?: ExecutionContext;
 }
 
-import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from './parser';
-import { getBuiltin } from './builtins';
-import { cast, PrimitiveType } from './casting';
-import { executeStatements } from './statements';
-import { lex, Token, TokenType } from './lexer';
+import { Declaration, ClassDeclaration, FunctionDeclaration, VariableDeclaration } from "./parser";
+import { getBuiltin } from "./builtins";
+import { cast, PrimitiveType } from "./casting";
+import { executeStatements } from "./statements";
+import { lex, Token, TokenType } from "./lexer";
 
 const numericTypes = new Set([
-  'char','uchar','short','ushort','int','uint','long','ulong','float','double','color','datetime'
+  "char",
+  "uchar",
+  "short",
+  "ushort",
+  "int",
+  "uint",
+  "long",
+  "ulong",
+  "float",
+  "double",
+  "color",
+  "datetime",
 ]);
 
 function replaceEnumConstants(source: string, enums: Record<string, number>): string {
@@ -54,24 +91,32 @@ function replaceEnumConstants(source: string, enums: Record<string, number>): st
   const out: Token[] = [];
   for (const t of tokens) {
     if (t.type === TokenType.Identifier && enums[t.value] !== undefined) {
-      out.push({ type: TokenType.Number, value: String(enums[t.value]), line: t.line, column: t.column });
+      out.push({
+        type: TokenType.Number,
+        value: String(enums[t.value]),
+        line: t.line,
+        column: t.column,
+      });
     } else {
       out.push(t);
     }
   }
-  return out.map(tok => tok.value).join(' ');
+  return out.map((tok) => tok.value).join(" ");
 }
 
-function resolveValue(value: string | undefined, enums: Record<string, number>): string | undefined {
+function resolveValue(
+  value: string | undefined,
+  enums: Record<string, number>
+): string | undefined {
   if (value === undefined) return value;
   if (enums[value] !== undefined) return String(enums[value]);
   return value;
 }
 
 function checkPrimitive(value: any, type: string): boolean {
-  if (numericTypes.has(type)) return typeof value === 'number';
-  if (type === 'bool') return typeof value === 'boolean' || typeof value === 'number';
-  if (type === 'string') return typeof value === 'string';
+  if (numericTypes.has(type)) return typeof value === "number";
+  if (type === "bool") return typeof value === "boolean" || typeof value === "number";
+  if (type === "string") return typeof value === "string";
   return true;
 }
 
@@ -105,7 +150,7 @@ export function execute(
       _Period: 0,
       _RandomSeed: 0,
       _StopFlag: 0,
-      _Symbol: '',
+      _Symbol: "",
       _UninitReason: 0,
       Bid: 0,
       Ask: 0,
@@ -124,7 +169,7 @@ export function execute(
   // Extract entry point and arguments. If provided, the entry point will be
   // invoked after the runtime is populated.
   const ctx =
-    typeof entryPointOrContext === 'string'
+    typeof entryPointOrContext === "string"
       ? { entryPoint: entryPointOrContext, args: [] }
       : entryPointOrContext || { entryPoint: undefined, args: [] };
   const entryPoint = ctx.entryPoint;
@@ -135,7 +180,7 @@ export function execute(
   const enumMembers: Record<string, number> = {};
 
   for (const decl of declarations) {
-    if (decl.type === 'EnumDeclaration') {
+    if (decl.type === "EnumDeclaration") {
       const members: Record<string, number> = {};
       let current = 0;
       for (const member of decl.members) {
@@ -151,9 +196,9 @@ export function execute(
   }
 
   for (const decl of declarations) {
-    if (decl.type === 'EnumDeclaration') {
+    if (decl.type === "EnumDeclaration") {
       continue;
-    } else if (decl.type === 'ClassDeclaration') {
+    } else if (decl.type === "ClassDeclaration") {
       const classDecl = decl as ClassDeclaration;
       const fields: Record<string, RuntimeClassField> = {};
       for (const f of classDecl.fields) {
@@ -177,10 +222,16 @@ export function execute(
           ...l,
           initialValue: resolveValue(l.initialValue, enumMembers),
         })),
-        body: replaceEnumConstants(m.body ?? '', enumMembers),
+        body: replaceEnumConstants(m.body ?? "", enumMembers),
       }));
-      runtime.classes[decl.name] = { base: classDecl.base, abstract: classDecl.abstract, templateParams: classDecl.templateParams, fields, methods };
-    } else if (decl.type === 'FunctionDeclaration') {
+      runtime.classes[decl.name] = {
+        base: classDecl.base,
+        abstract: classDecl.abstract,
+        templateParams: classDecl.templateParams,
+        fields,
+        methods,
+      };
+    } else if (decl.type === "FunctionDeclaration") {
       const fn = decl as FunctionDeclaration;
       const params = fn.parameters.map((p) => ({
         type: p.paramType,
@@ -195,13 +246,16 @@ export function execute(
       runtime.functions[fn.name].push({
         returnType: fn.returnType,
         parameters: params,
-        locals: fn.locals.map(l => ({ ...l, initialValue: resolveValue(l.initialValue, enumMembers) })),
-        body: replaceEnumConstants(fn.body ?? '', enumMembers),
+        locals: fn.locals.map((l) => ({
+          ...l,
+          initialValue: resolveValue(l.initialValue, enumMembers),
+        })),
+        body: replaceEnumConstants(fn.body ?? "", enumMembers),
         templateParams: fn.templateParams,
       });
-    } else if (decl.type === 'VariableDeclaration') {
+    } else if (decl.type === "VariableDeclaration") {
       const v = decl as VariableDeclaration;
-      if (runtime.variables[v.name] && v.storage === 'extern') {
+      if (runtime.variables[v.name] && v.storage === "extern") {
         // don't overwrite existing definition
         continue;
       }
@@ -213,7 +267,7 @@ export function execute(
         initialValue: initValStr,
       };
       let val: any = undefined;
-      if (v.storage === 'input') {
+      if (v.storage === "input") {
         if (inputVals[v.name] !== undefined) {
           val = inputVals[v.name];
         } else if (initValStr !== undefined) {
@@ -223,7 +277,7 @@ export function execute(
             val = initValStr;
           }
         }
-      } else if (v.storage === 'extern') {
+      } else if (v.storage === "extern") {
         if (externVals[v.name] !== undefined) {
           val = externVals[v.name];
         } else if (initValStr !== undefined) {
@@ -253,8 +307,6 @@ export function execute(
     }
   }
 
-
-
   if (entryPoint) {
     callFunction(runtime, entryPoint, entryArgs);
   }
@@ -270,7 +322,14 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     throw new Error(`Function ${name} not found`);
   }
 
-  let decl: { returnType: string; parameters: RuntimeFunctionParameter[]; locals: VariableDeclaration[]; body?: string } | undefined;
+  let decl:
+    | {
+        returnType: string;
+        parameters: RuntimeFunctionParameter[];
+        locals: VariableDeclaration[];
+        body?: string;
+      }
+    | undefined;
   if (overloads && overloads.length) {
     let required = 0;
     for (const candidate of overloads) {
@@ -284,7 +343,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
       // initialize static local variables if needed
       if (!runtime.staticLocals[name]) runtime.staticLocals[name] = {};
       for (const local of decl.locals) {
-        if (local.storage === 'static' && runtime.staticLocals[name][local.name] === undefined) {
+        if (local.storage === "static" && runtime.staticLocals[name][local.name] === undefined) {
           let val: any = undefined;
           if (local.initialValue !== undefined) {
             try {
@@ -306,7 +365,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
         }
       }
       if (args.length > decl.parameters.length) {
-        throw new Error('Too many arguments');
+        throw new Error("Too many arguments");
       }
       if (args.length < required) {
         throw new Error(`Missing argument ${decl.parameters[args.length].name}`);
@@ -314,16 +373,18 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
       args = finalArgs.slice(0, decl.parameters.length);
       for (let i = 0; i < decl.parameters.length; i++) {
         if (decl.parameters[i].byRef) {
-          if (typeof args[i] !== 'object' || args[i] === null) {
+          if (typeof args[i] !== "object" || args[i] === null) {
             throw new Error(`Argument ${decl.parameters[i].name} must be passed by reference`);
           }
         }
         if (!decl.parameters[i].byRef && !checkPrimitive(args[i], decl.parameters[i].type)) {
-          throw new Error(`Argument ${decl.parameters[i].name} expected ${decl.parameters[i].type}`);
+          throw new Error(
+            `Argument ${decl.parameters[i].name} expected ${decl.parameters[i].type}`
+          );
         }
       }
     } else if (!builtin) {
-      throw new Error('Too many arguments');
+      throw new Error("Too many arguments");
     }
   }
 
@@ -350,7 +411,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     }
     for (const local of decl.locals) {
       let val: any = undefined;
-      if (local.storage === 'static') {
+      if (local.storage === "static") {
         val = runtime.staticLocals[name][local.name];
       } else if (local.initialValue !== undefined) {
         try {
@@ -363,7 +424,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     }
     const res = executeStatements(decl.body, env, runtime);
     for (const local of decl.locals) {
-      if (local.storage === 'static') {
+      if (local.storage === "static") {
         runtime.staticLocals[name][local.name] = env[local.name];
       }
     }
@@ -403,10 +464,7 @@ export function callMethod(
         runtime.staticLocals[`${className}::${methodName}`] = {};
       const key = `${className}::${methodName}`;
       for (const local of method.locals) {
-        if (
-          local.storage === 'static' &&
-          runtime.staticLocals[key][local.name] === undefined
-        ) {
+        if (local.storage === "static" && runtime.staticLocals[key][local.name] === undefined) {
           let val: any = undefined;
           if (local.initialValue !== undefined) {
             try {
@@ -431,7 +489,7 @@ export function callMethod(
           configurable: true,
         });
       }
-      Object.defineProperty(env, 'this', {
+      Object.defineProperty(env, "this", {
         value: obj,
         writable: false,
         enumerable: true,
@@ -448,11 +506,15 @@ export function callMethod(
         });
       }
       for (let i = 0; i < method.parameters.length; i++) {
-        Object.defineProperty(env, method.parameters[i].name, { value: args[i], writable: true, enumerable: true });
+        Object.defineProperty(env, method.parameters[i].name, {
+          value: args[i],
+          writable: true,
+          enumerable: true,
+        });
       }
       for (const local of method.locals) {
         let val: any = undefined;
-        if (local.storage === 'static') {
+        if (local.storage === "static") {
           val = runtime.staticLocals[key][local.name];
         } else if (local.initialValue !== undefined) {
           try {
@@ -465,7 +527,7 @@ export function callMethod(
       }
       const res = executeStatements(method.body!, env, runtime);
       for (const local of method.locals) {
-        if (local.storage === 'static') {
+        if (local.storage === "static") {
           runtime.staticLocals[key][local.name] = env[local.name];
         }
       }

@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from '../types';
+import type { BuiltinFunction } from "../types";
 
 export const Print: BuiltinFunction = (...args: any[]) => {
   console.log(...args);

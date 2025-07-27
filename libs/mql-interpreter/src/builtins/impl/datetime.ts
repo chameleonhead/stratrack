@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from '../types';
+import type { BuiltinFunction } from "../types";
 
 const toDate = (t?: number) => (t === undefined ? new Date() : new Date(t * 1000));
 
@@ -18,18 +18,26 @@ export const Year: BuiltinFunction = (t?: number) => toDate(t).getUTCFullYear();
 
 export const TimeCurrent: BuiltinFunction = () => Math.floor(Date.now() / 1000);
 export const TimeLocal: BuiltinFunction = () => TimeCurrent() + TimeGMTOffset();
-export const TimeGMT: BuiltinFunction = () => TimeDaylightSavings() === 0 ? TimeCurrent() : TimeCurrent() - 3600;
+export const TimeGMT: BuiltinFunction = () =>
+  TimeDaylightSavings() === 0 ? TimeCurrent() : TimeCurrent() - 3600;
 export const TimeDaylightSavings: BuiltinFunction = () => {
   // Get current time in UTC
-  const utc = new Date().toLocaleString('en-US', { timeZone: "UTC", timeStyle: 'short', hourCycle: 'h23' })
-  const [utchours] = utc.split(':').map(Number);
+  const utc = new Date().toLocaleString("en-US", {
+    timeZone: "UTC",
+    timeStyle: "short",
+    hourCycle: "h23",
+  });
+  const [utchours] = utc.split(":").map(Number);
   // Get current time in GMT (London timezone)
-  const gmt = new Date().toLocaleString('en-US', { timeZone: "Europe/London", timeStyle: 'short', hourCycle: 'h23' })
-  const [gmthours] = gmt.split(':').map(Number);
+  const gmt = new Date().toLocaleString("en-US", {
+    timeZone: "Europe/London",
+    timeStyle: "short",
+    hourCycle: "h23",
+  });
+  const [gmthours] = gmt.split(":").map(Number);
   return utchours === gmthours ? 0 : 1;
 };
-export const TimeGMTOffset: BuiltinFunction = () =>
-  -new Date().getTimezoneOffset() * 60;
+export const TimeGMTOffset: BuiltinFunction = () => -new Date().getTimezoneOffset() * 60;
 
 export const TimeToStruct: BuiltinFunction = (t: number) => {
   const d = new Date(t * 1000);
@@ -41,8 +49,7 @@ export const TimeToStruct: BuiltinFunction = (t: number) => {
     min: d.getMinutes(),
     sec: d.getSeconds(),
     day_of_week: d.getDay(),
-    day_of_year:
-      Math.floor((d.getTime() - Date.UTC(d.getFullYear(), 0, 1)) / 86400000) + 1,
+    day_of_year: Math.floor((d.getTime() - Date.UTC(d.getFullYear(), 0, 1)) / 86400000) + 1,
   };
 };
 
@@ -54,14 +61,7 @@ export const StructToTime: BuiltinFunction = (s: {
   min?: number;
   sec?: number;
 }) => {
-  const date = new Date(
-    s.year,
-    (s.mon || 1) - 1,
-    s.day,
-    s.hour || 0,
-    s.min || 0,
-    s.sec || 0
-  );
+  const date = new Date(s.year, (s.mon || 1) - 1, s.day, s.hour || 0, s.min || 0, s.sec || 0);
   return Math.floor(date.getTime() / 1000);
 };
 

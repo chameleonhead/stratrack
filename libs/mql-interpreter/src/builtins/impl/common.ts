@@ -1,6 +1,6 @@
-import type { BuiltinFunction } from '../types';
-import { formatString } from './format';
-import type { VirtualTerminal } from '../../terminal';
+import type { BuiltinFunction } from "../types";
+import { formatString } from "./format";
+import type { VirtualTerminal } from "../../terminal";
 
 let terminal: VirtualTerminal | null = null;
 export function setTerminal(t: VirtualTerminal | null): void {
@@ -54,10 +54,7 @@ export const DebugBreak: BuiltinFunction = () => 0;
 export const MessageBox: BuiltinFunction = (_text: string, _caption?: string, _flags?: number) => 1;
 export const GetTickCount64: BuiltinFunction = () => BigInt(Date.now());
 export const GetMicrosecondCount: BuiltinFunction = () => {
-  const t =
-    typeof performance !== 'undefined'
-      ? performance.now()
-      : Date.now();
+  const t = typeof performance !== "undefined" ? performance.now() : Date.now();
   return Math.floor(t * 1000);
 };
 
@@ -65,20 +62,17 @@ export const WebRequest: BuiltinFunction = (
   _method: string,
   _url: string,
   _headers: string[] = [],
-  _data: string = '',
+  _data: string = "",
   _timeout: number = 5000,
-  result?: { value: string },
+  result?: { value: string }
 ) => {
-  if (result) result.value = '';
+  if (result) result.value = "";
   return -1;
 };
 
 const globalVars: Record<string, { value: number; time: number }> = {};
 
-export const GlobalVariableSet: BuiltinFunction = (
-  name: string,
-  value: number,
-) => {
+export const GlobalVariableSet: BuiltinFunction = (name: string, value: number) => {
   if (terminal) return terminal.setGlobalVariable(name, value);
   globalVars[name] = { value, time: Math.floor(Date.now() / 1000) };
   return value;
@@ -106,7 +100,7 @@ export const GlobalVariableTime: BuiltinFunction = (name: string) => {
   return globalVars[name]?.time ?? 0;
 };
 
-export const GlobalVariablesDeleteAll: BuiltinFunction = (prefix = '') => {
+export const GlobalVariablesDeleteAll: BuiltinFunction = (prefix = "") => {
   if (terminal) return terminal.deleteAllGlobalVariables(prefix);
   let count = 0;
   for (const k of Object.keys(globalVars)) {
@@ -126,18 +120,16 @@ export const GlobalVariablesTotal: BuiltinFunction = () => {
 export const GlobalVariableName: BuiltinFunction = (index: number) => {
   if (terminal) return terminal.getGlobalVariableName(index);
   const names = Object.keys(globalVars);
-  return names[index] ?? '';
+  return names[index] ?? "";
 };
 
-export const GlobalVariableTemp: BuiltinFunction = (
-  name: string,
-  value: number,
-) => GlobalVariableSet(name, value);
+export const GlobalVariableTemp: BuiltinFunction = (name: string, value: number) =>
+  GlobalVariableSet(name, value);
 
 export const GlobalVariableSetOnCondition: BuiltinFunction = (
   name: string,
   value: number,
-  check: number,
+  check: number
 ) => {
   if (terminal) return terminal.setGlobalVariableOnCondition(name, value, check);
   if (!globalVars[name] || globalVars[name].value === check) {
@@ -152,9 +144,9 @@ export const GlobalVariablesFlush: BuiltinFunction = () => {
   return 0;
 };
 
-export const TerminalCompany: BuiltinFunction = () => 'MetaQuotes Software Corp.';
-export const TerminalName: BuiltinFunction = () => 'MetaTrader';
-export const TerminalPath: BuiltinFunction = () => '';
+export const TerminalCompany: BuiltinFunction = () => "MetaQuotes Software Corp.";
+export const TerminalName: BuiltinFunction = () => "MetaTrader";
+export const TerminalPath: BuiltinFunction = () => "";
 export const IsTesting: BuiltinFunction = () => false;
 export const IsOptimization: BuiltinFunction = () => false;
 export const IsVisualMode: BuiltinFunction = () => false;

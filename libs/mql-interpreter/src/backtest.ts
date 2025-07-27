@@ -1,11 +1,11 @@
-import { compile, callFunction, Runtime, registerEnvBuiltins } from './index';
-import type { PreprocessOptions } from './preprocess';
-import type { BuiltinFunction } from './builtins';
-import { Broker, Order } from './broker';
-import { Account, AccountMetrics } from './account';
-import { MarketData, ticksToCandles, Candle, Tick } from './market';
-import { VirtualTerminal } from './terminal';
-import { setTerminal } from './builtins/impl/common';
+import { compile, callFunction, Runtime, registerEnvBuiltins } from "./index";
+import type { PreprocessOptions } from "./preprocess";
+import type { BuiltinFunction } from "./builtins";
+import { Broker, Order } from "./broker";
+import { Account, AccountMetrics } from "./account";
+import { MarketData, ticksToCandles, Candle, Tick } from "./market";
+import { VirtualTerminal } from "./terminal";
+import { setTerminal } from "./builtins/impl/common";
 
 export interface BacktestSession {
   broker: Broker;
@@ -19,7 +19,7 @@ export function parseCsv(data: string): Candle[] {
   const lines = data.split(/\r?\n/).filter((l: string) => l.trim().length);
   const candles: Candle[] = [];
   for (const line of lines) {
-    const [time, open, high, low, close, volume] = line.split(',');
+    const [time, open, high, low, close, volume] = line.split(",");
     const candle: Candle = {
       time: Number(time),
       open: Number(open),
@@ -65,11 +65,11 @@ export class BacktestRunner {
   constructor(
     private source: string,
     private candles: Candle[],
-    private options: BacktestOptions = {},
+    private options: BacktestOptions = {}
   ) {
     const compilation = compile(source, options.preprocessOptions);
     if (compilation.errors.length) {
-      const msg = compilation.errors.map((e) => `${e.line}:${e.column} ${e.message}`).join('\n');
+      const msg = compilation.errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = compilation.runtime;
@@ -80,16 +80,19 @@ export class BacktestRunner {
     if (options.storagePath) {
       storagePath = options.storagePath;
     } else if (options.dataDir) {
-      const base = options.dataDir.replace(/[\\/]+$/, '');
-      storagePath = base + '/MQL4/Files/globals.json';
+      const base = options.dataDir.replace(/[\\/]+$/, "");
+      storagePath = base + "/MQL4/Files/globals.json";
     }
     this.terminal = new VirtualTerminal(storagePath);
     setTerminal(this.terminal);
-    const symbol = options.symbol ?? 'TEST';
+    const symbol = options.symbol ?? "TEST";
     const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;
-    const baseTicks = candles.map(c => ({ time: c.time, bid: c.close, ask: c.close }));
+    const baseTicks = candles.map((c) => ({ time: c.time, bid: c.close, ask: c.close }));
     const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
-    const candleData = { [symbol]: { [period]: candles } } as Record<string, Record<number, Candle[]>>;
+    const candleData = { [symbol]: { [period]: candles } } as Record<
+      string,
+      Record<number, Candle[]>
+    >;
     this.market = new MarketData(ticks, candleData);
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
@@ -98,16 +101,16 @@ export class BacktestRunner {
 
   private initializeGlobals(): void {
     const rt = this.runtime.globalValues;
-    rt.Open = this.candles.map(c => c.open);
-    rt.High = this.candles.map(c => c.high);
-    rt.Low = this.candles.map(c => c.low);
-    rt.Close = this.candles.map(c => c.close);
-    rt.Time = this.candles.map(c => c.time);
-    rt.Volume = this.candles.map(c => c.volume ?? 0);
+    rt.Open = this.candles.map((c) => c.open);
+    rt.High = this.candles.map((c) => c.high);
+    rt.Low = this.candles.map((c) => c.low);
+    rt.Close = this.candles.map((c) => c.close);
+    rt.Time = this.candles.map((c) => c.time);
+    rt.Volume = this.candles.map((c) => c.volume ?? 0);
     rt.Bars = this.candles.length;
     rt.Digits = rt._Digits = 5;
     rt.Point = rt._Point = Math.pow(10, -5);
-    const symbol = this.options.symbol ?? 'TEST';
+    const symbol = this.options.symbol ?? "TEST";
     const tick = this.market.getTick(symbol, this.candles[0]?.time ?? 0);
     rt.Bid = tick?.bid ?? 0;
     rt.Ask = tick?.ask ?? 0;
@@ -122,36 +125,44 @@ export class BacktestRunner {
       this.session.account.getMetrics(
         this.session.broker,
         this.runtime.globalValues.Bid,
-        this.runtime.globalValues.Ask,
+        this.runtime.globalValues.Ask
       );
 
-    const currentTime = () =>
-      this.candles[Math.min(this.index, this.candles.length - 1)].time;
+    const currentTime = () => this.candles[Math.min(this.index, this.candles.length - 1)].time;
 
     const candlesFor = (sym: any, tf: any): Candle[] => {
-      const symbol = sym && String(sym).length ? String(sym) : (this.options.symbol ?? 'TEST');
+      const symbol = sym && String(sym).length ? String(sym) : (this.options.symbol ?? "TEST");
       const timeframe = Number(tf) || this.runtime.globalValues._Period;
       return this.market.getCandles(symbol, timeframe);
     };
 
     const findIndex = (candles: Candle[], time: number): number => {
-      let lo = 0, hi = candles.length - 1;
+      let lo = 0,
+        hi = candles.length - 1;
       while (lo <= hi) {
         const mid = (lo + hi) >> 1;
-        if (candles[mid].time <= time) lo = mid + 1; else hi = mid - 1;
+        if (candles[mid].time <= time) lo = mid + 1;
+        else hi = mid - 1;
       }
       return hi;
     };
 
     const priceVal = (c: Candle, applied: number): number => {
       switch (applied) {
-        case 1: return c.open;
-        case 2: return c.high;
-        case 3: return c.low;
-        case 4: return (c.high + c.low) / 2;
-        case 5: return (c.high + c.low + c.close) / 3;
-        case 6: return (c.high + c.low + 2 * c.close) / 4;
-        default: return c.close;
+        case 1:
+          return c.open;
+        case 2:
+          return c.high;
+        case 3:
+          return c.low;
+        case 4:
+          return (c.high + c.low) / 2;
+        case 5:
+          return (c.high + c.low + c.close) / 3;
+        case 6:
+          return (c.high + c.low + 2 * c.close) / 4;
+        default:
+          return c.close;
       }
     };
 
@@ -244,14 +255,22 @@ export class BacktestRunner {
       },
       CopyTickVolume: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
         const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].volume ?? 0;
+        for (let i = 0; i < count && start + i < arr.length; i++)
+          dst[i] = arr[start + i].volume ?? 0;
         return Math.min(count, arr.length - start);
       },
       CopyRates: (sym: any, tf: any, start: number, count: number, dst: any[]) => {
         const arr = candlesFor(sym, tf);
         for (let i = 0; i < count && start + i < arr.length; i++) {
           const c = arr[start + i];
-          dst[i] = { open: c.open, high: c.high, low: c.low, close: c.close, tick_volume: c.volume ?? 0, time: c.time };
+          dst[i] = {
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+            tick_volume: c.volume ?? 0,
+            time: c.time,
+          };
         }
         return Math.min(count, arr.length - start);
       },
@@ -265,7 +284,15 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
-      iMA: (sym: any, tf: any, period: number, maShift: number, _maMethod: number, applied: number, shift: number) => {
+      iMA: (
+        sym: any,
+        tf: any,
+        period: number,
+        maShift: number,
+        _maMethod: number,
+        applied: number,
+        shift: number
+      ) => {
         const arr = candlesFor(sym, tf);
         const idx = findIndex(arr, currentTime()) - (shift ?? 0) - maShift;
         if (idx < period - 1) return 0;
@@ -274,7 +301,16 @@ export class BacktestRunner {
         const sum = slice.reduce((s, c) => s + priceVal(c, applied), 0);
         return sum / slice.length;
       },
-      iMACD: (sym: any, tf: any, fast: number, slow: number, signal: number, applied: number, mode: number, shift: number) => {
+      iMACD: (
+        sym: any,
+        tf: any,
+        fast: number,
+        slow: number,
+        signal: number,
+        applied: number,
+        mode: number,
+        shift: number
+      ) => {
         const arr = candlesFor(sym, tf);
         const idx = findIndex(arr, currentTime()) - (shift ?? 0);
         if (idx < Math.max(fast, slow)) return 0;
@@ -307,7 +343,8 @@ export class BacktestRunner {
           const cur = priceVal(arr[i], applied);
           const prev = priceVal(arr[i - 1], applied);
           const diff = cur - prev;
-          if (diff > 0) gains += diff; else losses -= diff;
+          if (diff > 0) gains += diff;
+          else losses -= diff;
         }
         const avgGain = gains / period;
         const avgLoss = losses / period;
@@ -336,7 +373,7 @@ export class BacktestRunner {
         price: number,
         slippage: number,
         sl: number,
-        tp: number,
+        tp: number
       ) => {
         return this.session.broker.sendOrder({
           symbol,
@@ -351,24 +388,24 @@ export class BacktestRunner {
         });
       },
       MarketInfo: (sym: string, type: number) => marketInfo(sym, type),
-      SymbolsTotal: (selected = false) =>
-        this.market.getSymbols(Boolean(selected)).length,
+      SymbolsTotal: (selected = false) => this.market.getSymbols(Boolean(selected)).length,
       SymbolName: (index: number, selected = false) => {
         const list = this.market.getSymbols(Boolean(selected));
-        return list[index] ?? '';
+        return list[index] ?? "";
       },
       SymbolSelect: (sym: string, enable: boolean) => this.market.select(sym, enable),
       OrdersTotal: () => this.session.broker.getActiveOrders().length,
       OrdersHistoryTotal: () => this.session.broker.getHistory().length,
       OrderSelect: (index: number, select: number, pool = 0) => {
         const byTicket = select === 1;
-        const arr = pool === 1 ? this.session.broker.getHistory() : this.session.broker.getActiveOrders();
+        const arr =
+          pool === 1 ? this.session.broker.getHistory() : this.session.broker.getActiveOrders();
         this.selectedOrder = byTicket ? this.session.broker.getOrder(index) : arr[index];
         return this.selectedOrder ? 1 : 0;
       },
-      OrderType: () => (this.selectedOrder ? (this.selectedOrder.type === 'buy' ? 0 : 1) : -1),
+      OrderType: () => (this.selectedOrder ? (this.selectedOrder.type === "buy" ? 0 : 1) : -1),
       OrderTicket: () => (this.selectedOrder ? this.selectedOrder.ticket : -1),
-      OrderSymbol: () => this.selectedOrder?.symbol ?? '',
+      OrderSymbol: () => this.selectedOrder?.symbol ?? "",
       OrderLots: () => this.selectedOrder?.volume ?? 0,
       OrderOpenPrice: () => this.selectedOrder?.price ?? 0,
       OrderOpenTime: () => this.selectedOrder?.openTime ?? 0,
@@ -376,7 +413,7 @@ export class BacktestRunner {
       OrderCloseTime: () => this.selectedOrder?.closeTime ?? 0,
       OrderProfit: () => this.selectedOrder?.profit ?? 0,
       OrderClose: (ticket: number, lots: number, price: number) => {
-        const t = ticket >= 0 ? ticket : this.selectedOrder?.ticket ?? -1;
+        const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
         if (t < 0) return 0;
         const p = price > 0 ? price : this.runtime.globalValues.Bid;
         const pr = this.session.broker.close(t, p, this.candles[this.index].time);
@@ -388,13 +425,13 @@ export class BacktestRunner {
       AccountProfit: () => metrics().openProfit + metrics().closedProfit,
       AccountFreeMargin: () => metrics().equity,
       AccountCredit: () => 0,
-      AccountCompany: () => 'Backtest',
-      AccountCurrency: () => 'USD',
+      AccountCompany: () => "Backtest",
+      AccountCurrency: () => "USD",
       AccountLeverage: () => 1,
       AccountMargin: () => 0,
-      AccountName: () => 'Backtest',
+      AccountName: () => "Backtest",
       AccountNumber: () => 1,
-      AccountServer: () => 'Backtest',
+      AccountServer: () => "Backtest",
       AccountFreeMarginCheck: () => metrics().equity,
       AccountFreeMarginMode: () => 0,
       AccountStopoutLevel: () => 0,
@@ -403,25 +440,28 @@ export class BacktestRunner {
   }
   private callInit(): void {
     if (!this.initialized && this.runtime.functions["OnInit"]) {
-      try { callFunction(this.runtime, "OnInit"); } catch {}
+      try {
+        callFunction(this.runtime, "OnInit");
+      } catch {}
     }
     this.initialized = true;
   }
 
   private callDeinit(): void {
     if (!this.deinitialized && this.runtime.functions["OnDeinit"]) {
-      try { callFunction(this.runtime, "OnDeinit"); } catch {}
+      try {
+        callFunction(this.runtime, "OnDeinit");
+      } catch {}
     }
     this.deinitialized = true;
   }
 
-
   step(): void {
-    const entry = this.options.entryPoint || 'OnTick';
+    const entry = this.options.entryPoint || "OnTick";
     this.callInit();
     if (this.index >= this.candles.length) return;
     const candle = this.candles[this.index];
-    const symbol = this.options.symbol ?? 'TEST';
+    const symbol = this.options.symbol ?? "TEST";
     const tick = this.market.getTick(symbol, candle.time);
     this.runtime.globalValues.Bid = tick?.bid ?? candle.close;
     this.runtime.globalValues.Ask = tick?.ask ?? candle.close;
@@ -477,5 +517,4 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles, Candle, Tick } from './market';
-
+export { ticksToCandles, Candle, Tick } from "./market";

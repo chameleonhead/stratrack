@@ -1,5 +1,5 @@
-import { Candle, Tick } from './types';
-export { Candle, Tick } from './types';
+import { Candle, Tick } from "./types";
+export { Candle, Tick } from "./types";
 
 export class MarketData {
   private ticks: Record<string, Tick[]> = {};
@@ -29,7 +29,8 @@ export class MarketData {
 
   select(symbol: string, enable: boolean): boolean {
     if (!(symbol in this.ticks)) return false;
-    if (enable) this.selected.add(symbol); else this.selected.delete(symbol);
+    if (enable) this.selected.add(symbol);
+    else this.selected.delete(symbol);
     return true;
   }
 
@@ -42,7 +43,6 @@ export class MarketData {
     this.positions[symbol] = pos;
     return arr[pos];
   }
-
 
   /** Aggregate ticks into candles of the given timeframe */
   private buildCandles(symbol: string, timeframe: number): Candle[] {

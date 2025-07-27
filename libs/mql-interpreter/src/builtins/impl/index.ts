@@ -1,9 +1,9 @@
-import type { BuiltinFunction } from '../types';
-import * as AccountInfo from './AccountInfo';
-import { OrderSend } from './OrderSend';
-import { iMA } from './iMA';
-import { iMACD } from './iMACD';
-import { iRSI } from './iRSI';
+import type { BuiltinFunction } from "../types";
+import * as AccountInfo from "./AccountInfo";
+import { OrderSend } from "./OrderSend";
+import { iMA } from "./iMA";
+import { iMACD } from "./iMACD";
+import { iRSI } from "./iRSI";
 import {
   IndicatorBuffers,
   SetIndexBuffer,
@@ -13,7 +13,7 @@ import {
   IndicatorSetInteger,
   IndicatorSetString,
   IndicatorShortName,
-} from './indicator';
+} from "./indicator";
 import {
   ArrayResize,
   ArrayCopy,
@@ -32,7 +32,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from './array';
+} from "./array";
 import {
   CharToString,
   CharToStr,
@@ -50,7 +50,7 @@ import {
   StringToInteger,
   StrToInteger,
   NormalizeDouble,
-} from './convert';
+} from "./convert";
 import {
   MathAbs,
   MathArccos,
@@ -73,7 +73,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from './math';
+} from "./math";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -94,7 +94,7 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from './strings';
+} from "./strings";
 import {
   Day,
   DayOfWeek,
@@ -119,7 +119,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from './datetime';
+} from "./datetime";
 import {
   Bars,
   iBars,
@@ -139,7 +139,7 @@ import {
   CopyTickVolume,
   SeriesInfoInteger,
   RefreshRates,
-} from './series';
+} from "./series";
 import {
   Print,
   Alert,
@@ -181,7 +181,7 @@ import {
   IsTradeContextBusy,
   UninitializeReason,
   setTerminal,
-} from './common';
+} from "./common";
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   Print,

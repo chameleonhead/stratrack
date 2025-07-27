@@ -20,7 +20,11 @@ export class Account {
     return this.balance;
   }
 
-  getMetrics(broker: { calculateOpenProfit(bid: number, ask: number): number; getClosedProfit(): number }, bid: number, ask: number): AccountMetrics {
+  getMetrics(
+    broker: { calculateOpenProfit(bid: number, ask: number): number; getClosedProfit(): number },
+    bid: number,
+    ask: number
+  ): AccountMetrics {
     const openProfit = broker.calculateOpenProfit(bid, ask);
     const closedProfit = broker.getClosedProfit();
     return {
