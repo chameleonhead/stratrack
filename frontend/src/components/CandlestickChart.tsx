@@ -40,6 +40,7 @@ export type CandlestickChartProps = {
 };
 
 const AXIS_HEIGHT = 20;
+const LEFT_MARGIN = 40;
 
 type SubChartProps = {
   pane: number;
@@ -65,7 +66,7 @@ const SubChart = ({
   const [size, setSize] = React.useState({ width: 0, height: 0 });
   const onResize = (w: number, h: number) => setSize({ width: w, height: h });
   const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
-  const xScale = scaleTime().domain([range.from, range.to]).range([0, size.width]);
+  const xScale = scaleTime().domain([range.from, range.to]).range([LEFT_MARGIN, size.width]);
   const values = indicators.flatMap((i) =>
     i.data
       .filter((p) => p.date.getTime() >= range.from && p.date.getTime() <= range.to)
@@ -75,7 +76,7 @@ const SubChart = ({
   const max = Math.max(...values);
   const yScale = scaleLinear().domain([min, max]).range([chartHeight, 0]).nice();
   const yTicks = yScale.ticks(5);
-  const ticks = xScale.ticks(Math.max(2, Math.floor(size.width / 80)));
+  const ticks = xScale.ticks(Math.max(2, Math.floor((size.width - LEFT_MARGIN) / 80)));
   const paths = indicators.map((ind) => ({
     color: ind.color || "#0ea5e9",
     path:
@@ -94,7 +95,7 @@ const SubChart = ({
           style={{ overflow: "visible" }}
           onWheel={handleWheel}
           onPointerDown={handlePointerDown}
-          onPointerMove={(e) => handlePointerMoveGeneric(e, size.width)}
+          onPointerMove={(e) => handlePointerMoveGeneric(e, size.width - LEFT_MARGIN)}
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
         >
@@ -105,8 +106,15 @@ const SubChart = ({
             const y = yScale(p);
             return (
               <g key={`ytick-${idx}`}>
-                <line x1={0} x2={size.width} y1={y} y2={y} stroke="#e5e7eb" strokeDasharray="2 2" />
-                <text x={-4} y={y + 3} textAnchor="end" fontSize={10} fill="#64748b">
+                <line
+                  x1={LEFT_MARGIN}
+                  x2={size.width}
+                  y1={y}
+                  y2={y}
+                  stroke="#e5e7eb"
+                  strokeDasharray="2 2"
+                />
+                <text x={LEFT_MARGIN - 4} y={y + 3} textAnchor="end" fontSize={10} fill="#64748b">
                   {p.toFixed(2)}
                 </text>
               </g>
@@ -192,7 +200,7 @@ const CandlestickChart = ({
   };
 
   const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    handlePointerMoveGeneric(e, size.width);
+    handlePointerMoveGeneric(e, size.width - LEFT_MARGIN);
   };
 
   const handleBarClick = (c: Candle, x: number, y: number) => {
@@ -207,13 +215,14 @@ const CandlestickChart = ({
 
   const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
 
-  const xScale = scaleTime().domain([from, to]).range([0, size.width]);
+  const xScale = scaleTime().domain([from, to]).range([LEFT_MARGIN, size.width]);
   const minLow = Math.min(...filtered.map((d) => d.low));
   const maxHigh = Math.max(...filtered.map((d) => d.high));
   const yScale = scaleLinear().domain([minLow, maxHigh]).range([chartHeight, 0]).nice();
-  const candleW = filtered.length > 0 ? Math.max(1, size.width / filtered.length / 1.5) : 1;
+  const candleW =
+    filtered.length > 0 ? Math.max(1, (size.width - LEFT_MARGIN) / filtered.length / 1.5) : 1;
 
-  const ticks = xScale.ticks(Math.max(2, Math.floor(size.width / 80)));
+  const ticks = xScale.ticks(Math.max(2, Math.floor((size.width - LEFT_MARGIN) / 80)));
   const candleMs = sorted.length > 1 ? sorted[1].date.getTime() - sorted[0].date.getTime() : 0;
   const formatTick = timeFormat(
     candleMs >= 24 * 60 * 60 * 1000
@@ -296,14 +305,14 @@ const CandlestickChart = ({
               return (
                 <g key={`ytick-${idx}`}>
                   <line
-                    x1={0}
+                    x1={LEFT_MARGIN}
                     x2={size.width}
                     y1={y}
                     y2={y}
                     stroke="#e5e7eb"
                     strokeDasharray="2 2"
                   />
-                  <text x={-4} y={y + 3} textAnchor="end" fontSize={10} fill="#64748b">
+                  <text x={LEFT_MARGIN - 4} y={y + 3} textAnchor="end" fontSize={10} fill="#64748b">
                     {p.toFixed(2)}
                   </text>
                 </g>
