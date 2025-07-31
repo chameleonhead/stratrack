@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>] [--format html|json]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json]"
   );
   process.exit(1);
 }
@@ -15,6 +15,9 @@ if (!file) {
 let backtestFile;
 let dataDir;
 let format = "json";
+let initialBalance;
+let initialMargin;
+let accountCurrency;
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--backtest") {
     backtestFile = args[i + 1];
@@ -29,6 +32,15 @@ for (let i = 0; i < args.length; i++) {
     format = "html";
   } else if (args[i] === "--json") {
     format = "json";
+  } else if (args[i] === "--balance") {
+    initialBalance = Number(args[i + 1]);
+    i++;
+  } else if (args[i] === "--margin") {
+    initialMargin = Number(args[i + 1]);
+    i++;
+  } else if (args[i] === "--currency") {
+    accountCurrency = args[i + 1];
+    i++;
   }
 }
 
@@ -43,7 +55,12 @@ if (backtestFile) {
     mkdirSync(dir, { recursive: true });
     storagePath = join(dir, "globals.json");
   }
-  const runner = new BacktestRunner(code, candles, { storagePath });
+  const runner = new BacktestRunner(code, candles, {
+    storagePath,
+    initialBalance,
+    initialMargin,
+    accountCurrency,
+  });
   runner.run();
   runner.getTerminal().flushGlobalVariables();
   const report = runner.getReport();
