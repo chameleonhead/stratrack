@@ -106,7 +106,11 @@ function replaceEnumConstants(source: string, enums: Record<string, number>): st
       out.push(t);
     }
   }
-  return out.map((tok) => tok.value).join(" ");
+  return out
+    .map((tok) =>
+      tok.type === TokenType.String ? `"${tok.value.replace(/"/g, '\\"')}"` : tok.value
+    )
+    .join(" ");
 }
 
 function resolveValue(
