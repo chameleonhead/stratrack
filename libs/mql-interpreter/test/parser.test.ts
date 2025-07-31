@@ -104,6 +104,13 @@ describe("parse", () => {
     expect(fn.parameters[0].defaultValue).toBe("hi");
   });
 
+  it("parses functions with explicit void parameter", () => {
+    const { tokens } = lex("void f(void){ }");
+    const ast = parse(tokens);
+    const fn = ast[0] as any;
+    expect(fn.parameters.length).toBe(0);
+  });
+
   it("parses reference parameters and arrays", () => {
     const { tokens } = lex("void modify(int &ref, double vals[]);");
     const ast = parse(tokens);

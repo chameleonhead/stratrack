@@ -120,7 +120,7 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from "./preprocess.js";
-import { BacktestRunner, parseCsv, BacktestReport } from "./backtest.js";
+import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./backtest.js";
 import { MarketData, Tick, Candle, ticksToCandles } from "./market.js";
 import { Broker, OrderState } from "./broker.js";
 import { Account } from "./account.js";
@@ -203,6 +203,7 @@ export {
   Candle,
   BacktestRunner,
   BacktestReport,
+  BacktestOptions,
   Broker,
   Account,
   MarketData,

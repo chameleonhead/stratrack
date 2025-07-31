@@ -303,7 +303,13 @@ export const builtinSignatures: BuiltinSignaturesMap = {
     ],
   },
   OrderClose: {
-    parameters: [{ type: "int" }, { type: "double" }, { type: "double" }],
+    parameters: [
+      { type: "int" },
+      { type: "double" },
+      { type: "double" },
+      { type: "int", optional: true },
+      { type: "color", optional: true },
+    ],
   },
   OrderSelect: {
     parameters: [{ type: "int" }, { type: "int" }, { type: "int", optional: true }],

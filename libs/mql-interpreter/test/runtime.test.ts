@@ -220,6 +220,15 @@ describe("execute", () => {
     expect(callMethod(runtime, "S", "get", s)).toBe(3);
   });
 
+  it("preserves string literals in function bodies", () => {
+    const code = 'void f(){ Print("hello world"); }';
+    const runtime = execute(parse(lex(code).tokens));
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+    expect(() => callFunction(runtime, "f")).not.toThrow();
+    expect(spy).toHaveBeenCalledWith("hello world");
+    spy.mockRestore();
+  });
+
   it("keeps global variables when locals share the same name", () => {
     const code = "int g=5; int f(){ int g=1; g++; return g; }";
     const runtime = execute(parse(lex(code).tokens));

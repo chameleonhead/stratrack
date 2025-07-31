@@ -9,7 +9,11 @@ describe("account builtins", () => {
       { time: 1, open: 1, high: 1, low: 1, close: 1 },
       { time: 2, open: 2, high: 2, low: 2, close: 2 },
     ];
-    const runner = new BacktestRunner(code, candles, { initialBalance: 100 });
+    const runner = new BacktestRunner(code, candles, {
+      initialBalance: 100,
+      initialMargin: 10,
+      accountCurrency: "JPY",
+    });
     runner.step();
     callFunction(runner.getRuntime(), "OrderSend", ["", 0, 1, 0, 0, 0, 0]);
     runner.run();
@@ -17,5 +21,8 @@ describe("account builtins", () => {
     expect(callFunction(rt, "AccountBalance")).toBeCloseTo(100);
     expect(callFunction(rt, "AccountEquity")).toBeCloseTo(101);
     expect(callFunction(rt, "AccountProfit")).toBeCloseTo(1);
+    expect(callFunction(rt, "AccountMargin")).toBeCloseTo(10);
+    expect(callFunction(rt, "AccountFreeMargin")).toBeCloseTo(91);
+    expect(callFunction(rt, "AccountCurrency")).toBe("JPY");
   });
 });

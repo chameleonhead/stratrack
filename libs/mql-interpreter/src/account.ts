@@ -3,13 +3,19 @@ export interface AccountMetrics {
   equity: number;
   closedProfit: number;
   openProfit: number;
+  margin: number;
+  freeMargin: number;
 }
 
 export class Account {
   private balance: number;
+  private margin: number;
+  private currency: string;
 
-  constructor(initialBalance = 0) {
+  constructor(initialBalance = 10000, initialMargin = 0, currency = "USD") {
     this.balance = initialBalance;
+    this.margin = initialMargin;
+    this.currency = currency;
   }
 
   applyProfit(profit: number): void {
@@ -20,6 +26,14 @@ export class Account {
     return this.balance;
   }
 
+  getCurrency(): string {
+    return this.currency;
+  }
+
+  getMargin(): number {
+    return this.margin;
+  }
+
   getMetrics(
     broker: { calculateOpenProfit(bid: number, ask: number): number; getClosedProfit(): number },
     bid: number,
@@ -27,11 +41,14 @@ export class Account {
   ): AccountMetrics {
     const openProfit = broker.calculateOpenProfit(bid, ask);
     const closedProfit = broker.getClosedProfit();
+    const equity = this.balance + openProfit;
     return {
       balance: this.balance,
-      equity: this.balance + openProfit,
+      equity,
       closedProfit,
       openProfit,
+      margin: this.margin,
+      freeMargin: equity - this.margin,
     };
   }
 }

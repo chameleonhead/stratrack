@@ -12,23 +12,47 @@ export interface BacktestSession {
   account: Account;
 }
 
-/** Parse CSV formatted candle data. Each line should contain
- *  `time,open,high,low,close[,volume]` values.
+/**
+ * Parse CSV formatted candle data.
+ *
+ * Supported formats:
+ *  - `timestamp,open,high,low,close[,volume]`
+ *  - `date,time,open,high,low,close[,volume]` where date is `YYYY.MM.DD`
+ *    and time is `HH:MM` (MetaTrader export)
  */
 export function parseCsv(data: string): Candle[] {
   const lines = data.split(/\r?\n/).filter((l: string) => l.trim().length);
   const candles: Candle[] = [];
   for (const line of lines) {
-    const [time, open, high, low, close, volume] = line.split(",");
-    const candle: Candle = {
-      time: Number(time),
-      open: Number(open),
-      high: Number(high),
-      low: Number(low),
-      close: Number(close),
-    };
-    if (volume !== undefined) candle.volume = Number(volume);
-    candles.push(candle);
+    const parts = line.split(",");
+    if (parts.length >= 7 && /\d{4}\.\d{2}\.\d{2}/.test(parts[0])) {
+      // date,time,open,high,low,close[,volume]
+      const [date, time, open, high, low, close, volume] = parts;
+      const [year, month, day] = date.split(".").map(Number);
+      const [hour, minute] = time.split(":").map(Number);
+      const ts = Math.floor(new Date(year, month - 1, day, hour, minute).getTime() / 1000);
+      const candle: Candle = {
+        time: ts,
+        open: Number(open),
+        high: Number(high),
+        low: Number(low),
+        close: Number(close),
+      };
+      if (volume !== undefined) candle.volume = Number(volume);
+      candles.push(candle);
+    } else {
+      // timestamp,open,high,low,close[,volume]
+      const [time, open, high, low, close, volume] = parts;
+      const candle: Candle = {
+        time: Number(time),
+        open: Number(open),
+        high: Number(high),
+        low: Number(low),
+        close: Number(close),
+      };
+      if (volume !== undefined) candle.volume = Number(volume);
+      candles.push(candle);
+    }
   }
   return candles;
 }
@@ -37,6 +61,8 @@ export interface BacktestOptions {
   entryPoint?: string;
   preprocessOptions?: PreprocessOptions;
   initialBalance?: number;
+  initialMargin?: number;
+  accountCurrency?: string;
   /** Tick data for each tradable symbol */
   ticks?: Record<string, Tick[]>;
   /** Primary symbol for this backtest */
@@ -74,7 +100,11 @@ export class BacktestRunner {
     }
     this.runtime = compilation.runtime;
     const broker = new Broker();
-    const account = new Account(options.initialBalance ?? 0);
+    const account = new Account(
+      options.initialBalance ?? 10000,
+      options.initialMargin ?? 0,
+      options.accountCurrency ?? "USD"
+    );
     this.session = { broker, account };
     let storagePath: string | undefined;
     if (options.storagePath) {
@@ -412,7 +442,13 @@ export class BacktestRunner {
       OrderClosePrice: () => this.selectedOrder?.closePrice ?? 0,
       OrderCloseTime: () => this.selectedOrder?.closeTime ?? 0,
       OrderProfit: () => this.selectedOrder?.profit ?? 0,
-      OrderClose: (ticket: number, lots: number, price: number) => {
+      OrderClose: (
+        ticket: number,
+        lots: number,
+        price: number,
+        _slippage?: number,
+        _arrowColor?: number
+      ) => {
         const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
         if (t < 0) return 0;
         const p = price > 0 ? price : this.runtime.globalValues.Bid;
@@ -423,12 +459,12 @@ export class BacktestRunner {
       AccountBalance: () => metrics().balance,
       AccountEquity: () => metrics().equity,
       AccountProfit: () => metrics().openProfit + metrics().closedProfit,
-      AccountFreeMargin: () => metrics().equity,
+      AccountFreeMargin: () => metrics().freeMargin,
       AccountCredit: () => 0,
       AccountCompany: () => "Backtest",
-      AccountCurrency: () => "USD",
+      AccountCurrency: () => this.session.account.getCurrency(),
       AccountLeverage: () => 1,
-      AccountMargin: () => 0,
+      AccountMargin: () => metrics().margin,
       AccountName: () => "Backtest",
       AccountNumber: () => 1,
       AccountServer: () => "Backtest",
