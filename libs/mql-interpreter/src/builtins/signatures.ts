@@ -302,6 +302,12 @@ export const builtinSignatures: BuiltinSignaturesMap = {
       { type: "color", optional: true },
     ],
   },
+  OrderClose: {
+    parameters: [{ type: "int" }, { type: "double" }, { type: "double" }],
+  },
+  OrderSelect: {
+    parameters: [{ type: "int" }, { type: "int" }, { type: "int", optional: true }],
+  },
   iMA: {
     parameters: [
       { type: "string" },
