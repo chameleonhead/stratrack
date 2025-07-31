@@ -118,6 +118,19 @@ export class Broker {
     return o.profit;
   }
 
+  modify(ticket: number, price: number, sl: number, tp: number): boolean {
+    const o = this.orders[ticket];
+    if (!o || o.state === "closed") return false;
+    if (o.state === "pending" && price > 0) {
+      o.price = price;
+    }
+    if (sl > 0) o.sl = sl;
+    else if (sl <= 0) o.sl = undefined;
+    if (tp > 0) o.tp = tp;
+    else if (tp <= 0) o.tp = undefined;
+    return true;
+  }
+
   getOpenOrders(): Order[] {
     return this.orders.filter((o) => o.state === "open");
   }

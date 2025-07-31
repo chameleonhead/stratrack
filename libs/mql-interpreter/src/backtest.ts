@@ -456,6 +456,22 @@ export class BacktestRunner {
         if (pr) this.session.account.applyProfit(pr);
         return pr ? 1 : 0;
       },
+      OrderModify: (
+        ticket: number,
+        price: number,
+        sl: number,
+        tp: number,
+        _expiration?: number,
+        _arrowColor?: number
+      ) => {
+        const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
+        if (t < 0) return 0;
+        const ok = this.session.broker.modify(t, price, sl, tp);
+        if (ok && this.selectedOrder && this.selectedOrder.ticket === t) {
+          this.selectedOrder = this.session.broker.getOrder(t);
+        }
+        return ok ? 1 : 0;
+      },
       AccountBalance: () => metrics().balance,
       AccountEquity: () => metrics().equity,
       AccountProfit: () => metrics().openProfit + metrics().closedProfit,
