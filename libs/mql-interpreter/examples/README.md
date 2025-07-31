@@ -20,4 +20,4 @@ node bin/mql-interpreter.js "examples/MACD Sample.mq4" --backtest examples/data/
 
 The command prints a JSON report containing global variables, account metrics and executed orders. Replace the CSV file with history exported from MetaTrader to backtest your own data.
 
-The sample dataset uses the `time,open,high,low,close,volume` format where `time` is a UTC Time string. To reproduce a live environment, export MetaTrader history in this format and place it under `examples/data/`.
+The sample dataset uses the `date,time,open,high,low,close,volume` format where `date` is formatted as `YYYY.MM.DD` and `time` is formatted as `HH:MI`. To reproduce a live environment, export MetaTrader history in this format and place it under `examples/data/`.
