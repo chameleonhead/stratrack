@@ -101,7 +101,7 @@ export class BacktestRunner {
     this.runtime = compilation.runtime;
     const broker = new Broker();
     const account = new Account(
-      options.initialBalance ?? 0,
+      options.initialBalance ?? 10000,
       options.initialMargin ?? 0,
       options.accountCurrency ?? "USD"
     );

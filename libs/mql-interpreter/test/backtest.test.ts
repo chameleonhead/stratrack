@@ -92,7 +92,7 @@ describe("BacktestRunner", () => {
     runner.run();
     const metrics = runner.getAccountMetrics();
     expect(metrics.openProfit).toBe(1);
-    expect(metrics.equity).toBe(1);
+    expect(metrics.equity).toBe(10001);
   });
 
   it("initializes predefined variables and ResetLastError", () => {
@@ -147,7 +147,7 @@ describe("BacktestRunner", () => {
     runner.run();
     const report = runner.getReport();
     expect(report.globals.Bars).toBe(1);
-    expect(report.metrics.balance).toBe(0);
+    expect(report.metrics.balance).toBe(10000);
     expect(report.orders.length).toBe(0);
   });
 });

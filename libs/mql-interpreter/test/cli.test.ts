@@ -28,7 +28,7 @@ describe("CLI backtest", () => {
       });
       const out = JSON.parse(res.stdout.trim());
       expect(out.globals.Bars).toBe(3);
-      expect(out.metrics.balance).toBe(0);
+      expect(out.metrics.balance).toBe(10000);
       const gv = JSON.parse(readFileSync(path.join(dir, "MQL4", "Files", "globals.json"), "utf8"));
       expect(gv.x.value).toBe(3);
     },
@@ -42,7 +42,7 @@ describe("CLI backtest", () => {
       const dir = mkdtempSync(path.join(tmpdir(), "mt4-"));
       const codePath = path.join(dir, "test.mq4");
       const csvPath = path.join(dir, "data.csv");
-      writeFileSync(codePath, 'int a; void OnTick(){a++;}');
+      writeFileSync(codePath, "int a; void OnTick(){a++;}");
       writeFileSync(csvPath, "2025.01.01,00:00,1,1,1,1,1\n");
       const res = spawnSync("node", [bin, codePath, "--data", csvPath], {
         encoding: "utf8",

@@ -12,7 +12,7 @@ export class Account {
   private margin: number;
   private currency: string;
 
-  constructor(initialBalance = 0, initialMargin = 0, currency = "USD") {
+  constructor(initialBalance = 10000, initialMargin = 0, currency = "USD") {
     this.balance = initialBalance;
     this.margin = initialMargin;
     this.currency = currency;
