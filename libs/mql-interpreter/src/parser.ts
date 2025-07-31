@@ -386,41 +386,51 @@ export function parse(tokens: Token[]): Declaration[] {
         }
         consume(TokenType.Punctuation, "(");
         const parameters: FunctionParameter[] = [];
-        while (!atEnd() && peek().value !== ")") {
-          const pType = consume().value;
-          let byRef = false;
-          if (peek().value === "&") {
-            consume(TokenType.Operator, "&");
-            byRef = true;
-          }
-          const pName = consume(TokenType.Identifier).value;
-          const dims: Array<number | null> = [];
-          while (peek().value === "[") {
-            consume(TokenType.Punctuation, "[");
-            let size: number | null = null;
-            if (peek().type === TokenType.Number) {
-              size = parseInt(consume(TokenType.Number).value, 10);
+        if (
+          !(
+            peek().type === TokenType.Keyword &&
+            peek().value === "void" &&
+            tokens[pos + 1]?.value === ")"
+          )
+        ) {
+          while (!atEnd() && peek().value !== ")") {
+            const pType = consume().value;
+            let byRef = false;
+            if (peek().value === "&") {
+              consume(TokenType.Operator, "&");
+              byRef = true;
             }
-            consume(TokenType.Punctuation, "]");
-            dims.push(size);
+            const pName = consume(TokenType.Identifier).value;
+            const dims: Array<number | null> = [];
+            while (peek().value === "[") {
+              consume(TokenType.Punctuation, "[");
+              let size: number | null = null;
+              if (peek().type === TokenType.Number) {
+                size = parseInt(consume(TokenType.Number).value, 10);
+              }
+              consume(TokenType.Punctuation, "]");
+              dims.push(size);
+            }
+            let defaultValue: string | undefined;
+            if (peek().value === "=") {
+              consume(TokenType.Operator, "=");
+              defaultValue = consume().value;
+            }
+            parameters.push({
+              paramType: pType,
+              byRef,
+              name: pName,
+              dimensions: dims,
+              defaultValue,
+            });
+            if (peek().value === ",") {
+              consume(TokenType.Punctuation, ",");
+            } else {
+              break;
+            }
           }
-          let defaultValue: string | undefined;
-          if (peek().value === "=") {
-            consume(TokenType.Operator, "=");
-            defaultValue = consume().value;
-          }
-          parameters.push({
-            paramType: pType,
-            byRef,
-            name: pName,
-            dimensions: dims,
-            defaultValue,
-          });
-          if (peek().value === ",") {
-            consume(TokenType.Punctuation, ",");
-          } else {
-            break;
-          }
+        } else {
+          consume(TokenType.Keyword, "void");
         }
         consume(TokenType.Punctuation, ")");
         let isPure = false;
@@ -443,8 +453,8 @@ export function parse(tokens: Token[]): Declaration[] {
           while (!atEnd() && peek().value !== "}") {
             const startPos = pos;
             try {
-              const vd = parseVariable();
-              locals.push(vd);
+              const vds = parseVariable();
+              locals.push(...vds);
               bodyStart = pos;
               continue;
             } catch {
@@ -464,7 +474,11 @@ export function parse(tokens: Token[]): Declaration[] {
             }
           }
           const bodyTokens = tokens.slice(bodyStart, pos);
-          body = bodyTokens.map((t) => t.value).join(" ");
+          body = bodyTokens
+            .map((t) =>
+              t.type === TokenType.String ? `"${t.value.replace(/"/g, '\\"')}"` : t.value
+            )
+            .join(" ");
           consume(TokenType.Punctuation, "}");
         } else if (!isPure && !atEnd() && peek().value === ";") {
           consume(TokenType.Punctuation, ";");
@@ -521,41 +535,51 @@ export function parse(tokens: Token[]): Declaration[] {
     }
     consume(TokenType.Punctuation, "(");
     const parameters: FunctionParameter[] = [];
-    while (!atEnd() && peek().value !== ")") {
-      const pType = consume().value;
-      let byRef = false;
-      if (peek().value === "&") {
-        consume(TokenType.Operator, "&");
-        byRef = true;
-      }
-      const pName = consume(TokenType.Identifier).value;
-      const dims: Array<number | null> = [];
-      while (peek().value === "[") {
-        consume(TokenType.Punctuation, "[");
-        let size: number | null = null;
-        if (peek().type === TokenType.Number) {
-          size = parseInt(consume(TokenType.Number).value, 10);
+    if (
+      !(
+        peek().type === TokenType.Keyword &&
+        peek().value === "void" &&
+        tokens[pos + 1]?.value === ")"
+      )
+    ) {
+      while (!atEnd() && peek().value !== ")") {
+        const pType = consume().value;
+        let byRef = false;
+        if (peek().value === "&") {
+          consume(TokenType.Operator, "&");
+          byRef = true;
         }
-        consume(TokenType.Punctuation, "]");
-        dims.push(size);
+        const pName = consume(TokenType.Identifier).value;
+        const dims: Array<number | null> = [];
+        while (peek().value === "[") {
+          consume(TokenType.Punctuation, "[");
+          let size: number | null = null;
+          if (peek().type === TokenType.Number) {
+            size = parseInt(consume(TokenType.Number).value, 10);
+          }
+          consume(TokenType.Punctuation, "]");
+          dims.push(size);
+        }
+        let defaultValue: string | undefined;
+        if (peek().value === "=") {
+          consume(TokenType.Operator, "=");
+          defaultValue = consume().value;
+        }
+        parameters.push({
+          paramType: pType,
+          byRef,
+          name: pName,
+          dimensions: dims,
+          defaultValue,
+        });
+        if (peek().value === ",") {
+          consume(TokenType.Punctuation, ",");
+        } else {
+          break;
+        }
       }
-      let defaultValue: string | undefined;
-      if (peek().value === "=") {
-        consume(TokenType.Operator, "=");
-        defaultValue = consume().value;
-      }
-      parameters.push({
-        paramType: pType,
-        byRef,
-        name: pName,
-        dimensions: dims,
-        defaultValue,
-      });
-      if (peek().value === ",") {
-        consume(TokenType.Punctuation, ",");
-      } else {
-        break;
-      }
+    } else {
+      consume(TokenType.Keyword, "void");
     }
     consume(TokenType.Punctuation, ")");
     const locals: VariableDeclaration[] = [];
@@ -566,8 +590,8 @@ export function parse(tokens: Token[]): Declaration[] {
       while (!atEnd() && peek().value !== "}") {
         const startPos = pos;
         try {
-          const varDecl = parseVariable();
-          locals.push(varDecl);
+          const varDecls = parseVariable();
+          locals.push(...varDecls);
           bodyStart = pos;
           continue;
         } catch {
@@ -587,7 +611,9 @@ export function parse(tokens: Token[]): Declaration[] {
         }
       }
       const bodyTokens = tokens.slice(bodyStart, pos);
-      body = bodyTokens.map((t) => t.value).join(" ");
+      body = bodyTokens
+        .map((t) => (t.type === TokenType.String ? `"${t.value.replace(/"/g, '\\"')}"` : t.value))
+        .join(" ");
       consume(TokenType.Punctuation, "}");
     } else if (!atEnd() && peek().value === ";") {
       consume(TokenType.Punctuation, ";");
@@ -603,7 +629,7 @@ export function parse(tokens: Token[]): Declaration[] {
     };
   }
 
-  function parseVariable(): VariableDeclaration {
+  function parseVariable(): VariableDeclaration[] {
     const start = peek();
     const typeKeywords = new Set([
       "void",
@@ -639,32 +665,41 @@ export function parse(tokens: Token[]): Declaration[] {
       throw new ParseError("Not a variable declaration", next.line, next.column);
     }
     const varType = consume().value;
-    const name = consume(TokenType.Identifier).value;
-    const dims: Array<number | null> = [];
-    while (peek().value === "[") {
-      consume(TokenType.Punctuation, "[");
-      let size: number | null = null;
-      if (peek().type === TokenType.Number) {
-        size = parseInt(consume(TokenType.Number).value, 10);
+    const declarations: VariableDeclaration[] = [];
+    while (true) {
+      const name = consume(TokenType.Identifier).value;
+      const dims: Array<number | null> = [];
+      while (peek().value === "[") {
+        consume(TokenType.Punctuation, "[");
+        let size: number | null = null;
+        if (peek().type === TokenType.Number) {
+          size = parseInt(consume(TokenType.Number).value, 10);
+        }
+        consume(TokenType.Punctuation, "]");
+        dims.push(size);
       }
-      consume(TokenType.Punctuation, "]");
-      dims.push(size);
-    }
-    let initialValue: string | undefined;
-    if (peek().value === "=") {
-      consume(TokenType.Operator, "=");
-      initialValue = consume().value;
+      let initialValue: string | undefined;
+      if (peek().value === "=") {
+        consume(TokenType.Operator, "=");
+        initialValue = consume().value;
+      }
+      declarations.push({
+        type: "VariableDeclaration",
+        storage,
+        varType,
+        name,
+        dimensions: dims,
+        initialValue,
+        loc: { line: start.line, column: start.column },
+      });
+      if (peek().value === ",") {
+        consume(TokenType.Punctuation, ",");
+        continue;
+      }
+      break;
     }
     consume(TokenType.Punctuation, ";");
-    return {
-      type: "VariableDeclaration",
-      storage,
-      varType,
-      name,
-      dimensions: dims,
-      initialValue,
-      loc: { line: start.line, column: start.column },
-    };
+    return declarations;
   }
 
   while (!atEnd()) {
@@ -705,7 +740,8 @@ export function parse(tokens: Token[]): Declaration[] {
     ) {
       const start = pos;
       try {
-        declarations.push(parseVariable());
+        const vds = parseVariable();
+        declarations.push(...vds);
       } catch {
         pos = start + 1;
       }

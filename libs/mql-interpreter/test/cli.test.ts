@@ -19,7 +19,10 @@ describe("CLI backtest", () => {
         codePath,
         'string name="x"; void OnTick(){ GlobalVariableSet(name, GlobalVariableGet(name)+1); }'
       );
-      writeFileSync(csvPath, "1,1,1,1,1\n2,2,2,2,2\n3,3,3,3,3\n");
+      writeFileSync(
+        csvPath,
+        "2025.01.01,00:00,1,1,1,1,1\n2025.01.01,00:01,2,2,2,2,2\n2025.01.01,00:02,3,3,3,3,3\n"
+      );
       const res = spawnSync("node", [bin, codePath, "--backtest", csvPath, "--data-dir", dir], {
         encoding: "utf8",
       });
@@ -40,7 +43,7 @@ describe("CLI backtest", () => {
       const codePath = path.join(dir, "test.mq4");
       const csvPath = path.join(dir, "data.csv");
       writeFileSync(codePath, 'void OnTick(){Print("ok");}');
-      writeFileSync(csvPath, "1,1,1,1,1\n");
+      writeFileSync(csvPath, "2025.01.01,00:00,1,1,1,1,1\n");
       const res = spawnSync("node", [bin, codePath, "--backtest", csvPath, "--format", "html"], {
         encoding: "utf8",
       });

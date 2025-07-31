@@ -30,7 +30,9 @@ const typeKeywords = new Set([
 ]);
 
 function tokensToString(tokens: Token[]): string {
-  return tokens.map((t) => t.value).join(" ");
+  return tokens
+    .map((t) => (t.type === TokenType.String ? `"${t.value.replace(/"/g, '\\"')}"` : t.value))
+    .join(" ");
 }
 
 export function executeStatements(
