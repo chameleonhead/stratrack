@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json]"
   );
   process.exit(1);
 }
@@ -19,7 +19,7 @@ let initialBalance;
 let initialMargin;
 let accountCurrency;
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--backtest") {
+  if (args[i] === "--backtest" || args[i] === "--data") {
     backtestFile = args[i + 1];
     i++;
   } else if (args[i] === "--data-dir") {

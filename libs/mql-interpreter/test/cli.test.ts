@@ -36,6 +36,24 @@ describe("CLI backtest", () => {
   );
 
   it(
+    "accepts --data alias",
+    () => {
+      execSync("npm run build --silent", { cwd: libDir });
+      const dir = mkdtempSync(path.join(tmpdir(), "mt4-"));
+      const codePath = path.join(dir, "test.mq4");
+      const csvPath = path.join(dir, "data.csv");
+      writeFileSync(codePath, 'int a; void OnTick(){a++;}');
+      writeFileSync(csvPath, "2025.01.01,00:00,1,1,1,1,1\n");
+      const res = spawnSync("node", [bin, codePath, "--data", csvPath], {
+        encoding: "utf8",
+      });
+      const out = JSON.parse(res.stdout.trim());
+      expect(out.globals.Bars).toBe(1);
+    },
+    { timeout: 20000 }
+  );
+
+  it(
     "outputs html when requested",
     () => {
       execSync("npm run build --silent", { cwd: libDir });
