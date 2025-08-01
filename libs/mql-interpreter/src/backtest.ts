@@ -314,6 +314,37 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
+      IndicatorBuffers: (count: number) => {
+        this.runtime.globalValues._IndicatorBuffers = Array(count).fill(null);
+        return 0;
+      },
+      SetIndexBuffer: (index: number, arr: any[]) => {
+        const buffs = this.runtime.globalValues._IndicatorBuffers;
+        if (!Array.isArray(buffs) || index < 0 || index >= buffs.length) return false;
+        buffs[index] = arr;
+        return true;
+      },
+      IndicatorCounted: () => this.runtime.globalValues._IndicatorCounted ?? 0,
+      IndicatorDigits: () => this.runtime.globalValues.Digits,
+      IndicatorSetDouble: (_prop: number, value: number) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorSetInteger: (_prop: number, value: number) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorSetString: (_prop: number, value: string) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorShortName: (name: string) => {
+        this.runtime.globalValues._IndicatorShortName = name;
+        return 0;
+      },
       iMA: (
         sym: any,
         tf: any,
