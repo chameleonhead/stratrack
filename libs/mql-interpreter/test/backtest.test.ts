@@ -169,4 +169,27 @@ describe("BacktestRunner", () => {
     expect(report.metrics.balance).toBe(10000);
     expect(report.orders.length).toBe(0);
   });
+
+  it("reproduces first trade on M15 timeframe", () => {
+    const code = "void OnTick(){return;}";
+    const candles = [
+      { time: 0, open: 1.34636, high: 1.34636, low: 1.34636, close: 1.34636 },
+      { time: 900, open: 1.34636, high: 1.34686, low: 1.34636, close: 1.34686 },
+    ];
+    const runner = new BacktestRunner(code, candles, { symbol: "EURUSD" });
+    runner.step();
+    const rt = runner.getRuntime();
+    callFunction(rt, "OrderSend", ["EURUSD", 0, 0.1, 0, 0, 0, 1.34686]);
+    const order = runner.getBroker().getOpenOrders()[0];
+    expect(order).toMatchObject({
+      ticket: 0,
+      type: "buy",
+      volume: 0.1,
+      price: 1.34636,
+      tp: 1.34686,
+      sl: undefined,
+      state: "open",
+    });
+    expect(callFunction(rt, "Period")).toBe(900);
+  });
 });
