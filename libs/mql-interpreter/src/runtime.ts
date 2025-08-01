@@ -454,6 +454,7 @@ export function instantiate(runtime: Runtime, className: string): any {
     const field = cls.fields[fieldName];
     obj[fieldName] = field.dimensions.length > 0 ? [] : undefined;
   }
+  Object.defineProperty(obj, "__class", { value: className, enumerable: false });
   return obj;
 }
 
@@ -464,14 +465,26 @@ export function callMethod(
   obj: any,
   args: any[] = []
 ): any {
-  let cls: any = runtime.classes[className];
+  let checkCls: any = runtime.classes[className];
+  let isVirtual = false;
+  while (checkCls) {
+    const m = checkCls.methods.find((mm: RuntimeClassMethod) => mm.name === methodName);
+    if (m) {
+      isVirtual = !!m.virtual;
+      break;
+    }
+    if (!checkCls.base) break;
+    checkCls = runtime.classes[checkCls.base];
+  }
+  let currentName = isVirtual && obj?.__class ? obj.__class : className;
+  let cls: any = runtime.classes[currentName];
   while (cls) {
     const method = cls.methods.find((m: RuntimeClassMethod) => m.name === methodName);
     if (method) {
       if (!method.body) throw new Error(`Method ${methodName} has no implementation`);
-      if (!runtime.staticLocals[`${className}::${methodName}`])
-        runtime.staticLocals[`${className}::${methodName}`] = {};
-      const key = `${className}::${methodName}`;
+      if (!runtime.staticLocals[`${currentName}::${methodName}`])
+        runtime.staticLocals[`${currentName}::${methodName}`] = {};
+      const key = `${currentName}::${methodName}`;
       for (const local of method.locals) {
         if (local.storage === "static" && runtime.staticLocals[key][local.name] === undefined) {
           let val: any = undefined;
@@ -543,7 +556,8 @@ export function callMethod(
       return res.return;
     }
     if (!cls.base) break;
+    currentName = cls.base;
     cls = runtime.classes[cls.base];
   }
-  throw new Error(`Method ${methodName} not found on ${className}`);
+  throw new Error(`Method ${methodName} not found on ${currentName}`);
 }
