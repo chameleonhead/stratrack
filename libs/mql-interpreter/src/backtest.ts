@@ -320,7 +320,7 @@ export class BacktestRunner {
         this.runtime.globalValues._IndicatorShifts = Array(count).fill(0);
         return 0;
       },
-      SetIndexBuffer: (index: number, arr: any[]) => {
+      SetIndexBuffer: (index: number, arr: number[]) => {
         const buffs = this.runtime.globalValues._IndicatorBuffers;
         if (!Array.isArray(buffs) || index < 0 || index >= buffs.length) return false;
         buffs[index] = arr;
@@ -341,17 +341,17 @@ export class BacktestRunner {
       IndicatorCounted: () => this.runtime.globalValues._IndicatorCounted ?? 0,
       IndicatorDigits: () => this.runtime.globalValues.Digits,
       IndicatorSetDouble: (_prop: number, value: number) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
         props[_prop] = value;
         return 0;
       },
       IndicatorSetInteger: (_prop: number, value: number) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
         props[_prop] = value;
         return 0;
       },
       IndicatorSetString: (_prop: number, value: string) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, any>);
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
         props[_prop] = value;
         return 0;
       },

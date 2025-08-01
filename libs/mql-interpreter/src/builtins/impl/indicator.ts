@@ -1,8 +1,8 @@
 import type { BuiltinFunction } from "../types.js";
 
 interface IndicatorState {
-  buffers: any[];
-  props: Record<number | string, any>;
+  buffers: unknown[];
+  props: Record<number | string, unknown>;
   labels: string[];
   shifts: number[];
   shortName: string;
@@ -17,13 +17,13 @@ const state: IndicatorState = {
 };
 
 export const IndicatorBuffers: BuiltinFunction = (count: number) => {
-  state.buffers = Array(count).fill(null);
-  state.labels = Array(count).fill("");
-  state.shifts = Array(count).fill(0);
+  state.buffers = Array<unknown>(count).fill(null);
+  state.labels = Array<string>(count).fill("");
+  state.shifts = Array<number>(count).fill(0);
   return 0;
 };
 
-export const SetIndexBuffer: BuiltinFunction = (index: number, arr: any[]) => {
+export const SetIndexBuffer: BuiltinFunction = (index: number, arr: number[]) => {
   if (index < 0) return false;
   state.buffers[index] = arr;
   return true;
