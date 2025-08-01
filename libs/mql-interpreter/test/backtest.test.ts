@@ -68,6 +68,25 @@ describe("BacktestRunner", () => {
     expect(history[0].profit).toBeCloseTo(0.8); // 2 - 1.2
   });
 
+  it("modifies stop loss and take profit", () => {
+    const code = "void OnTick(){ return; }";
+    const candles = [
+      { time: 10, open: 1, high: 1.1, low: 1, close: 1 },
+      { time: 20, open: 1, high: 1.2, low: 0.7, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    const rt = runner.getRuntime();
+    callFunction(rt, "OrderSend", ["", 0, 1, 0, 0, 0, 0]);
+    expect(runner.getBroker().getOpenOrders()[0].sl).toBeUndefined();
+    callFunction(rt, "OrderModify", [0, 0, 0.8, 0, 0, 0]);
+    expect(runner.getBroker().getOpenOrders()[0].sl).toBe(0.8);
+    runner.step();
+    const history = runner.getBroker().getHistory();
+    expect(history.length).toBe(1);
+    expect(history[0].closePrice).toBe(0.8);
+  });
+
   it("converts ticks to candles", () => {
     const ticks = [
       { time: 0, bid: 1, ask: 1 },
@@ -149,5 +168,28 @@ describe("BacktestRunner", () => {
     expect(report.globals.Bars).toBe(1);
     expect(report.metrics.balance).toBe(10000);
     expect(report.orders.length).toBe(0);
+  });
+
+  it("reproduces first trade on M15 timeframe", () => {
+    const code = "void OnTick(){return;}";
+    const candles = [
+      { time: 0, open: 1.34636, high: 1.34636, low: 1.34636, close: 1.34636 },
+      { time: 900, open: 1.34636, high: 1.34686, low: 1.34636, close: 1.34686 },
+    ];
+    const runner = new BacktestRunner(code, candles, { symbol: "EURUSD" });
+    runner.step();
+    const rt = runner.getRuntime();
+    callFunction(rt, "OrderSend", ["EURUSD", 0, 0.1, 0, 0, 0, 1.34686]);
+    const order = runner.getBroker().getOpenOrders()[0];
+    expect(order).toMatchObject({
+      ticket: 0,
+      type: "buy",
+      volume: 0.1,
+      price: 1.34636,
+      tp: 1.34686,
+      sl: undefined,
+      state: "open",
+    });
+    expect(callFunction(rt, "Period")).toBe(900);
   });
 });

@@ -314,6 +314,51 @@ export class BacktestRunner {
         this.runtime.globalValues._LastError = 0;
         return 0;
       },
+      IndicatorBuffers: (count: number) => {
+        this.runtime.globalValues._IndicatorBuffers = Array(count).fill(null);
+        this.runtime.globalValues._IndicatorLabels = Array(count).fill("");
+        this.runtime.globalValues._IndicatorShifts = Array(count).fill(0);
+        return 0;
+      },
+      SetIndexBuffer: (index: number, arr: number[]) => {
+        const buffs = this.runtime.globalValues._IndicatorBuffers;
+        if (!Array.isArray(buffs) || index < 0 || index >= buffs.length) return false;
+        buffs[index] = arr;
+        return true;
+      },
+      SetIndexLabel: (index: number, text: string) => {
+        const labels = this.runtime.globalValues._IndicatorLabels;
+        if (!Array.isArray(labels) || index < 0 || index >= labels.length) return false;
+        labels[index] = text;
+        return true;
+      },
+      SetIndexShift: (index: number, shift: number) => {
+        const shifts = this.runtime.globalValues._IndicatorShifts;
+        if (!Array.isArray(shifts) || index < 0 || index >= shifts.length) return false;
+        shifts[index] = shift;
+        return true;
+      },
+      IndicatorCounted: () => this.runtime.globalValues._IndicatorCounted ?? 0,
+      IndicatorDigits: () => this.runtime.globalValues.Digits,
+      IndicatorSetDouble: (_prop: number, value: number) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorSetInteger: (_prop: number, value: number) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorSetString: (_prop: number, value: string) => {
+        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
+        props[_prop] = value;
+        return 0;
+      },
+      IndicatorShortName: (name: string) => {
+        this.runtime.globalValues._IndicatorShortName = name;
+        return 0;
+      },
       iMA: (
         sym: any,
         tf: any,
@@ -455,6 +500,22 @@ export class BacktestRunner {
         const pr = this.session.broker.close(t, p, this.candles[this.index].time);
         if (pr) this.session.account.applyProfit(pr);
         return pr ? 1 : 0;
+      },
+      OrderModify: (
+        ticket: number,
+        price: number,
+        sl: number,
+        tp: number,
+        _expiration?: number,
+        _arrowColor?: number
+      ) => {
+        const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
+        if (t < 0) return 0;
+        const ok = this.session.broker.modify(t, price, sl, tp);
+        if (ok && this.selectedOrder && this.selectedOrder.ticket === t) {
+          this.selectedOrder = this.session.broker.getOrder(t);
+        }
+        return ok ? 1 : 0;
       },
       AccountBalance: () => metrics().balance,
       AccountEquity: () => metrics().equity,

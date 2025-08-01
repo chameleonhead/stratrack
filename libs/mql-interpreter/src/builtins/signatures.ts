@@ -437,6 +437,12 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   SetIndexBuffer: {
     parameters: [{ type: "int" }, { type: "any[]" }],
   },
+  SetIndexLabel: {
+    parameters: [{ type: "int" }, { type: "string" }],
+  },
+  SetIndexShift: {
+    parameters: [{ type: "int" }, { type: "int" }],
+  },
   IndicatorCounted: { parameters: [] },
   IndicatorDigits: { parameters: [] },
   IndicatorSetDouble: { parameters: [{ type: "int" }, { type: "double" }] },
