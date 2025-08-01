@@ -316,12 +316,26 @@ export class BacktestRunner {
       },
       IndicatorBuffers: (count: number) => {
         this.runtime.globalValues._IndicatorBuffers = Array(count).fill(null);
+        this.runtime.globalValues._IndicatorLabels = Array(count).fill("");
+        this.runtime.globalValues._IndicatorShifts = Array(count).fill(0);
         return 0;
       },
       SetIndexBuffer: (index: number, arr: any[]) => {
         const buffs = this.runtime.globalValues._IndicatorBuffers;
         if (!Array.isArray(buffs) || index < 0 || index >= buffs.length) return false;
         buffs[index] = arr;
+        return true;
+      },
+      SetIndexLabel: (index: number, text: string) => {
+        const labels = this.runtime.globalValues._IndicatorLabels;
+        if (!Array.isArray(labels) || index < 0 || index >= labels.length) return false;
+        labels[index] = text;
+        return true;
+      },
+      SetIndexShift: (index: number, shift: number) => {
+        const shifts = this.runtime.globalValues._IndicatorShifts;
+        if (!Array.isArray(shifts) || index < 0 || index >= shifts.length) return false;
+        shifts[index] = shift;
         return true;
       },
       IndicatorCounted: () => this.runtime.globalValues._IndicatorCounted ?? 0,

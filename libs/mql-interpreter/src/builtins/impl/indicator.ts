@@ -1,42 +1,66 @@
 import type { BuiltinFunction } from "../types.js";
 
-let buffers: any[] = [];
-const counted = 0;
-const digits = 0;
-const props: Record<number | string, any> = {};
-let _shortName = "";
+interface IndicatorState {
+  buffers: any[];
+  props: Record<number | string, any>;
+  labels: string[];
+  shifts: number[];
+  shortName: string;
+}
+
+const state: IndicatorState = {
+  buffers: [],
+  props: {},
+  labels: [],
+  shifts: [],
+  shortName: "",
+};
 
 export const IndicatorBuffers: BuiltinFunction = (count: number) => {
-  buffers = Array(count).fill(null);
+  state.buffers = Array(count).fill(null);
+  state.labels = Array(count).fill("");
+  state.shifts = Array(count).fill(0);
   return 0;
 };
 
 export const SetIndexBuffer: BuiltinFunction = (index: number, arr: any[]) => {
   if (index < 0) return false;
-  buffers[index] = arr;
+  state.buffers[index] = arr;
   return true;
 };
 
-export const IndicatorCounted: BuiltinFunction = () => counted;
+export const SetIndexLabel: BuiltinFunction = (index: number, text: string) => {
+  if (index < 0) return false;
+  state.labels[index] = text;
+  return true;
+};
 
-export const IndicatorDigits: BuiltinFunction = () => digits;
+export const SetIndexShift: BuiltinFunction = (index: number, shift: number) => {
+  if (index < 0) return false;
+  state.shifts[index] = shift;
+  return true;
+};
+
+export const IndicatorCounted: BuiltinFunction = () => 0;
+
+export const IndicatorDigits: BuiltinFunction = () => 0;
 
 export const IndicatorSetDouble: BuiltinFunction = (prop: number, value: number) => {
-  props[prop] = value;
+  state.props[prop] = value;
   return 0;
 };
 
 export const IndicatorSetInteger: BuiltinFunction = (prop: number, value: number) => {
-  props[prop] = value;
+  state.props[prop] = value;
   return 0;
 };
 
 export const IndicatorSetString: BuiltinFunction = (prop: number, value: string) => {
-  props[prop] = value;
+  state.props[prop] = value;
   return 0;
 };
 
 export const IndicatorShortName: BuiltinFunction = (name: string) => {
-  _shortName = name;
+  state.shortName = name;
   return 0;
 };

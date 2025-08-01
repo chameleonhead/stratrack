@@ -64,4 +64,16 @@ describe("indicator builtins", () => {
     callFunction(rt, "SetIndexBuffer", [0, buf]);
     expect(rt.globalValues._IndicatorBuffers[0]).toBe(buf);
   });
+
+  it("sets index label and shift", () => {
+    const code = "void OnTick(){return;}";
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    const rt = runner.getRuntime();
+    callFunction(rt, "IndicatorBuffers", [2]);
+    callFunction(rt, "SetIndexLabel", [0, "main"]);
+    callFunction(rt, "SetIndexShift", [1, 3]);
+    expect(rt.globalValues._IndicatorLabels[0]).toBe("main");
+    expect(rt.globalValues._IndicatorShifts[1]).toBe(3);
+  });
 });
