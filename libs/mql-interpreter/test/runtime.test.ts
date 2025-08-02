@@ -220,6 +220,20 @@ describe("execute", () => {
     expect(callMethod(runtime, "S", "get", s)).toBe(3);
   });
 
+  it("dispatches virtual methods based on instance type", () => {
+    const code = "class A{ virtual int v(){ return 1; } } class B:A{ int v(){ return 2; }}";
+    const runtime = execute(parse(lex(code).tokens));
+    const obj = instantiate(runtime, "B");
+    expect(callMethod(runtime, "A", "v", obj)).toBe(2);
+  });
+
+  it("uses base implementation for non-virtual methods", () => {
+    const code = "class A{ int v(){ return 1; } } class B:A{ int v(){ return 2; }}";
+    const runtime = execute(parse(lex(code).tokens));
+    const obj = instantiate(runtime, "B");
+    expect(callMethod(runtime, "A", "v", obj)).toBe(1);
+  });
+
   it("preserves string literals in function bodies", () => {
     const code = 'void f(){ Print("hello world"); }';
     const runtime = execute(parse(lex(code).tokens));

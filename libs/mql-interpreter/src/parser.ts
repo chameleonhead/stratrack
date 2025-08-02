@@ -30,6 +30,7 @@ export interface ClassMethod {
   visibility: "public" | "private" | "protected";
   static?: boolean;
   virtual?: boolean;
+  override?: boolean;
   pure?: boolean;
   /** Local variable declarations inside the method */
   locals: VariableDeclaration[];
@@ -433,6 +434,11 @@ export function parse(tokens: Token[]): Declaration[] {
           consume(TokenType.Keyword, "void");
         }
         consume(TokenType.Punctuation, ")");
+        let isOverride = false;
+        if (!atEnd() && peek().type === TokenType.Keyword && peek().value === "override") {
+          consume(TokenType.Keyword, "override");
+          isOverride = true;
+        }
         let isPure = false;
         if (!atEnd() && peek().value === "=") {
           const save = pos;
@@ -490,9 +496,11 @@ export function parse(tokens: Token[]): Declaration[] {
           visibility,
           static: isStatic,
           virtual: isVirtual,
+          override: isOverride,
           pure: isPure,
           locals,
           body,
+          loc: { line: start.line, column: start.column },
         });
         continue;
       }
