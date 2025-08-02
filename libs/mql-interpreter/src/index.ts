@@ -439,6 +439,17 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   return errors;
 }
 
+export const warningCodes = {
+  overrideNonVirtual: "override-non-virtual",
+  overrideMissing: "override-missing",
+} as const;
+
+export type WarningCode = (typeof warningCodes)[keyof typeof warningCodes];
+
+export function getWarningCodes(): WarningCode[] {
+  return Object.values(warningCodes);
+}
+
 function validateOverrides(ast: Declaration[]): CompilationError[] {
   const warnings: CompilationError[] = [];
   const classes = new Map<string, ClassDeclaration>();
@@ -472,7 +483,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
             message: `Method ${m.name} overrides non-virtual method in ${className}`,
             line: m.loc?.line ?? 0,
             column: m.loc?.column ?? 0,
-            code: "override-non-virtual",
+            code: warningCodes.overrideNonVirtual,
           });
         }
       } else if (m.override) {
@@ -480,7 +491,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
           message: `Method ${m.name} marked override but no base method found`,
           line: m.loc?.line ?? 0,
           column: m.loc?.column ?? 0,
-          code: "override-missing",
+          code: warningCodes.overrideMissing,
         });
       }
     }

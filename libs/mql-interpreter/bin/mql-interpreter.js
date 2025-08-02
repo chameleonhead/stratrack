@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 import { readFileSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
-import { interpret, compile, BacktestRunner, parseCsv } from "../dist/index.js";
+import { interpret, compile, BacktestRunner, parseCsv, getWarningCodes } from "../dist/index.js";
 
 const args = process.argv.slice(2);
+if (args.includes("--list-warnings")) {
+  for (const code of getWarningCodes()) {
+    console.log(code);
+  }
+  process.exit(0);
+}
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>] [--list-warnings]"
   );
   process.exit(1);
 }

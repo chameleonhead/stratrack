@@ -35,4 +35,12 @@ describe("cli warnings", () => {
     );
     expect(suppressed.status).toBe(0);
   });
+
+  it("lists available warning codes", () => {
+    const result = spawnSync("node", [cli, "--list-warnings"], { cwd: root });
+    expect(result.status).toBe(0);
+    const lines = result.stdout.toString().trim().split("\n");
+    expect(lines).toContain("override-non-virtual");
+    expect(lines).toContain("override-missing");
+  });
 });
