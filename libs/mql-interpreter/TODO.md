@@ -51,14 +51,16 @@ The following tasks outline future work required to develop a functional MQL4/5 
       `break` and `continue`.
 - [x] Integrate statement execution with parsed function bodies so user
       defined functions can run.
-- [ ] Parse enumeration declarations and expose enumerator constants.
+- [x] Parse enumeration declarations and expose enumerator constants.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
 - [x] Implement object instantiation and inheritance through `instantiate()`
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.
 - [x] Implement runtime polymorphic dispatch for virtual methods.
 - [x] Warn when overriding non-virtual methods and support an explicit `override` specifier.
 - [x] Distinguish compile warnings from errors so non-fatal diagnostics can be reported.
-- [ ] Allow treating warnings as errors via CLI flag.
+- [x] Allow treating warnings as errors via CLI flag.
+- [ ] Expose a programmatic option to treat warnings as errors when calling `compile` or `interpret`.
+- [ ] Allow suppressing specific warnings via CLI flag or source directives.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`

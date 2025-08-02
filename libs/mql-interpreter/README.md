@@ -183,9 +183,10 @@ npx mql-interpreter path/to/file.mq4
 ```
 
 The CLI performs compilation first. Any warnings are printed but do not halt
-execution. If syntax or type errors are detected they are printed and the
-process exits with a non-zero status. When syntax
-errors occur, type checking is skipped to avoid redundant messages:
+execution by default. Pass `--warnings-as-errors` to exit when warnings are
+present. If syntax or type errors are detected they are printed and the process
+exits with a non-zero status. When syntax errors occur, type checking is skipped
+to avoid redundant messages:
 
 ```bash
 npx mql-interpreter bad.mq4
