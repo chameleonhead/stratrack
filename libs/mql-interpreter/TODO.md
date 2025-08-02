@@ -59,8 +59,9 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Warn when overriding non-virtual methods and support an explicit `override` specifier.
 - [x] Distinguish compile warnings from errors so non-fatal diagnostics can be reported.
 - [x] Allow treating warnings as errors via CLI flag.
-- [ ] Expose a programmatic option to treat warnings as errors when calling `compile` or `interpret`.
+- [x] Expose a programmatic option to treat warnings as errors when calling `compile` or `interpret`.
 - [ ] Allow suppressing specific warnings via CLI flag or source directives.
+- [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`

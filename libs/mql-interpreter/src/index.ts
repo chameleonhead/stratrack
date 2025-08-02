@@ -485,7 +485,11 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
   return warnings;
 }
 
-export function compile(source: string, options: PreprocessOptions = {}): Compilation {
+export interface CompileOptions extends PreprocessOptions {
+  warningsAsErrors?: boolean;
+}
+
+export function compile(source: string, options: CompileOptions = {}): Compilation {
   const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
   let parseError: CompilationError | null = null;
@@ -511,13 +515,16 @@ export function compile(source: string, options: PreprocessOptions = {}): Compil
     errors.push(...validateFunctionCalls(ast, runtime));
     warnings.push(...validateOverrides(ast));
   }
+  if (options.warningsAsErrors) {
+    errors.push(...warnings);
+  }
   return { ast, runtime, properties, errors, warnings };
 }
 
 export function interpret(
   source: string,
   context?: ExecutionContext,
-  options: PreprocessOptions = {}
+  options: CompileOptions = {}
 ): Runtime {
   const { runtime, properties, errors } = compile(source, options);
   if (errors.length) {

@@ -85,6 +85,7 @@ const compilation = compile(code, {
       return undefined;
     }
   },
+  warningsAsErrors,
 });
 if (compilation.warnings.length) {
   console.error("Compilation warnings:");
@@ -92,13 +93,14 @@ if (compilation.warnings.length) {
     console.error(`${w.line}:${w.column} ${w.message}`);
   }
 }
-if (compilation.errors.length || (warningsAsErrors && compilation.warnings.length)) {
-  if (compilation.errors.length) {
-    console.error("Compilation errors:");
-    for (const e of compilation.errors) {
-      console.error(`${e.line}:${e.column} ${e.message}`);
-    }
+const realErrors = compilation.errors.filter((e) => !compilation.warnings.includes(e));
+if (realErrors.length) {
+  console.error("Compilation errors:");
+  for (const e of realErrors) {
+    console.error(`${e.line}:${e.column} ${e.message}`);
   }
+}
+if (compilation.errors.length) {
   process.exit(1);
 }
 const runtime = interpret(code, undefined, {
@@ -109,6 +111,7 @@ const runtime = interpret(code, undefined, {
       return undefined;
     }
   },
+  warningsAsErrors,
 });
 const out = JSON.stringify(runtime, null, 2);
 if (format === "html") {

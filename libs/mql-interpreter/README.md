@@ -39,6 +39,10 @@ ask the user for their values before execution. After providing values in
 invoke `callFunction()` directly. Parsed function bodies run via
 `executeStatements`.
 
+Both `compile` and `interpret` accept a `warningsAsErrors` option to escalate
+warnings into the `errors` array. When set, `interpret` throws if any
+warnings are produced.
+
 For example:
 
 ```ts

@@ -1,4 +1,4 @@
-import { compile } from "../src";
+import { compile, interpret } from "../src";
 import { describe, it, expect } from "vitest";
 
 describe("compile errors", () => {
@@ -47,5 +47,21 @@ describe("compile errors", () => {
     `);
     expect(result.errors.length).toBe(0);
     expect(result.warnings.length).toBe(0);
+  });
+
+  it("treats warnings as errors when requested", () => {
+    const result = compile(`class A { void foo(){} }; class B : A { void foo(){} };`, {
+      warningsAsErrors: true,
+    });
+    const found = result.errors.some((e) => e.message.includes("overrides non-virtual"));
+    expect(found).toBe(true);
+  });
+
+  it("interpret throws when warnings are treated as errors", () => {
+    expect(() =>
+      interpret(`class A { void foo(){} }; class B : A { void foo(){} };`, undefined, {
+        warningsAsErrors: true,
+      })
+    ).toThrow();
   });
 });
