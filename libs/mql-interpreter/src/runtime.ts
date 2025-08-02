@@ -19,6 +19,7 @@ export interface RuntimeClassMethod {
   visibility: "public" | "private" | "protected";
   static?: boolean;
   virtual?: boolean;
+  override?: boolean;
   pure?: boolean;
   locals: VariableDeclaration[];
   body?: string;
@@ -226,6 +227,7 @@ export function execute(
         visibility: m.visibility,
         static: m.static,
         virtual: m.virtual,
+        override: m.override,
         pure: m.pure,
         locals: m.locals.map((l) => ({
           ...l,

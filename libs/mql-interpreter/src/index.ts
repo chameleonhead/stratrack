@@ -437,6 +437,53 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   return errors;
 }
 
+function validateOverrides(ast: Declaration[]): CompilationError[] {
+  const errors: CompilationError[] = [];
+  const classes = new Map<string, ClassDeclaration>();
+  for (const decl of ast) {
+    if (decl.type === "ClassDeclaration") {
+      classes.set(decl.name, decl);
+    }
+  }
+  const findBaseMethod = (
+    baseName: string | undefined,
+    methodName: string
+  ): { method: ClassMethod; className: string } | undefined => {
+    let current = baseName;
+    while (current) {
+      const base = classes.get(current);
+      if (!base) break;
+      const m = base.methods.find((mm) => mm.name === methodName);
+      if (m) return { method: m, className: current };
+      current = base.base;
+    }
+    return undefined;
+  };
+
+  for (const cls of classes.values()) {
+    for (const m of cls.methods) {
+      const baseInfo = findBaseMethod(cls.base, m.name);
+      if (baseInfo) {
+        const { method: baseMethod, className } = baseInfo;
+        if (!baseMethod.virtual) {
+          errors.push({
+            message: `Method ${m.name} overrides non-virtual method in ${className}`,
+            line: m.loc?.line ?? 0,
+            column: m.loc?.column ?? 0,
+          });
+        }
+      } else if (m.override) {
+        errors.push({
+          message: `Method ${m.name} marked override but no base method found`,
+          line: m.loc?.line ?? 0,
+          column: m.loc?.column ?? 0,
+        });
+      }
+    }
+  }
+  return errors;
+}
+
 export function compile(source: string, options: PreprocessOptions = {}): Compilation {
   const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
@@ -460,6 +507,7 @@ export function compile(source: string, options: PreprocessOptions = {}): Compil
   } else {
     errors.push(...checkTypes(ast));
     errors.push(...validateFunctionCalls(ast, runtime));
+    errors.push(...validateOverrides(ast));
   }
   return { ast, runtime, properties, errors };
 }

@@ -56,7 +56,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Implement object instantiation and inheritance through `instantiate()`
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.
 - [x] Implement runtime polymorphic dispatch for virtual methods.
-- [ ] Warn when overriding non-virtual methods and support an explicit `override` specifier.
+- [x] Warn when overriding non-virtual methods and support an explicit `override` specifier.
+- [ ] Distinguish compile warnings from errors so non-fatal diagnostics can be reported.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`
