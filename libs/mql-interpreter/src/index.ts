@@ -128,6 +128,12 @@ import { VirtualTerminal } from "./terminal.js";
 import { setTerminal } from "./builtins/impl/common.js";
 import { builtinNames } from "./builtins/stubNames.js";
 import { builtinSignatures } from "./builtins/signatures.js";
+import {
+  warnings as warningDefinitions,
+  WarningCode,
+  getWarningCodes,
+  getWarnings,
+} from "./warnings.js";
 
 export {
   lex,
@@ -257,7 +263,12 @@ export {
   TimeYear,
   VirtualTerminal,
   setTerminal,
+  warningDefinitions as warnings,
+  getWarningCodes,
+  getWarnings,
 };
+
+export type { WarningCode };
 
 export interface Compilation {
   ast: Declaration[];
@@ -439,19 +450,8 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   return errors;
 }
 
-export const warningCodes = {
-  overrideNonVirtual: "override-non-virtual",
-  overrideMissing: "override-missing",
-} as const;
-
-export type WarningCode = (typeof warningCodes)[keyof typeof warningCodes];
-
-export function getWarningCodes(): WarningCode[] {
-  return Object.values(warningCodes);
-}
-
 function validateOverrides(ast: Declaration[]): CompilationError[] {
-  const warnings: CompilationError[] = [];
+  const diagnostics: CompilationError[] = [];
   const classes = new Map<string, ClassDeclaration>();
   for (const decl of ast) {
     if (decl.type === "ClassDeclaration") {
@@ -479,24 +479,24 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
       if (baseInfo) {
         const { method: baseMethod, className } = baseInfo;
         if (!baseMethod.virtual) {
-          warnings.push({
+          diagnostics.push({
             message: `Method ${m.name} overrides non-virtual method in ${className}`,
             line: m.loc?.line ?? 0,
             column: m.loc?.column ?? 0,
-            code: warningCodes.overrideNonVirtual,
+            code: warningDefinitions.overrideNonVirtual.code,
           });
         }
       } else if (m.override) {
-        warnings.push({
+        diagnostics.push({
           message: `Method ${m.name} marked override but no base method found`,
           line: m.loc?.line ?? 0,
           column: m.loc?.column ?? 0,
-          code: warningCodes.overrideMissing,
+          code: warningDefinitions.overrideMissing.code,
         });
       }
     }
   }
-  return warnings;
+  return diagnostics;
 }
 
 export interface CompileOptions extends PreprocessOptions {

@@ -40,7 +40,7 @@ describe("cli warnings", () => {
     const result = spawnSync("node", [cli, "--list-warnings"], { cwd: root });
     expect(result.status).toBe(0);
     const lines = result.stdout.toString().trim().split("\n");
-    expect(lines).toContain("override-non-virtual");
-    expect(lines).toContain("override-missing");
+    expect(lines.some((l) => l.startsWith("override-non-virtual"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("override-missing"))).toBe(true);
   });
 });

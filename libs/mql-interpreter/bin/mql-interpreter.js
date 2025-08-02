@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { readFileSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
-import { interpret, compile, BacktestRunner, parseCsv, getWarningCodes } from "../dist/index.js";
+import { interpret, compile, BacktestRunner, parseCsv, getWarnings } from "../dist/index.js";
 
 const args = process.argv.slice(2);
 if (args.includes("--list-warnings")) {
-  for (const code of getWarningCodes()) {
-    console.log(code);
+  for (const w of getWarnings()) {
+    console.log(`${w.code} - ${w.description}`);
   }
   process.exit(0);
 }
