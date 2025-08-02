@@ -271,6 +271,7 @@ export interface CompilationError {
   message: string;
   line: number;
   column: number;
+  code?: string;
 }
 
 function checkTypes(ast: Declaration[]): CompilationError[] {
@@ -471,6 +472,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
             message: `Method ${m.name} overrides non-virtual method in ${className}`,
             line: m.loc?.line ?? 0,
             column: m.loc?.column ?? 0,
+            code: "override-non-virtual",
           });
         }
       } else if (m.override) {
@@ -478,6 +480,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
           message: `Method ${m.name} marked override but no base method found`,
           line: m.loc?.line ?? 0,
           column: m.loc?.column ?? 0,
+          code: "override-missing",
         });
       }
     }
@@ -487,6 +490,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
 
 export interface CompileOptions extends PreprocessOptions {
   warningsAsErrors?: boolean;
+  suppressWarnings?: string[];
 }
 
 export function compile(source: string, options: CompileOptions = {}): Compilation {
@@ -507,7 +511,7 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
   const runtime = execute(ast);
   runtime.properties = properties;
   const errors = [...lexErrors];
-  const warnings: CompilationError[] = [];
+  let warnings: CompilationError[] = [];
   if (parseError) {
     errors.push(parseError);
   } else {
@@ -515,6 +519,8 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
     errors.push(...validateFunctionCalls(ast, runtime));
     warnings.push(...validateOverrides(ast));
   }
+  const suppressed = new Set(options.suppressWarnings ?? []);
+  warnings = warnings.filter((w) => !w.code || !suppressed.has(w.code));
   if (options.warningsAsErrors) {
     errors.push(...warnings);
   }

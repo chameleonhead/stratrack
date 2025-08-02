@@ -41,7 +41,9 @@ invoke `callFunction()` directly. Parsed function bodies run via
 
 Both `compile` and `interpret` accept a `warningsAsErrors` option to escalate
 warnings into the `errors` array. When set, `interpret` throws if any
-warnings are produced.
+warnings are produced. A `suppressWarnings` array may also be provided to
+ignore specific warning codes such as `override-non-virtual` or
+`override-missing`.
 
 For example:
 
@@ -188,9 +190,10 @@ npx mql-interpreter path/to/file.mq4
 
 The CLI performs compilation first. Any warnings are printed but do not halt
 execution by default. Pass `--warnings-as-errors` to exit when warnings are
-present. If syntax or type errors are detected they are printed and the process
-exits with a non-zero status. When syntax errors occur, type checking is skipped
-to avoid redundant messages:
+present or `--suppress-warning <code>` to ignore specific warnings. If syntax
+or type errors are detected they are printed and the process exits with a
+non-zero status. When syntax errors occur, type checking is skipped to avoid
+redundant messages:
 
 ```bash
 npx mql-interpreter bad.mq4

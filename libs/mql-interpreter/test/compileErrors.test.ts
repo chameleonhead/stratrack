@@ -64,4 +64,21 @@ describe("compile errors", () => {
       })
     ).toThrow();
   });
+
+  it("can suppress specific warnings", () => {
+    const result = compile(`class A { void foo(){} }; class B : A { void foo(){} };`, {
+      suppressWarnings: ["override-non-virtual"],
+    });
+    expect(result.warnings.length).toBe(0);
+    expect(result.errors.length).toBe(0);
+  });
+
+  it("suppressed warnings are not treated as errors", () => {
+    const result = compile(`class A { void foo(){} }; class B : A { void foo(){} };`, {
+      warningsAsErrors: true,
+      suppressWarnings: ["override-non-virtual"],
+    });
+    const found = result.errors.some((e) => e.code === "override-non-virtual");
+    expect(found).toBe(false);
+  });
 });

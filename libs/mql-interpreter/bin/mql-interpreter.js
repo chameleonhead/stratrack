@@ -7,7 +7,7 @@ const args = process.argv.slice(2);
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>]"
   );
   process.exit(1);
 }
@@ -19,6 +19,7 @@ let initialBalance;
 let initialMargin;
 let accountCurrency;
 let warningsAsErrors = false;
+const suppressWarnings = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--backtest" || args[i] === "--data") {
     backtestFile = args[i + 1];
@@ -44,6 +45,9 @@ for (let i = 0; i < args.length; i++) {
     i++;
   } else if (args[i] === "--warnings-as-errors") {
     warningsAsErrors = true;
+  } else if (args[i] === "--suppress-warning") {
+    suppressWarnings.push(args[i + 1]);
+    i++;
   }
 }
 
@@ -86,11 +90,13 @@ const compilation = compile(code, {
     }
   },
   warningsAsErrors,
+  suppressWarnings,
 });
 if (compilation.warnings.length) {
   console.error("Compilation warnings:");
   for (const w of compilation.warnings) {
-    console.error(`${w.line}:${w.column} ${w.message}`);
+    const code = w.code ? ` [${w.code}]` : "";
+    console.error(`${w.line}:${w.column} ${w.message}${code}`);
   }
 }
 const realErrors = compilation.errors.filter((e) => !compilation.warnings.includes(e));
@@ -112,6 +118,7 @@ const runtime = interpret(code, undefined, {
     }
   },
   warningsAsErrors,
+  suppressWarnings,
 });
 const out = JSON.stringify(runtime, null, 2);
 if (format === "html") {

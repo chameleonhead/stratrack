@@ -28,5 +28,11 @@ describe("cli warnings", () => {
     expect(normal.status).toBe(0);
     const strict = spawnSync("node", [cli, file, "--warnings-as-errors"], { cwd: root });
     expect(strict.status).toBe(1);
+    const suppressed = spawnSync(
+      "node",
+      [cli, file, "--warnings-as-errors", "--suppress-warning", "override-non-virtual"],
+      { cwd: root }
+    );
+    expect(suppressed.status).toBe(0);
   });
 });

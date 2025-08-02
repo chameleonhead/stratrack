@@ -60,7 +60,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Distinguish compile warnings from errors so non-fatal diagnostics can be reported.
 - [x] Allow treating warnings as errors via CLI flag.
 - [x] Expose a programmatic option to treat warnings as errors when calling `compile` or `interpret`.
-- [ ] Allow suppressing specific warnings via CLI flag or source directives.
+- [x] Allow suppressing specific warnings via CLI flag.
+- [ ] Document available warning codes and expose a way to list them.
 - [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
