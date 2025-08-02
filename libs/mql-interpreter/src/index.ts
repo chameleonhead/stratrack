@@ -264,6 +264,7 @@ export interface Compilation {
   runtime: Runtime;
   properties: PropertyMap;
   errors: CompilationError[];
+  warnings: CompilationError[];
 }
 
 export interface CompilationError {
@@ -438,7 +439,7 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
 }
 
 function validateOverrides(ast: Declaration[]): CompilationError[] {
-  const errors: CompilationError[] = [];
+  const warnings: CompilationError[] = [];
   const classes = new Map<string, ClassDeclaration>();
   for (const decl of ast) {
     if (decl.type === "ClassDeclaration") {
@@ -466,14 +467,14 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
       if (baseInfo) {
         const { method: baseMethod, className } = baseInfo;
         if (!baseMethod.virtual) {
-          errors.push({
+          warnings.push({
             message: `Method ${m.name} overrides non-virtual method in ${className}`,
             line: m.loc?.line ?? 0,
             column: m.loc?.column ?? 0,
           });
         }
       } else if (m.override) {
-        errors.push({
+        warnings.push({
           message: `Method ${m.name} marked override but no base method found`,
           line: m.loc?.line ?? 0,
           column: m.loc?.column ?? 0,
@@ -481,7 +482,7 @@ function validateOverrides(ast: Declaration[]): CompilationError[] {
       }
     }
   }
-  return errors;
+  return warnings;
 }
 
 export function compile(source: string, options: PreprocessOptions = {}): Compilation {
@@ -502,14 +503,15 @@ export function compile(source: string, options: PreprocessOptions = {}): Compil
   const runtime = execute(ast);
   runtime.properties = properties;
   const errors = [...lexErrors];
+  const warnings: CompilationError[] = [];
   if (parseError) {
     errors.push(parseError);
   } else {
     errors.push(...checkTypes(ast));
     errors.push(...validateFunctionCalls(ast, runtime));
-    errors.push(...validateOverrides(ast));
+    warnings.push(...validateOverrides(ast));
   }
-  return { ast, runtime, properties, errors };
+  return { ast, runtime, properties, errors, warnings };
 }
 
 export function interpret(

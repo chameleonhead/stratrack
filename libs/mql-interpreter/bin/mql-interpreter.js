@@ -83,6 +83,12 @@ const compilation = compile(code, {
     }
   },
 });
+if (compilation.warnings.length) {
+  console.error("Compilation warnings:");
+  for (const w of compilation.warnings) {
+    console.error(`${w.line}:${w.column} ${w.message}`);
+  }
+}
 if (compilation.errors.length) {
   console.error("Compilation errors:");
   for (const e of compilation.errors) {

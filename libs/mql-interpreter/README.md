@@ -31,7 +31,8 @@ A `void` type is recognized as a keyword for functions but cannot be used
 as a class field type.
 The interpreter can compile code without running it using `compile(source)`.
 This preprocesses and parses the code, returning a `runtime` object populated
-with enums, classes, functions and global variable declarations. Variables
+with enums, classes, functions and global variable declarations along with
+separate `errors` and `warnings` arrays describing any diagnostics. Variables
 declared with `input` or `extern` appear in `runtime.variables` so a host can
 ask the user for their values before execution. After providing values in
 `inputValues` and `externValues`, call `interpret()` to run an entry point or
@@ -181,8 +182,9 @@ file and print the resulting runtime information:
 npx mql-interpreter path/to/file.mq4
 ```
 
-The CLI performs compilation first. If any syntax or type errors are detected
-they are printed and the process exits with a non-zero status. When syntax
+The CLI performs compilation first. Any warnings are printed but do not halt
+execution. If syntax or type errors are detected they are printed and the
+process exits with a non-zero status. When syntax
 errors occur, type checking is skipped to avoid redundant messages:
 
 ```bash

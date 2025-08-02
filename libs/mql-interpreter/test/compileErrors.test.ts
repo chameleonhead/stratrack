@@ -20,22 +20,24 @@ describe("compile errors", () => {
     expect(result.errors.length).toBe(1);
   });
 
-  it("errors when overriding a non-virtual method", () => {
+  it("warns when overriding a non-virtual method", () => {
     const result = compile(`
       class A { void foo(){} };
       class B : A { void foo(){} };
     `);
-    const found = result.errors.some((e) => e.message.includes("overrides non-virtual"));
+    const found = result.warnings.some((e) => e.message.includes("overrides non-virtual"));
     expect(found).toBe(true);
+    expect(result.errors.length).toBe(0);
   });
 
-  it("errors when override keyword has no base method", () => {
+  it("warns when override keyword has no base method", () => {
     const result = compile(`
       class A { virtual void foo(){} };
       class B : A { void bar() override{} };
     `);
-    const found = result.errors.some((e) => e.message.includes("no base method"));
+    const found = result.warnings.some((e) => e.message.includes("no base method"));
     expect(found).toBe(true);
+    expect(result.errors.length).toBe(0);
   });
 
   it("allows overriding virtual methods with override specifier", () => {
@@ -44,5 +46,6 @@ describe("compile errors", () => {
       class B : A { void foo() override{} };
     `);
     expect(result.errors.length).toBe(0);
+    expect(result.warnings.length).toBe(0);
   });
 });
