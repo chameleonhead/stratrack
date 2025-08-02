@@ -64,7 +64,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Document available warning codes and expose a way to list them.
 - [x] Auto-generate warning code lists from diagnostic definitions to keep documentation in sync.
 - [x] Integrate warning documentation generation into the release process.
-- [ ] Add a CI check to ensure warning documentation is up to date.
+- [x] Add a CI check to ensure warning documentation is up to date.
+- [ ] Auto-generate builtin signature documentation and verify it remains current.
 - [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
