@@ -66,7 +66,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Integrate warning documentation generation into the release process.
 - [x] Add a CI check to ensure warning documentation is up to date.
 - [x] Auto-generate builtin signature documentation and verify it remains current.
-  - [ ] Expose builtin signatures via a CLI flag.
+  - [x] Expose builtin signatures via a CLI flag.
+  - [ ] Allow outputting builtin signatures in JSON form for easier machine consumption.
 - [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.

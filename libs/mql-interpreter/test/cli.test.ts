@@ -9,7 +9,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = join(__dirname, "..");
 const cli = join(root, "bin", "mql-interpreter.js");
 
-describe("cli warnings", () => {
+describe("cli options", () => {
   beforeAll(() => {
     const build = spawnSync("npm", ["run", "build"], { cwd: root });
     if (build.status !== 0) {
@@ -42,5 +42,13 @@ describe("cli warnings", () => {
     const lines = result.stdout.toString().trim().split("\n");
     expect(lines.some((l) => l.startsWith("override-non-virtual"))).toBe(true);
     expect(lines.some((l) => l.startsWith("override-missing"))).toBe(true);
+  });
+
+  it("lists builtin signatures", () => {
+    const result = spawnSync("node", [cli, "--list-builtins"], { cwd: root });
+    expect(result.status).toBe(0);
+    const lines = result.stdout.toString().trim().split("\n");
+    expect(lines.some((l) => l.startsWith("Print("))).toBe(true);
+    expect(lines.some((l) => l.startsWith("ArrayResize("))).toBe(true);
   });
 });

@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 import { readFileSync, mkdirSync } from "fs";
 import { resolve, join, dirname } from "path";
-import { interpret, compile, BacktestRunner, parseCsv, getWarnings } from "../dist/index.js";
+import {
+  interpret,
+  compile,
+  BacktestRunner,
+  parseCsv,
+  getWarnings,
+  getBuiltinSignatures,
+} from "../dist/index.js";
 
 const args = process.argv.slice(2);
 if (args.includes("--list-warnings")) {
@@ -10,10 +17,27 @@ if (args.includes("--list-warnings")) {
   }
   process.exit(0);
 }
+if (args.includes("--list-builtins")) {
+  const sigs = getBuiltinSignatures();
+  const names = Object.keys(sigs).sort();
+  for (const name of names) {
+    const sig = sigs[name];
+    const variants = Array.isArray(sig) ? sig : [sig];
+    const formatted = variants
+      .map((s) => {
+        const params = s.parameters.map((p) => (p.optional ? `[${p.type}]` : p.type));
+        if (s.variadic) params.push("...");
+        return `(${params.join(", ")})`;
+      })
+      .join(" | ");
+    console.log(`${name}${formatted}`);
+  }
+  process.exit(0);
+}
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>] [--list-warnings]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>] [--list-warnings] [--list-builtins]"
   );
   process.exit(1);
 }

@@ -128,12 +128,22 @@ import { VirtualTerminal } from "./terminal.js";
 import { setTerminal } from "./builtins/impl/common.js";
 import { builtinNames } from "./builtins/stubNames.js";
 import { builtinSignatures } from "./builtins/signatures.js";
+import type { BuiltinSignaturesMap } from "./builtins/signatures.js";
+export type {
+  BuiltinParam,
+  BuiltinSignature,
+  BuiltinSignaturesMap,
+} from "./builtins/signatures.js";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
 } from "./warnings.js";
+
+export function getBuiltinSignatures(): BuiltinSignaturesMap {
+  return builtinSignatures;
+}
 
 export {
   lex,
