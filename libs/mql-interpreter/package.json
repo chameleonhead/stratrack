@@ -12,7 +12,7 @@
     "test": "npm run check-warning-docs && npm run check-builtin-docs && vitest run --coverage",
     "watch": "vitest watch",
     "build": "tsc",
-    "prepublishOnly": "npm run update-warning-docs && npm run update-builtin-docs",
+    "prepublishOnly": "npm run check-warning-docs && npm run check-builtin-docs",
     "update-warning-docs": "npm run build && node scripts/updateWarningDocs.js",
     "check-warning-docs": "npm run build && node scripts/updateWarningDocs.js --check",
     "update-builtin-docs": "npm run build && node scripts/updateBuiltinDocs.js",
