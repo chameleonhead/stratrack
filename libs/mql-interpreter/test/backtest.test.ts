@@ -15,6 +15,56 @@ describe("BacktestRunner", () => {
     runner.run();
     expect(runner.getRuntime().globalValues.count).toBe(3);
   });
+  it("fires OnTimer at scheduled intervals", () => {
+    const code = `int ticks=0, timers=0;\nvoid OnInit(){EventSetTimer(1);}\nvoid OnTick(){ticks++;}\nvoid OnTimer(){timers++;}`;
+    const candles = [
+      { time: 0, open: 1, high: 1, low: 1, close: 1 },
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1, low: 1, close: 1 },
+      { time: 3, open: 1, high: 1, low: 1, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.ticks).toBe(4);
+    expect(gv.timers).toBe(3);
+  });
+  it("fires OnTimer using millisecond timer", () => {
+    const code = `int ticks=0, timers=0;\nvoid OnInit(){EventSetMillisecondTimer(1500);}\nvoid OnTick(){ticks++;}\nvoid OnTimer(){timers++;}`;
+    const candles = [
+      { time: 0, open: 1, high: 1, low: 1, close: 1 },
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1, low: 1, close: 1 },
+      { time: 3, open: 1, high: 1, low: 1, close: 1 },
+      { time: 4, open: 1, high: 1, low: 1, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.ticks).toBe(5);
+    expect(gv.timers).toBe(2);
+  });
+  it("fires multiple OnTimer events when step spans intervals", () => {
+    const code = `int timers=0;\nvoid OnInit(){EventSetTimer(1);}\nvoid OnTick(){return;}\nvoid OnTimer(){timers++;}`;
+    const candles = [
+      { time: 0, open: 1, high: 1, low: 1, close: 1 },
+      { time: 3, open: 1, high: 1, low: 1, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.timers).toBe(3);
+  });
+  it("executes scripts via OnStart once", () => {
+    const code = "int s; void OnStart(){ s++; }";
+    const candles = [
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 2, high: 2, low: 2, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    expect(runner.getRuntime().globalValues.s).toBe(1);
+  });
   it("provides price data through builtins", () => {
     const code = "void OnTick(){return;}";
     const candles = [
@@ -85,6 +135,28 @@ describe("BacktestRunner", () => {
     const history = runner.getBroker().getHistory();
     expect(history.length).toBe(1);
     expect(history[0].closePrice).toBe(0.8);
+  });
+
+  it("fires OnTrade for order operations", () => {
+    const code = `int trades=0;\nvoid OnTick(){int t=OrderSend("",0,1,0,0,0,0);OrderClose(t,1,0);}\nvoid OnTrade(){trades++;}`;
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    expect(runner.getRuntime().globalValues.trades).toBe(2);
+  });
+
+  it("fires OnTrade when orders open and close automatically", () => {
+    const code = `int trades=0;int placed=0;\nvoid OnTick(){if(placed==0){OrderSend("",2,1,0.9,0,0,2.0);placed=1;}}\nvoid OnTrade(){trades++;}`;
+    const candles = [
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1.1, low: 0.8, close: 1.05 },
+      { time: 3, open: 1.05, high: 2.1, low: 1, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    runner.step();
+    runner.step();
+    expect(runner.getRuntime().globalValues.trades).toBe(3);
   });
 
   it("converts ticks to candles", () => {

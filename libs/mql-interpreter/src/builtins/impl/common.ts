@@ -7,6 +7,10 @@ export function setTerminal(t: VirtualTerminal | null): void {
   terminal = t;
 }
 
+export function getTerminal(): VirtualTerminal | null {
+  return terminal;
+}
+
 export const Print: BuiltinFunction = (...args: any[]) => {
   if (terminal) return terminal.print(...args);
   console.log(...args);
@@ -39,6 +43,21 @@ export const Sleep: BuiltinFunction = (ms: number) => {
   while (Date.now() < end) {
     /* busy wait */
   }
+  return 0;
+};
+
+export const EventSetTimer: BuiltinFunction = (seconds: number) => {
+  if (terminal) terminal.setTimer(Number(seconds));
+  return 0;
+};
+
+export const EventSetMillisecondTimer: BuiltinFunction = (ms: number) => {
+  if (terminal) terminal.setTimer(Number(ms) / 1000);
+  return 0;
+};
+
+export const EventKillTimer: BuiltinFunction = () => {
+  if (terminal) terminal.killTimer();
   return 0;
 };
 

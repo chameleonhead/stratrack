@@ -26,6 +26,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Resolve input and extern variables via execution context
 - [x] Implement pass-by-reference semantics when executing functions
 - [x] Support loading and executing code split across multiple files
+- [ ] Handle `#import` directives to bind external functions from modules or DLLs.
 - [x] Create automated tests covering the lexer, parser and runtime
 - [x] Document the interpreter architecture and usage examples
 - [x] Execute functions via a specified entry point and manage an execution context
@@ -50,9 +51,25 @@ The following tasks outline future work required to develop a functional MQL4/5 
       `break` and `continue`.
 - [x] Integrate statement execution with parsed function bodies so user
       defined functions can run.
+- [x] Parse enumeration declarations and expose enumerator constants.
 - [x] Parse `static` and `virtual` modifiers on class fields and methods.
 - [x] Implement object instantiation and inheritance through `instantiate()`
       and the `new`/`delete` operators. Polymorphic dispatch is still pending.
+- [x] Implement runtime polymorphic dispatch for virtual methods.
+- [x] Warn when overriding non-virtual methods and support an explicit `override` specifier.
+- [x] Distinguish compile warnings from errors so non-fatal diagnostics can be reported.
+- [x] Allow treating warnings as errors via CLI flag.
+- [x] Expose a programmatic option to treat warnings as errors when calling `compile` or `interpret`.
+- [x] Allow suppressing specific warnings via CLI flag.
+- [x] Document available warning codes and expose a way to list them.
+- [x] Auto-generate warning code lists from diagnostic definitions to keep documentation in sync.
+- [x] Integrate warning documentation generation into the release process.
+- [x] Add a CI check to ensure warning documentation is up to date.
+- [x] Auto-generate builtin signature documentation and verify it remains current.
+  - [x] Expose builtin signatures via a CLI flag.
+  - [ ] Allow outputting builtin signatures in JSON form for easier machine consumption.
+  - [ ] Investigate generating builtin signature documentation at release time without relying on a checked-in `BUILTIN_SIGNATURES.md`.
+- [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`
@@ -178,11 +195,23 @@ The following tasks outline future work required to develop a functional MQL4/5 
 # Program structure and virtual terminal
 
 - [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
-  - [ ] Distinguish expert advisors, scripts and indicators based on entry points.
+  - [x] Distinguish expert advisors, scripts and indicators based on entry points.
   - [x] Automatically call `OnInit` before execution and `OnDeinit` after completion.
-  - [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
-- [ ] Provide a `VirtualTerminal` abstraction.
-  - [ ] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
+- [x] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [x] Support millisecond precision timers with `EventSetMillisecondTimer`.
+  - [x] Trigger multiple timer events if a single step covers several intervals.
+- [ ] Support additional event handlers:
+  - [x] `OnTrade`
+    - [ ] Provide trade event context (e.g., order ticket and type) for `OnTrade` handlers.
+  - [ ] `OnChartEvent`
+- [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
+- [x] Provide a `VirtualTerminal` abstraction.
+  - [x] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
   - [ ] Keep the terminal modular so real-time implementations can replace parts like file access or network I/O.
   - [ ] Split terminal services into separate "cards" (file, network, ui) for easy replacement.
   - [ ] Implement UI features like chart and window operations when running against the real terminal.
+  - [ ] Support binary file operations such as `FileReadInteger` and `FileSeek`.
+
+# Debugging support
+
+- [ ] Provide a debugging API allowing breakpoints, step execution and variable inspection.

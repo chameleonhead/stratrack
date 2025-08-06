@@ -19,6 +19,9 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   GetTickCount64: { parameters: [] },
   GetMicrosecondCount: { parameters: [] },
   Sleep: { parameters: [{ type: "int" }] },
+  EventSetTimer: { parameters: [{ type: "int" }] },
+  EventSetMillisecondTimer: { parameters: [{ type: "int" }] },
+  EventKillTimer: { parameters: [] },
   PlaySound: { parameters: [{ type: "string" }] },
   SendMail: {
     parameters: [{ type: "string" }, { type: "string" }, { type: "string" }],
@@ -35,6 +38,14 @@ export const builtinSignatures: BuiltinSignaturesMap = {
       { type: "int", optional: true },
     ],
   },
+  FileOpen: {
+    parameters: [{ type: "string" }, { type: "string" }],
+  },
+  FileReadString: { parameters: [{ type: "int" }] },
+  FileWriteString: {
+    parameters: [{ type: "int" }, { type: "string" }],
+  },
+  FileClose: { parameters: [{ type: "int" }] },
   StringTrimLeft: { parameters: [{ type: "string" }] },
   StringTrimRight: { parameters: [{ type: "string" }] },
   StringLen: { parameters: [{ type: "string" }] },

@@ -19,6 +19,7 @@ import {
   callFunction,
   instantiate,
   callMethod,
+  ProgramType,
 } from "./runtime.js";
 import { cast, PrimitiveType } from "./casting.js";
 import {
@@ -128,6 +129,22 @@ import { VirtualTerminal } from "./terminal.js";
 import { setTerminal } from "./builtins/impl/common.js";
 import { builtinNames } from "./builtins/stubNames.js";
 import { builtinSignatures } from "./builtins/signatures.js";
+import type { BuiltinSignaturesMap } from "./builtins/signatures.js";
+export type {
+  BuiltinParam,
+  BuiltinSignature,
+  BuiltinSignaturesMap,
+} from "./builtins/signatures.js";
+import {
+  warnings as warningDefinitions,
+  WarningCode,
+  getWarningCodes,
+  getWarnings,
+} from "./warnings.js";
+
+export function getBuiltinSignatures(): BuiltinSignaturesMap {
+  return builtinSignatures;
+}
 
 export {
   lex,
@@ -257,19 +274,27 @@ export {
   TimeYear,
   VirtualTerminal,
   setTerminal,
+  warningDefinitions as warnings,
+  getWarningCodes,
+  getWarnings,
 };
+
+export type { WarningCode, ProgramType };
 
 export interface Compilation {
   ast: Declaration[];
   runtime: Runtime;
   properties: PropertyMap;
   errors: CompilationError[];
+  warnings: CompilationError[];
+  programType: ProgramType;
 }
 
 export interface CompilationError {
   message: string;
   line: number;
   column: number;
+  code?: string;
 }
 
 function checkTypes(ast: Declaration[]): CompilationError[] {
@@ -437,7 +462,61 @@ function validateFunctionCalls(ast: Declaration[], runtime: Runtime): Compilatio
   return errors;
 }
 
-export function compile(source: string, options: PreprocessOptions = {}): Compilation {
+function validateOverrides(ast: Declaration[]): CompilationError[] {
+  const diagnostics: CompilationError[] = [];
+  const classes = new Map<string, ClassDeclaration>();
+  for (const decl of ast) {
+    if (decl.type === "ClassDeclaration") {
+      classes.set(decl.name, decl);
+    }
+  }
+  const findBaseMethod = (
+    baseName: string | undefined,
+    methodName: string
+  ): { method: ClassMethod; className: string } | undefined => {
+    let current = baseName;
+    while (current) {
+      const base = classes.get(current);
+      if (!base) break;
+      const m = base.methods.find((mm) => mm.name === methodName);
+      if (m) return { method: m, className: current };
+      current = base.base;
+    }
+    return undefined;
+  };
+
+  for (const cls of classes.values()) {
+    for (const m of cls.methods) {
+      const baseInfo = findBaseMethod(cls.base, m.name);
+      if (baseInfo) {
+        const { method: baseMethod, className } = baseInfo;
+        if (!baseMethod.virtual) {
+          diagnostics.push({
+            message: `Method ${m.name} overrides non-virtual method in ${className}`,
+            line: m.loc?.line ?? 0,
+            column: m.loc?.column ?? 0,
+            code: warningDefinitions.overrideNonVirtual.code,
+          });
+        }
+      } else if (m.override) {
+        diagnostics.push({
+          message: `Method ${m.name} marked override but no base method found`,
+          line: m.loc?.line ?? 0,
+          column: m.loc?.column ?? 0,
+          code: warningDefinitions.overrideMissing.code,
+        });
+      }
+    }
+  }
+  return diagnostics;
+}
+
+export interface CompileOptions extends PreprocessOptions {
+  warningsAsErrors?: boolean;
+  suppressWarnings?: string[];
+}
+
+export function compile(source: string, options: CompileOptions = {}): Compilation {
   const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
   let parseError: CompilationError | null = null;
@@ -454,20 +533,32 @@ export function compile(source: string, options: PreprocessOptions = {}): Compil
   }
   const runtime = execute(ast);
   runtime.properties = properties;
+  let programType: ProgramType = "script";
+  if (runtime.functions["OnCalculate"]) programType = "indicator";
+  else if (runtime.functions["OnTick"]) programType = "expert";
+  else if (runtime.functions["OnStart"]) programType = "script";
+  runtime.programType = programType;
   const errors = [...lexErrors];
+  let warnings: CompilationError[] = [];
   if (parseError) {
     errors.push(parseError);
   } else {
     errors.push(...checkTypes(ast));
     errors.push(...validateFunctionCalls(ast, runtime));
+    warnings.push(...validateOverrides(ast));
   }
-  return { ast, runtime, properties, errors };
+  const suppressed = new Set(options.suppressWarnings ?? []);
+  warnings = warnings.filter((w) => !w.code || !suppressed.has(w.code));
+  if (options.warningsAsErrors) {
+    errors.push(...warnings);
+  }
+  return { ast, runtime, properties, errors, warnings, programType };
 }
 
 export function interpret(
   source: string,
   context?: ExecutionContext,
-  options: PreprocessOptions = {}
+  options: CompileOptions = {}
 ): Runtime {
   const { runtime, properties, errors } = compile(source, options);
   if (errors.length) {

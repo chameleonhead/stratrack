@@ -88,6 +88,7 @@ export class BacktestRunner {
   private selectedOrder?: Order;
   private initialized = false;
   private deinitialized = false;
+  private pendingTradeEvents = 0;
   constructor(
     private source: string,
     private candles: Candle[],
@@ -100,6 +101,9 @@ export class BacktestRunner {
     }
     this.runtime = compilation.runtime;
     const broker = new Broker();
+    broker.onTrade(() => {
+      this.pendingTradeEvents++;
+    });
     const account = new Account(
       options.initialBalance ?? 10000,
       options.initialMargin ?? 0,
@@ -560,9 +564,18 @@ export class BacktestRunner {
   }
 
   step(): void {
-    const entry = this.options.entryPoint || "OnTick";
     this.callInit();
+    if (this.runtime.programType === "script") {
+      const entry = this.options.entryPoint || "OnStart";
+      callFunction(this.runtime, entry);
+      this.index = this.candles.length;
+      this.callDeinit();
+      return;
+    }
     if (this.index >= this.candles.length) return;
+    const entry =
+      this.options.entryPoint ||
+      (this.runtime.programType === "indicator" ? "OnCalculate" : "OnTick");
     const candle = this.candles[this.index];
     const symbol = this.options.symbol ?? "TEST";
     const tick = this.market.getTick(symbol, candle.time);
@@ -572,7 +585,18 @@ export class BacktestRunner {
     if (profit) {
       this.session.account.applyProfit(profit);
     }
+    if (this.runtime.functions["OnTimer"]) {
+      while (this.terminal.shouldTriggerTimer(candle.time)) {
+        callFunction(this.runtime, "OnTimer");
+      }
+    }
     callFunction(this.runtime, entry);
+    if (this.runtime.functions["OnTrade"]) {
+      while (this.pendingTradeEvents > 0) {
+        this.pendingTradeEvents--;
+        callFunction(this.runtime, "OnTrade");
+      }
+    }
     this.index++;
     if (this.index >= this.candles.length) this.callDeinit();
   }
