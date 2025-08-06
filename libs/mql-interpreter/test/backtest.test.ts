@@ -29,6 +29,21 @@ describe("BacktestRunner", () => {
     expect(gv.ticks).toBe(4);
     expect(gv.timers).toBe(3);
   });
+  it("fires OnTimer using millisecond timer", () => {
+    const code = `int ticks=0, timers=0;\nvoid OnInit(){EventSetMillisecondTimer(1500);}\nvoid OnTick(){ticks++;}\nvoid OnTimer(){timers++;}`;
+    const candles = [
+      { time: 0, open: 1, high: 1, low: 1, close: 1 },
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1, low: 1, close: 1 },
+      { time: 3, open: 1, high: 1, low: 1, close: 1 },
+      { time: 4, open: 1, high: 1, low: 1, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.ticks).toBe(5);
+    expect(gv.timers).toBe(2);
+  });
   it("executes scripts via OnStart once", () => {
     const code = "int s; void OnStart(){ s++; }";
     const candles = [

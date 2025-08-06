@@ -51,6 +51,11 @@ export const EventSetTimer: BuiltinFunction = (seconds: number) => {
   return 0;
 };
 
+export const EventSetMillisecondTimer: BuiltinFunction = (ms: number) => {
+  if (terminal) terminal.setTimer(Number(ms) / 1000);
+  return 0;
+};
+
 export const EventKillTimer: BuiltinFunction = () => {
   if (terminal) terminal.killTimer();
   return 0;

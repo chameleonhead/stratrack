@@ -20,6 +20,7 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   GetMicrosecondCount: { parameters: [] },
   Sleep: { parameters: [{ type: "int" }] },
   EventSetTimer: { parameters: [{ type: "int" }] },
+  EventSetMillisecondTimer: { parameters: [{ type: "int" }] },
   EventKillTimer: { parameters: [] },
   PlaySound: { parameters: [{ type: "string" }] },
   SendMail: {
