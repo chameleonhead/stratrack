@@ -137,6 +137,28 @@ describe("BacktestRunner", () => {
     expect(history[0].closePrice).toBe(0.8);
   });
 
+  it("fires OnTrade for order operations", () => {
+    const code = `int trades=0;\nvoid OnTick(){int t=OrderSend("",0,1,0,0,0,0);OrderClose(t,1,0);}\nvoid OnTrade(){trades++;}`;
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    expect(runner.getRuntime().globalValues.trades).toBe(2);
+  });
+
+  it("fires OnTrade when orders open and close automatically", () => {
+    const code = `int trades=0;int placed=0;\nvoid OnTick(){if(placed==0){OrderSend("",2,1,0.9,0,0,2.0);placed=1;}}\nvoid OnTrade(){trades++;}`;
+    const candles = [
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1.1, low: 0.8, close: 1.05 },
+      { time: 3, open: 1.05, high: 2.1, low: 1, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    runner.step();
+    runner.step();
+    expect(runner.getRuntime().globalValues.trades).toBe(3);
+  });
+
   it("converts ticks to candles", () => {
     const ticks = [
       { time: 0, bid: 1, ask: 1 },

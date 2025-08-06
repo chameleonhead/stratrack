@@ -200,7 +200,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Support millisecond precision timers with `EventSetMillisecondTimer`.
   - [x] Trigger multiple timer events if a single step covers several intervals.
 - [ ] Support additional event handlers:
-  - [ ] `OnTrade`
+  - [x] `OnTrade`
+    - [ ] Provide trade event context (e.g., order ticket and type) for `OnTrade` handlers.
   - [ ] `OnChartEvent`
 - [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
 - [x] Provide a `VirtualTerminal` abstraction.

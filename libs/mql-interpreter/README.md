@@ -299,6 +299,7 @@ console.log(runner.getRuntime().globalValues.count); // 1
 ## Program structure and virtual terminal
 
 BacktestRunner automatically calls `OnInit` before processing the first candle and invokes `OnDeinit` after the session ends. Timers can be scheduled with `EventSetTimer` or `EventSetMillisecondTimer` to invoke `OnTimer` at second or millisecond intervals; `EventKillTimer` cancels the schedule.
+Trade operations like `OrderSend`, `OrderClose` or `OrderModify` trigger `OnTrade` so programs can react to order events.
 Programs are classified as expert advisors, scripts, or indicators based on which handlers they implement (`OnTick`, `OnStart`, `OnCalculate`). The detected `programType` is exposed by `compile` and guides BacktestRunner's default entry point.
 To simplify testing, a `VirtualTerminal` provides an in-memory file system. Helpers like `FileOpen`, `FileReadString` or `FileWriteString` can use this terminal without touching the host file system. The terminal implementation is encapsulated so it can later be replaced with real-time logic.
 The terminal also stores global variables used by helpers such as `GlobalVariableSet` and exposes basic UI stubs like `Alert` and `PlaySound`. Chart and window operations are currently no-ops in the backtest implementation but can be swapped out when running against a real terminal.
