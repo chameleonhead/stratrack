@@ -15,6 +15,20 @@ describe("BacktestRunner", () => {
     runner.run();
     expect(runner.getRuntime().globalValues.count).toBe(3);
   });
+  it("fires OnTimer at scheduled intervals", () => {
+    const code = `int ticks=0, timers=0;\nvoid OnInit(){EventSetTimer(1);}\nvoid OnTick(){ticks++;}\nvoid OnTimer(){timers++;}`;
+    const candles = [
+      { time: 0, open: 1, high: 1, low: 1, close: 1 },
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 1, high: 1, low: 1, close: 1 },
+      { time: 3, open: 1, high: 1, low: 1, close: 1 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    const gv = runner.getRuntime().globalValues;
+    expect(gv.ticks).toBe(4);
+    expect(gv.timers).toBe(3);
+  });
   it("executes scripts via OnStart once", () => {
     const code = "int s; void OnStart(){ s++; }";
     const candles = [

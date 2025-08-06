@@ -46,6 +46,16 @@ export const Sleep: BuiltinFunction = (ms: number) => {
   return 0;
 };
 
+export const EventSetTimer: BuiltinFunction = (seconds: number) => {
+  if (terminal) terminal.setTimer(Number(seconds));
+  return 0;
+};
+
+export const EventKillTimer: BuiltinFunction = () => {
+  if (terminal) terminal.killTimer();
+  return 0;
+};
+
 export const PlaySound: BuiltinFunction = (file: string) => {
   return terminal ? terminal.playSound(file) : true;
 };

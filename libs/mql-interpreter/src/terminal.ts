@@ -13,6 +13,8 @@ export class VirtualTerminal {
   private nextHandle = 1;
   private globalVars: Record<string, { value: number; time: number }> = {};
   private storagePath?: string;
+  private timerInterval: number | null = null;
+  private nextTimer: number | null = null;
 
   constructor(storagePath?: string) {
     this.storagePath = storagePath;
@@ -158,6 +160,30 @@ export class VirtualTerminal {
     } catch {
       return 0;
     }
+  }
+
+  // ----- timer helpers -----
+  setTimer(seconds: number): void {
+    this.timerInterval = seconds;
+    this.nextTimer = null;
+  }
+
+  killTimer(): void {
+    this.timerInterval = null;
+    this.nextTimer = null;
+  }
+
+  shouldTriggerTimer(time: number): boolean {
+    if (this.timerInterval === null) return false;
+    if (this.nextTimer === null) {
+      this.nextTimer = time + this.timerInterval;
+      return false;
+    }
+    if (time >= this.nextTimer) {
+      this.nextTimer += this.timerInterval;
+      return true;
+    }
+    return false;
   }
 
   // ----- ui helpers -----

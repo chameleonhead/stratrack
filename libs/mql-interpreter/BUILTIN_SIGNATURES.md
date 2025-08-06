@@ -57,6 +57,8 @@ This file is auto-generated from src/builtins/signatures.ts. Do not edit.
 - `DebugBreak()`
 - `DoubleToStr(double, [int])`
 - `DoubleToString(double, [int])`
+- `EventKillTimer()`
+- `EventSetTimer(int)`
 - `ExpertRemove()`
 - `FileClose(int)`
 - `FileOpen(string, string)`

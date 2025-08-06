@@ -19,6 +19,8 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   GetTickCount64: { parameters: [] },
   GetMicrosecondCount: { parameters: [] },
   Sleep: { parameters: [{ type: "int" }] },
+  EventSetTimer: { parameters: [{ type: "int" }] },
+  EventKillTimer: { parameters: [] },
   PlaySound: { parameters: [{ type: "string" }] },
   SendMail: {
     parameters: [{ type: "string" }, { type: "string" }, { type: "string" }],

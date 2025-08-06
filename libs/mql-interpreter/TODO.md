@@ -196,7 +196,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
   - [x] Distinguish expert advisors, scripts and indicators based on entry points.
   - [x] Automatically call `OnInit` before execution and `OnDeinit` after completion.
-- [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [x] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [ ] Support millisecond precision timers with `EventSetMillisecondTimer`.
 - [ ] Support additional event handlers such as `OnTrade` and `OnChartEvent`.
 - [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
 - [x] Provide a `VirtualTerminal` abstraction.
