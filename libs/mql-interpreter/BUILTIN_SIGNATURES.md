@@ -58,6 +58,10 @@ This file is auto-generated from src/builtins/signatures.ts. Do not edit.
 - `DoubleToStr(double, [int])`
 - `DoubleToString(double, [int])`
 - `ExpertRemove()`
+- `FileClose(int)`
+- `FileOpen(string, string)`
+- `FileReadString(int)`
+- `FileWriteString(int, string)`
 - `GetMicrosecondCount()`
 - `GetTickCount()`
 - `GetTickCount64()`

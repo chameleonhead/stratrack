@@ -299,7 +299,8 @@ console.log(runner.getRuntime().globalValues.count); // 1
 ## Program structure and virtual terminal
 
 BacktestRunner automatically calls `OnInit` before processing the first candle and invokes `OnDeinit` after the session ends.
-To simplify testing, a `VirtualTerminal` provides an in-memory file system. Helpers like `FileOpen` or `FileReadString` can use this terminal without touching the host file system. The terminal implementation is encapsulated so it can later be replaced with real-time logic.
+Programs are classified as expert advisors, scripts, or indicators based on which handlers they implement (`OnTick`, `OnStart`, `OnCalculate`). The detected `programType` is exposed by `compile` and guides BacktestRunner's default entry point.
+To simplify testing, a `VirtualTerminal` provides an in-memory file system. Helpers like `FileOpen`, `FileReadString` or `FileWriteString` can use this terminal without touching the host file system. The terminal implementation is encapsulated so it can later be replaced with real-time logic.
 The terminal also stores global variables used by helpers such as `GlobalVariableSet` and exposes basic UI stubs like `Alert` and `PlaySound`. Chart and window operations are currently no-ops in the backtest implementation but can be swapped out when running against a real terminal.
 Global variables are kept across sessions when a storage path is provided to `VirtualTerminal`. The `GlobalVariablesFlush` builtin writes them to disk and values expire after four weeks without access.
 Additional helpers like `Symbol`, `Period`, `IsTesting` and `TerminalInfoInteger` report the current environment state during backtests.

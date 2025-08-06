@@ -194,15 +194,17 @@ The following tasks outline future work required to develop a functional MQL4/5 
 # Program structure and virtual terminal
 
 - [ ] Reflect the program lifecycle described at <https://book.mql4.com/build/structure>.
-  - [ ] Distinguish expert advisors, scripts and indicators based on entry points.
+  - [x] Distinguish expert advisors, scripts and indicators based on entry points.
   - [x] Automatically call `OnInit` before execution and `OnDeinit` after completion.
-  - [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
-  - [ ] Support additional event handlers such as `OnTrade` and `OnChartEvent`.
-- [ ] Provide a `VirtualTerminal` abstraction.
-  - [ ] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
+- [ ] Implement a scheduling system for events like `OnTick` and `OnTimer`.
+- [ ] Support additional event handlers such as `OnTrade` and `OnChartEvent`.
+- [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
+- [x] Provide a `VirtualTerminal` abstraction.
+  - [x] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
   - [ ] Keep the terminal modular so real-time implementations can replace parts like file access or network I/O.
   - [ ] Split terminal services into separate "cards" (file, network, ui) for easy replacement.
   - [ ] Implement UI features like chart and window operations when running against the real terminal.
+  - [ ] Support binary file operations such as `FileReadInteger` and `FileSeek`.
 
 # Debugging support
 

@@ -15,6 +15,16 @@ describe("BacktestRunner", () => {
     runner.run();
     expect(runner.getRuntime().globalValues.count).toBe(3);
   });
+  it("executes scripts via OnStart once", () => {
+    const code = "int s; void OnStart(){ s++; }";
+    const candles = [
+      { time: 1, open: 1, high: 1, low: 1, close: 1 },
+      { time: 2, open: 2, high: 2, low: 2, close: 2 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.run();
+    expect(runner.getRuntime().globalValues.s).toBe(1);
+  });
   it("provides price data through builtins", () => {
     const code = "void OnTick(){return;}";
     const candles = [

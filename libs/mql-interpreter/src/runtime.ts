@@ -25,6 +25,8 @@ export interface RuntimeClassMethod {
   body?: string;
 }
 
+export type ProgramType = "expert" | "script" | "indicator";
+
 export interface Runtime {
   enums: Record<string, Record<string, number>>;
   classes: Record<
@@ -63,6 +65,8 @@ export interface Runtime {
   globalValues: Record<string, any>;
   /** Execution context used when running entry points */
   context?: ExecutionContext;
+  /** Program classification (expert, script, indicator) */
+  programType?: ProgramType;
 }
 
 import {

@@ -19,6 +19,7 @@ import {
   callFunction,
   instantiate,
   callMethod,
+  ProgramType,
 } from "./runtime.js";
 import { cast, PrimitiveType } from "./casting.js";
 import {
@@ -278,7 +279,7 @@ export {
   getWarnings,
 };
 
-export type { WarningCode };
+export type { WarningCode, ProgramType };
 
 export interface Compilation {
   ast: Declaration[];
@@ -286,6 +287,7 @@ export interface Compilation {
   properties: PropertyMap;
   errors: CompilationError[];
   warnings: CompilationError[];
+  programType: ProgramType;
 }
 
 export interface CompilationError {
@@ -531,6 +533,11 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
   }
   const runtime = execute(ast);
   runtime.properties = properties;
+  let programType: ProgramType = "script";
+  if (runtime.functions["OnCalculate"]) programType = "indicator";
+  else if (runtime.functions["OnTick"]) programType = "expert";
+  else if (runtime.functions["OnStart"]) programType = "script";
+  runtime.programType = programType;
   const errors = [...lexErrors];
   let warnings: CompilationError[] = [];
   if (parseError) {
@@ -545,7 +552,7 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
   if (options.warningsAsErrors) {
     errors.push(...warnings);
   }
-  return { ast, runtime, properties, errors, warnings };
+  return { ast, runtime, properties, errors, warnings, programType };
 }
 
 export function interpret(

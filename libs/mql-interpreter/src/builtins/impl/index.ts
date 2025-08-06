@@ -4,6 +4,7 @@ import { OrderSend } from "./OrderSend.js";
 import { iMA } from "./iMA.js";
 import { iMACD } from "./iMACD.js";
 import { iRSI } from "./iRSI.js";
+import { FileOpen, FileReadString, FileWriteString, FileClose } from "./file.js";
 import {
   IndicatorBuffers,
   SetIndexBuffer,
@@ -236,6 +237,10 @@ export const coreBuiltins: Record<string, BuiltinFunction> = {
   GlobalVariableTemp,
   GlobalVariableSetOnCondition,
   GlobalVariablesFlush,
+  FileOpen,
+  FileReadString,
+  FileWriteString,
+  FileClose,
   TerminalCompany,
   TerminalName,
   TerminalPath,

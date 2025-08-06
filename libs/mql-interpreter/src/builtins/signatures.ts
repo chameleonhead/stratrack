@@ -35,6 +35,14 @@ export const builtinSignatures: BuiltinSignaturesMap = {
       { type: "int", optional: true },
     ],
   },
+  FileOpen: {
+    parameters: [{ type: "string" }, { type: "string" }],
+  },
+  FileReadString: { parameters: [{ type: "int" }] },
+  FileWriteString: {
+    parameters: [{ type: "int" }, { type: "string" }],
+  },
+  FileClose: { parameters: [{ type: "int" }] },
   StringTrimLeft: { parameters: [{ type: "string" }] },
   StringTrimRight: { parameters: [{ type: "string" }] },
   StringLen: { parameters: [{ type: "string" }] },

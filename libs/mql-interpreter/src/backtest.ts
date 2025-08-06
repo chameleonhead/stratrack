@@ -560,9 +560,18 @@ export class BacktestRunner {
   }
 
   step(): void {
-    const entry = this.options.entryPoint || "OnTick";
     this.callInit();
+    if (this.runtime.programType === "script") {
+      const entry = this.options.entryPoint || "OnStart";
+      callFunction(this.runtime, entry);
+      this.index = this.candles.length;
+      this.callDeinit();
+      return;
+    }
     if (this.index >= this.candles.length) return;
+    const entry =
+      this.options.entryPoint ||
+      (this.runtime.programType === "indicator" ? "OnCalculate" : "OnTick");
     const candle = this.candles[this.index];
     const symbol = this.options.symbol ?? "TEST";
     const tick = this.market.getTick(symbol, candle.time);

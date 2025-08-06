@@ -7,6 +7,10 @@ export function setTerminal(t: VirtualTerminal | null): void {
   terminal = t;
 }
 
+export function getTerminal(): VirtualTerminal | null {
+  return terminal;
+}
+
 export const Print: BuiltinFunction = (...args: any[]) => {
   if (terminal) return terminal.print(...args);
   console.log(...args);
