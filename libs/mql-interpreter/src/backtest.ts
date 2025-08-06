@@ -581,8 +581,10 @@ export class BacktestRunner {
     if (profit) {
       this.session.account.applyProfit(profit);
     }
-    if (this.runtime.functions["OnTimer"] && this.terminal.shouldTriggerTimer(candle.time)) {
-      callFunction(this.runtime, "OnTimer");
+    if (this.runtime.functions["OnTimer"]) {
+      while (this.terminal.shouldTriggerTimer(candle.time)) {
+        callFunction(this.runtime, "OnTimer");
+      }
     }
     callFunction(this.runtime, entry);
     this.index++;
