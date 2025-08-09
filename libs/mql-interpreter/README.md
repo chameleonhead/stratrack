@@ -43,7 +43,8 @@ Both `compile` and `interpret` accept a `warningsAsErrors` option to escalate
 warnings into the `errors` array. When set, `interpret` throws if any
 warnings are produced. A `suppressWarnings` array may also be provided to
 ignore specific warning codes such as `override-non-virtual` or
-`override-missing`.
+`override-missing`. Within source files you can toggle diagnostics using
+`#pragma warning disable <code>` and `#pragma warning enable <code>`.
 
 Available warning codes include:
 

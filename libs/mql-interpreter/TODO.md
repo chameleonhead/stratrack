@@ -69,7 +69,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - [x] Expose builtin signatures via a CLI flag.
   - [x] Allow outputting builtin signatures in JSON form for easier machine consumption.
   - [x] Investigate generating builtin signature documentation at release time without relying on a checked-in `BUILTIN_SIGNATURES.md`.
-- [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
+- [x] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`
