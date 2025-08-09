@@ -159,6 +159,24 @@ describe("BacktestRunner", () => {
     expect(runner.getRuntime().globalValues.trades).toBe(3);
   });
 
+  it("provides order context to OnTrade handlers", () => {
+    const code = `int calls=0;\nvoid OnTick(){int t=OrderSend("",0,1,0,0,0,0);OrderClose(t,1,0);}\nvoid OnTrade(){calls++;}`;
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    expect(runner.getRuntime().globalValues.calls).toBe(2);
+    expect(runner.getRuntime().tradeContext).toEqual({ ticket: 0, type: "buy" });
+  });
+
+  it("fires OnChartEvent when events are queued", () => {
+    const code = `int events=0;\nvoid OnChartEvent(int id,long l,double d,string s){events++;}\nvoid OnTick(){events+=0;}`;
+    const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
+    const runner = new BacktestRunner(code, candles);
+    callFunction(runner.getRuntime(), "EventChartCustom", [1, 2, 3.5, "x"]);
+    runner.step();
+    expect(runner.getRuntime().globalValues.events).toBe(1);
+  });
+
   it("converts ticks to candles", () => {
     const ticks = [
       { time: 0, bid: 1, ask: 1 },

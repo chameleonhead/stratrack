@@ -17,6 +17,11 @@ if (args.includes("--list-warnings")) {
   }
   process.exit(0);
 }
+if (args.includes("--list-builtins-json")) {
+  const sigs = getBuiltinSignatures();
+  console.log(JSON.stringify(sigs, null, 2));
+  process.exit(0);
+}
 if (args.includes("--list-builtins")) {
   const sigs = getBuiltinSignatures();
   const names = Object.keys(sigs).sort();
@@ -37,7 +42,7 @@ if (args.includes("--list-builtins")) {
 const file = args.shift();
 if (!file) {
   console.error(
-    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>] [--list-warnings] [--list-builtins]"
+    "Usage: mql-interpreter <file.mq4> [--backtest <data.csv>] [--data <data.csv>] [--data-dir <dir>] [--balance <amount>] [--margin <amount>] [--currency <code>] [--format html|json] [--warnings-as-errors] [--suppress-warning <code>] [--list-warnings] [--list-builtins] [--list-builtins-json]"
   );
   process.exit(1);
 }

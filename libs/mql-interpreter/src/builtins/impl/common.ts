@@ -1,6 +1,8 @@
+// Import paths use explicit `.js` extensions to satisfy NodeNext module resolution.
 import type { BuiltinFunction } from "../types.js";
 import { formatString } from "./format.js";
 import type { VirtualTerminal } from "../../terminal.js";
+import { DateTimeValue } from "../../datetimeValue.js";
 
 let terminal: VirtualTerminal | null = null;
 export function setTerminal(t: VirtualTerminal | null): void {
@@ -12,8 +14,9 @@ export function getTerminal(): VirtualTerminal | null {
 }
 
 export const Print: BuiltinFunction = (...args: any[]) => {
-  if (terminal) return terminal.print(...args);
-  console.log(...args);
+  const formatted = args.map((a) => (a instanceof DateTimeValue ? a.toString() : a));
+  if (terminal) return terminal.print(...formatted);
+  console.log(...formatted);
   return 0;
 };
 
@@ -59,6 +62,16 @@ export const EventSetMillisecondTimer: BuiltinFunction = (ms: number) => {
 export const EventKillTimer: BuiltinFunction = () => {
   if (terminal) terminal.killTimer();
   return 0;
+};
+
+export const EventChartCustom: BuiltinFunction = (
+  id: number,
+  lparam: number,
+  dparam: number,
+  sparam: string
+) => {
+  if (terminal) terminal.queueChartEvent(id, lparam, dparam, sparam);
+  return true;
 };
 
 export const PlaySound: BuiltinFunction = (file: string) => {

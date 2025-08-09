@@ -51,4 +51,12 @@ describe("cli options", () => {
     expect(lines.some((l) => l.startsWith("Print("))).toBe(true);
     expect(lines.some((l) => l.startsWith("ArrayResize("))).toBe(true);
   });
+
+  it("dumps builtin signatures as JSON", () => {
+    const result = spawnSync("node", [cli, "--list-builtins-json"], { cwd: root });
+    expect(result.status).toBe(0);
+    const json = JSON.parse(result.stdout.toString());
+    expect(json.Print).toBeDefined();
+    expect(json.ArrayResize).toBeDefined();
+  });
 });

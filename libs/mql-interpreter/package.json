@@ -9,14 +9,13 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint .",
-    "test": "npm run check-warning-docs && npm run check-builtin-docs && vitest run --coverage",
+    "test": "npm run check-warning-docs && vitest run --coverage",
     "watch": "vitest watch",
     "build": "tsc",
-    "prepublishOnly": "npm run check-warning-docs && npm run check-builtin-docs",
+    "prepublishOnly": "npm run check-warning-docs",
     "update-warning-docs": "npm run build && node scripts/updateWarningDocs.js",
     "check-warning-docs": "npm run build && node scripts/updateWarningDocs.js --check",
-    "update-builtin-docs": "npm run build && node scripts/updateBuiltinDocs.js",
-    "check-builtin-docs": "npm run build && node scripts/updateBuiltinDocs.js --check"
+    "generate-builtin-docs": "npm run build && node scripts/generateBuiltinDocs.js --out BUILTIN_SIGNATURES.md"
   },
   "keywords": [],
   "author": "",

@@ -3,6 +3,8 @@ export interface EvalEnv {
 }
 
 import { lex, Token, TokenType } from "./lexer.js";
+import { cast } from "./casting.js";
+import { DateTimeValue } from "./datetimeValue.js";
 
 interface EvalResult {
   value: any;
@@ -237,41 +239,47 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       const op = consume(TokenType.Operator).value;
       if (!left.ref) throw new Error("Invalid assignment target");
       const right = parseAssignment();
+      const oldVal = env[left.ref] ?? 0;
+      let newVal;
       switch (op) {
         case "=":
-          env[left.ref] = right.value;
+          newVal = right.value;
           break;
         case "+=":
-          env[left.ref] += right.value;
+          newVal = oldVal + right.value;
           break;
         case "-=":
-          env[left.ref] -= right.value;
+          newVal = oldVal - right.value;
           break;
         case "*=":
-          env[left.ref] *= right.value;
+          newVal = oldVal * right.value;
           break;
         case "/=":
-          env[left.ref] /= right.value;
+          newVal = oldVal / right.value;
           break;
         case "%=":
-          env[left.ref] %= right.value;
+          newVal = oldVal % right.value;
           break;
         case "&=":
-          env[left.ref] &= right.value;
+          newVal = oldVal & right.value;
           break;
         case "|=":
-          env[left.ref] |= right.value;
+          newVal = oldVal | right.value;
           break;
         case "^=":
-          env[left.ref] ^= right.value;
+          newVal = oldVal ^ right.value;
           break;
         case "<<=":
-          env[left.ref] <<= right.value;
+          newVal = oldVal << right.value;
           break;
         case ">>=":
-          env[left.ref] >>= right.value;
+          newVal = oldVal >> right.value;
           break;
       }
+      const isDate =
+        (runtime && runtime.variables[left.ref]?.type === "datetime") ||
+        oldVal instanceof DateTimeValue;
+      env[left.ref] = isDate ? cast(newVal, "datetime") : newVal;
       left = { value: env[left.ref] };
     }
     return left;

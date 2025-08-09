@@ -15,6 +15,12 @@ export class VirtualTerminal {
   private storagePath?: string;
   private timerInterval: number | null = null;
   private nextTimer: number | null = null;
+  private chartEvents: {
+    id: number;
+    lparam: number;
+    dparam: number;
+    sparam: string;
+  }[] = [];
 
   constructor(storagePath?: string) {
     this.storagePath = storagePath;
@@ -184,6 +190,22 @@ export class VirtualTerminal {
       return true;
     }
     return false;
+  }
+
+  // ----- chart events -----
+  queueChartEvent(id: number, lparam: number, dparam: number, sparam: string): void {
+    this.chartEvents.push({ id, lparam, dparam, sparam });
+  }
+
+  consumeChartEvents(): {
+    id: number;
+    lparam: number;
+    dparam: number;
+    sparam: string;
+  }[] {
+    const events = this.chartEvents;
+    this.chartEvents = [];
+    return events;
   }
 
   // ----- ui helpers -----

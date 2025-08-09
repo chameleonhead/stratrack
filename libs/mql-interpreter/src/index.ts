@@ -517,7 +517,12 @@ export interface CompileOptions extends PreprocessOptions {
 }
 
 export function compile(source: string, options: CompileOptions = {}): Compilation {
-  const { tokens, properties, errors: lexErrors } = preprocessWithProperties(source, options);
+  const {
+    tokens,
+    properties,
+    errors: lexErrors,
+    pragmas,
+  } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
   let parseError: CompilationError | null = null;
   if (lexErrors.length === 0) {
@@ -547,8 +552,19 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
     errors.push(...validateFunctionCalls(ast, runtime));
     warnings.push(...validateOverrides(ast));
   }
-  const suppressed = new Set(options.suppressWarnings ?? []);
-  warnings = warnings.filter((w) => !w.code || !suppressed.has(w.code));
+  const suppressedGlobal = new Set(options.suppressWarnings ?? []);
+  const sortedPragmas = [...pragmas].sort((a, b) => a.line - b.line);
+  const isSuppressed = (w: CompilationError) => {
+    if (!w.code) return false;
+    const active = new Set(suppressedGlobal);
+    for (const p of sortedPragmas) {
+      if (p.line > w.line) break;
+      if (p.action === "disable") p.codes.forEach((c) => active.add(c));
+      else p.codes.forEach((c) => active.delete(c));
+    }
+    return active.has(w.code);
+  };
+  warnings = warnings.filter((w) => !isSuppressed(w));
   if (options.warningsAsErrors) {
     errors.push(...warnings);
   }

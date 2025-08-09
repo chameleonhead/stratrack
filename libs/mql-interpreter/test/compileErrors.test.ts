@@ -81,4 +81,18 @@ describe("compile errors", () => {
     const found = result.errors.some((e) => e.code === "override-non-virtual");
     expect(found).toBe(false);
   });
+
+  it("respects #pragma warning directives", () => {
+    const result = compile(
+      `
+      class A { void foo(){} };
+      #pragma warning disable override-non-virtual
+      class B : A { void foo(){} };
+      #pragma warning enable override-non-virtual
+      class C : A { void foo(){} };
+    `
+    );
+    const count = result.warnings.filter((w) => w.code === "override-non-virtual").length;
+    expect(count).toBe(1);
+  });
 });

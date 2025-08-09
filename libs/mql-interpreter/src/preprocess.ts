@@ -15,6 +15,7 @@ export interface PreprocessResult {
   tokens: Token[];
   properties: PropertyMap;
   errors: LexError[];
+  pragmas: PragmaWarningDirective[];
 }
 
 export interface PreprocessOptions {
@@ -26,6 +27,12 @@ export interface PreprocessOptions {
 }
 
 import { lex, Token, TokenType, LexError } from "./lexer.js";
+
+export interface PragmaWarningDirective {
+  line: number;
+  action: "disable" | "enable";
+  codes: string[];
+}
 
 function expandTokens(tokens: Token[], macros: MacroMap, errors: LexError[]): Token[] {
   const out: Token[] = [];
@@ -101,6 +108,8 @@ export function preprocessWithProperties(
   let codeLines: string[] = [];
   const result: Token[] = [];
   const errors: LexError[] = [];
+  const pragmas: PragmaWarningDirective[] = [];
+  let emittedLines = 0;
   const condStack: Array<{
     parentActive: boolean;
     condition: boolean;
@@ -113,12 +122,17 @@ export function preprocessWithProperties(
   const flush = () => {
     if (codeLines.length === 0) return;
     const res = lex(codeLines.join("\n"));
-    result.push(...expandTokens(res.tokens, macros, errors));
+    const expanded = expandTokens(res.tokens, macros, errors);
+    for (const t of expanded) t.line += emittedLines;
+    for (const e of res.errors) e.line += emittedLines;
+    result.push(...expanded);
     errors.push(...res.errors);
+    emittedLines += codeLines.length;
     codeLines = [];
   };
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmed = line.trim();
     if (trimmed.startsWith("#ifdef")) {
       flush();
@@ -213,12 +227,25 @@ export function preprocessWithProperties(
       }
       continue;
     }
+    if (trimmed.startsWith("#pragma")) {
+      flush();
+      const rest = trimmed.slice("#pragma".length).trim();
+      if (rest.startsWith("warning")) {
+        const parts = rest.slice("warning".length).trim().split(/\s+/);
+        const action = parts.shift() as "disable" | "enable" | undefined;
+        const codes = parts;
+        if (action === "disable" || action === "enable") {
+          pragmas.push({ line: emittedLines + 1, action, codes });
+        }
+      }
+      continue;
+    }
     codeLines.push(line);
   }
 
   flush();
 
-  return { tokens: result, properties, errors };
+  return { tokens: result, properties, errors, pragmas };
 }
 
 export function preprocess(source: string, options: PreprocessOptions = {}): Token[] {

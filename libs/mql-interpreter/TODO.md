@@ -67,9 +67,9 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Add a CI check to ensure warning documentation is up to date.
 - [x] Auto-generate builtin signature documentation and verify it remains current.
   - [x] Expose builtin signatures via a CLI flag.
-  - [ ] Allow outputting builtin signatures in JSON form for easier machine consumption.
-  - [ ] Investigate generating builtin signature documentation at release time without relying on a checked-in `BUILTIN_SIGNATURES.md`.
-- [ ] Support `#pragma warning` directives to enable or disable diagnostics within source files.
+  - [x] Allow outputting builtin signatures in JSON form for easier machine consumption.
+  - [x] Investigate generating builtin signature documentation at release time without relying on a checked-in `BUILTIN_SIGNATURES.md`.
+- [x] Support `#pragma warning` directives to enable or disable diagnostics within source files.
 - [x] Support templates and class templates.
 - [x] Support abstract classes and pure virtual methods.
 - [x] Execute class and struct methods via `callMethod()`
@@ -83,7 +83,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [x] Validate builtin calls during compilation. Argument counts are now checked for builtins with signatures; argument types remain unverified.
 - [x] Provide builtin function signatures via metadata to enable parameter checking for common builtins.
 - [x] Expand builtin signature coverage across array, string, math and time helpers.
-- [ ] Ensure `builtinSignatures` includes every builtin and keep it synchronized with implementations.
+- [x] Ensure `builtinSignatures` includes every builtin and keep it synchronized with implementations.
 - [x] Accumulate compile errors instead of throwing immediately.
   - [x] Introduce a `CompilationError` interface with source location and message.
   - [x] Have `compile()` return `errors` alongside `ast`, `runtime` and `properties`.
@@ -171,6 +171,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - [x] Implement `iMA` using backtest candle data.
   - [x] Provide `iMACD`, `iRSI` and other helpers.
   - [x] Ensure indicators operate on the selected symbol and timeframe when running a session.
+  - [x] Add `iATR` helper computing Average True Range.
   - [x] Reuse the `MarketData` service for any price series needed by these functions.
 
 # Custom indicator helpers
@@ -202,8 +203,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
   - [x] Trigger multiple timer events if a single step covers several intervals.
 - [ ] Support additional event handlers:
   - [x] `OnTrade`
-    - [ ] Provide trade event context (e.g., order ticket and type) for `OnTrade` handlers.
-  - [ ] `OnChartEvent`
+  - [x] Provide trade event context (e.g., order ticket and type) for `OnTrade` handlers.
+  - [x] `OnChartEvent`
 - [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
 - [x] Provide a `VirtualTerminal` abstraction.
   - [x] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.
