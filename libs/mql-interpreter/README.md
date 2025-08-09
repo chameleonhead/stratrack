@@ -99,7 +99,7 @@ Others like `iMA`, `iMACD`, `iRSI` or `AccountBalance` depend on trading platfor
 default to no-ops. Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
 
-A generated list of builtin signatures is available in [BUILTIN_SIGNATURES.md](./BUILTIN_SIGNATURES.md) and can be refreshed with `npm run update-builtin-docs`. Run `mql-interpreter --list-builtins` to print the signatures from the CLI or `--list-builtins-json` for a JSON dump.
+Builtin signatures can be listed with `mql-interpreter --list-builtins` or `--list-builtins-json`. A markdown file may be generated on demand using `npm run generate-builtin-docs` when preparing releases.
 
 Global variable helpers described at
 <https://docs.mql4.com/globals> are included. Use functions such as

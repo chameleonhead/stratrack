@@ -9,3 +9,6 @@ node_modules/
 # Misc
 *.log
 
+# Generated builtin signature docs
+libs/mql-interpreter/BUILTIN_SIGNATURES.md
+
