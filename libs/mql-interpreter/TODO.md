@@ -203,7 +203,7 @@ The following tasks outline future work required to develop a functional MQL4/5 
 - [ ] Support additional event handlers:
   - [x] `OnTrade`
   - [x] Provide trade event context (e.g., order ticket and type) for `OnTrade` handlers.
-  - [ ] `OnChartEvent`
+  - [x] `OnChartEvent`
 - [ ] Provide a dedicated indicator runner feeding series data to `OnCalculate`.
 - [x] Provide a `VirtualTerminal` abstraction.
   - [x] Offer an in-memory file system for builtins such as `FileOpen`, `FileReadString` and `FileWriteString`.

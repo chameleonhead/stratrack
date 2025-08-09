@@ -601,6 +601,11 @@ export class BacktestRunner {
         this.selectedOrder = prevSelected;
       }
     }
+    if (this.runtime.functions["OnChartEvent"]) {
+      for (const ev of this.terminal.consumeChartEvents()) {
+        callFunction(this.runtime, "OnChartEvent", [ev.id, ev.lparam, ev.dparam, ev.sparam]);
+      }
+    }
     this.index++;
     if (this.index >= this.candles.length) this.callDeinit();
   }

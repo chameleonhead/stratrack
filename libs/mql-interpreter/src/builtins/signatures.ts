@@ -22,6 +22,9 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   EventSetTimer: { parameters: [{ type: "int" }] },
   EventSetMillisecondTimer: { parameters: [{ type: "int" }] },
   EventKillTimer: { parameters: [] },
+  EventChartCustom: {
+    parameters: [{ type: "int" }, { type: "long" }, { type: "double" }, { type: "string" }],
+  },
   PlaySound: { parameters: [{ type: "string" }] },
   SendMail: {
     parameters: [{ type: "string" }, { type: "string" }, { type: "string" }],

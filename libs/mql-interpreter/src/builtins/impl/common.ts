@@ -64,6 +64,16 @@ export const EventKillTimer: BuiltinFunction = () => {
   return 0;
 };
 
+export const EventChartCustom: BuiltinFunction = (
+  id: number,
+  lparam: number,
+  dparam: number,
+  sparam: string
+) => {
+  if (terminal) terminal.queueChartEvent(id, lparam, dparam, sparam);
+  return true;
+};
+
 export const PlaySound: BuiltinFunction = (file: string) => {
   return terminal ? terminal.playSound(file) : true;
 };
