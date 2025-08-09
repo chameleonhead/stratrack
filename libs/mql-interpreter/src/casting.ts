@@ -1,3 +1,5 @@
+import { DateTimeValue } from "./datetimeValue.js";
+
 export type PrimitiveType =
   | "char"
   | "uchar"
@@ -33,8 +35,9 @@ export function cast(value: any, type: PrimitiveType): any {
     case "long":
     case "ulong":
     case "color":
-    case "datetime":
       return Number(value) | 0;
+    case "datetime":
+      return new DateTimeValue(Number(value) | 0);
     default:
       throw new Error(`Unknown cast target: ${type}`);
   }

@@ -78,6 +78,7 @@ import {
 import { getBuiltin } from "./builtins/index.js";
 import { cast, PrimitiveType } from "./casting.js";
 import { executeStatements } from "./statements.js";
+import { DateTimeValue } from "./datetimeValue.js";
 import { lex, Token, TokenType } from "./lexer.js";
 
 const numericTypes = new Set([
@@ -128,7 +129,7 @@ function resolveValue(
 }
 
 function checkPrimitive(value: any, type: string): boolean {
-  if (numericTypes.has(type)) return typeof value === "number";
+  if (numericTypes.has(type)) return typeof value === "number" || value instanceof DateTimeValue;
   if (type === "bool") return typeof value === "boolean" || typeof value === "number";
   if (type === "string") return typeof value === "string";
   return true;
@@ -422,7 +423,15 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
     }
     for (let i = 0; i < decl.parameters.length; i++) {
       const p = decl.parameters[i];
-      Object.defineProperty(env, p.name, { value: args[i], writable: true, enumerable: true });
+      let val = args[i];
+      if (!p.byRef) {
+        try {
+          val = cast(val, p.type as PrimitiveType);
+        } catch {
+          /* ignore */
+        }
+      }
+      Object.defineProperty(env, p.name, { value: val, writable: true, enumerable: true });
     }
     for (const local of decl.locals) {
       let val: any = undefined;

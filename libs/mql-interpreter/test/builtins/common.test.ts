@@ -40,10 +40,11 @@ import {
   WebRequest,
   setTerminal,
 } from "../../src/builtins/impl/common";
+import { StructToTime } from "../../src/builtins/impl/datetime";
 import { builtinSignatures } from "../../src/builtins/signatures";
 import { coreBuiltins, envBuiltins } from "../../src/builtins/impl";
 import { VirtualTerminal } from "../../src/terminal";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {
   beforeEach(() => {
@@ -53,6 +54,14 @@ describe("common builtins", () => {
   it("Print and Comment output and return 0", () => {
     expect(Print("a")).toBe(0);
     expect(Comment("b")).toBe(0);
+  });
+
+  it("Print formats datetime values", () => {
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const t = StructToTime({ year: 2000, mon: 1, day: 2, hour: 3, min: 4, sec: 5 });
+    Print(t);
+    expect(spy).toHaveBeenCalledWith("2000.01.02 03:04:05");
+    spy.mockRestore();
   });
 
   it("Alert returns true", () => {

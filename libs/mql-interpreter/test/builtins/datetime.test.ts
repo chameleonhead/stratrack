@@ -65,6 +65,6 @@ describe("date/time builtins", () => {
 
   it("TimeToStruct and StructToTime round trip", () => {
     const s = TimeToStruct(0);
-    expect(StructToTime(s)).toBe(0);
+    expect(Number(StructToTime(s))).toBe(0);
   });
 });

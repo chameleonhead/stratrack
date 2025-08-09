@@ -1,6 +1,7 @@
 import type { BuiltinFunction } from "../types.js";
+import { DateTimeValue } from "../../datetimeValue.js";
 
-const toDate = (t?: number) => (t === undefined ? new Date() : new Date(t * 1000));
+const toDate = (t?: number) => (t === undefined ? new Date() : new Date(Number(t) * 1000));
 
 export const Day: BuiltinFunction = (t?: number) => toDate(t).getUTCDate();
 export const DayOfWeek: BuiltinFunction = (t?: number) => toDate(t).getUTCDay();
@@ -16,10 +17,12 @@ export const Month: BuiltinFunction = (t?: number) => toDate(t).getUTCMonth() + 
 export const Seconds: BuiltinFunction = (t?: number) => toDate(t).getUTCSeconds();
 export const Year: BuiltinFunction = (t?: number) => toDate(t).getUTCFullYear();
 
-export const TimeCurrent: BuiltinFunction = () => Math.floor(Date.now() / 1000);
-export const TimeLocal: BuiltinFunction = () => TimeCurrent() + TimeGMTOffset();
+const now = () => Math.floor(Date.now() / 1000);
+
+export const TimeCurrent: BuiltinFunction = () => new DateTimeValue(now());
+export const TimeLocal: BuiltinFunction = () => new DateTimeValue(now() + TimeGMTOffset());
 export const TimeGMT: BuiltinFunction = () =>
-  TimeDaylightSavings() === 0 ? TimeCurrent() : TimeCurrent() - 3600;
+  new DateTimeValue(TimeDaylightSavings() === 0 ? now() : now() - 3600);
 export const TimeDaylightSavings: BuiltinFunction = () => {
   // Get current time in UTC
   const utc = new Date().toLocaleString("en-US", {
@@ -62,7 +65,7 @@ export const StructToTime: BuiltinFunction = (s: {
   sec?: number;
 }) => {
   const date = new Date(s.year, (s.mon || 1) - 1, s.day, s.hour || 0, s.min || 0, s.sec || 0);
-  return Math.floor(date.getTime() / 1000);
+  return new DateTimeValue(Math.floor(date.getTime() / 1000));
 };
 
 export const TimeDay: BuiltinFunction = (t: number) => Day(t);

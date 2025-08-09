@@ -99,7 +99,7 @@ Others like `iMA`, `iMACD`, `iRSI` or `AccountBalance` depend on trading platfor
 default to no-ops. Host applications may provide real implementations by
 calling `registerEnvBuiltins()` before executing code.
 
-A generated list of builtin signatures is available in [BUILTIN_SIGNATURES.md](./BUILTIN_SIGNATURES.md) and can be refreshed with `npm run update-builtin-docs`. Run `mql-interpreter --list-builtins` to print the signatures from the CLI.
+A generated list of builtin signatures is available in [BUILTIN_SIGNATURES.md](./BUILTIN_SIGNATURES.md) and can be refreshed with `npm run update-builtin-docs`. Run `mql-interpreter --list-builtins` to print the signatures from the CLI or `--list-builtins-json` for a JSON dump.
 
 Global variable helpers described at
 <https://docs.mql4.com/globals> are included. Use functions such as
@@ -204,8 +204,8 @@ npx mql-interpreter path/to/file.mq4
 The CLI performs compilation first. Any warnings are printed but do not halt
 execution by default. Pass `--warnings-as-errors` to exit when warnings are
 present, `--suppress-warning <code>` to ignore specific warnings, `--list-warnings`
-to print the available warning codes with descriptions, or `--list-builtins` to list builtin
-function signatures. If syntax or type
+to print the available warning codes with descriptions, `--list-builtins` to list builtin
+function signatures, or `--list-builtins-json` to output them as JSON. If syntax or type
 errors are detected they are printed and the process exits with a
 non-zero status. When syntax errors occur, type checking is skipped to avoid
 redundant messages:

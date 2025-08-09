@@ -4,6 +4,7 @@
 import { lex, Token, TokenType } from "./lexer.js";
 import { evaluateExpression, EvalEnv } from "./expression.js";
 import type { Runtime } from "./runtime.js";
+import { cast, PrimitiveType } from "./casting.js";
 
 interface ExecResult {
   break?: boolean;
@@ -130,6 +131,7 @@ export function executeStatements(
 
     // variable declaration
     if (t.type === TokenType.Keyword && typeKeywords.has(t.value)) {
+      const type = t.value;
       consume(TokenType.Keyword);
       const name = consume(TokenType.Identifier).value;
       let val: any = undefined;
@@ -137,6 +139,11 @@ export function executeStatements(
         consume(TokenType.Operator, "=");
         const expr = readExpression(";");
         val = evaluateExpression(expr, env, runtime);
+        try {
+          val = cast(val, type as PrimitiveType);
+        } catch {
+          /* ignore */
+        }
       }
       consume(TokenType.Punctuation, ";");
       env[name] = val;
