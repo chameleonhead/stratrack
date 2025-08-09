@@ -67,6 +67,8 @@ export interface Runtime {
   context?: ExecutionContext;
   /** Program classification (expert, script, indicator) */
   programType?: ProgramType;
+  /** Context for the current trade event if inside OnTrade */
+  tradeContext?: { ticket: number; type: "buy" | "sell" };
 }
 
 import {

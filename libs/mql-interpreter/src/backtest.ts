@@ -88,7 +88,7 @@ export class BacktestRunner {
   private selectedOrder?: Order;
   private initialized = false;
   private deinitialized = false;
-  private pendingTradeEvents = 0;
+  private pendingTradeEvents: Order[] = [];
   constructor(
     private source: string,
     private candles: Candle[],
@@ -101,8 +101,8 @@ export class BacktestRunner {
     }
     this.runtime = compilation.runtime;
     const broker = new Broker();
-    broker.onTrade(() => {
-      this.pendingTradeEvents++;
+    broker.onTrade((order) => {
+      this.pendingTradeEvents.push(order);
     });
     const account = new Account(
       options.initialBalance ?? 10000,
@@ -592,9 +592,13 @@ export class BacktestRunner {
     }
     callFunction(this.runtime, entry);
     if (this.runtime.functions["OnTrade"]) {
-      while (this.pendingTradeEvents > 0) {
-        this.pendingTradeEvents--;
+      while (this.pendingTradeEvents.length > 0) {
+        const order = this.pendingTradeEvents.shift()!;
+        const prevSelected = this.selectedOrder;
+        this.selectedOrder = order;
+        (this.runtime as any).tradeContext = { ticket: order.ticket, type: order.type };
         callFunction(this.runtime, "OnTrade");
+        this.selectedOrder = prevSelected;
       }
     }
     this.index++;

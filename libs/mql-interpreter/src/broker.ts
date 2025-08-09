@@ -25,7 +25,7 @@ export interface Order {
 
 export class Broker {
   private orders: Order[] = [];
-  private tradeListeners: (() => void)[] = [];
+  private tradeListeners: ((order: Order) => void)[] = [];
 
   constructor() {}
 
@@ -63,7 +63,7 @@ export class Broker {
       order.price = type === "buy" ? ask : bid;
     }
     this.orders.push(order);
-    this.triggerTrade();
+    this.triggerTrade(order);
     return this.orders.length - 1; // ticket number
   }
 
@@ -81,7 +81,7 @@ export class Broker {
         if (withinRange) {
           order.state = "open";
           order.openTime = candle.time;
-          this.triggerTrade();
+          this.triggerTrade(order);
         } else {
           continue;
         }
@@ -105,7 +105,7 @@ export class Broker {
           order.profit =
             (order.type === "buy" ? price - order.price : order.price - price) * order.volume;
           closedProfit += order.profit;
-          this.triggerTrade();
+          this.triggerTrade(order);
         }
       }
     }
@@ -119,7 +119,7 @@ export class Broker {
     o.closeTime = time;
     o.state = "closed";
     o.profit = (o.type === "buy" ? price - o.price : o.price - price) * o.volume;
-    this.triggerTrade();
+    this.triggerTrade(o);
     return o.profit;
   }
 
@@ -133,7 +133,7 @@ export class Broker {
     else if (sl <= 0) o.sl = undefined;
     if (tp > 0) o.tp = tp;
     else if (tp <= 0) o.tp = undefined;
-    this.triggerTrade();
+    this.triggerTrade(o);
     return true;
   }
 
@@ -178,11 +178,11 @@ export class Broker {
       .reduce((sum, o) => sum + (o.profit || 0), 0);
   }
 
-  onTrade(cb: () => void): void {
+  onTrade(cb: (order: Order) => void): void {
     this.tradeListeners.push(cb);
   }
 
-  private triggerTrade(): void {
-    for (const cb of this.tradeListeners) cb();
+  private triggerTrade(order: Order): void {
+    for (const cb of this.tradeListeners) cb(order);
   }
 }
