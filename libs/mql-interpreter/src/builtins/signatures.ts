@@ -351,6 +351,9 @@ export const builtinSignatures: BuiltinSignaturesMap = {
       { type: "int" },
     ],
   },
+  iATR: {
+    parameters: [{ type: "string" }, { type: "int" }, { type: "int" }, { type: "int" }],
+  },
   iRSI: {
     parameters: [
       { type: "string" },

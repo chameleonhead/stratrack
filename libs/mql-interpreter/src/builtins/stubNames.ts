@@ -151,7 +151,6 @@ export const builtinNames = [
   "iADX",
   "iAlligator",
   "iAO",
-  "iATR",
   "iBands",
   "iBandsOnArray",
   "iBars",

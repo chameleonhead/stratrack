@@ -4,6 +4,7 @@ import { OrderSend } from "./OrderSend.js";
 import { iMA } from "./iMA.js";
 import { iMACD } from "./iMACD.js";
 import { iRSI } from "./iRSI.js";
+import { iATR } from "./iATR.js";
 import { FileOpen, FileReadString, FileWriteString, FileClose } from "./file.js";
 import {
   IndicatorBuffers,
@@ -342,6 +343,7 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
   iMA,
   iMACD,
   iRSI,
+  iATR,
   Bars,
   iBars,
   iBarShift,
@@ -379,6 +381,7 @@ export {
   iMA,
   iMACD,
   iRSI,
+  iATR,
   ArrayResize,
   ArrayCopy,
   ArraySetAsSeries,

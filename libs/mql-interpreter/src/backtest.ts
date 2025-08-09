@@ -412,6 +412,27 @@ export class BacktestRunner {
         const macd = macdVals[macdVals.length - 1];
         return mode === 1 ? sig : macd;
       },
+      iATR: (sym: any, tf: any, period: number, shift: number) => {
+        const arr = candlesFor(sym, tf);
+        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
+        if (idx < period || idx <= 0) return 0;
+        let atr = 0;
+        for (let i = 1; i <= idx; i++) {
+          const cur = arr[i];
+          const prev = arr[i - 1];
+          const tr = Math.max(
+            cur.high - cur.low,
+            Math.abs(cur.high - prev.close),
+            Math.abs(cur.low - prev.close)
+          );
+          if (i <= period) {
+            atr = (atr * (i - 1) + tr) / i;
+          } else {
+            atr = (atr * (period - 1) + tr) / period;
+          }
+        }
+        return atr;
+      },
       iRSI: (sym: any, tf: any, period: number, applied: number, shift: number) => {
         const arr = candlesFor(sym, tf);
         const idx = findIndex(arr, currentTime()) - (shift ?? 0);

@@ -35,6 +35,21 @@ describe("indicator builtins", () => {
     expect(val).toBeCloseTo(50);
   });
 
+  it("calculates ATR", () => {
+    const code = "void OnTick(){return;}";
+    const candles = [
+      { time: 1, open: 1, high: 2, low: 0.5, close: 1 },
+      { time: 2, open: 1, high: 3, low: 0.5, close: 2 },
+      { time: 3, open: 2, high: 4, low: 1.5, close: 3 },
+    ];
+    const runner = new BacktestRunner(code, candles);
+    runner.step();
+    runner.step();
+    const rt = runner.getRuntime();
+    const val = callFunction(rt, "iATR", ["TEST", 0, 2, 0]);
+    expect(val).toBeCloseTo(2.5);
+  });
+
   it("calculates MACD main and signal", () => {
     const code = "void OnTick(){return;}";
     const candles = [
