@@ -75,6 +75,8 @@ export interface BacktestOptions {
   inputValues?: Record<string, any>;
   /** Callback for Print/Comment/Alert output */
   log?: (...args: any[]) => void;
+  /** Default timeframe for the expert advisor in seconds */
+  timeframe?: number;
 }
 
 export interface BacktestReport {
@@ -132,10 +134,10 @@ export class BacktestRunner {
     this.terminal = new VirtualTerminal(storagePath, options.log);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
-    const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;
+    const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
     const baseTicks = candles.map((c) => ({ time: c.time, bid: c.close, ask: c.close }));
     const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
-    const candleData = { [symbol]: { [period]: candles } } as Record<
+    const candleData = { [symbol]: { [dataPeriod]: candles } } as Record<
       string,
       Record<number, Candle[]>
     >;
@@ -161,9 +163,10 @@ export class BacktestRunner {
     rt.Bid = tick?.bid ?? 0;
     rt.Ask = tick?.ask ?? 0;
     rt._Symbol = symbol;
-    if (this.candles.length > 1) {
-      rt._Period = this.candles[1].time - this.candles[0].time;
-    }
+    const period =
+      this.options.timeframe ??
+      (this.candles.length > 1 ? this.candles[1].time - this.candles[0].time : 0);
+    rt._Period = period;
   }
 
   private buildBuiltins(): Record<string, BuiltinFunction> {

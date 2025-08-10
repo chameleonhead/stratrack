@@ -31,4 +31,4 @@ npm run build
 npx serve examples # or python -m http.server inside examples
 ```
 
-The page loads the MACD sample into a text area. Choose a timeframe, optionally enter `input` parameters as JSON, then click **Run Backtest** to send the code and settings to a Web Worker. The worker fetches the sample GBPUSD data, executes `BacktestRunner` asynchronously, streams log output (including `Print` statements) and finally displays the JSON report without blocking the UI.
+The page loads the MACD sample into a text area. Choose the EA's default timeframe (the worker always fetches the sample M1 GBPUSD data and aggregates it as needed), optionally enter `input` parameters as JSON, then click **Run Backtest** to send the code and settings to a Web Worker. The worker executes `BacktestRunner` asynchronously, streams log output (including `Print` statements) and finally displays the JSON report without blocking the UI.
