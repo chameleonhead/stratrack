@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>mql-interpreter Browser Backtest</title>
+  </head>
+  <body>
+    <h1>Browser Backtest (Web Worker)</h1>
+    <textarea id="code" style="width: 100%; height: 200px"></textarea>
+    <button id="run">Run Backtest</button>
+    <pre id="log"></pre>
+    <pre id="output"></pre>
+    <script type="module">
+      const codeArea = document.getElementById("code");
+      const runButton = document.getElementById("run");
+      const log = document.getElementById("log");
+      const output = document.getElementById("output");
+
+      // Load sample MQL into the textarea
+      fetch("./MACD%20Sample.mq4")
+        .then((r) => r.text())
+        .then((t) => {
+          codeArea.value = t;
+        });
+
+      runButton.addEventListener("click", () => {
+        log.textContent = "";
+        output.textContent = "";
+        const worker = new Worker("./browser-backtest-worker.js", { type: "module" });
+        worker.onmessage = (e) => {
+          if (e.data.type === "log") {
+            log.textContent += `${e.data.message}\n`;
+          }
+          if (e.data.type === "result") {
+            output.textContent = JSON.stringify(e.data.report, null, 2);
+            worker.terminate();
+          }
+        };
+        worker.postMessage(codeArea.value);
+      });
+    </script>
+  </body>
+</html>

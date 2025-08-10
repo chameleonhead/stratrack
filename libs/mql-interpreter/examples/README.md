@@ -21,3 +21,14 @@ node bin/mql-interpreter.js "examples/MACD Sample.mq4" --backtest examples/data/
 The command prints a JSON report containing global variables, account metrics and executed orders. By default the backtest runs with a 10,000&nbsp;USD balance; adjust account settings using `--balance`, `--margin` and `--currency` if needed. Replace the CSV file with history exported from MetaTrader to backtest your own data.
 
 The sample dataset uses the `date,time,open,high,low,close,volume` format where `date` is formatted as `YYYY.MM.DD` and `time` is formatted as `HH:MI`. To reproduce a live environment, export MetaTrader history in this format and place it under `examples/data/`.
+
+## Browser Backtest
+
+After building the package you can run a backtest directly in a browser. Serve the `examples` directory and open `browser-backtest.html`:
+
+```bash
+npm run build
+npx serve examples # or python -m http.server inside examples
+```
+
+The page loads the MACD sample into a text area. Click **Run Backtest** to send the code to a Web Worker which fetches the sample GBPUSD data, executes `BacktestRunner` asynchronously, and prints log output and the final JSON report without blocking the UI.
