@@ -71,6 +71,10 @@ export interface BacktestOptions {
   dataDir?: string;
   /** File path used by VirtualTerminal for global variable storage */
   storagePath?: string;
+  /** Values for variables declared with the `input` keyword */
+  inputValues?: Record<string, any>;
+  /** Callback for Print/Comment/Alert output */
+  log?: (...args: any[]) => void;
 }
 
 export interface BacktestReport {
@@ -100,6 +104,14 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = compilation.runtime;
+    if (options.inputValues) {
+      for (const name in this.runtime.variables) {
+        const info = this.runtime.variables[name];
+        if (info.storage === "input" && options.inputValues[name] !== undefined) {
+          this.runtime.globalValues[name] = options.inputValues[name];
+        }
+      }
+    }
     const broker = new Broker();
     broker.onTrade((order) => {
       this.pendingTradeEvents.push(order);
@@ -117,7 +129,7 @@ export class BacktestRunner {
       const base = options.dataDir.replace(/[\\/]+$/, "");
       storagePath = base + "/MQL4/Files/globals.json";
     }
-    this.terminal = new VirtualTerminal(storagePath);
+    this.terminal = new VirtualTerminal(storagePath, options.log);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
     const period = candles.length > 1 ? candles[1].time - candles[0].time : 0;
