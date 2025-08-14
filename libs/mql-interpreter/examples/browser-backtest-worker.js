@@ -1,3 +1,4 @@
+// Import the built interpreter; ensure the static server exposes `dist/index.js` relative to this file.
 import { BacktestRunner, parseCsv } from "../dist/index.js";
 
 const PERIODS = {

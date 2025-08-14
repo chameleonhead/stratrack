@@ -24,11 +24,12 @@ The sample dataset uses the `date,time,open,high,low,close,volume` format where 
 
 ## Browser Backtest
 
-After building the package you can run a backtest directly in a browser. Serve the `examples` directory and open `browser-backtest.html`:
+After building the package you can run a backtest directly in a browser. Because the Web Worker imports the compiled interpreter
+from `dist/index.js`, the static server must expose the package root. Serve this directory and then open `examples/browser-backtest.html`:
 
 ```bash
 npm run build
-npx serve examples # or python -m http.server inside examples
+npx serve . # or python -m http.server
 ```
 
 The page loads the MACD sample into a text area. Choose the EA's default timeframe (the worker always fetches the sample M1 GBPUSD data and aggregates it as needed), optionally enter `input` parameters as JSON, then click **Run Backtest** to send the code and settings to a Web Worker. The worker executes `BacktestRunner` asynchronously, streams log output (including `Print` statements) and finally displays the JSON report without blocking the UI.
