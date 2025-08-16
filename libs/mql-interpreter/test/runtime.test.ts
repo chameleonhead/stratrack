@@ -1,7 +1,7 @@
-import { lex } from "../src/lexer";
-import { parse } from "../src/parser";
+import { lex } from "../src/compiler/lexer";
+import { parse } from "../src/compiler/parser";
 import { execute, callFunction, instantiate, callMethod } from "../src/runtime";
-import { executeStatements } from "../src/statements";
+import { executeStatements } from "../src/runtime/statements";
 import { describe, it, expect, vi } from "vitest";
 
 describe("execute", () => {

@@ -1,5 +1,5 @@
-import { lex } from "../src/lexer";
-import { parse } from "../src/parser";
+import { lex } from "../src/compiler/lexer";
+import { parse } from "../src/compiler/parser";
 import { execute, callFunction } from "../src/runtime";
 import { describe, it, expect } from "vitest";
 

@@ -1,5 +1,8 @@
-import { compile, callFunction, Runtime, registerEnvBuiltins } from "./index.js";
-import type { PreprocessOptions } from "./preprocess.js";
+import { compile } from "../index.js";
+import { callFunction } from "./runtime.js";
+import { registerEnvBuiltins } from "./builtins/index.js";
+import type { Runtime } from "./types.js";
+import type { PreprocessOptions } from "../compiler/preprocess.js";
 import type { BuiltinFunction } from "./builtins/index.js";
 import { Broker, Order } from "./broker.js";
 import { Account, AccountMetrics } from "./account.js";

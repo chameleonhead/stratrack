@@ -1,4 +1,4 @@
-import { cast } from "../src/casting";
+import { cast } from "../src/runtime/casting";
 import { describe, it, expect } from "vitest";
 
 describe("cast", () => {

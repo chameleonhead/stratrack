@@ -1,6 +1,5 @@
 import { builtinNames } from "./stubNames.js";
 import { coreBuiltins, envBuiltins } from "./impl/index.js";
-export { builtinSignatures } from "./signatures.js";
 import type { BuiltinFunction } from "./types.js";
 
 export type { BuiltinFunction } from "./types.js";
