@@ -1,6 +1,6 @@
-import { lex } from "../src/compiler/lexer";
-import { parse } from "../src/compiler/parser";
-import { execute, callFunction } from "../src/runtime";
+import { lex } from "../src/core/compiler/lexer";
+import { parse } from "../src/core/compiler/parser";
+import { execute, callFunction } from "../src/core/runtime";
 import { describe, it, expect } from "vitest";
 
 const code = 'void myfunc(string s="hi");';

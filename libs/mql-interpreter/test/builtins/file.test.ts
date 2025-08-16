@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { VirtualTerminal } from "../../src/runtime/terminal";
-import { setTerminal } from "../../src/runtime/builtins/impl/common";
+import { VirtualTerminal } from "../../src/core/runtime/terminal";
+import { setTerminal } from "../../src/core/runtime/builtins/impl/common";
 import {
   FileOpen,
   FileReadString,
   FileWriteString,
   FileClose,
-} from "../../src/runtime/builtins/impl/file";
+} from "../../src/core/runtime/builtins/impl/file";
 
 describe("file builtins", () => {
   beforeEach(() => {
