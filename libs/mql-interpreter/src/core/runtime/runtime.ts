@@ -11,7 +11,7 @@ import {
   FunctionDeclaration,
   VariableDeclaration,
 } from "../parser/parser";
-import { getBuiltin } from "./builtins/index";
+import { getBuiltin } from "./builtins";
 import { cast, PrimitiveType } from "./casting";
 import { executeStatements } from "./statements";
 import { DateTimeValue } from "./datetimeValue";

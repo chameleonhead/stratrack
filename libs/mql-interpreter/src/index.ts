@@ -37,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./core/runtime/builtins/impl/array";
+} from "./core/runtime/builtins/array";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -58,8 +58,14 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./core/runtime/builtins/impl/strings";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./core/runtime/builtins/index";
+} from "./core/runtime/builtins/strings";
+import {
+  getBuiltin,
+  BuiltinFunction,
+  registerEnvBuiltins,
+  coreBuiltins,
+  envBuiltins,
+} from "./core/runtime/builtins";
 import { evaluateExpression } from "./core/runtime/expression";
 import { executeStatements } from "./core/runtime/statements";
 import {
@@ -84,7 +90,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./core/runtime/builtins/impl/math";
+} from "./core/runtime/builtins/math";
 import {
   Day,
   DayOfWeek,
@@ -109,7 +115,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./core/runtime/builtins/impl/datetime";
+} from "./core/runtime/builtins/datetime";
 import {
   preprocess,
   preprocessWithProperties,
@@ -118,14 +124,19 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from "./core/parser/preprocess";
-import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./core/runtime/backtest";
-import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market";
-import { Broker, OrderState } from "./core/runtime/broker";
-import { Account } from "./core/runtime/account";
-import { VirtualTerminal } from "./core/runtime/terminal";
-import type { TerminalStorage } from "./core/runtime/terminal";
-import { setTerminal } from "./core/runtime/builtins/impl/common";
-import { builtinNames } from "./core/runtime/builtins/stubNames";
+import {
+  BacktestRunner,
+  parseCsv,
+  BacktestReport,
+  BacktestOptions,
+  Broker,
+  Account,
+  MarketData,
+  ticksToCandles,
+  VirtualTerminal,
+} from "./core/libs";
+import type { OrderState, Tick, Candle, TerminalStorage } from "./core/libs";
+import { setTerminal } from "./core/runtime/builtins/common";
 import { builtinSignatures } from "./core/parser/builtins/signatures";
 import type { BuiltinSignaturesMap } from "./core/parser/builtins/signatures";
 export type {
@@ -215,16 +226,13 @@ export {
   executeStatements,
   LexError,
   LexResult,
-  Candle,
   BacktestRunner,
   BacktestReport,
   BacktestOptions,
   Broker,
   Account,
   MarketData,
-  OrderState,
   parseCsv,
-  Tick,
   ticksToCandles,
   MathAbs,
   MathArccos,
@@ -277,7 +285,7 @@ export {
   getWarnings,
 };
 
-export type { TerminalStorage };
+export type { TerminalStorage, Candle, Tick, OrderState };
 
 export type { WarningCode, ProgramType };
 
@@ -373,7 +381,11 @@ function checkTypes(ast: Declaration[]): CompilationError[] {
 
 function validateFunctionCalls(ast: Declaration[], runtime: Runtime): CompilationError[] {
   const errors: CompilationError[] = [];
-  const builtinSet = new Set(builtinNames);
+  const builtinSet = new Set([
+    ...Object.keys(builtinSignatures),
+    ...Object.keys(coreBuiltins),
+    ...Object.keys(envBuiltins),
+  ]);
 
   const scanBody = (body: string | undefined, loc?: { line: number; column: number }) => {
     if (!body) return;

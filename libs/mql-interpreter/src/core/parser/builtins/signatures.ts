@@ -31,6 +31,7 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   },
   SendNotification: { parameters: [{ type: "string" }] },
   SendFTP: { parameters: [{ type: "string" }, { type: "string" }] },
+  ResetLastError: { parameters: [] },
   TerminalClose: { parameters: [] },
   ExpertRemove: { parameters: [] },
   DebugBreak: { parameters: [] },
