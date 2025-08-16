@@ -7,7 +7,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = join(__dirname, "..");
-const cli = join(root, "bin", "mql-interpreter.js");
+const cli = join(root, "dist", "bin", "mql-interpreter.js");
 
 describe("cli options", () => {
   beforeAll(() => {
