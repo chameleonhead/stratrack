@@ -7,7 +7,8 @@ import type { BuiltinFunction } from "./builtins/index.js";
 import { Broker, Order } from "./broker.js";
 import { Account, AccountMetrics } from "./account.js";
 import { MarketData, Candle, Tick } from "./market.js";
-import { VirtualTerminal } from "./terminal.js";
+import { VirtualTerminal, TerminalStorage } from "./terminal.js";
+import { readFileSync, writeFileSync } from "fs";
 import { setTerminal } from "./builtins/impl/common.js";
 
 export interface BacktestSession {
@@ -134,7 +135,22 @@ export class BacktestRunner {
       const base = options.dataDir.replace(/[\\/]+$/, "");
       storagePath = base + "/MQL4/Files/globals.json";
     }
-    this.terminal = new VirtualTerminal(storagePath, options.log);
+    let storage: TerminalStorage | undefined;
+    if (storagePath) {
+      storage = {
+        read: () => {
+          try {
+            return readFileSync(storagePath!, "utf8");
+          } catch {
+            return undefined;
+          }
+        },
+        write: (data: string) => {
+          writeFileSync(storagePath!, data);
+        },
+      };
+    }
+    this.terminal = new VirtualTerminal(storage, options.log);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
     const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;

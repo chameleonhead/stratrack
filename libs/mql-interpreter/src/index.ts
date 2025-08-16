@@ -128,6 +128,7 @@ import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market.
 import { Broker, OrderState } from "./core/runtime/broker.js";
 import { Account } from "./core/runtime/account.js";
 import { VirtualTerminal } from "./core/runtime/terminal.js";
+import type { TerminalStorage } from "./core/runtime/terminal.js";
 import { setTerminal } from "./core/runtime/builtins/impl/common.js";
 import { builtinNames } from "./core/runtime/builtins/stubNames.js";
 import { builtinSignatures } from "./core/parser/builtins/signatures.js";
@@ -280,6 +281,8 @@ export {
   getWarningCodes,
   getWarnings,
 };
+
+export type { TerminalStorage };
 
 export type { WarningCode, ProgramType };
 
