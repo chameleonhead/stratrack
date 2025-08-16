@@ -43,7 +43,7 @@ import {
 import { StructToTime } from "../../src/core/runtime/builtins/impl/datetime";
 import { builtinSignatures } from "../../src/core/parser/builtins/signatures";
 import { coreBuiltins, envBuiltins } from "../../src/core/runtime/builtins/impl";
-import { VirtualTerminal } from "../../src/core/runtime/terminal";
+import { VirtualTerminal } from "../../src/core/libs/virtualTerminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {

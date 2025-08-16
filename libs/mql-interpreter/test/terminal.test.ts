@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VirtualTerminal, TerminalStorage } from "../src/core/runtime/terminal";
+import { VirtualTerminal, TerminalStorage } from "../src/core/libs/virtualTerminal";
 import { unlinkSync, readFileSync, writeFileSync } from "fs";
 
 describe("VirtualTerminal", () => {

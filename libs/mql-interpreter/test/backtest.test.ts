@@ -1,4 +1,4 @@
-import { BacktestRunner, ticksToCandles } from "../src/core/runtime/backtest";
+import { BacktestRunner, ticksToCandles } from "../src/core/libs/backtest";
 import { callFunction } from "../src/core/runtime";
 import { describe, it, expect } from "vitest";
 

@@ -1,14 +1,14 @@
 import { compile } from "../../index";
-import { callFunction } from "./runtime";
-import { registerEnvBuiltins } from "./builtins/index";
-import type { Runtime } from "./types";
+import { callFunction } from "../runtime/runtime";
+import { registerEnvBuiltins } from "../runtime/builtins/index";
+import type { Runtime } from "../runtime/types";
 import type { PreprocessOptions } from "../parser/preprocess";
-import type { BuiltinFunction } from "./builtins/index";
+import type { BuiltinFunction } from "../runtime/builtins/index";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
-import { MarketData, Candle, Tick } from "./market";
-import { VirtualTerminal, TerminalStorage } from "./terminal";
-import { setTerminal } from "./builtins/impl/common";
+import { MarketData, Candle, Tick } from "./marketData";
+import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
+import { setTerminal } from "../runtime/builtins/impl/common";
 
 export interface BacktestSession {
   broker: Broker;
@@ -683,5 +683,5 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles } from "./market";
-export type { Candle, Tick } from "./market";
+export { ticksToCandles } from "./marketData";
+export type { Candle, Tick } from "./marketData";

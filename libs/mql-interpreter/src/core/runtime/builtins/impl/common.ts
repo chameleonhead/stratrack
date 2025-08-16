@@ -1,7 +1,7 @@
 // Import paths omit extensions for bundler compatibility.
 import type { BuiltinFunction } from "../types";
 import { formatString } from "./format";
-import type { VirtualTerminal } from "../../terminal";
+import type { VirtualTerminal } from "../../../libs/virtualTerminal";
 import { DateTimeValue } from "../../datetimeValue";
 
 let terminal: VirtualTerminal | null = null;

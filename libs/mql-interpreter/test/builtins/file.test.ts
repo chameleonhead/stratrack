@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { VirtualTerminal } from "../../src/core/runtime/terminal";
+import { VirtualTerminal } from "../../src/core/libs/virtualTerminal";
 import { setTerminal } from "../../src/core/runtime/builtins/impl/common";
 import {
   FileOpen,

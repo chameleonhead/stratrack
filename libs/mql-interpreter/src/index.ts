@@ -118,12 +118,18 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from "./core/parser/preprocess";
-import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./core/runtime/backtest";
-import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market";
-import { Broker, OrderState } from "./core/runtime/broker";
-import { Account } from "./core/runtime/account";
-import { VirtualTerminal } from "./core/runtime/terminal";
-import type { TerminalStorage } from "./core/runtime/terminal";
+import {
+  BacktestRunner,
+  parseCsv,
+  BacktestReport,
+  BacktestOptions,
+  Broker,
+  Account,
+  MarketData,
+  ticksToCandles,
+  VirtualTerminal,
+} from "./core/libs";
+import type { OrderState, Tick, Candle, TerminalStorage } from "./core/libs";
 import { setTerminal } from "./core/runtime/builtins/impl/common";
 import { builtinNames } from "./core/runtime/builtins/stubNames";
 import { builtinSignatures } from "./core/parser/builtins/signatures";
@@ -215,16 +221,13 @@ export {
   executeStatements,
   LexError,
   LexResult,
-  Candle,
   BacktestRunner,
   BacktestReport,
   BacktestOptions,
   Broker,
   Account,
   MarketData,
-  OrderState,
   parseCsv,
-  Tick,
   ticksToCandles,
   MathAbs,
   MathArccos,
@@ -277,7 +280,7 @@ export {
   getWarnings,
 };
 
-export type { TerminalStorage };
+export type { TerminalStorage, Candle, Tick, OrderState };
 
 export type { WarningCode, ProgramType };
 
