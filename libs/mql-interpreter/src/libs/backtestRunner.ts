@@ -1,14 +1,14 @@
 import { compile } from "../index";
 import { callFunction } from "../runtime/runtime";
-import { registerEnvBuiltins } from "../runtime/builtins";
+import { registerEnvBuiltins } from "./builtins";
 import type { RuntimeState } from "../runtime/types";
 import type { PreprocessOptions } from "../parser/preprocess";
-import type { BuiltinFunction } from "../runtime/builtins";
+import type { BuiltinFunction } from "./builtins";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
 import { MarketData, Candle, Tick } from "./marketData";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setTerminal } from "../runtime/builtins/common";
+import { setTerminal } from "./builtins/common";
 
 export interface BacktestSession {
   broker: Broker;

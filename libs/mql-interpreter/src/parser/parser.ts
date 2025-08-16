@@ -1,7 +1,6 @@
 import { Token, TokenType } from "./lexer";
 import {
   EnumMember,
-  SourceLocation,
   EnumDeclaration,
   ClassField,
   ClassMethod,

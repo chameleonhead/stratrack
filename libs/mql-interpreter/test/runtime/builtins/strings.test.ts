@@ -16,7 +16,7 @@ import {
   StringSplit,
   StringToLower,
   StringToUpper,
-} from "../../../src/runtime/builtins/strings";
+} from "../../../src/libs/builtins/strings";
 import { describe, it, expect } from "vitest";
 
 describe("string builtins", () => {

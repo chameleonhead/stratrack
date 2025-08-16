@@ -37,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./runtime/builtins/array";
+} from "./libs/builtins/array";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -58,14 +58,8 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./runtime/builtins/strings";
-import {
-  getBuiltin,
-  BuiltinFunction,
-  registerEnvBuiltins,
-  coreBuiltins,
-  envBuiltins,
-} from "./runtime/builtins";
+} from "./libs/builtins/strings";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./libs/builtins";
 import { evaluateExpression } from "./runtime/expression";
 import { executeStatements } from "./runtime/statements";
 import {
@@ -90,7 +84,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./runtime/builtins/math";
+} from "./libs/builtins/math";
 import {
   Day,
   DayOfWeek,
@@ -115,7 +109,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./runtime/builtins/datetime";
+} from "./libs/builtins/datetime";
 import {
   preprocess,
   preprocessWithProperties,
@@ -136,9 +130,10 @@ import {
   VirtualTerminal,
 } from "./libs";
 import type { OrderState, Tick, Candle, TerminalStorage } from "./libs";
-import { setTerminal } from "./runtime/builtins/common";
+import { setTerminal } from "./libs/builtins/common";
 import { builtinSignatures } from "./libs/signatures";
 import type { BuiltinSignaturesMap } from "./libs/signatures";
+import { checkTypes, validateFunctionCalls, validateOverrides } from "./semantic/checker";
 export type { BuiltinParam, BuiltinSignature, BuiltinSignaturesMap } from "./libs/signatures";
 import {
   warnings as warningDefinitions,
@@ -302,224 +297,6 @@ export interface CompilationError {
   code?: string;
 }
 
-function checkTypes(ast: Declaration[]): CompilationError[] {
-  const primitive = new Set([
-    "void",
-    "bool",
-    "char",
-    "uchar",
-    "short",
-    "ushort",
-    "int",
-    "uint",
-    "long",
-    "ulong",
-    "float",
-    "double",
-    "color",
-    "datetime",
-    "string",
-  ]);
-  const classes = new Set<string>();
-  const enums = new Set<string>();
-  for (const decl of ast) {
-    if (decl.type === "ClassDeclaration") classes.add(decl.name);
-    if (decl.type === "EnumDeclaration") enums.add(decl.name);
-  }
-  const errors: CompilationError[] = [];
-  const isKnown = (t: string) => primitive.has(t) || classes.has(t) || enums.has(t);
-  for (const decl of ast) {
-    if (decl.type === "VariableDeclaration") {
-      if (!isKnown(decl.varType)) {
-        errors.push({
-          message: `Unknown type ${decl.varType}`,
-          line: decl.loc?.line ?? 0,
-          column: decl.loc?.column ?? 0,
-        });
-      }
-    } else if (decl.type === "FunctionDeclaration") {
-      if (!isKnown(decl.returnType) && decl.returnType !== "void") {
-        errors.push({
-          message: `Unknown return type ${decl.returnType}`,
-          line: decl.loc?.line ?? 0,
-          column: decl.loc?.column ?? 0,
-        });
-      }
-      for (const p of decl.parameters) {
-        if (!isKnown(p.paramType)) {
-          errors.push({
-            message: `Unknown type ${p.paramType} for parameter ${p.name}`,
-            line: decl.loc?.line ?? 0,
-            column: decl.loc?.column ?? 0,
-          });
-        }
-      }
-    } else if (decl.type === "ClassDeclaration") {
-      if (decl.base && !classes.has(decl.base)) {
-        errors.push({
-          message: `Unknown base class ${decl.base}`,
-          line: decl.loc?.line ?? 0,
-          column: decl.loc?.column ?? 0,
-        });
-      }
-      for (const f of decl.fields) {
-        if (!isKnown(f.fieldType)) {
-          errors.push({
-            message: `Unknown type ${f.fieldType} for field ${f.name}`,
-            line: f.loc?.line ?? 0,
-            column: f.loc?.column ?? 0,
-          });
-        }
-      }
-    }
-  }
-  return errors;
-}
-
-function validateFunctionCalls(ast: Declaration[], runtime: RuntimeState): CompilationError[] {
-  const errors: CompilationError[] = [];
-  const builtinSet = new Set([
-    ...Object.keys(builtinSignatures),
-    ...Object.keys(coreBuiltins),
-    ...Object.keys(envBuiltins),
-  ]);
-
-  const scanBody = (body: string | undefined, loc?: { line: number; column: number }) => {
-    if (!body) return;
-    const { tokens } = lex(body);
-    for (let i = 0; i < tokens.length - 1; i++) {
-      const t = tokens[i];
-      if (t.type === TokenType.Identifier && tokens[i + 1].value === "(") {
-        const name = t.value;
-        let j = i + 2;
-        let depth = 1;
-        let args = 0;
-        let expecting = true;
-        while (j < tokens.length && depth > 0) {
-          const tok = tokens[j];
-          if (tok.value === "(") {
-            depth++;
-            if (depth === 1) expecting = true;
-          } else if (tok.value === ")") {
-            depth--;
-            if (depth === 0) {
-              if (!expecting) args++;
-              break;
-            }
-          } else if (tok.value === "," && depth === 1) {
-            args++;
-            expecting = true;
-          } else if (depth === 1) {
-            expecting = false;
-          }
-          j++;
-        }
-        const overloads = runtime.functions[name];
-        const sig = builtinSignatures[name];
-        const isBuiltin = builtinSet.has(name) || !!sig;
-        if (!overloads && !isBuiltin) {
-          errors.push({
-            message: `Unknown function ${name}`,
-            line: loc?.line ?? 0,
-            column: loc?.column ?? 0,
-          });
-        } else if (overloads) {
-          const required = Math.min(
-            ...overloads.map((o) => o.parameters.filter((p) => p.defaultValue === undefined).length)
-          );
-          const max = Math.max(...overloads.map((o) => o.parameters.length));
-          if (args < required || args > max) {
-            errors.push({
-              message: `Incorrect argument count for ${name}`,
-              line: loc?.line ?? 0,
-              column: loc?.column ?? 0,
-            });
-          }
-        } else if (sig) {
-          const sigs = Array.isArray(sig) ? sig : [sig];
-          let match = false;
-          for (const s of sigs) {
-            const required = s.parameters.filter((p) => !p.optional).length;
-            const max = s.variadic ? Infinity : s.parameters.length;
-            if (args >= required && args <= max) {
-              match = true;
-              break;
-            }
-          }
-          if (!match) {
-            errors.push({
-              message: `Incorrect argument count for ${name}`,
-              line: loc?.line ?? 0,
-              column: loc?.column ?? 0,
-            });
-          }
-        }
-      }
-    }
-  };
-
-  for (const decl of ast) {
-    if (decl.type === "FunctionDeclaration") {
-      scanBody(decl.body, decl.loc);
-    } else if (decl.type === "ClassDeclaration") {
-      for (const m of decl.methods) {
-        scanBody(m.body, m.loc);
-      }
-    }
-  }
-
-  return errors;
-}
-
-function validateOverrides(ast: Declaration[]): CompilationError[] {
-  const diagnostics: CompilationError[] = [];
-  const classes = new Map<string, ClassDeclaration>();
-  for (const decl of ast) {
-    if (decl.type === "ClassDeclaration") {
-      classes.set(decl.name, decl);
-    }
-  }
-  const findBaseMethod = (
-    baseName: string | undefined,
-    methodName: string
-  ): { method: ClassMethod; className: string } | undefined => {
-    let current = baseName;
-    while (current) {
-      const base = classes.get(current);
-      if (!base) break;
-      const m = base.methods.find((mm) => mm.name === methodName);
-      if (m) return { method: m, className: current };
-      current = base.base;
-    }
-    return undefined;
-  };
-
-  for (const cls of classes.values()) {
-    for (const m of cls.methods) {
-      const baseInfo = findBaseMethod(cls.base, m.name);
-      if (baseInfo) {
-        const { method: baseMethod, className } = baseInfo;
-        if (!baseMethod.virtual) {
-          diagnostics.push({
-            message: `Method ${m.name} overrides non-virtual method in ${className}`,
-            line: m.loc?.line ?? 0,
-            column: m.loc?.column ?? 0,
-            code: warningDefinitions.overrideNonVirtual.code,
-          });
-        }
-      } else if (m.override) {
-        diagnostics.push({
-          message: `Method ${m.name} marked override but no base method found`,
-          line: m.loc?.line ?? 0,
-          column: m.loc?.column ?? 0,
-          code: warningDefinitions.overrideMissing.code,
-        });
-      }
-    }
-  }
-  return diagnostics;
-}
-
 export interface CompileOptions extends PreprocessOptions {
   warningsAsErrors?: boolean;
   suppressWarnings?: string[];
@@ -558,7 +335,7 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
     errors.push(parseError);
   } else {
     errors.push(...checkTypes(ast));
-    errors.push(...validateFunctionCalls(ast, runtime));
+    errors.push(...validateFunctionCalls(ast, builtinSignatures));
     warnings.push(...validateOverrides(ast));
   }
   const suppressedGlobal = new Set(options.suppressWarnings ?? []);
