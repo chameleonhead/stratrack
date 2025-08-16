@@ -21,9 +21,14 @@ export class VirtualTerminal {
     dparam: number;
     sparam: string;
   }[] = [];
+  private logger: (...args: any[]) => void;
 
-  constructor(storagePath?: string) {
+  constructor(
+    storagePath?: string,
+    logger: (...args: any[]) => void = (...args: any[]) => console.log(...args)
+  ) {
     this.storagePath = storagePath;
+    this.logger = logger;
     if (storagePath) {
       try {
         const json = readFileSync(storagePath, "utf8");
@@ -210,17 +215,17 @@ export class VirtualTerminal {
 
   // ----- ui helpers -----
   print(...args: any[]): number {
-    console.log(...args);
+    this.logger(...args);
     return 0;
   }
 
   comment(...args: any[]): number {
-    console.log(...args);
+    this.logger(...args);
     return 0;
   }
 
   alert(...args: any[]): boolean {
-    console.log(...args);
+    this.logger(...args);
     return true;
   }
 
