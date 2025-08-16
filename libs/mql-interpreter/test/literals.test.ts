@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { evaluateExpression } from "../src/expression";
+import { evaluateExpression } from "../src/runtime/expression";
 import { compile } from "../src";
 
 describe("literal expressions", () => {

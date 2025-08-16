@@ -1,4 +1,4 @@
-import { evaluateExpression } from "../src/expression";
+import { evaluateExpression } from "../src/runtime/expression";
 import { compile, interpret } from "../src/index";
 import { describe, it, expect } from "vitest";
 

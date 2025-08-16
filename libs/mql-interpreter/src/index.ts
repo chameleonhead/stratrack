@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./lexer.js";
+import { lex, Token, TokenType, LexError, LexResult } from "./compiler/lexer.js";
 import {
   parse,
   Declaration,
@@ -10,18 +10,15 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./parser.js";
-import {
-  execute,
+} from "./compiler/parser.js";
+import { execute, callFunction, instantiate, callMethod } from "./runtime/runtime.js";
+import type {
   Runtime,
   ExecutionContext,
   RuntimeFunctionParameter,
-  callFunction,
-  instantiate,
-  callMethod,
   ProgramType,
-} from "./runtime.js";
-import { cast, PrimitiveType } from "./casting.js";
+} from "./runtime/types.js";
+import { cast, PrimitiveType } from "./runtime/casting.js";
 import {
   ArrayResize,
   ArrayCopy,
@@ -40,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./builtins/impl/array.js";
+} from "./runtime/builtins/impl/array.js";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -61,10 +58,10 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./builtins/impl/strings.js";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./builtins/index.js";
-import { evaluateExpression } from "./expression.js";
-import { executeStatements } from "./statements.js";
+} from "./runtime/builtins/impl/strings.js";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./runtime/builtins/index.js";
+import { evaluateExpression } from "./runtime/expression.js";
+import { executeStatements } from "./runtime/statements.js";
 import {
   MathAbs,
   MathArccos,
@@ -87,7 +84,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./builtins/impl/math.js";
+} from "./runtime/builtins/impl/math.js";
 import {
   Day,
   DayOfWeek,
@@ -112,7 +109,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./builtins/impl/datetime.js";
+} from "./runtime/builtins/impl/datetime.js";
 import {
   preprocess,
   preprocessWithProperties,
@@ -120,27 +117,27 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./preprocess.js";
-import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./backtest.js";
-import { MarketData, Tick, Candle, ticksToCandles } from "./market.js";
-import { Broker, OrderState } from "./broker.js";
-import { Account } from "./account.js";
-import { VirtualTerminal } from "./terminal.js";
-import { setTerminal } from "./builtins/impl/common.js";
-import { builtinNames } from "./builtins/stubNames.js";
-import { builtinSignatures } from "./builtins/signatures.js";
-import type { BuiltinSignaturesMap } from "./builtins/signatures.js";
+} from "./compiler/preprocess.js";
+import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./runtime/backtest.js";
+import { MarketData, Tick, Candle, ticksToCandles } from "./runtime/market.js";
+import { Broker, OrderState } from "./runtime/broker.js";
+import { Account } from "./runtime/account.js";
+import { VirtualTerminal } from "./runtime/terminal.js";
+import { setTerminal } from "./runtime/builtins/impl/common.js";
+import { builtinNames } from "./runtime/builtins/stubNames.js";
+import { builtinSignatures } from "./compiler/builtins/signatures.js";
+import type { BuiltinSignaturesMap } from "./compiler/builtins/signatures.js";
 export type {
   BuiltinParam,
   BuiltinSignature,
   BuiltinSignaturesMap,
-} from "./builtins/signatures.js";
+} from "./compiler/builtins/signatures.js";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
-} from "./warnings.js";
+} from "./compiler/warnings.js";
 
 export function getBuiltinSignatures(): BuiltinSignaturesMap {
   return builtinSignatures;

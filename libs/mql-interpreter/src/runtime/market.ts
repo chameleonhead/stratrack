@@ -1,5 +1,5 @@
-import { Candle, Tick } from "./types.js";
-export { Candle, Tick } from "./types.js";
+import { Candle, Tick } from "./marketTypes.js";
+export { Candle, Tick } from "./marketTypes.js";
 
 export class MarketData {
   private ticks: Record<string, Tick[]> = {};

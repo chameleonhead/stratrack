@@ -1,4 +1,4 @@
-import { BacktestRunner } from "../../src/backtest";
+import { BacktestRunner } from "../../src/runtime/backtest";
 import { callFunction } from "../../src/runtime";
 import { describe, it, expect } from "vitest";
 

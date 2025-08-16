@@ -1,5 +1,5 @@
-import { preprocess, preprocessWithProperties } from "../src/preprocess";
-import { parse } from "../src/parser";
+import { preprocess, preprocessWithProperties } from "../src/compiler/preprocess";
+import { parse } from "../src/compiler/parser";
 import { execute } from "../src/runtime";
 import { describe, it, expect } from "vitest";
 
