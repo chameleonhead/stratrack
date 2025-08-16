@@ -1,6 +1,6 @@
 import { writeFileSync } from "fs";
 import { resolve } from "path";
-import { builtinSignatures } from "../dist/builtins/signatures.js";
+import { builtinSignatures } from "../dist/src/builtins/signatures.js";
 
 const header =
   "# Builtin Signatures\n\n" + "Generated from src/builtins/signatures.ts. Do not edit.\n\n";
