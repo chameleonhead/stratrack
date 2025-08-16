@@ -59,4 +59,14 @@ describe("cli options", () => {
     expect(json.Print).toBeDefined();
     expect(json.ArrayResize).toBeDefined();
   });
+
+  it("runs via ts-node", () => {
+    const src = 'void OnStart(){ Print("hi"); }';
+    const file = join(tmpdir(), "tsnode.mq4");
+    writeFileSync(file, src);
+    const result = spawnSync("npx", ["--yes", "ts-node", "bin/mql-interpreter.ts", file], {
+      cwd: root,
+    });
+    expect(result.status).toBe(0);
+  });
 });
