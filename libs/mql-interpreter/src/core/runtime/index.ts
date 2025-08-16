@@ -1,4 +1,4 @@
-export { execute, callFunction, instantiate, callMethod } from "./runtime.js";
+export { execute, callFunction, instantiate, callMethod } from "./runtime";
 export type {
   Runtime,
   ExecutionContext,
@@ -6,4 +6,4 @@ export type {
   RuntimeClassField,
   RuntimeClassMethod,
   ProgramType,
-} from "./types.js";
+} from "./types";

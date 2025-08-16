@@ -26,7 +26,7 @@ export interface PreprocessOptions {
   fileProvider?: (path: string) => string | undefined;
 }
 
-import { lex, Token, TokenType, LexError } from "./lexer.js";
+import { lex, Token, TokenType, LexError } from "./lexer";
 
 export interface PragmaWarningDirective {
   line: number;

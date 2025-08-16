@@ -1,15 +1,15 @@
-import { compile } from "../../index.js";
-import { callFunction } from "./runtime.js";
-import { registerEnvBuiltins } from "./builtins/index.js";
-import type { Runtime } from "./types.js";
-import type { PreprocessOptions } from "../parser/preprocess.js";
-import type { BuiltinFunction } from "./builtins/index.js";
-import { Broker, Order } from "./broker.js";
-import { Account, AccountMetrics } from "./account.js";
-import { MarketData, Candle, Tick } from "./market.js";
-import { VirtualTerminal, TerminalStorage } from "./terminal.js";
+import { compile } from "../../index";
+import { callFunction } from "./runtime";
+import { registerEnvBuiltins } from "./builtins/index";
+import type { Runtime } from "./types";
+import type { PreprocessOptions } from "../parser/preprocess";
+import type { BuiltinFunction } from "./builtins/index";
+import { Broker, Order } from "./broker";
+import { Account, AccountMetrics } from "./account";
+import { MarketData, Candle, Tick } from "./market";
+import { VirtualTerminal, TerminalStorage } from "./terminal";
 import { readFileSync, writeFileSync } from "fs";
-import { setTerminal } from "./builtins/impl/common.js";
+import { setTerminal } from "./builtins/impl/common";
 
 export interface BacktestSession {
   broker: Broker;
@@ -708,5 +708,5 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles } from "./market.js";
-export type { Candle, Tick } from "./market.js";
+export { ticksToCandles } from "./market";
+export type { Candle, Tick } from "./market";

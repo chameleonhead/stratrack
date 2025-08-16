@@ -1,5 +1,5 @@
-import type { BuiltinFunction } from "../types.js";
-import { getTerminal } from "./common.js";
+import type { BuiltinFunction } from "../types";
+import { getTerminal } from "./common";
 
 export const FileOpen: BuiltinFunction = (name: string, mode: string) => {
   const term = getTerminal();

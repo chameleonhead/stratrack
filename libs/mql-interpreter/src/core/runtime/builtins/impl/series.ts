@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types.js";
+import type { BuiltinFunction } from "../types";
 
 export const Bars: BuiltinFunction = (..._args: any[]) => 0;
 export const iBars: BuiltinFunction = (..._args: any[]) => 0;

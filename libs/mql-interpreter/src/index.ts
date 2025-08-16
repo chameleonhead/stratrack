@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./core/parser/lexer.js";
+import { lex, Token, TokenType, LexError, LexResult } from "./core/parser/lexer";
 import {
   parse,
   Declaration,
@@ -10,15 +10,15 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./core/parser/parser.js";
-import { execute, callFunction, instantiate, callMethod } from "./core/runtime/runtime.js";
+} from "./core/parser/parser";
+import { execute, callFunction, instantiate, callMethod } from "./core/runtime/runtime";
 import type {
   Runtime,
   ExecutionContext,
   RuntimeFunctionParameter,
   ProgramType,
-} from "./core/runtime/types.js";
-import { cast, PrimitiveType } from "./core/runtime/casting.js";
+} from "./core/runtime/types";
+import { cast, PrimitiveType } from "./core/runtime/casting";
 import {
   ArrayResize,
   ArrayCopy,
@@ -37,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./core/runtime/builtins/impl/array.js";
+} from "./core/runtime/builtins/impl/array";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -58,10 +58,10 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./core/runtime/builtins/impl/strings.js";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./core/runtime/builtins/index.js";
-import { evaluateExpression } from "./core/runtime/expression.js";
-import { executeStatements } from "./core/runtime/statements.js";
+} from "./core/runtime/builtins/impl/strings";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./core/runtime/builtins/index";
+import { evaluateExpression } from "./core/runtime/expression";
+import { executeStatements } from "./core/runtime/statements";
 import {
   MathAbs,
   MathArccos,
@@ -84,7 +84,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./core/runtime/builtins/impl/math.js";
+} from "./core/runtime/builtins/impl/math";
 import {
   Day,
   DayOfWeek,
@@ -109,7 +109,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./core/runtime/builtins/impl/datetime.js";
+} from "./core/runtime/builtins/impl/datetime";
 import {
   preprocess,
   preprocessWithProperties,
@@ -117,33 +117,28 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./core/parser/preprocess.js";
-import {
-  BacktestRunner,
-  parseCsv,
-  BacktestReport,
-  BacktestOptions,
-} from "./core/runtime/backtest.js";
-import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market.js";
-import { Broker, OrderState } from "./core/runtime/broker.js";
-import { Account } from "./core/runtime/account.js";
-import { VirtualTerminal } from "./core/runtime/terminal.js";
-import type { TerminalStorage } from "./core/runtime/terminal.js";
-import { setTerminal } from "./core/runtime/builtins/impl/common.js";
-import { builtinNames } from "./core/runtime/builtins/stubNames.js";
-import { builtinSignatures } from "./core/parser/builtins/signatures.js";
-import type { BuiltinSignaturesMap } from "./core/parser/builtins/signatures.js";
+} from "./core/parser/preprocess";
+import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./core/runtime/backtest";
+import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market";
+import { Broker, OrderState } from "./core/runtime/broker";
+import { Account } from "./core/runtime/account";
+import { VirtualTerminal } from "./core/runtime/terminal";
+import type { TerminalStorage } from "./core/runtime/terminal";
+import { setTerminal } from "./core/runtime/builtins/impl/common";
+import { builtinNames } from "./core/runtime/builtins/stubNames";
+import { builtinSignatures } from "./core/parser/builtins/signatures";
+import type { BuiltinSignaturesMap } from "./core/parser/builtins/signatures";
 export type {
   BuiltinParam,
   BuiltinSignature,
   BuiltinSignaturesMap,
-} from "./core/parser/builtins/signatures.js";
+} from "./core/parser/builtins/signatures";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
-} from "./core/parser/warnings.js";
+} from "./core/parser/warnings";
 
 export function getBuiltinSignatures(): BuiltinSignaturesMap {
   return builtinSignatures;

@@ -1,4 +1,4 @@
-import type { BuiltinFunction } from "../types.js";
+import type { BuiltinFunction } from "../types";
 
 interface IndicatorState {
   buffers: unknown[];

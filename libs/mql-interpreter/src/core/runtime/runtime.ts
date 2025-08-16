@@ -4,18 +4,18 @@ import type {
   RuntimeClassField,
   RuntimeFunctionParameter,
   RuntimeClassMethod,
-} from "./types.js";
+} from "./types";
 import {
   Declaration,
   ClassDeclaration,
   FunctionDeclaration,
   VariableDeclaration,
-} from "../parser/parser.js";
-import { getBuiltin } from "./builtins/index.js";
-import { cast, PrimitiveType } from "./casting.js";
-import { executeStatements } from "./statements.js";
-import { DateTimeValue } from "./datetimeValue.js";
-import { lex, Token, TokenType } from "../parser/lexer.js";
+} from "../parser/parser";
+import { getBuiltin } from "./builtins/index";
+import { cast, PrimitiveType } from "./casting";
+import { executeStatements } from "./statements";
+import { DateTimeValue } from "./datetimeValue";
+import { lex, Token, TokenType } from "../parser/lexer";
 
 const numericTypes = new Set([
   "char",
