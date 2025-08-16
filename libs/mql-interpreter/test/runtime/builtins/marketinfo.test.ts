@@ -1,5 +1,5 @@
-import { BacktestRunner } from "../../../src/core/libs/backtest";
-import { callFunction } from "../../../src/core/runtime";
+import { BacktestRunner } from "../../../src/libs/backtestRunner";
+import { callFunction } from "../../../src/runtime";
 import { describe, it, expect } from "vitest";
 
 describe("market information builtins", () => {

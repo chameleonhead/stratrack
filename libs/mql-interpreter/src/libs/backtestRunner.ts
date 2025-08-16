@@ -1,14 +1,14 @@
-import { compile } from "../../index";
+import { compile } from "../index";
 import { callFunction } from "../runtime/runtime";
-import { registerEnvBuiltins } from "../runtime/builtins";
-import type { Runtime } from "../runtime/types";
+import { registerEnvBuiltins } from "./builtins";
+import type { RuntimeState } from "../runtime/types";
 import type { PreprocessOptions } from "../parser/preprocess";
-import type { BuiltinFunction } from "../runtime/builtins";
+import type { BuiltinFunction } from "./builtins";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
 import { MarketData, Candle, Tick } from "./marketData";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setTerminal } from "../runtime/builtins/common";
+import { setTerminal } from "./builtins/common";
 
 export interface BacktestSession {
   broker: Broker;
@@ -87,7 +87,7 @@ export interface BacktestReport {
 }
 
 export class BacktestRunner {
-  private runtime: Runtime;
+  private runtime: RuntimeState;
   private index = 0;
   private session: BacktestSession;
   private market: MarketData;
@@ -648,7 +648,7 @@ export class BacktestRunner {
     this.callDeinit();
   }
 
-  getRuntime(): Runtime {
+  getRuntime(): RuntimeState {
     return this.runtime;
   }
 

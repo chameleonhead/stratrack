@@ -13,7 +13,7 @@ Before committing changes under this folder, run the following:
 
 ## Platform Constraints
 
-- Code under `src/core` must remain platform-agnostic. Do **not** import Node.js built-in modules such as `fs`, `path`, or `os` within this directory. Use abstractions like `TerminalStorage` and implement adapters outside `src/core`.
+- Code under `src/parser`, `src/runtime`, `src/semantic`, and `src/libs` must remain platform-agnostic. Do **not** import Node.js built-in modules such as `fs`, `path`, or `os` within these directories. Use abstractions like `TerminalStorage` and implement adapters outside these directories.
 
 ## Additional Notes
 
