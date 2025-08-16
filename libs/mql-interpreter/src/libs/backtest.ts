@@ -1,5 +1,7 @@
 import type { Candle } from "./market.types";
 import { MarketData } from "./marketData";
+import { Broker, Order } from "./broker";
+import { Account } from "./account";
 import { MqlLibrary } from "./types";
 
 export function createBacktestLibs(data: MarketData): MqlLibrary {
@@ -7,7 +9,9 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
   const indicatorLabels: string[] = [];
   const indicatorShifts: number[] = [];
   let _lastError = 0;
-  let nextTicket = 1;
+  const broker = new Broker();
+  const account = new Account();
+  let selectedOrder: Order | undefined;
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
     data.getCandles(symbol, timeframe);
@@ -34,24 +38,25 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
   const barIndex = (arr: Candle[], shift: number) => arr.length - 1 - shift;
 
   return {
-    // --- account placeholders ---
-    AccountBalance: () => 0,
-    AccountCompany: () => "",
+    // --- account helpers ---
+    AccountBalance: () => account.getMetrics(broker, 0, 0).balance,
+    AccountCompany: () => "Backtest",
     AccountCredit: () => 0,
-    AccountCurrency: () => "",
-    AccountEquity: () => 0,
-    AccountFreeMargin: () => 0,
-    AccountFreeMarginCheck: () => 0,
+    AccountCurrency: () => account.getCurrency(),
+    AccountEquity: () => account.getMetrics(broker, 0, 0).equity,
+    AccountFreeMargin: () => account.getMetrics(broker, 0, 0).freeMargin,
+    AccountFreeMarginCheck: () => account.getMetrics(broker, 0, 0).equity,
     AccountFreeMarginMode: () => 0,
     AccountInfoDouble: () => 0,
     AccountInfoInteger: () => 0,
     AccountInfoString: () => "",
-    AccountLeverage: () => 0,
-    AccountMargin: () => 0,
-    AccountName: () => "",
-    AccountNumber: () => 0,
-    AccountProfit: () => 0,
-    AccountServer: () => "",
+    AccountLeverage: () => 1,
+    AccountMargin: () => account.getMetrics(broker, 0, 0).margin,
+    AccountName: () => "Backtest",
+    AccountNumber: () => 1,
+    AccountProfit: () =>
+      account.getMetrics(broker, 0, 0).openProfit + account.getMetrics(broker, 0, 0).closedProfit,
+    AccountServer: () => "Backtest",
     AccountStopoutLevel: () => 0,
     AccountStopoutMode: () => 0,
 
@@ -302,8 +307,107 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
       return 100 - 100 / (1 + rs);
     },
 
-    OrderSend: (_request: any) => {
-      return { ticket: nextTicket++, result: "ok" };
+    // --- market and trading helpers ---
+    MarketInfo: (symbol: string, type: number) => {
+      const tick = data.getTick(symbol, Date.now() / 1000);
+      switch (type) {
+        case 9:
+          return tick?.bid ?? 0; // MODE_BID
+        case 10:
+          return tick?.ask ?? 0; // MODE_ASK
+        case 11:
+          return 0.00001; // MODE_POINT
+        case 12:
+          return 5; // MODE_DIGITS
+        case 13:
+          return tick ? Math.round((tick.ask - tick.bid) / 0.00001) : 0; // MODE_SPREAD
+        default:
+          return 0;
+      }
+    },
+    SymbolsTotal: (selected = false) => data.getSymbols(selected).length,
+    SymbolName: (index: number, selected = false) => {
+      const list = data.getSymbols(selected);
+      return list[index] ?? "";
+    },
+    SymbolSelect: (symbol: string, enable: boolean) => data.select(symbol, enable),
+    OrdersTotal: () => broker.getActiveOrders().length,
+    OrdersHistoryTotal: () => broker.getHistory().length,
+    OrderSelect: (index: number, select: number, pool = 0) => {
+      const byTicket = select === 1;
+      const arr = pool === 1 ? broker.getHistory() : broker.getActiveOrders();
+      selectedOrder = byTicket ? broker.getOrder(index) : arr[index];
+      return selectedOrder ? 1 : 0;
+    },
+    OrderType: () => (selectedOrder ? (selectedOrder.type === "buy" ? 0 : 1) : -1),
+    OrderTicket: () => selectedOrder?.ticket ?? -1,
+    OrderSymbol: () => selectedOrder?.symbol ?? "",
+    OrderLots: () => selectedOrder?.volume ?? 0,
+    OrderOpenPrice: () => selectedOrder?.price ?? 0,
+    OrderOpenTime: () => selectedOrder?.openTime ?? 0,
+    OrderClosePrice: () => selectedOrder?.closePrice ?? 0,
+    OrderCloseTime: () => selectedOrder?.closeTime ?? 0,
+    OrderStopLoss: () => selectedOrder?.sl ?? 0,
+    OrderTakeProfit: () => selectedOrder?.tp ?? 0,
+    OrderProfit: () => selectedOrder?.profit ?? 0,
+    OrderCommission: () => 0,
+    OrderSwap: () => 0,
+    OrderComment: () => "",
+    OrderMagicNumber: () => 0,
+    OrderExpiration: () => 0,
+    OrderClose: (
+      ticket: number,
+      _lots: number,
+      price: number,
+      _slippage?: number,
+      _arrowColor?: number
+    ) => {
+      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      if (t < 0) return 0;
+      const pr = broker.close(t, price, Date.now());
+      if (pr) account.applyProfit(pr);
+      return pr ? 1 : 0;
+    },
+    OrderModify: (
+      ticket: number,
+      price: number,
+      sl: number,
+      tp: number,
+      _expiration?: number,
+      _arrowColor?: number
+    ) => {
+      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      if (t < 0) return 0;
+      return broker.modify(t, price, sl, tp) ? 1 : 0;
+    },
+    OrderDelete: (ticket: number) => {
+      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      if (t < 0) return 0;
+      const order = broker.getOrder(t);
+      if (!order) return 0;
+      order.state = "closed";
+      return 1;
+    },
+    OrderSend: (
+      symbol: string,
+      cmd: number,
+      volume: number,
+      price: number,
+      _slippage: number,
+      sl: number,
+      tp: number
+    ) => {
+      return broker.sendOrder({
+        symbol,
+        cmd,
+        volume,
+        price,
+        sl,
+        tp,
+        time: Date.now(),
+        bid: price,
+        ask: price,
+      });
     },
   };
 }

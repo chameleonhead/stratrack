@@ -329,6 +329,45 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   OrderSelect: {
     parameters: [{ type: "int" }, { type: "int" }, { type: "int", optional: true }],
   },
+  OrdersTotal: { parameters: [] },
+  OrdersHistoryTotal: { parameters: [] },
+  OrderType: { parameters: [] },
+  OrderTicket: { parameters: [] },
+  OrderSymbol: { parameters: [] },
+  OrderLots: { parameters: [] },
+  OrderOpenPrice: { parameters: [] },
+  OrderOpenTime: { parameters: [] },
+  OrderClosePrice: { parameters: [] },
+  OrderCloseTime: { parameters: [] },
+  OrderStopLoss: { parameters: [] },
+  OrderTakeProfit: { parameters: [] },
+  OrderProfit: { parameters: [] },
+  OrderCommission: { parameters: [] },
+  OrderSwap: { parameters: [] },
+  OrderComment: { parameters: [] },
+  OrderMagicNumber: { parameters: [] },
+  OrderExpiration: { parameters: [] },
+  OrderDelete: { parameters: [{ type: "int" }] },
+  OrderModify: {
+    parameters: [
+      { type: "int" },
+      { type: "double" },
+      { type: "double" },
+      { type: "double" },
+      { type: "datetime", optional: true },
+      { type: "color", optional: true },
+    ],
+  },
+  MarketInfo: {
+    parameters: [{ type: "string" }, { type: "int" }],
+  },
+  SymbolsTotal: { parameters: [{ type: "bool", optional: true }] },
+  SymbolName: {
+    parameters: [{ type: "int" }, { type: "bool", optional: true }],
+  },
+  SymbolSelect: {
+    parameters: [{ type: "string" }, { type: "bool" }],
+  },
   iMA: {
     parameters: [
       { type: "string" },
