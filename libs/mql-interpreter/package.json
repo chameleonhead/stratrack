@@ -1,38 +1,40 @@
 {
   "name": "mql-interpreter",
-  "version": "0.1.0",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./cli": "./dist/cli.cjs"
-  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "bin": {
-    "mqli": "./dist/cli.cjs"
+    "mql-interpreter": "./dist/bin/mql-interpreter.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsup src/index.ts src/cli.ts --format cjs,esm,iife --dts",
-    "dev": "tsup src/index.ts src/cli.ts --watch",
-    "dev:cli": "tsx src/cli.ts",
-    "test": "vitest run",
+    "format": "prettier --write .",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "test": "npm run check-warning-docs && vitest run --coverage",
+    "watch": "vitest watch",
+    "build": "tsc",
+    "build:browser": "node scripts/buildBrowser.js",
+    "prepublishOnly": "npm run check-warning-docs",
+    "update-warning-docs": "npm run build && node scripts/updateWarningDocs.js",
+    "check-warning-docs": "npm run build && node scripts/updateWarningDocs.js --check",
+    "generate-builtin-docs": "npm run build && node scripts/generateBuiltinDocs.js --out BUILTIN_SIGNATURES.md"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
   "devDependencies": {
-    "@types/node": "^20.19.11",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "commander": "^12.0.0",
-    "eslint": "^9.0.0",
-    "prettier": "^3.0.0",
-    "tsup": "^8.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "@eslint/js": "^9.32.0",
+    "@types/node": "^24.1.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "^0.21.5",
+    "eslint": "^9.32.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
   }
 }
