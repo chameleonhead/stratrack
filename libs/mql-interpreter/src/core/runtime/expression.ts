@@ -2,9 +2,9 @@ export interface EvalEnv {
   [name: string]: any;
 }
 
-import { lex, Token, TokenType } from "../parser/lexer.js";
-import { cast } from "./casting.js";
-import { DateTimeValue } from "./datetimeValue.js";
+import { lex, Token, TokenType } from "../parser/lexer";
+import { cast } from "./casting";
+import { DateTimeValue } from "./datetimeValue";
 
 interface EvalResult {
   value: any;
@@ -14,8 +14,8 @@ interface EvalResult {
 // Operators for assignment
 const assignmentOps = new Set(["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="]);
 
-import type { Runtime } from "./types.js";
-import { instantiate, callFunction } from "./runtime.js";
+import type { Runtime } from "./types";
+import { instantiate, callFunction } from "./runtime";
 
 export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Runtime): any {
   const { tokens, errors } = lex(expr);

@@ -1,4 +1,4 @@
-import { DateTimeValue } from "./datetimeValue.js";
+import { DateTimeValue } from "./datetimeValue";
 
 export type PrimitiveType =
   | "char"

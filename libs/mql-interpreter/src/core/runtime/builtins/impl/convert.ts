@@ -1,5 +1,5 @@
-import type { BuiltinFunction } from "../types.js";
-import { formatString } from "./format.js";
+import type { BuiltinFunction } from "../types";
+import { formatString } from "./format";
 
 export const CharToString: BuiltinFunction = (ch: number | string) => {
   if (typeof ch === "number") return String.fromCharCode(ch);

@@ -1,14 +1,14 @@
-import { compile } from "../../index.js";
-import { callFunction } from "./runtime.js";
-import { registerEnvBuiltins } from "./builtins/index.js";
-import type { Runtime } from "./types.js";
-import type { PreprocessOptions } from "../parser/preprocess.js";
-import type { BuiltinFunction } from "./builtins/index.js";
-import { Broker, Order } from "./broker.js";
-import { Account, AccountMetrics } from "./account.js";
-import { MarketData, Candle, Tick } from "./market.js";
-import { VirtualTerminal } from "./terminal.js";
-import { setTerminal } from "./builtins/impl/common.js";
+import { compile } from "../../index";
+import { callFunction } from "./runtime";
+import { registerEnvBuiltins } from "./builtins/index";
+import type { Runtime } from "./types";
+import type { PreprocessOptions } from "../parser/preprocess";
+import type { BuiltinFunction } from "./builtins/index";
+import { Broker, Order } from "./broker";
+import { Account, AccountMetrics } from "./account";
+import { MarketData, Candle, Tick } from "./market";
+import { VirtualTerminal, TerminalStorage } from "./terminal";
+import { setTerminal } from "./builtins/impl/common";
 
 export interface BacktestSession {
   broker: Broker;
@@ -70,10 +70,8 @@ export interface BacktestOptions {
   ticks?: Record<string, Tick[]>;
   /** Primary symbol for this backtest */
   symbol?: string;
-  /** Path to a directory mimicking the MT4 data folder */
-  dataDir?: string;
-  /** File path used by VirtualTerminal for global variable storage */
-  storagePath?: string;
+  /** Storage backend for VirtualTerminal global variables */
+  storage?: TerminalStorage;
   /** Values for variables declared with the `input` keyword */
   inputValues?: Record<string, any>;
   /** Callback for Print/Comment/Alert output */
@@ -127,14 +125,7 @@ export class BacktestRunner {
       options.accountCurrency ?? "USD"
     );
     this.session = { broker, account };
-    let storagePath: string | undefined;
-    if (options.storagePath) {
-      storagePath = options.storagePath;
-    } else if (options.dataDir) {
-      const base = options.dataDir.replace(/[\\/]+$/, "");
-      storagePath = base + "/MQL4/Files/globals.json";
-    }
-    this.terminal = new VirtualTerminal(storagePath, options.log);
+    this.terminal = new VirtualTerminal(options.storage, options.log);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
     const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
@@ -692,5 +683,5 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles } from "./market.js";
-export type { Candle, Tick } from "./market.js";
+export { ticksToCandles } from "./market";
+export type { Candle, Tick } from "./market";

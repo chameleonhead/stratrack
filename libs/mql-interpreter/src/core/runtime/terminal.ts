@@ -4,7 +4,15 @@ export interface VirtualFile {
   position: number;
 }
 
-import { readFileSync, writeFileSync } from "fs";
+export interface TerminalStorage {
+  /**
+   * Read previously stored global variable data. Should return a JSON string
+   * or `undefined` when no data exists.
+   */
+  read: () => string | undefined;
+  /** Persist global variable data. */
+  write: (data: string) => void;
+}
 
 /** Simple in-memory terminal used during backtests. */
 export class VirtualTerminal {
@@ -12,7 +20,7 @@ export class VirtualTerminal {
   private handles: Record<number, VirtualFile> = {};
   private nextHandle = 1;
   private globalVars: Record<string, { value: number; time: number }> = {};
-  private storagePath?: string;
+  private storage?: TerminalStorage;
   private timerInterval: number | null = null;
   private nextTimer: number | null = null;
   private chartEvents: {
@@ -24,20 +32,22 @@ export class VirtualTerminal {
   private logger: (...args: any[]) => void;
 
   constructor(
-    storagePath?: string,
+    storage?: TerminalStorage,
     logger: (...args: any[]) => void = (...args: any[]) => console.log(...args)
   ) {
-    this.storagePath = storagePath;
+    this.storage = storage;
     this.logger = logger;
-    if (storagePath) {
+    if (storage) {
       try {
-        const json = readFileSync(storagePath, "utf8");
-        const data = JSON.parse(json) as Record<string, { value: number; time: number }>;
-        const now = Math.floor(Date.now() / 1000);
-        const fourWeeks = 28 * 24 * 60 * 60;
-        for (const [k, v] of Object.entries(data)) {
-          if (now - v.time < fourWeeks) {
-            this.globalVars[k] = v;
+        const json = storage.read();
+        if (json) {
+          const data = JSON.parse(json) as Record<string, { value: number; time: number }>;
+          const now = Math.floor(Date.now() / 1000);
+          const fourWeeks = 28 * 24 * 60 * 60;
+          for (const [k, v] of Object.entries(data)) {
+            if (now - v.time < fourWeeks) {
+              this.globalVars[k] = v;
+            }
           }
         }
       } catch {
@@ -159,14 +169,14 @@ export class VirtualTerminal {
   }
 
   flushGlobalVariables(): number {
-    if (!this.storagePath) return 0;
+    if (!this.storage) return 0;
     try {
       const now = Math.floor(Date.now() / 1000);
       const fourWeeks = 28 * 24 * 60 * 60;
       for (const [k, v] of Object.entries(this.globalVars)) {
         if (now - v.time > fourWeeks) delete this.globalVars[k];
       }
-      writeFileSync(this.storagePath, JSON.stringify(this.globalVars, null, 2));
+      this.storage.write(JSON.stringify(this.globalVars, null, 2));
       return Object.keys(this.globalVars).length;
     } catch {
       return 0;

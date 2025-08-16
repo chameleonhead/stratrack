@@ -8,10 +8,14 @@ Before committing changes under this folder, run the following:
 
 1. `npm run format` – apply Prettier formatting
 2. `npm run lint` – ensure ESLint passes
-3. `npm run test` – run the vitest suite
+3. `npm run test -- --run` – run the vitest suite
+4. `npm run build` – verify build output
+
+## Platform Constraints
+
+- Code under `src/core` must remain platform-agnostic. Do **not** import Node.js built-in modules such as `fs`, `path`, or `os` within this directory. Use abstractions like `TerminalStorage` and implement adapters outside `src/core`.
 
 ## Additional Notes
 
-- `npm run build` compiles the TypeScript sources as mentioned in [README.md](README.md).
 - Refer to [TODO.md](TODO.md) for upcoming features and tasks.
 - Avoid using `any` when possible. The ESLint rule is disabled but try to keep the code typed.

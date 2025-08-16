@@ -1,8 +1,8 @@
-// Import paths use explicit `.js` extensions to satisfy NodeNext module resolution.
-import type { BuiltinFunction } from "../types.js";
-import { formatString } from "./format.js";
-import type { VirtualTerminal } from "../../terminal.js";
-import { DateTimeValue } from "../../datetimeValue.js";
+// Import paths omit extensions for bundler compatibility.
+import type { BuiltinFunction } from "../types";
+import { formatString } from "./format";
+import type { VirtualTerminal } from "../../terminal";
+import { DateTimeValue } from "../../datetimeValue";
 
 let terminal: VirtualTerminal | null = null;
 export function setTerminal(t: VirtualTerminal | null): void {

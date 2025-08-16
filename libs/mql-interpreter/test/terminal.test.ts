@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { VirtualTerminal } from "../src/core/runtime/terminal";
-import { unlinkSync } from "fs";
+import { VirtualTerminal, TerminalStorage } from "../src/core/runtime/terminal";
+import { unlinkSync, readFileSync, writeFileSync } from "fs";
 
 describe("VirtualTerminal", () => {
   it("can write and read files in memory", () => {
@@ -21,7 +21,19 @@ describe("VirtualTerminal", () => {
       void _err;
       // ignore missing file
     }
-    const term = new VirtualTerminal(path);
+    const storage: TerminalStorage = {
+      read: () => {
+        try {
+          return readFileSync(path, "utf8");
+        } catch {
+          return undefined;
+        }
+      },
+      write: (data: string) => {
+        writeFileSync(path, data);
+      },
+    };
+    const term = new VirtualTerminal(storage);
     term.setGlobalVariable("x", 5);
     expect(term.getGlobalVariable("x")).toBe(5);
     expect(term.checkGlobalVariable("x")).toBe(true);
@@ -36,7 +48,7 @@ describe("VirtualTerminal", () => {
 
     term.setGlobalVariable("y", 2);
     term.flushGlobalVariables();
-    const term2 = new VirtualTerminal(path);
+    const term2 = new VirtualTerminal(storage);
     expect(term2.getGlobalVariable("y")).toBe(2);
     unlinkSync(path);
   });

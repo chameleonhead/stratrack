@@ -93,7 +93,7 @@ export type Declaration =
   | VariableDeclaration
   | ControlStatement;
 
-import { Token, TokenType } from "./lexer.js";
+import { Token, TokenType } from "./lexer";
 
 export class ParseError extends Error {
   line: number;

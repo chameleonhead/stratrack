@@ -1,5 +1,5 @@
-import type { BuiltinFunction } from "../types.js";
-import { DateTimeValue } from "../../datetimeValue.js";
+import type { BuiltinFunction } from "../types";
+import { DateTimeValue } from "../../datetimeValue";
 
 const toDate = (t?: number) => (t === undefined ? new Date() : new Date(Number(t) * 1000));
 

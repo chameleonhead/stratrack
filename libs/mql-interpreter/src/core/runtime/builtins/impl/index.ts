@@ -1,11 +1,11 @@
-import type { BuiltinFunction } from "../types.js";
-import * as AccountInfo from "./AccountInfo.js";
-import { OrderSend } from "./OrderSend.js";
-import { iMA } from "./iMA.js";
-import { iMACD } from "./iMACD.js";
-import { iRSI } from "./iRSI.js";
-import { iATR } from "./iATR.js";
-import { FileOpen, FileReadString, FileWriteString, FileClose } from "./file.js";
+import type { BuiltinFunction } from "../types";
+import * as AccountInfo from "./AccountInfo";
+import { OrderSend } from "./OrderSend";
+import { iMA } from "./iMA";
+import { iMACD } from "./iMACD";
+import { iRSI } from "./iRSI";
+import { iATR } from "./iATR";
+import { FileOpen, FileReadString, FileWriteString, FileClose } from "./file";
 import {
   IndicatorBuffers,
   SetIndexBuffer,
@@ -17,7 +17,7 @@ import {
   IndicatorSetInteger,
   IndicatorSetString,
   IndicatorShortName,
-} from "./indicator.js";
+} from "./indicator";
 import {
   ArrayResize,
   ArrayCopy,
@@ -36,7 +36,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./array.js";
+} from "./array";
 import {
   CharToString,
   CharToStr,
@@ -54,7 +54,7 @@ import {
   StringToInteger,
   StrToInteger,
   NormalizeDouble,
-} from "./convert.js";
+} from "./convert";
 import {
   MathAbs,
   MathArccos,
@@ -77,7 +77,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./math.js";
+} from "./math";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -98,7 +98,7 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./strings.js";
+} from "./strings";
 import {
   Day,
   DayOfWeek,
@@ -123,7 +123,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./datetime.js";
+} from "./datetime";
 import {
   Bars,
   iBars,
@@ -143,7 +143,7 @@ import {
   CopyTickVolume,
   SeriesInfoInteger,
   RefreshRates,
-} from "./series.js";
+} from "./series";
 import {
   Print,
   Alert,
@@ -189,7 +189,7 @@ import {
   IsTradeContextBusy,
   UninitializeReason,
   setTerminal,
-} from "./common.js";
+} from "./common";
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   Print,
