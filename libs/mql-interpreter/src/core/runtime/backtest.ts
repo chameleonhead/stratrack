@@ -8,7 +8,6 @@ import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
 import { MarketData, Candle, Tick } from "./market";
 import { VirtualTerminal, TerminalStorage } from "./terminal";
-import { readFileSync, writeFileSync } from "fs";
 import { setTerminal } from "./builtins/impl/common";
 
 export interface BacktestSession {
@@ -71,10 +70,8 @@ export interface BacktestOptions {
   ticks?: Record<string, Tick[]>;
   /** Primary symbol for this backtest */
   symbol?: string;
-  /** Path to a directory mimicking the MT4 data folder */
-  dataDir?: string;
-  /** File path used by VirtualTerminal for global variable storage */
-  storagePath?: string;
+  /** Storage backend for VirtualTerminal global variables */
+  storage?: TerminalStorage;
   /** Values for variables declared with the `input` keyword */
   inputValues?: Record<string, any>;
   /** Callback for Print/Comment/Alert output */
@@ -128,29 +125,7 @@ export class BacktestRunner {
       options.accountCurrency ?? "USD"
     );
     this.session = { broker, account };
-    let storagePath: string | undefined;
-    if (options.storagePath) {
-      storagePath = options.storagePath;
-    } else if (options.dataDir) {
-      const base = options.dataDir.replace(/[\\/]+$/, "");
-      storagePath = base + "/MQL4/Files/globals.json";
-    }
-    let storage: TerminalStorage | undefined;
-    if (storagePath) {
-      storage = {
-        read: () => {
-          try {
-            return readFileSync(storagePath!, "utf8");
-          } catch {
-            return undefined;
-          }
-        },
-        write: (data: string) => {
-          writeFileSync(storagePath!, data);
-        },
-      };
-    }
-    this.terminal = new VirtualTerminal(storage, options.log);
+    this.terminal = new VirtualTerminal(options.storage, options.log);
     setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
     const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
