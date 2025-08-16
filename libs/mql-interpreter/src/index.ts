@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./core/compiler/lexer.js";
+import { lex, Token, TokenType, LexError, LexResult } from "./core/parser/lexer.js";
 import {
   parse,
   Declaration,
@@ -10,7 +10,7 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./core/compiler/parser.js";
+} from "./core/parser/parser.js";
 import { execute, callFunction, instantiate, callMethod } from "./core/runtime/runtime.js";
 import type {
   Runtime,
@@ -117,7 +117,7 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./core/compiler/preprocess.js";
+} from "./core/parser/preprocess.js";
 import {
   BacktestRunner,
   parseCsv,
@@ -130,19 +130,19 @@ import { Account } from "./core/runtime/account.js";
 import { VirtualTerminal } from "./core/runtime/terminal.js";
 import { setTerminal } from "./core/runtime/builtins/impl/common.js";
 import { builtinNames } from "./core/runtime/builtins/stubNames.js";
-import { builtinSignatures } from "./core/compiler/builtins/signatures.js";
-import type { BuiltinSignaturesMap } from "./core/compiler/builtins/signatures.js";
+import { builtinSignatures } from "./core/parser/builtins/signatures.js";
+import type { BuiltinSignaturesMap } from "./core/parser/builtins/signatures.js";
 export type {
   BuiltinParam,
   BuiltinSignature,
   BuiltinSignaturesMap,
-} from "./core/compiler/builtins/signatures.js";
+} from "./core/parser/builtins/signatures.js";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
-} from "./core/compiler/warnings.js";
+} from "./core/parser/warnings.js";
 
 export function getBuiltinSignatures(): BuiltinSignaturesMap {
   return builtinSignatures;

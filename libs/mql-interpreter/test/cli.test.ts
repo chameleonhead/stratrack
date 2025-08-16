@@ -13,7 +13,7 @@ describe("cli", () => {
   beforeAll(() => {
     const build = spawnSync("npm", ["run", "build"], { cwd: root });
     if (build.status !== 0) {
-      throw new Error(build.stderr.toString());
+      throw new Error(`${build.stderr}`);
     }
   });
 

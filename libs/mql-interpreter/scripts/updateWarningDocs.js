@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
-import { getWarnings } from "../dist/src/compiler/warnings.js";
+import { getWarnings } from "../dist/src/parser/warnings.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const readmePath = resolve(__dirname, "../README.md");

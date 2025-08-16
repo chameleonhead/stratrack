@@ -1,7 +1,7 @@
 // Simple execution of control-flow statements using evaluated expressions.
 // This is not a full interpreter but supports basic loops and if/switch.
 
-import { lex, Token, TokenType } from "../compiler/lexer.js";
+import { lex, Token, TokenType } from "../parser/lexer.js";
 import { evaluateExpression, EvalEnv } from "./expression.js";
 import type { Runtime } from "./types.js";
 import { cast, PrimitiveType } from "./casting.js";

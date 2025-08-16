@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { coreBuiltins, envBuiltins } from "../../src/core/runtime/builtins/impl/index.js";
-import { builtinSignatures } from "../../src/core/compiler/builtins/signatures.js";
+import { builtinSignatures } from "../../src/core/parser/builtins/signatures.js";
 
 describe("builtin signatures", () => {
   it("covers all registered builtins", () => {

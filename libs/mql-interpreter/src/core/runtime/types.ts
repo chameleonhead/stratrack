@@ -1,4 +1,4 @@
-import type { VariableDeclaration } from "../compiler/parser.js";
+import type { VariableDeclaration } from "../parser/parser.js";
 
 export interface RuntimeClassField {
   type: string;

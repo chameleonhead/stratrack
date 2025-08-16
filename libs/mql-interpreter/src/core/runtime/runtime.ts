@@ -10,12 +10,12 @@ import {
   ClassDeclaration,
   FunctionDeclaration,
   VariableDeclaration,
-} from "../compiler/parser.js";
+} from "../parser/parser.js";
 import { getBuiltin } from "./builtins/index.js";
 import { cast, PrimitiveType } from "./casting.js";
 import { executeStatements } from "./statements.js";
 import { DateTimeValue } from "./datetimeValue.js";
-import { lex, Token, TokenType } from "../compiler/lexer.js";
+import { lex, Token, TokenType } from "../parser/lexer.js";
 
 const numericTypes = new Set([
   "char",

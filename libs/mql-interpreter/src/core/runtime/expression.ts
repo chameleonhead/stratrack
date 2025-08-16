@@ -2,7 +2,7 @@ export interface EvalEnv {
   [name: string]: any;
 }
 
-import { lex, Token, TokenType } from "../compiler/lexer.js";
+import { lex, Token, TokenType } from "../parser/lexer.js";
 import { cast } from "./casting.js";
 import { DateTimeValue } from "./datetimeValue.js";
 
