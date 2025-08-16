@@ -1,14 +1,17 @@
 #!/usr/bin/env node
-import { readFileSync, mkdirSync } from "fs";
+import { readFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, join, dirname } from "path";
-import {
-  interpret,
-  compile,
-  BacktestRunner,
-  parseCsv,
-  getWarnings,
-  getBuiltinSignatures,
-} from "../dist/index.js";
+import { fileURLToPath } from "url";
+import type { BuiltinSignature, BuiltinParam } from "../src/index.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const distEntry = existsSync(resolve(__dirname, "..", "src", "index.js"))
+  ? resolve(__dirname, "..", "src", "index.js")
+  : resolve(__dirname, "..", "dist", "src", "index.js");
+const srcEntry = resolve(__dirname, "..", "src", "index.ts");
+
+const { interpret, compile, BacktestRunner, parseCsv, getWarnings, getBuiltinSignatures } =
+  (await import(existsSync(distEntry) ? distEntry : srcEntry)) as typeof import("../src/index.js");
 
 const args = process.argv.slice(2);
 if (args.includes("--list-warnings")) {
@@ -28,9 +31,9 @@ if (args.includes("--list-builtins")) {
   for (const name of names) {
     const sig = sigs[name];
     const variants = Array.isArray(sig) ? sig : [sig];
-    const formatted = variants
+    const formatted = (variants as BuiltinSignature[])
       .map((s) => {
-        const params = s.parameters.map((p) => (p.optional ? `[${p.type}]` : p.type));
+        const params = s.parameters.map((p: BuiltinParam) => (p.optional ? `[${p.type}]` : p.type));
         if (s.variadic) params.push("...");
         return `(${params.join(", ")})`;
       })
@@ -117,7 +120,7 @@ if (backtestFile) {
 }
 
 const compilation = compile(code, {
-  fileProvider: (p) => {
+  fileProvider: (p: string) => {
     try {
       return readFileSync(resolve(dirname(file), p), "utf8");
     } catch {
@@ -134,7 +137,9 @@ if (compilation.warnings.length) {
     console.error(`${w.line}:${w.column} ${w.message}${code}`);
   }
 }
-const realErrors = compilation.errors.filter((e) => !compilation.warnings.includes(e));
+const realErrors = compilation.errors.filter(
+  (e: (typeof compilation.errors)[number]) => !compilation.warnings.includes(e)
+);
 if (realErrors.length) {
   console.error("Compilation errors:");
   for (const e of realErrors) {
@@ -145,7 +150,7 @@ if (compilation.errors.length) {
   process.exit(1);
 }
 const runtime = interpret(code, undefined, {
-  fileProvider: (p) => {
+  fileProvider: (p: string) => {
     try {
       return readFileSync(resolve(dirname(file), p), "utf8");
     } catch {

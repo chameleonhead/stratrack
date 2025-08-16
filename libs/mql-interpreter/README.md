@@ -240,7 +240,8 @@ npx mql-interpreter test.mq4 --backtest candles.csv --data-dir ./tmp --format ht
 
 ## Development
 
-- `npm run build` – Compile TypeScript sources.
+- `npm run build` – Compile TypeScript sources, including the CLI at `bin/mql-interpreter.ts`.
+- `npm run build:browser` – Bundle the interpreter core into a browser-friendly file at `dist/index.browser.js`. Provide your own worker if needed.
 
 See [TODO.md](TODO.md) for planned features and tasks.
 
