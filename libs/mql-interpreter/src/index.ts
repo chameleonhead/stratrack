@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./core/parser/lexer";
+import { lex, Token, TokenType, LexError, LexResult } from "./parser/lexer";
 import {
   parse,
   Declaration,
@@ -10,15 +10,15 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./core/parser/parser";
-import { execute, callFunction, instantiate, callMethod } from "./core/runtime/runtime";
+} from "./parser/parser";
+import { execute, callFunction, instantiate, callMethod, Runtime } from "./runtime/runtime";
 import type {
-  Runtime,
+  RuntimeState,
   ExecutionContext,
   RuntimeFunctionParameter,
   ProgramType,
-} from "./core/runtime/types";
-import { cast, PrimitiveType } from "./core/runtime/casting";
+} from "./runtime/types";
+import { cast, PrimitiveType } from "./runtime/casting";
 import {
   ArrayResize,
   ArrayCopy,
@@ -37,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./core/runtime/builtins/array";
+} from "./runtime/builtins/array";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -58,16 +58,16 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./core/runtime/builtins/strings";
+} from "./runtime/builtins/strings";
 import {
   getBuiltin,
   BuiltinFunction,
   registerEnvBuiltins,
   coreBuiltins,
   envBuiltins,
-} from "./core/runtime/builtins";
-import { evaluateExpression } from "./core/runtime/expression";
-import { executeStatements } from "./core/runtime/statements";
+} from "./runtime/builtins";
+import { evaluateExpression } from "./runtime/expression";
+import { executeStatements } from "./runtime/statements";
 import {
   MathAbs,
   MathArccos,
@@ -90,7 +90,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./core/runtime/builtins/math";
+} from "./runtime/builtins/math";
 import {
   Day,
   DayOfWeek,
@@ -115,7 +115,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./core/runtime/builtins/datetime";
+} from "./runtime/builtins/datetime";
 import {
   preprocess,
   preprocessWithProperties,
@@ -123,7 +123,7 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./core/parser/preprocess";
+} from "./parser/preprocess";
 import {
   BacktestRunner,
   parseCsv,
@@ -134,22 +134,18 @@ import {
   MarketData,
   ticksToCandles,
   VirtualTerminal,
-} from "./core/libs";
-import type { OrderState, Tick, Candle, TerminalStorage } from "./core/libs";
-import { setTerminal } from "./core/runtime/builtins/common";
-import { builtinSignatures } from "./core/parser/builtins/signatures";
-import type { BuiltinSignaturesMap } from "./core/parser/builtins/signatures";
-export type {
-  BuiltinParam,
-  BuiltinSignature,
-  BuiltinSignaturesMap,
-} from "./core/parser/builtins/signatures";
+} from "./libs";
+import type { OrderState, Tick, Candle, TerminalStorage } from "./libs";
+import { setTerminal } from "./runtime/builtins/common";
+import { builtinSignatures } from "./libs/signatures";
+import type { BuiltinSignaturesMap } from "./libs/signatures";
+export type { BuiltinParam, BuiltinSignature, BuiltinSignaturesMap } from "./libs/signatures";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
-} from "./core/parser/warnings";
+} from "./parser/warnings";
 
 export function getBuiltinSignatures(): BuiltinSignaturesMap {
   return builtinSignatures;
@@ -170,6 +166,7 @@ export {
   VariableDeclaration,
   execute,
   Runtime,
+  RuntimeState,
   RuntimeFunctionParameter,
   ExecutionContext,
   cast,
@@ -291,7 +288,7 @@ export type { WarningCode, ProgramType };
 
 export interface Compilation {
   ast: Declaration[];
-  runtime: Runtime;
+  runtime: RuntimeState;
   properties: PropertyMap;
   errors: CompilationError[];
   warnings: CompilationError[];
@@ -379,7 +376,7 @@ function checkTypes(ast: Declaration[]): CompilationError[] {
   return errors;
 }
 
-function validateFunctionCalls(ast: Declaration[], runtime: Runtime): CompilationError[] {
+function validateFunctionCalls(ast: Declaration[], runtime: RuntimeState): CompilationError[] {
   const errors: CompilationError[] = [];
   const builtinSet = new Set([
     ...Object.keys(builtinSignatures),
@@ -587,7 +584,7 @@ export function interpret(
   source: string,
   context?: ExecutionContext,
   options: CompileOptions = {}
-): Runtime {
+): RuntimeState {
   const { runtime, properties, errors } = compile(source, options);
   if (errors.length) {
     const msg = errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");

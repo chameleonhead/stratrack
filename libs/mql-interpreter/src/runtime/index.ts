@@ -1,6 +1,6 @@
 export { execute, callFunction, instantiate, callMethod } from "./runtime";
 export type {
-  Runtime,
+  RuntimeState,
   ExecutionContext,
   RuntimeFunctionParameter,
   RuntimeClassField,
