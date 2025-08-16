@@ -17,7 +17,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "../../src/runtime/builtins/impl/datetime";
+} from "../../src/core/runtime/builtins/impl/datetime";
 import { describe, it, expect } from "vitest";
 
 const t = 946782245; // 2000-01-02T03:04:05Z
@@ -60,7 +60,7 @@ describe("date/time builtins", () => {
   });
 
   it("TimeDaylightSavings reflects DST", () => {
-    expect(TimeDaylightSavings()).toBeOneOf([0, 1]);
+    expect([0, 1]).toContain(TimeDaylightSavings());
   });
 
   it("TimeToStruct and StructToTime round trip", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VirtualTerminal } from "../src/runtime/terminal";
+import { VirtualTerminal } from "../src/core/runtime/terminal";
 import { unlinkSync } from "fs";
 
 describe("VirtualTerminal", () => {

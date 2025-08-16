@@ -1,4 +1,4 @@
-import { lex, TokenType } from "../src/compiler/lexer";
+import { lex, TokenType } from "../src/core/compiler/lexer";
 import { describe, it, expect } from "vitest";
 
 describe("lex", () => {

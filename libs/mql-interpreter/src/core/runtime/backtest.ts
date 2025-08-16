@@ -1,4 +1,4 @@
-import { compile } from "../index.js";
+import { compile } from "../../index.js";
 import { callFunction } from "./runtime.js";
 import { registerEnvBuiltins } from "./builtins/index.js";
 import type { Runtime } from "./types.js";
@@ -692,4 +692,5 @@ export class BacktestRunner {
   }
 }
 
-export { ticksToCandles, Candle, Tick } from "./market.js";
+export { ticksToCandles } from "./market.js";
+export type { Candle, Tick } from "./market.js";

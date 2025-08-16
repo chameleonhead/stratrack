@@ -1,4 +1,4 @@
-import { lex, Token, TokenType, LexError, LexResult } from "./compiler/lexer.js";
+import { lex, Token, TokenType, LexError, LexResult } from "./core/compiler/lexer.js";
 import {
   parse,
   Declaration,
@@ -10,15 +10,15 @@ import {
   VariableDeclaration,
   FunctionParameter,
   ParseError,
-} from "./compiler/parser.js";
-import { execute, callFunction, instantiate, callMethod } from "./runtime/runtime.js";
+} from "./core/compiler/parser.js";
+import { execute, callFunction, instantiate, callMethod } from "./core/runtime/runtime.js";
 import type {
   Runtime,
   ExecutionContext,
   RuntimeFunctionParameter,
   ProgramType,
-} from "./runtime/types.js";
-import { cast, PrimitiveType } from "./runtime/casting.js";
+} from "./core/runtime/types.js";
+import { cast, PrimitiveType } from "./core/runtime/casting.js";
 import {
   ArrayResize,
   ArrayCopy,
@@ -37,7 +37,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "./runtime/builtins/impl/array.js";
+} from "./core/runtime/builtins/impl/array.js";
 import {
   StringTrimLeft,
   StringTrimRight,
@@ -58,10 +58,10 @@ import {
   StringToUpper,
   StringGetCharacter,
   StringSetCharacter,
-} from "./runtime/builtins/impl/strings.js";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./runtime/builtins/index.js";
-import { evaluateExpression } from "./runtime/expression.js";
-import { executeStatements } from "./runtime/statements.js";
+} from "./core/runtime/builtins/impl/strings.js";
+import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./core/runtime/builtins/index.js";
+import { evaluateExpression } from "./core/runtime/expression.js";
+import { executeStatements } from "./core/runtime/statements.js";
 import {
   MathAbs,
   MathArccos,
@@ -84,7 +84,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "./runtime/builtins/impl/math.js";
+} from "./core/runtime/builtins/impl/math.js";
 import {
   Day,
   DayOfWeek,
@@ -109,7 +109,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "./runtime/builtins/impl/datetime.js";
+} from "./core/runtime/builtins/impl/datetime.js";
 import {
   preprocess,
   preprocessWithProperties,
@@ -117,27 +117,32 @@ import {
   PreprocessResult,
   PropertyMap,
   PreprocessOptions,
-} from "./compiler/preprocess.js";
-import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./runtime/backtest.js";
-import { MarketData, Tick, Candle, ticksToCandles } from "./runtime/market.js";
-import { Broker, OrderState } from "./runtime/broker.js";
-import { Account } from "./runtime/account.js";
-import { VirtualTerminal } from "./runtime/terminal.js";
-import { setTerminal } from "./runtime/builtins/impl/common.js";
-import { builtinNames } from "./runtime/builtins/stubNames.js";
-import { builtinSignatures } from "./compiler/builtins/signatures.js";
-import type { BuiltinSignaturesMap } from "./compiler/builtins/signatures.js";
+} from "./core/compiler/preprocess.js";
+import {
+  BacktestRunner,
+  parseCsv,
+  BacktestReport,
+  BacktestOptions,
+} from "./core/runtime/backtest.js";
+import { MarketData, Tick, Candle, ticksToCandles } from "./core/runtime/market.js";
+import { Broker, OrderState } from "./core/runtime/broker.js";
+import { Account } from "./core/runtime/account.js";
+import { VirtualTerminal } from "./core/runtime/terminal.js";
+import { setTerminal } from "./core/runtime/builtins/impl/common.js";
+import { builtinNames } from "./core/runtime/builtins/stubNames.js";
+import { builtinSignatures } from "./core/compiler/builtins/signatures.js";
+import type { BuiltinSignaturesMap } from "./core/compiler/builtins/signatures.js";
 export type {
   BuiltinParam,
   BuiltinSignature,
   BuiltinSignaturesMap,
-} from "./compiler/builtins/signatures.js";
+} from "./core/compiler/builtins/signatures.js";
 import {
   warnings as warningDefinitions,
   WarningCode,
   getWarningCodes,
   getWarnings,
-} from "./compiler/warnings.js";
+} from "./core/compiler/warnings.js";
 
 export function getBuiltinSignatures(): BuiltinSignaturesMap {
   return builtinSignatures;

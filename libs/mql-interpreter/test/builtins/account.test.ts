@@ -1,5 +1,5 @@
-import { BacktestRunner } from "../../src/runtime/backtest";
-import { callFunction } from "../../src/runtime";
+import { BacktestRunner } from "../../src/core/runtime/backtest";
+import { callFunction } from "../../src/core/runtime";
 import { describe, it, expect } from "vitest";
 
 describe("account builtins", () => {

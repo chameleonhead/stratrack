@@ -1,5 +1,5 @@
-import { lex } from "../src/compiler/lexer";
-import { parse, EnumDeclaration, ClassDeclaration } from "../src/compiler/parser";
+import { lex } from "../src/core/compiler/lexer";
+import { parse, EnumDeclaration, ClassDeclaration } from "../src/core/compiler/parser";
 import { describe, it, expect } from "vitest";
 
 describe("parse", () => {
