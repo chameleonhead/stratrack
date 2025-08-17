@@ -30,9 +30,23 @@ describe("cli", () => {
     writeFileSync(codeFile, "int OnTick(){return 0;}");
     const csvFile = join(tmpdir(), "data.csv");
     writeFileSync(csvFile, "0,1,1,1,1\n1,1,1,1,1");
-    const result = spawnSync("node", [cli, "backtest", codeFile, csvFile], {
-      cwd: root,
-    });
+    const result = spawnSync(
+      "node",
+      [
+        cli,
+        "backtest",
+        codeFile,
+        "--backtest",
+        csvFile,
+        "--balance",
+        "5000",
+        "--margin",
+        "1000",
+        "--currency",
+        "JPY",
+      ],
+      { cwd: root }
+    );
     expect(result.status).toBe(0);
     expect(result.stdout.toString()).toContain("globals");
   });
