@@ -10,8 +10,9 @@ import {
   ClassDeclaration,
   FunctionDeclaration,
   VariableDeclaration,
-} from "../parser/parser";
-import { getBuiltin, registerEnvBuiltins, BuiltinFunction } from "../libs/builtins";
+} from "../parser/ast";
+import { getBuiltin, registerEnvBuiltins } from "../libs/builtins";
+import type { BuiltinFunction } from "../libs/builtins/types";
 import { cast, PrimitiveType } from "./casting";
 import { executeStatements } from "./statements";
 import { DateTimeValue } from "./datetimeValue";

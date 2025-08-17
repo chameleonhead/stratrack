@@ -1,4 +1,4 @@
-import type { VariableDeclaration } from "../parser/parser";
+import type { VariableDeclaration } from "../parser/ast";
 
 export interface RuntimeClassField {
   type: string;

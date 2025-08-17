@@ -11,19 +11,6 @@ import {
   ControlStatement,
   Declaration,
 } from "./ast";
-export {
-  EnumMember,
-  SourceLocation,
-  EnumDeclaration,
-  ClassField,
-  ClassMethod,
-  ClassDeclaration,
-  FunctionParameter,
-  FunctionDeclaration,
-  VariableDeclaration,
-  ControlStatement,
-  Declaration,
-} from "./ast";
 
 export class ParseError extends Error {
   line: number;

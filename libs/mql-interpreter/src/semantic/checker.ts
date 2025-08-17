@@ -1,7 +1,7 @@
 import { lex, TokenType } from "../parser/lexer";
 import { Declaration, ClassDeclaration, ClassMethod } from "../parser/ast";
 import { BuiltinSignaturesMap } from "../libs/signatures";
-import { coreBuiltins, envBuiltins } from "../libs/builtins";
+import { coreBuiltins, envBuiltins } from "../libs/builtins/registry";
 import { warnings as warningDefinitions } from "../parser/warnings";
 import { SymbolTable } from "./symbols";
 

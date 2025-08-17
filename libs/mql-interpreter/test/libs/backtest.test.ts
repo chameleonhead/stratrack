@@ -1,5 +1,6 @@
-import { BacktestRunner, ticksToCandles } from "../../src/libs/backtestRunner";
-import { callFunction } from "../../src/runtime";
+import { BacktestRunner } from "../../src/libs/backtestRunner";
+import { ticksToCandles } from "../../src/libs/marketData";
+import { callFunction } from "../../src/runtime/runtime";
 import { describe, it, expect } from "vitest";
 
 describe("BacktestRunner", () => {

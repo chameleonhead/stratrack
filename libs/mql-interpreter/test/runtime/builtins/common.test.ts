@@ -42,7 +42,7 @@ import {
 } from "../../../src/libs/builtins/common";
 import { StructToTime } from "../../../src/libs/builtins/datetime";
 import { builtinSignatures } from "../../../src/libs/signatures";
-import { coreBuiltins, envBuiltins } from "../../../src/libs/builtins";
+import { coreBuiltins, envBuiltins } from "../../../src/libs/builtins/registry";
 import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 

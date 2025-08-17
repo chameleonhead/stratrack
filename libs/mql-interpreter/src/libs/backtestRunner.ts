@@ -3,10 +3,11 @@ import { callFunction } from "../runtime/runtime";
 import { registerEnvBuiltins } from "./builtins";
 import type { RuntimeState } from "../runtime/types";
 import type { PreprocessOptions } from "../parser/preprocess";
-import type { BuiltinFunction } from "./builtins";
+import type { BuiltinFunction } from "./builtins/types";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
-import { MarketData, Candle, Tick } from "./marketData";
+import { MarketData } from "./marketData";
+import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
 import { setTerminal } from "./builtins/common";
 
@@ -682,6 +683,3 @@ export class BacktestRunner {
     };
   }
 }
-
-export { ticksToCandles } from "./marketData";
-export type { Candle, Tick } from "./marketData";

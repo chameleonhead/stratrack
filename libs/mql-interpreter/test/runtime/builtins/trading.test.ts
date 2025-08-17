@@ -1,5 +1,5 @@
 import { BacktestRunner } from "../../../src/libs/backtestRunner";
-import { callFunction } from "../../../src/runtime";
+import { callFunction } from "../../../src/runtime/runtime";
 import { describe, it, expect } from "vitest";
 
 describe("trading builtins", () => {

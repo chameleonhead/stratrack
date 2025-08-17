@@ -1,6 +1,6 @@
 import { preprocess, preprocessWithProperties } from "../../src/parser/preprocess";
 import { parse } from "../../src/parser/parser";
-import { execute } from "../../src/runtime";
+import { execute } from "../../src/runtime/runtime";
 import { describe, it, expect } from "vitest";
 
 describe("preprocess", () => {

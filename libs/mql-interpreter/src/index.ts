@@ -1,6 +1,6 @@
 import { lex, Token, TokenType, LexError, LexResult } from "./parser/lexer";
+import { parse, ParseError } from "./parser/parser";
 import {
-  parse,
   Declaration,
   ClassDeclaration,
   ClassField,
@@ -9,8 +9,7 @@ import {
   ControlStatement,
   VariableDeclaration,
   FunctionParameter,
-  ParseError,
-} from "./parser/parser";
+} from "./parser/ast";
 import { execute, callFunction, instantiate, callMethod, Runtime } from "./runtime/runtime";
 import type {
   RuntimeState,
@@ -59,7 +58,8 @@ import {
   StringGetCharacter,
   StringSetCharacter,
 } from "./libs/builtins/strings";
-import { getBuiltin, BuiltinFunction, registerEnvBuiltins } from "./libs/builtins";
+import { getBuiltin, registerEnvBuiltins } from "./libs/builtins";
+import type { BuiltinFunction } from "./libs/builtins/types";
 import { evaluateExpression } from "./runtime/expression";
 import { executeStatements } from "./runtime/statements";
 import {
@@ -118,18 +118,14 @@ import {
   PropertyMap,
   PreprocessOptions,
 } from "./parser/preprocess";
-import {
-  BacktestRunner,
-  parseCsv,
-  BacktestReport,
-  BacktestOptions,
-  Broker,
-  Account,
-  MarketData,
-  ticksToCandles,
-  VirtualTerminal,
-} from "./libs";
-import type { OrderState, Tick, Candle, TerminalStorage } from "./libs";
+import { BacktestRunner, parseCsv, BacktestReport, BacktestOptions } from "./libs/backtestRunner";
+import { Broker } from "./libs/broker";
+import { Account } from "./libs/account";
+import { MarketData, ticksToCandles } from "./libs/marketData";
+import { VirtualTerminal } from "./libs/virtualTerminal";
+import type { OrderState } from "./libs/broker";
+import type { Tick, Candle } from "./libs/market.types";
+import type { TerminalStorage } from "./libs/virtualTerminal";
 import { setTerminal } from "./libs/builtins/common";
 import { builtinSignatures } from "./libs/signatures";
 import type { BuiltinSignaturesMap } from "./libs/signatures";
