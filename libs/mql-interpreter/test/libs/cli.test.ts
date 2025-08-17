@@ -36,7 +36,7 @@ describe("cli", () => {
         cli,
         "backtest",
         codeFile,
-        "--backtest",
+        "--candles",
         csvFile,
         "--balance",
         "5000",
