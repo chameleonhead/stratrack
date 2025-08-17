@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { evaluateExpression } from "../../src/runtime/expression";
-import { compile } from "../../src";
+import { compile } from "../../src/compile";
 
 describe("literal expressions", () => {
   it("parses boolean constants", () => {

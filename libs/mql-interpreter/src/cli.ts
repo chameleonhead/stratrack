@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { program } from "commander";
-import { interpret } from "./index";
+import { interpret } from "./compile";
 
 program.name("mqli").description("MQL interpreter CLI").version("0.1.0");
 

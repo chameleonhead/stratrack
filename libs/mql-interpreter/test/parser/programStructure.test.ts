@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compile } from "../../src/index";
+import { compile } from "../../src/compile";
 
 describe("program type detection", () => {
   it("detects expert advisors via OnTick", () => {

@@ -1,4 +1,4 @@
-import { compile, interpret } from "../../src";
+import { compile, interpret } from "../../src/compile";
 import { describe, it, expect } from "vitest";
 
 describe("compile errors", () => {

@@ -1,4 +1,4 @@
-import { compile } from "../index";
+import { compile } from "../compile";
 import { callFunction } from "../runtime/runtime";
 import { registerEnvBuiltins } from "./builtins";
 import type { RuntimeState } from "../runtime/types";
