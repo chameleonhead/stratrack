@@ -104,12 +104,15 @@ share values across scripts while the interpreter runs. These variables are
 kept in memory and may be flushed with `GlobalVariablesFlush` when a
 persistent store is added.
 
-To create an instance of a parsed class, use `instantiate()` with the runtime
-and class name. Inherited fields are included in the resulting object:
+To create an instance of a parsed class, first parse and run the code, then use
+`instantiate()` with the runtime and class name. Inherited fields are included
+in the resulting object:
 
 ```ts
-const runtime = interpret("class P{int a;} class C:P{double b;}");
-const obj = instantiate(runtime, "C");
+const ast = Parser.parse("class P{int a;} class C:P{double b;}");
+const runtime = new Runtime();
+runtime.run(ast);
+const obj = instantiate(runtime.getState()!, "C");
 // obj has properties a and b
 ```
 
@@ -119,9 +122,11 @@ method name and object instance:
 
 ```ts
 class C{ int v; void inc(){ v++; }}
-const rt = interpret('class C{ int v; void inc(){ v++; } }');
-const c = instantiate(rt, 'C');
-callMethod(rt, 'C', 'inc', c);
+const ast = Parser.parse('class C{ int v; void inc(){ v++; } }');
+const runtime = new Runtime();
+runtime.run(ast);
+const c = instantiate(runtime.getState()!, 'C');
+callMethod(runtime.getState()!, 'C', 'inc', c);
 // c.v === 1
 ```
 
@@ -176,12 +181,12 @@ are also recognized. Code within inactive branches is skipped entirely during
 preprocessing, so you can enable or disable sections based on defined macros.
 
 `#property` directives are recognized as well. Use `preprocessWithProperties`
-to collect program properties before parsing. When using `interpret()`, the
-collected properties are returned in `runtime.properties`.
+to collect program properties before parsing and assign them to
+`runtime.properties` after building the runtime.
 
 The preprocessor also supports a simplified `#import "file"` directive. Files
-must be provided via a `fileProvider` callback passed to `preprocess` or
-`interpret`. This keeps the interpreter free of Node.js dependencies so the
+must be provided via a `fileProvider` callback passed to `preprocess` or any
+custom wrapper. This keeps the interpreter free of Node.js dependencies so the
 same logic works in the browser.
 
 ```ts
@@ -230,8 +235,8 @@ npx mql-interpreter test.mq4 --backtest candles.csv --data-dir ./tmp --format ht
    functions and global variables.
 3. **Compilation** – `execute()` registers the declarations in a runtime
    structure without running any user code.
-4. **Execution** – `callFunction()` or `interpret()` may then invoke an entry
-   point using the populated runtime.
+4. **Execution** – `callFunction()` may then invoke an entry point using the
+   populated runtime.
 
 ## Development
 

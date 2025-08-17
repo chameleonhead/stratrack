@@ -1,24 +1,24 @@
-import { interpret, compile } from "../../src/compile";
+import { runProgram, buildProgram } from "../helpers";
 import { describe, it, expect } from "vitest";
 
-describe("interpret", () => {
+describe("runtime", () => {
   it("runs without throwing", () => {
-    expect(() => interpret("")).not.toThrow();
+    expect(() => runProgram("")).not.toThrow();
   });
 
-  it("returns properties from interpret", () => {
-    const result = interpret('#property copyright "test"');
+  it("returns properties from execution", () => {
+    const result = runProgram('#property copyright "test"');
     expect(result.properties).toEqual({ copyright: ['"test"'] });
   });
 
   it("stores execution context when provided", () => {
     const ctx = { entryPoint: "Print", args: ["hi"] };
-    const runtime = interpret("", ctx);
+    const runtime = runProgram("", ctx);
     expect(runtime.context).toEqual(expect.objectContaining(ctx));
   });
 
-  it("compiles without executing", () => {
-    const { runtime } = compile("input int A=1;");
+  it("builds without executing", () => {
+    const { runtime } = buildProgram("input int A=1;");
     expect(runtime.variables.A.storage).toBe("input");
     expect(runtime.globalValues.A).toBe(1);
   });

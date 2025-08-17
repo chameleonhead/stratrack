@@ -1,8 +1,11 @@
-import { compile } from "../compile";
-import { callFunction } from "../runtime/runtime";
+import { parse, ParseError } from "../parser/parser";
+import { preprocessWithProperties, PreprocessOptions } from "../parser/preprocess";
+import { execute, callFunction } from "../runtime/runtime";
+import { semanticCheck } from "../semantic/checker";
+import { builtinSignatures } from "./signatures";
 import { registerEnvBuiltins } from "./builtins";
-import type { RuntimeState } from "../runtime/types";
-import type { PreprocessOptions } from "../parser/preprocess";
+import type { RuntimeState, ProgramType } from "../runtime/types";
+import type { Declaration } from "../parser/ast";
 import type { BuiltinFunction } from "./builtins/types";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
@@ -102,12 +105,39 @@ export class BacktestRunner {
     private candles: Candle[],
     private options: BacktestOptions = {}
   ) {
-    const compilation = compile(source, options.preprocessOptions);
-    if (compilation.errors.length) {
-      const msg = compilation.errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
+    const {
+      tokens,
+      properties,
+      errors: lexErrors,
+    } = preprocessWithProperties(source, options.preprocessOptions);
+    let ast: Declaration[] = [];
+    let parseErr: { message: string; line: number; column: number } | null = null;
+    if (lexErrors.length === 0) {
+      try {
+        ast = parse(tokens);
+      } catch (err: any) {
+        if (err instanceof ParseError) {
+          parseErr = { message: err.message, line: err.line, column: err.column };
+        } else {
+          parseErr = { message: String(err), line: 0, column: 0 };
+        }
+      }
+    }
+    const runtime = execute(ast);
+    runtime.properties = properties;
+    let programType: ProgramType = "script";
+    if (runtime.functions["OnCalculate"]) programType = "indicator";
+    else if (runtime.functions["OnTick"]) programType = "expert";
+    else if (runtime.functions["OnStart"]) programType = "script";
+    runtime.programType = programType;
+    const errors = [...lexErrors];
+    if (parseErr) errors.push(parseErr);
+    else errors.push(...semanticCheck(ast, builtinSignatures));
+    if (errors.length) {
+      const msg = errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
       throw new Error(`Compilation failed:\n${msg}`);
     }
-    this.runtime = compilation.runtime;
+    this.runtime = runtime;
     if (options.inputValues) {
       for (const name in this.runtime.variables) {
         const info = this.runtime.variables[name];

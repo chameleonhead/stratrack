@@ -1,33 +1,26 @@
-import { parse, ParseError } from "./parser/parser";
-import { preprocessWithProperties, PropertyMap, PreprocessOptions } from "./parser/preprocess";
-import type { Declaration } from "./parser/ast";
-import { execute, callFunction } from "./runtime/runtime";
-import type { RuntimeState, ExecutionContext, ProgramType } from "./runtime/types";
-import { checkTypes, validateFunctionCalls, validateOverrides } from "./semantic/checker";
-import { builtinSignatures } from "./libs/signatures";
+import { preprocessWithProperties, PreprocessOptions, PropertyMap } from "../src/parser/preprocess";
+import { parse, ParseError } from "../src/parser/parser";
+import type { Declaration } from "../src/parser/ast";
+import { execute, callFunction } from "../src/runtime/runtime";
+import type { RuntimeState, ExecutionContext, ProgramType } from "../src/runtime/types";
+import { semanticCheck, validateOverrides, SemanticError } from "../src/semantic/checker";
+import { builtinSignatures } from "../src/libs/signatures";
 
-export interface Compilation {
-  ast: Declaration[];
-  runtime: RuntimeState;
-  properties: PropertyMap;
-  errors: CompilationError[];
-  warnings: CompilationError[];
-  programType: ProgramType;
-}
-
-export interface CompilationError {
-  message: string;
-  line: number;
-  column: number;
-  code?: string;
-}
-
-export interface CompileOptions extends PreprocessOptions {
+export interface BuildOptions extends PreprocessOptions {
   warningsAsErrors?: boolean;
   suppressWarnings?: string[];
 }
 
-export function compile(source: string, options: CompileOptions = {}): Compilation {
+export interface BuildResult {
+  ast: Declaration[];
+  runtime: RuntimeState;
+  properties: PropertyMap;
+  errors: SemanticError[];
+  warnings: SemanticError[];
+  programType: ProgramType;
+}
+
+export function buildProgram(source: string, options: BuildOptions = {}): BuildResult {
   const {
     tokens,
     properties,
@@ -35,15 +28,15 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
     pragmas,
   } = preprocessWithProperties(source, options);
   let ast: Declaration[] = [];
-  let parseError: CompilationError | null = null;
+  let parseErr: SemanticError | null = null;
   if (lexErrors.length === 0) {
     try {
       ast = parse(tokens);
     } catch (err: any) {
       if (err instanceof ParseError) {
-        parseError = { message: err.message, line: err.line, column: err.column };
+        parseErr = { message: err.message, line: err.line, column: err.column };
       } else {
-        parseError = { message: err.message ?? String(err), line: 0, column: 0 };
+        parseErr = { message: String(err), line: 0, column: 0 };
       }
     }
   }
@@ -54,18 +47,17 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
   else if (runtime.functions["OnTick"]) programType = "expert";
   else if (runtime.functions["OnStart"]) programType = "script";
   runtime.programType = programType;
-  const errors = [...lexErrors];
-  let warnings: CompilationError[] = [];
-  if (parseError) {
-    errors.push(parseError);
+  const errors: SemanticError[] = [...lexErrors];
+  let warnings: SemanticError[] = [];
+  if (parseErr) {
+    errors.push(parseErr);
   } else {
-    errors.push(...checkTypes(ast));
-    errors.push(...validateFunctionCalls(ast, builtinSignatures));
-    warnings.push(...validateOverrides(ast));
+    errors.push(...semanticCheck(ast, builtinSignatures));
+    warnings = validateOverrides(ast);
   }
   const suppressedGlobal = new Set(options.suppressWarnings ?? []);
   const sortedPragmas = [...pragmas].sort((a, b) => a.line - b.line);
-  const isSuppressed = (w: CompilationError) => {
+  const isSuppressed = (w: SemanticError) => {
     if (!w.code) return false;
     const active = new Set(suppressedGlobal);
     for (const p of sortedPragmas) {
@@ -82,12 +74,12 @@ export function compile(source: string, options: CompileOptions = {}): Compilati
   return { ast, runtime, properties, errors, warnings, programType };
 }
 
-export function interpret(
+export function runProgram(
   source: string,
   context?: ExecutionContext,
-  options: CompileOptions = {}
+  options: BuildOptions = {}
 ): RuntimeState {
-  const { runtime, properties, errors } = compile(source, options);
+  const { runtime, properties, errors } = buildProgram(source, options);
   if (errors.length) {
     const msg = errors.map((e) => `${e.line}:${e.column} ${e.message}`).join("\n");
     throw new Error(`Compilation failed:\n${msg}`);
