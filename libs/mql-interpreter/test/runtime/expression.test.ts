@@ -1,5 +1,5 @@
 import { evaluateExpression } from "../../src/runtime/expression";
-import { compile, interpret } from "../../src/index";
+import { buildProgram, runProgram } from "../helpers";
 import { describe, it, expect } from "vitest";
 
 describe("evaluateExpression", () => {
@@ -30,7 +30,7 @@ describe("evaluateExpression", () => {
   });
 
   it("creates objects with new", () => {
-    const runtime = interpret("class A{int x;}");
+    const runtime = runProgram("class A{int x;}");
     const obj = evaluateExpression("new A", {}, runtime);
     expect(obj).toEqual({ x: undefined });
   });
@@ -42,29 +42,29 @@ describe("evaluateExpression", () => {
   });
 
   it("reports unknown function during compilation", () => {
-    const result = compile("void start(){ Foo(); }");
+    const result = buildProgram("void start(){ Foo(); }");
     const found = result.errors.some((e) => e.message.includes("Unknown function Foo"));
     expect(found).toBe(true);
   });
 
   it("checks argument count during compilation", () => {
     const src = "void f(int a, int b=1); void start(){ f(); }";
-    const result = compile(src);
+    const result = buildProgram(src);
     const found = result.errors.some((e) => e.message.includes("Incorrect argument count"));
     expect(found).toBe(true);
   });
 
   it("validates builtin argument count during compilation", () => {
-    const result = compile("void start(){ Sleep(); }");
+    const result = buildProgram("void start(){ Sleep(); }");
     const found = result.errors.some((e) => e.message.includes("Incorrect argument count"));
     expect(found).toBe(true);
   });
 
   it("validates overloaded builtin signatures", () => {
-    const ok = compile("void start(){ int a[]; int b[]; ArrayCopy(a,b); }");
+    const ok = buildProgram("void start(){ int a[]; int b[]; ArrayCopy(a,b); }");
     const okErr = ok.errors.some((e) => e.message.includes("Incorrect argument count"));
     expect(okErr).toBe(false);
-    const bad = compile("void start(){ int a[]; int b[]; ArrayCopy(a,b,1); }");
+    const bad = buildProgram("void start(){ int a[]; int b[]; ArrayCopy(a,b,1); }");
     const found = bad.errors.some((e) => e.message.includes("Incorrect argument count"));
     expect(found).toBe(true);
   });

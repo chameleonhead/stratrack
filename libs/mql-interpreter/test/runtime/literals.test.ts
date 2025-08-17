@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { evaluateExpression } from "../../src/runtime/expression";
-import { compile } from "../../src";
+import { buildProgram } from "../helpers";
 
 describe("literal expressions", () => {
   it("parses boolean constants", () => {
@@ -30,7 +30,7 @@ describe("literal expressions", () => {
   });
 
   it("resolves enumeration constants at compile time", () => {
-    const { runtime } = compile("enum E{ A=2,B }; int x=A; int f(){ return B; }");
+    const { runtime } = buildProgram("enum E{ A=2,B }; int x=A; int f(){ return B; }");
     expect(runtime.variables.x.initialValue).toBe("2");
     expect(runtime.functions.f[0].body.trim()).toBe("return 3 ;");
   });

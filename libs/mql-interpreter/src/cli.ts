@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { program } from "commander";
-import { interpret } from "./index";
+import { Parser } from "./parser/parser";
+import { semanticCheck } from "./semantic/checker";
+import { builtinSignatures } from "./libs/signatures";
+import { BacktestRunner, parseCsv } from "./libs/backtestRunner";
 
 program.name("mqli").description("MQL interpreter CLI").version("0.1.0");
 
@@ -11,8 +14,37 @@ program
   .action((file: string) => {
     console.log("Checking:", file);
     const code = readFileSync(file, "utf8");
-    const result = interpret(code);
-    console.log(result);
+    const ast = Parser.parse(code);
+    const errors = semanticCheck(ast, builtinSignatures);
+    if (errors.length > 0) {
+      for (const e of errors) {
+        console.error(`${e.line}:${e.column} ${e.message}`);
+      }
+      process.exit(1);
+    }
+    console.log("OK");
+  });
+
+program
+  .command("backtest <file>")
+  .description("バックテストを実行")
+  .requiredOption("--backtest <csv>", "ローソク足のCSVファイル")
+  .option("--balance <balance>", "初期残高", (v) => Number(v))
+  .option("--margin <margin>", "初期証拠金", (v) => Number(v))
+  .option("--currency <code>", "口座通貨")
+  .option("--timeframe <seconds>", "デフォルト時間足", (v) => Number(v))
+  .action((file: string, opts: any) => {
+    const code = readFileSync(file, "utf8");
+    const csv = readFileSync(opts.backtest, "utf8");
+    const data = parseCsv(csv);
+    const runner = new BacktestRunner(code, data, {
+      initialBalance: opts.balance,
+      initialMargin: opts.margin,
+      accountCurrency: opts.currency,
+      timeframe: opts.timeframe,
+    });
+    runner.run();
+    console.log(JSON.stringify(runner.getReport(), null, 2));
   });
 
 program.parse();

@@ -1,4 +1,5 @@
 import { Token, TokenType } from "./lexer";
+import { preprocess } from "./preprocess";
 import {
   EnumMember,
   EnumDeclaration,
@@ -676,4 +677,11 @@ export function parse(tokens: Token[]): Declaration[] {
   }
 
   return declarations;
+}
+
+export class Parser {
+  static parse(source: string): Declaration[] {
+    const tokens = preprocess(source);
+    return parse(tokens);
+  }
 }

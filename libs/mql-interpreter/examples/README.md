@@ -15,7 +15,7 @@ npm run build
 Run the bundled MACD sample expert advisor on sample GBPUSD data:
 
 ```bash
-node bin/mql-interpreter.js "examples/MACD Sample.mq4" --backtest examples/data/GBPUSD_M1.csv
+node dist/cli.cjs backtest "examples/MACD Sample.mq4" --backtest examples/data/GBPUSD_M1.csv
 ```
 
 The command prints a JSON report containing global variables, account metrics and executed orders. By default the backtest runs with a 10,000&nbsp;USD balance; adjust account settings using `--balance`, `--margin` and `--currency` if needed. Replace the CSV file with history exported from MetaTrader to backtest your own data.

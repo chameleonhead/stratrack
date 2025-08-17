@@ -24,4 +24,30 @@ describe("cli", () => {
     expect(result.status).toBe(0);
     expect(result.stdout.toString()).toContain("Checking:");
   });
+
+  it("runs backtest command", () => {
+    const codeFile = join(tmpdir(), "bt.mq4");
+    writeFileSync(codeFile, "int OnTick(){return 0;}");
+    const csvFile = join(tmpdir(), "data.csv");
+    writeFileSync(csvFile, "0,1,1,1,1\n1,1,1,1,1");
+    const result = spawnSync(
+      "node",
+      [
+        cli,
+        "backtest",
+        codeFile,
+        "--backtest",
+        csvFile,
+        "--balance",
+        "5000",
+        "--margin",
+        "1000",
+        "--currency",
+        "JPY",
+      ],
+      { cwd: root }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout.toString()).toContain("globals");
+  });
 });
