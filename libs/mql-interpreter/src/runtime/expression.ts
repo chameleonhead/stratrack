@@ -14,10 +14,10 @@ interface EvalResult {
 // Operators for assignment
 const assignmentOps = new Set(["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>="]);
 
-import type { Runtime } from "./types";
+import type { RuntimeState } from "./types";
 import { instantiate, callFunction } from "./runtime";
 
-export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Runtime): any {
+export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: RuntimeState): any {
   const { tokens, errors } = lex(expr);
   if (errors.length) {
     throw new Error(errors.map((e) => e.message).join("\n"));

@@ -3,7 +3,7 @@
 
 import { lex, Token, TokenType } from "../parser/lexer";
 import { evaluateExpression, EvalEnv } from "./expression";
-import type { Runtime } from "./types";
+import type { RuntimeState } from "./types";
 import { cast, PrimitiveType } from "./casting";
 
 interface ExecResult {
@@ -39,7 +39,7 @@ function tokensToString(tokens: Token[]): string {
 export function executeStatements(
   source: string,
   env: EvalEnv = {},
-  runtime?: Runtime
+  runtime?: RuntimeState
 ): ExecResult {
   const { tokens, errors } = lex(source);
   if (errors.length) {

@@ -39,11 +39,11 @@ import {
   GlobalVariablesFlush,
   WebRequest,
   setTerminal,
-} from "../../../src/core/runtime/builtins/common";
-import { StructToTime } from "../../../src/core/runtime/builtins/datetime";
-import { builtinSignatures } from "../../../src/core/parser/builtins/signatures";
-import { coreBuiltins, envBuiltins } from "../../../src/core/runtime/builtins";
-import { VirtualTerminal } from "../../../src/core/libs/virtualTerminal";
+} from "../../../src/libs/builtins/common";
+import { StructToTime } from "../../../src/libs/builtins/datetime";
+import { builtinSignatures } from "../../../src/libs/signatures";
+import { coreBuiltins, envBuiltins } from "../../../src/libs/builtins/registry";
+import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {

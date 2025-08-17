@@ -1,5 +1,4 @@
 import type { Candle, Tick } from "./market.types";
-export type { Candle, Tick } from "./market.types";
 
 export class MarketData {
   private ticks: Record<string, Tick[]> = {};

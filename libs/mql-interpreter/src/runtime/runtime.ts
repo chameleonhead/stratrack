@@ -1,5 +1,5 @@
 import type {
-  Runtime,
+  RuntimeState,
   ExecutionContext,
   RuntimeClassField,
   RuntimeFunctionParameter,
@@ -10,8 +10,9 @@ import {
   ClassDeclaration,
   FunctionDeclaration,
   VariableDeclaration,
-} from "../parser/parser";
-import { getBuiltin } from "./builtins";
+} from "../parser/ast";
+import { getBuiltin, registerEnvBuiltins } from "../libs/builtins";
+import type { BuiltinFunction } from "../libs/builtins/types";
 import { cast, PrimitiveType } from "./casting";
 import { executeStatements } from "./statements";
 import { DateTimeValue } from "./datetimeValue";
@@ -74,8 +75,8 @@ function checkPrimitive(value: any, type: string): boolean {
 export function execute(
   declarations: Declaration[],
   entryPointOrContext?: string | ExecutionContext
-): Runtime {
-  const runtime: Runtime = {
+): RuntimeState {
+  const runtime: RuntimeState = {
     enums: {},
     classes: {},
     functions: {},
@@ -254,7 +255,7 @@ export function execute(
   return runtime;
 }
 
-export function callFunction(runtime: Runtime, name: string, args: any[] = []): any {
+export function callFunction(runtime: RuntimeState, name: string, args: any[] = []): any {
   const overloads = runtime.functions[name];
   const builtin = getBuiltin(name);
 
@@ -382,7 +383,7 @@ export function callFunction(runtime: Runtime, name: string, args: any[] = []): 
   return builtin(...args);
 }
 
-export function instantiate(runtime: Runtime, className: string): any {
+export function instantiate(runtime: RuntimeState, className: string): any {
   const cls = runtime.classes[className];
   if (!cls) throw new Error(`Class ${className} not found`);
   let obj: any = {};
@@ -398,7 +399,7 @@ export function instantiate(runtime: Runtime, className: string): any {
 }
 
 export function callMethod(
-  runtime: Runtime,
+  runtime: RuntimeState,
   className: string,
   methodName: string,
   obj: any,
@@ -499,4 +500,34 @@ export function callMethod(
     cls = runtime.classes[cls.base];
   }
   throw new Error(`Method ${methodName} not found on ${currentName}`);
+}
+
+export class Runtime {
+  private state?: RuntimeState;
+
+  run(
+    ast: Declaration[],
+    options: {
+      libs?: Record<string, BuiltinFunction>;
+      entryPoint?: string;
+      args?: any[];
+      inputValues?: Record<string, any>;
+      externValues?: Record<string, any>;
+    } = {}
+  ): RuntimeState {
+    if (options.libs) {
+      registerEnvBuiltins(options.libs);
+    }
+    this.state = execute(ast, {
+      entryPoint: options.entryPoint,
+      args: options.args,
+      inputValues: options.inputValues,
+      externValues: options.externValues,
+    });
+    return this.state;
+  }
+
+  getState(): RuntimeState | undefined {
+    return this.state;
+  }
 }

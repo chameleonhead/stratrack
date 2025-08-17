@@ -2,7 +2,7 @@
 import type { BuiltinFunction } from "./types";
 import { formatString } from "./format";
 import type { VirtualTerminal } from "../../libs/virtualTerminal";
-import { DateTimeValue } from "../datetimeValue";
+import { DateTimeValue } from "../../runtime/datetimeValue";
 
 let terminal: VirtualTerminal | null = null;
 export function setTerminal(t: VirtualTerminal | null): void {

@@ -1,4 +1,4 @@
-import type { VariableDeclaration } from "../parser/parser";
+import type { VariableDeclaration } from "../parser/ast";
 
 export interface RuntimeClassField {
   type: string;
@@ -29,7 +29,7 @@ export interface RuntimeClassMethod {
 
 export type ProgramType = "expert" | "script" | "indicator";
 
-export interface Runtime {
+export interface RuntimeState {
   enums: Record<string, Record<string, number>>;
   classes: Record<
     string,
