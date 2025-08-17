@@ -195,6 +195,12 @@ preprocess('#import "lib.mqh"\n#import', {
 });
 ```
 
+During development the CLI can be executed directly without building:
+
+```bash
+npm run dev:cli -- backtest path/to/file.mq4 path/to/candles.csv
+```
+
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:
 
