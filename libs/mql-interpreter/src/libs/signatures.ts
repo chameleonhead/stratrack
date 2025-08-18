@@ -1652,57 +1652,90 @@ const globalsBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/marketinformation
 const marketinformationBuiltinSignatures: BuiltinSignaturesMap = {
   MarketInfo: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "type", type: "int" },
+    ],
     returnType: "double",
     description: "Returns various data about securities listed in the 'Market Watch' window",
   },
   SymbolInfoDouble: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
     returnType: "double",
     description: "Returns the double value of the symbol for the corresponding property",
   },
   SymbolInfoInteger: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
+    returnType: "long",
     description:
       "Returns a value of an integer type (long, datetime, int or bool) of a specified symbol for the corresponding property",
   },
   SymbolInfoSessionQuote: {
-    args: [],
-    returnType: "datetime",
+    args: [
+      { name: "name", type: "string" },
+      { name: "day_of_week", type: "int" },
+      { name: "session_index", type: "uint" },
+      { name: "from", type: "datetime" },
+      { name: "to", type: "datetime" },
+    ],
+    returnType: "bool",
     description:
       "Allows receiving time of beginning and end of the specified quoting sessions for a specified symbol and day of week.",
   },
   SymbolInfoSessionTrade: {
-    args: [],
-    returnType: "datetime",
+    args: [
+      { name: "name", type: "string" },
+      { name: "day_of_week", type: "int" },
+      { name: "session_index", type: "uint" },
+      { name: "from", type: "datetime" },
+      { name: "to", type: "datetime" },
+    ],
+    returnType: "bool",
     description:
       "Allows receiving time of beginning and end of the specified trading sessions for a specified symbol and day of week.",
   },
   SymbolInfoString: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
     returnType: "string",
     description:
       "Returns a value of the string type of a specified symbol for the corresponding property",
   },
   SymbolInfoTick: {
-    args: [],
-    returnType: "MqlTick",
+    args: [
+      { name: "name", type: "string" },
+      { name: "tick", type: "MqlTick" },
+    ],
+    returnType: "bool",
     description:
       "Returns the current prices for the specified symbol in a variable of the MqlTick type",
   },
   SymbolName: {
-    args: [],
+    args: [
+      { name: "pos", type: "int" },
+      { name: "selected", type: "bool", optional: true },
+    ],
     returnType: "string",
     description: "Returns the name of a specified symbol",
   },
   SymbolSelect: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "select", type: "bool" },
+    ],
     returnType: "bool",
     description: "Selects a symbol in the Market Watch window or removes a symbol from the window",
   },
   SymbolsTotal: {
-    args: [],
+    args: [{ name: "selected", type: "bool", optional: true }],
     returnType: "int",
     description: "Returns the number of available (selected in Market Watch or all) symbols",
   },
@@ -1944,139 +1977,346 @@ const mathBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/objects
 const objectsBuilinSignatures: BuiltinSignaturesMap = {
   ObjectCreate: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "object_type", type: "int" },
+      { name: "sub_window", type: "int" },
+      { name: "time1", type: "datetime" },
+      { name: "price1", type: "double" },
+      { name: "time2", type: "datetime", optional: true },
+      { name: "price2", type: "double", optional: true },
+      { name: "time3", type: "datetime", optional: true },
+      { name: "price3", type: "double", optional: true },
+    ],
+    returnType: "bool",
     description: "Creates an object of the specified type in a specified chart",
   },
   ObjectDelete: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "bool",
     description: "Removes the object having the specified name",
   },
   ObjectDescription: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
     returnType: "string",
     description: "Returns the object description",
   },
   ObjectFind: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "int",
     description: "Searches for an object having the specified name",
   },
   ObjectGet: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+    ],
     returnType: "double",
     description: "Returns the value of the specified object property",
   },
   ObjectGetDouble: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Returns the double value of the corresponding object property",
   },
   ObjectGetFiboDescription: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+    ],
     returnType: "string",
     description: "Returns the level description of a Fibonacci object",
   },
   ObjectGetInteger: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
+    returnType: "long",
     description: "Returns the integer value of the corresponding object property",
   },
   ObjectGetShiftByValue: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "int",
     description: "Calculates and returns bar index for the given price",
   },
   ObjectGetString: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
     returnType: "string",
     description: "Returns the string value of the corresponding object property",
   },
   ObjectGetTimeByValue: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "value", type: "double" },
+      { name: "line_id", type: "int", optional: true },
+    ],
     returnType: "datetime",
     description: "Returns the time value for the specified object price value",
   },
   ObjectGetValueByShift: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description: "Calculates and returns the price value for the specified bar",
   },
   ObjectGetValueByTime: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "time", type: "datetime" },
+      { name: "line_id", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Returns the price value of an object for the specified time",
   },
   ObjectMove: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "point_index", type: "int" },
+      { name: "time", type: "datetime" },
+      { name: "price", type: "double" },
+    ],
+    returnType: "bool",
     description: "Changes the coordinates of the specified object anchor point",
   },
   ObjectName: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "index", type: "int" },
+    ],
     returnType: "string",
     description: "Returns the name of an object by its index in the objects list",
   },
-  ObjectsDeleteAll: {
-    args: [],
-    returnType: "void",
-    description: "Removes all objects of the specified type from the specified chart subwindow",
-  },
+  ObjectsDeleteAll: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prefix", type: "string" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "prefix", type: "string" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+  ],
   ObjectSet: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "bool",
     description: "Changes the value of the specified object property",
   },
-  ObjectSetDouble: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
+  ObjectSetDouble: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
   ObjectSetFiboDescription: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+      { name: "text", type: "string" },
+    ],
+    returnType: "bool",
     description: "Sets a new description to a level of a Fibonacci object",
   },
-  ObjectSetInteger: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
-  ObjectSetString: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
+  ObjectSetInteger: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
+  ObjectSetString: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "string" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "string" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
   ObjectSetText: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "text", type: "string" },
+      { name: "font_size", type: "int", optional: true },
+      { name: "font_name", type: "string", optional: true },
+      { name: "text_color", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Changes the object description",
   },
-  ObjectsTotal: {
-    args: [],
-    returnType: "integer",
-    description: "Returns the number of objects of the specified type",
-  },
+  ObjectsTotal: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Returns the number of objects of the specified type",
+    },
+    {
+      args: [{ name: "type", type: "int", optional: true }],
+      returnType: "int",
+      description: "Returns the number of objects of the specified type",
+    },
+  ],
   ObjectType: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "int",
     description: "Returns the object type",
   },
   TextGetSize: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "text", type: "string" },
+      { name: "width", type: "uint" },
+      { name: "height", type: "uint" },
+    ],
+    returnType: "bool",
     description: "Returns the string's width and height at the current font settings",
   },
   TextOut: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "text", type: "string" },
+      { name: "x", type: "int" },
+      { name: "y", type: "int" },
+      { name: "anchor", type: "uint" },
+      { name: "data", type: "uint[]" },
+      { name: "width", type: "uint" },
+      { name: "height", type: "uint" },
+      { name: "color", type: "uint" },
+      { name: "color_format", type: "int" },
+    ],
+    returnType: "bool",
     description:
       "Transfers the text to the custom array (buffer) designed for creation of a graphical resource",
   },
   TextSetFont: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "name", type: "string" },
+      { name: "size", type: "int" },
+      { name: "flags", type: "uint", optional: true },
+      { name: "orientation", type: "int", optional: true },
+    ],
+    returnType: "bool",
     description:
       "Sets the font for displaying the text using drawing methods (Arial 20 used by default)",
   },
@@ -2085,100 +2325,147 @@ const objectsBuilinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/strings
 const stringsBuiltinSignatures: BuiltinSignaturesMap = {
   StringAdd: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "add_substring", type: "string" },
+    ],
+    returnType: "bool",
     description: "Adds a string to the end of another string",
   },
   StringBufferLen: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "int",
     description: "Returns the size of buffer allocated for the string",
   },
   StringCompare: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string1", type: "string" },
+      { name: "string2", type: "string" },
+      { name: "case_sensitive", type: "bool", optional: true },
+    ],
+    returnType: "int",
     description:
       "Compares two strings and returns 1 if the first string is greater than the second; 0 - if the strings are equal; -1 (minus 1) - if the first string is less than the second one",
   },
   StringConcatenate: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "first", type: "any" },
+      { name: "args", type: "any", variadic: true },
+    ],
+    returnType: "string",
     description: "Forms a string of parameters passed",
   },
   StringFill: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Fills out a specified string by selected symbols",
   },
   StringFind: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "match_substring", type: "string" },
+      { name: "start_pos", type: "int", optional: true },
+    ],
+    returnType: "int",
     description: "Search for a substring in a string",
   },
   StringGetChar: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "pos", type: "int" },
+    ],
+    returnType: "ushort",
     description: "Returns character (code) from the specified position in the string",
   },
   StringGetCharacter: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "pos", type: "int" },
+    ],
+    returnType: "ushort",
     description: "Returns the value of a number located in the specified string position",
   },
   StringInit: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "len", type: "int" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Initializes string by specified symbols and provides the specified string length",
   },
   StringLen: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "int",
     description: "Returns the number of symbols in a string",
   },
   StringReplace: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "str", type: "string" },
+      { name: "find", type: "string" },
+      { name: "replacement", type: "string" },
+    ],
+    returnType: "int",
     description: "Replaces all the found substrings of a string by a set sequence of symbols",
   },
   StringSetChar: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "pos", type: "int" },
+      { name: "value", type: "ushort" },
+    ],
+    returnType: "string",
     description: "Returns the string copy with changed character in the specified position",
   },
   StringSetCharacter: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "pos", type: "int" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Returns true is a symbol is successfully inserted to the passed string.",
   },
   StringSplit: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "separator", type: "ushort" },
+      { name: "result", type: "string[]" },
+    ],
+    returnType: "int",
     description:
       "Gets substrings by a specified separator from the specified string, returns the number of substrings obtained",
   },
   StringSubstr: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "start_pos", type: "int" },
+      { name: "length", type: "int", optional: true },
+    ],
+    returnType: "string",
     description: "Extracts a substring from a text string starting from a specified position",
   },
   StringToLower: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "bool",
     description: "Transforms all symbols of a selected string to lowercase by location",
   },
   StringToUpper: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "bool",
     description: "Transforms all symbols of a selected string into capitals by location",
   },
   StringTrimLeft: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "text", type: "string" }],
+    returnType: "string",
     description: "Cuts line feed characters, spaces and tabs in the left part of the string",
   },
   StringTrimRight: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "text", type: "string" }],
+    returnType: "string",
     description: "Cuts line feed characters, spaces and tabs in the right part of the string",
   },
 };
