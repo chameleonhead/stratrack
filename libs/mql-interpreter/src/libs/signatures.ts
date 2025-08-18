@@ -1680,7 +1680,7 @@ const marketinformationBuiltinSignatures: BuiltinSignaturesMap = {
     args: [
       { name: "name", type: "string" },
       { name: "day_of_week", type: "int" },
-      { name: "session_index", type: "uint" },
+      { name: "session_index", type: "int" },
       { name: "from", type: "datetime" },
       { name: "to", type: "datetime" },
     ],
@@ -1692,7 +1692,7 @@ const marketinformationBuiltinSignatures: BuiltinSignaturesMap = {
     args: [
       { name: "name", type: "string" },
       { name: "day_of_week", type: "int" },
-      { name: "session_index", type: "uint" },
+      { name: "session_index", type: "int" },
       { name: "from", type: "datetime" },
       { name: "to", type: "datetime" },
     ],
@@ -1975,7 +1975,7 @@ const mathBuiltinSignatures: BuiltinSignaturesMap = {
 };
 
 // https://docs.mql4.com/objects
-const objectsBuilinSignatures: BuiltinSignaturesMap = {
+const objectsBuiltinSignatures: BuiltinSignaturesMap = {
   ObjectCreate: {
     args: [
       { name: "chart_id", type: "long", optional: true },
@@ -3039,7 +3039,7 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   ...globalsBuiltinSignatures,
   ...marketinformationBuiltinSignatures,
   ...mathBuiltinSignatures,
-  ...objectsBuilinSignatures,
+  ...objectsBuiltinSignatures,
   ...stringsBuiltinSignatures,
   ...indicatorsBuiltinSignatures,
   ...seriesBuiltinSignatures,
