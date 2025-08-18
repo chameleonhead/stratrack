@@ -211,7 +211,7 @@ export function validateFunctionCalls(
           let match = false;
           for (const s of sigs) {
             const required = s.args.filter((p) => !p.optional).length;
-            const max = s.args.filter((p) => !p.variadic).length > 0 ? Infinity : s.args.length;
+            const max = s.args.some((p) => p.variadic) ? Infinity : s.args.length;
             if (args >= required && args <= max) {
               match = true;
               break;
