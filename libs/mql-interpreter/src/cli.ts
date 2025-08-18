@@ -26,16 +26,21 @@ program
   });
 
 program
-  .command("backtest <file>")
+  .command("backtest <file> [candles]")
   .description("バックテストを実行")
-  .requiredOption("--backtest <csv>", "ローソク足のCSVファイル")
+  .option("--candles <csv>", "ローソク足のCSVファイル")
   .option("--balance <balance>", "初期残高", (v) => Number(v))
   .option("--margin <margin>", "初期証拠金", (v) => Number(v))
   .option("--currency <code>", "口座通貨")
   .option("--timeframe <seconds>", "デフォルト時間足", (v) => Number(v))
-  .action((file: string, opts: any) => {
+  .action((file: string, candles: string | undefined, opts: any) => {
+    const csvFile = candles ?? opts.candles;
+    if (!csvFile) {
+      console.error("ローソク足のCSVファイルを指定してください");
+      process.exit(1);
+    }
     const code = readFileSync(file, "utf8");
-    const csv = readFileSync(opts.backtest, "utf8");
+    const csv = readFileSync(csvFile, "utf8");
     const data = parseCsv(csv);
     const runner = new BacktestRunner(code, data, {
       initialBalance: opts.balance,

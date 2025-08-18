@@ -9,6 +9,20 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const root = join(__dirname, "..", "..");
 const cli = join(root, "dist", "cli.cjs");
 
+describe("dev:cli", () => {
+  it("runs backtest command without building", () => {
+    const codeFile = join(tmpdir(), "devbt.mq4");
+    writeFileSync(codeFile, "int OnTick(){return 0;}");
+    const csvFile = join(tmpdir(), "devdata.csv");
+    writeFileSync(csvFile, "0,1,1,1,1\n1,1,1,1,1");
+    const result = spawnSync("npm", ["run", "dev:cli", "--", "backtest", codeFile, csvFile], {
+      cwd: root,
+    });
+    expect(result.status).toBe(0);
+    expect(result.stdout.toString()).toContain("globals");
+  });
+});
+
 describe("cli", () => {
   beforeAll(() => {
     const build = spawnSync("npm", ["run", "build"], { cwd: root });
@@ -36,7 +50,7 @@ describe("cli", () => {
         cli,
         "backtest",
         codeFile,
-        "--backtest",
+        "--candles",
         csvFile,
         "--balance",
         "5000",

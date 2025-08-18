@@ -7,14 +7,12 @@ declared as `<type> <name>;` are captured, including simple dynamic array
 declarations like `int values[];`. These fields are stored in the runtime
 with their array dimensions. Top-level functions are also parsed. Their return
 type, name and parameter list (including any default values) are recorded in the
-runtime for inspection.
-A single name may have multiple declarations with different parameter lists,
-mirroring MQL's function overloading rules. The runtime stores every overload
-A function may be overloaded with different parameter lists so `callFunction()`
-can choose the one matching the argument count. The parser also captures class
-methods, including constructors, destructors and operator overloads like
-`operator+`. Only the method signatures are stored; method bodies are ignored
-during execution.
+runtime for inspection. A single name may have multiple declarations with
+different parameter lists, mirroring MQL's function overloading rules. The
+runtime stores every overload so `callFunction()` can choose the one matching
+the argument count. The parser also captures class methods, including
+constructors, destructors and operator overloads like `operator+`. Only the
+method signatures are stored; method bodies are ignored during execution.
 Fields and methods may be marked `static`, and methods may be marked
 `virtual`. Pure virtual methods using `=0` are recognized, and classes may be
 prefixed with `abstract`. These attributes are captured and appear in the
@@ -195,6 +193,12 @@ preprocess('#import "lib.mqh"\n#import', {
 });
 ```
 
+During development the CLI can be executed directly without building:
+
+```bash
+npm run dev:cli -- backtest path/to/file.mq4 --candles path/to/candles.csv
+```
+
 After running `npm run build` you can use the `mql-interpreter` CLI to execute a
 file and print the resulting runtime information:
 
@@ -216,14 +220,14 @@ npx mql-interpreter bad.mq4
 1:1 Unknown type Foo
 ```
 
-To run a quick backtest, supply the `--backtest` option with candle data in CSV
+To run a quick backtest, supply the `--candles` option with candle data in CSV
 format. Optionally set `--data-dir` to mimic the MT4 data folder so global
 variables persist between runs. Results now include account metrics and the
 executed order list in addition to globals. Output is JSON by default or an
 HTML snippet when `--format html` is provided:
 
 ```bash
-npx mql-interpreter test.mq4 --backtest candles.csv --data-dir ./tmp --format html > report.html
+npx mql-interpreter test.mq4 --candles candles.csv --data-dir ./tmp --format html > report.html
 ```
 
 ## Architecture

@@ -37,8 +37,8 @@ The following tasks outline future work required to develop a functional MQL4/5 
       boolean operators following MQL operator rules. A custom
       recursive-descent parser now honors operator precedence and
       distinguishes prefix from postfix forms like `--a` vs `a--`.
-      Statement execution remains unimplemented. The `new` operator can
-      instantiate classes via the runtime.
+      Statement execution integrates with this parser, and the `new`
+      operator can instantiate classes via the runtime.
 - [x] Enforce identifier rules from the MQL documentation:
       maximum length of 63 characters and disallow reserved words.
       Expand the lexer keyword list based on
