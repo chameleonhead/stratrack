@@ -132,101 +132,171 @@ const accountBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/array
 const arrayBuiltinSignatures: BuiltinSignaturesMap = {
   ArrayBsearch: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "value", type: "double" },
+      { name: "count", type: "int", optional: true },
+      { name: "start", type: "int", optional: true },
+      { name: "direction", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Returns index of the first found element in the first array dimension",
   },
   ArrayCompare: {
-    args: [],
+    args: [
+      { name: "array1", type: "any[]" },
+      { name: "array2", type: "any[]" },
+      { name: "count", type: "int", optional: true },
+      { name: "start1", type: "int", optional: true },
+      { name: "start2", type: "int", optional: true },
+    ],
     returnType: "int",
     description:
       "Returns the result of comparing two arrays of simple types or custom structures without complex objects",
   },
-  ArrayCopy: {
-    args: [],
-    returnType: "int",
-    description: "Copies one array into another",
-  },
+  ArrayCopy: [
+    {
+      args: [
+        { name: "dest", type: "any[]" },
+        { name: "src", type: "any[]" },
+      ],
+      returnType: "int",
+      description: "Copies one array into another",
+    },
+    {
+      args: [
+        { name: "dest", type: "any[]" },
+        { name: "src", type: "any[]" },
+        { name: "destStart", type: "int" },
+        { name: "srcStart", type: "int" },
+        { name: "count", type: "int" },
+      ],
+      returnType: "int",
+      description: "Copies one array into another",
+    },
+  ],
   ArrayCopyRates: {
-    args: [],
+    args: [
+      { name: "dest", type: "MqlRates[]" },
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int", optional: true },
+      { name: "startPos", type: "int", optional: true },
+      { name: "count", type: "int", optional: true },
+    ],
     returnType: "int",
     description:
       "Copies rates to the two-dimensional array from chart RateInfo array returns copied bars amount",
   },
   ArrayCopySeries: {
-    args: [],
+    args: [
+      { name: "dest", type: "any[]" },
+      { name: "seriesIndex", type: "int" },
+      { name: "symbol", type: "string", optional: true },
+      { name: "timeframe", type: "int", optional: true },
+    ],
     returnType: "int",
     description:
       "Copies a series array to another one and returns the count of the copied elements",
   },
   ArrayDimension: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "int",
     description: "Returns the multidimensional array rank",
   },
   ArrayFill: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "value", type: "double" },
+      { name: "start", type: "int", optional: true },
+      { name: "count", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Fills an array with the specified value",
   },
   ArrayFree: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "int",
     description:
       "Frees up buffer of any dynamic array and sets the size of the zero dimension in 0.",
   },
   ArrayGetAsSeries: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "int",
     description: "Checks direction of array indexing",
   },
   ArrayInitialize: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "value", type: "double" },
+    ],
     returnType: "int",
     description: "Sets all elements of a numeric array into a single value",
   },
   ArrayIsDynamic: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "bool",
     description: "Checks whether an array is dynamic",
   },
   ArrayIsSeries: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "bool",
     description: "Checks whether an array is a timeseries",
   },
   ArrayMaximum: {
-    args: [],
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "count", type: "int", optional: true },
+      { name: "start", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Search for an element with the maximal value",
   },
   ArrayMinimum: {
-    args: [],
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "count", type: "int", optional: true },
+      { name: "start", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Search for an element with the minimal value",
   },
   ArrayRange: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "index", type: "int" },
+    ],
     returnType: "int",
     description: "Returns the number of elements in the specified dimension of the array",
   },
   ArrayResize: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "newSize", type: "int" },
+      { name: "reserveSize", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Sets the new size in the first dimension of the array",
   },
   ArraySetAsSeries: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "asSeries", type: "bool" },
+    ],
     returnType: "int",
     description: "Sets the direction of array indexing",
   },
   ArraySize: {
-    args: [],
+    args: [{ name: "array", type: "any[]" }],
     returnType: "int",
     description: "Returns the number of elements in the array",
   },
   ArraySort: {
-    args: [],
+    args: [
+      { name: "array", type: "any[]" },
+      { name: "count", type: "int", optional: true },
+      { name: "start", type: "int", optional: true },
+      { name: "sortDir", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Sorting of numeric arrays by the first dimension",
   },
@@ -235,74 +305,143 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/chart_operations
 const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
   ChartApplyTemplate: {
-    args: [],
-    returnType: "int",
-    description: "Applies a specific template from a specified file to the chart",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "filename", type: "string" },
+    ],
+    returnType: "bool",
+    description: "Applies a specific template from a file to the chart",
   },
   ChartClose: {
-    args: [],
-    returnType: "int",
+    args: [{ name: "chart_id", type: "long", optional: true }],
+    returnType: "bool",
     description: "Closes the specified chart",
   },
   ChartFirst: {
     args: [],
-    returnType: "int",
+    returnType: "long",
     description: "Returns the ID of the first chart of the client terminal",
   },
-  ChartGetDouble: {
-    args: [],
-    returnType: "double",
-    description: "Returns the double value property of the specified chart",
-  },
-  ChartGetInteger: {
-    args: [],
-    returnType: "int",
-    description: "Returns the integer value property of the specified chart",
-  },
-  ChartGetString: {
-    args: [],
-    returnType: "string",
-    description: "Returns the string value property of the specified chart",
-  },
+  ChartGetDouble: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int", optional: true },
+      ],
+      returnType: "double",
+      description: "Returns the double value property of the specified chart",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int" },
+        { name: "double_var", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Retrieves a double chart property into a reference variable",
+    },
+  ],
+  ChartGetInteger: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int", optional: true },
+      ],
+      returnType: "long",
+      description: "Returns the integer value property of the specified chart",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int" },
+        { name: "long_var", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Retrieves an integer chart property into a reference variable",
+    },
+  ],
+  ChartGetString: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int", optional: true },
+      ],
+      returnType: "string",
+      description: "Returns the string value property of the specified chart",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prop_id", type: "int" },
+        { name: "sub_window", type: "int" },
+        { name: "string_var", type: "string" },
+      ],
+      returnType: "bool",
+      description: "Retrieves a string chart property into a reference variable",
+    },
+  ],
   ChartID: {
     args: [],
-    returnType: "int",
+    returnType: "long",
     description: "Returns the ID of the current chart",
   },
   ChartIndicatorDelete: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "window_index", type: "int" },
+      { name: "indicator_shortname", type: "string" },
+    ],
+    returnType: "bool",
     description: "Removes an indicator with a specified name from the specified chart window",
   },
   ChartIndicatorName: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "window_index", type: "int" },
+      { name: "index", type: "int" },
+    ],
     returnType: "string",
     description:
       "Returns the short name of the indicator by the number in the indicators list on the specified chart window",
   },
   ChartIndicatorsTotal: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "window_index", type: "int" },
+    ],
     returnType: "int",
     description: "Returns the number of all indicators applied to the specified chart window.",
   },
   ChartNavigate: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "position", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "bool",
     description:
       "Performs shift of the specified chart by the specified number of bars relative to the specified position in the chart",
   },
   ChartNext: {
-    args: [],
-    returnType: "int",
+    args: [{ name: "chart_id", type: "long" }],
+    returnType: "long",
     description: "Returns the chart ID of the chart next to the specified one",
   },
   ChartOpen: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "period", type: "int" },
+    ],
+    returnType: "long",
     description: "Opens a new chart with the specified symbol and period",
   },
   ChartPeriod: {
-    args: [],
+    args: [{ name: "chart_id", type: "long", optional: true }],
     returnType: "int",
     description: "Returns the period value of the specified chart",
   },
@@ -318,38 +457,63 @@ const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Calls a forced redrawing of a specified chart",
   },
   ChartSaveTemplate: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "filename", type: "string" },
+    ],
+    returnType: "bool",
     description: "Saves current chart settings in a template with a specified name",
   },
   ChartScreenShot: {
-    args: [],
-    returnType: "int",
-    description: "Provides a screenshot of the chart of its current state in a gif format",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "filename", type: "string" },
+      { name: "width", type: "int" },
+      { name: "height", type: "int" },
+      { name: "align_mode", type: "int", optional: true },
+    ],
+    returnType: "bool",
+    description: "Provides a screenshot of the chart of its current state",
   },
   ChartSetDouble: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "prop_id", type: "int" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "bool",
     description: "Sets the double value for a corresponding property of the specified chart",
   },
   ChartSetInteger: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "prop_id", type: "int" },
+      { name: "value", type: "long" },
+    ],
+    returnType: "bool",
     description:
       "Sets the integer value (datetime, int, color, bool or char) for a corresponding property of the specified chart",
   },
   ChartSetString: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "prop_id", type: "int" },
+      { name: "value", type: "string" },
+    ],
+    returnType: "bool",
     description: "Sets the string value for a corresponding property of the specified chart",
   },
   ChartSetSymbolPeriod: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "symbol", type: "string" },
+      { name: "period", type: "int" },
+    ],
+    returnType: "bool",
     description: "Changes the symbol value and a period of the specified chart",
   },
   ChartSymbol: {
-    args: [],
+    args: [{ name: "chart_id", type: "long", optional: true }],
     returnType: "string",
     description: "Returns the symbol name of the specified chart",
   },
@@ -360,13 +524,23 @@ const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns the time coordinate of the chart point, the Expert Advisor or script has been dropped to",
   },
   ChartTimePriceToXY: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "sub_window", type: "int" },
+      { name: "time", type: "datetime" },
+      { name: "price", type: "double" },
+      { name: "x", type: "int" },
+      { name: "y", type: "int" },
+    ],
+    returnType: "bool",
     description:
       "Converts the coordinates of a chart from the time/price representation to the X and Y coordinates",
   },
   ChartWindowFind: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "indicator_shortname", type: "string" },
+    ],
     returnType: "int",
     description: "Returns the number of a subwindow where an indicator is drawn",
   },
@@ -383,8 +557,15 @@ const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns the X coordinate of the chart point, the Expert Advisor or script has been dropped to",
   },
   ChartXYToTimePrice: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "sub_window", type: "int" },
+      { name: "x", type: "int" },
+      { name: "y", type: "int" },
+      { name: "time", type: "datetime" },
+      { name: "price", type: "double" },
+    ],
+    returnType: "bool",
     description: "Converts the X and Y coordinates on a chart to the time and price values",
   },
   ChartYOnDropped: {
@@ -674,6 +855,17 @@ const commonBuiltinSignatures: BuiltinSignaturesMap = {
     returnType: "long",
     description:
       "Returns the number of milliseconds that have elapsed since the system was started",
+  },
+  GetTickCount64: {
+    args: [],
+    returnType: "long",
+    description:
+      "Returns the number of milliseconds that have elapsed since the system was started (64-bit)",
+  },
+  GetMicrosecondCount: {
+    args: [],
+    returnType: "long",
+    description: "Returns the number of microseconds that have elapsed since the terminal start",
   },
   MessageBox: {
     args: [],
@@ -1379,44 +1571,64 @@ const filesBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/globals
 const globalsBuiltinSignatures: BuiltinSignaturesMap = {
   GlobalVariableCheck: {
-    args: [],
+    args: [{ name: "name", type: "string" }],
     returnType: "bool",
     description: "Checks the existence of a global variable with the specified name",
   },
   GlobalVariableDel: {
-    args: [],
+    args: [{ name: "name", type: "string" }],
     returnType: "bool",
     description: "Deletes a global variable",
   },
-  GlobalVariableGet: {
-    args: [],
-    returnType: "double",
-    description: "Returns the value of a global variable",
-  },
+  GlobalVariableGet: [
+    {
+      args: [{ name: "name", type: "string" }],
+      returnType: "double",
+      description: "Returns the value of a global variable",
+    },
+    {
+      args: [
+        { name: "name", type: "string" },
+        { name: "double_var", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Copies the value of a global variable into the provided variable",
+    },
+  ],
   GlobalVariableName: {
-    args: [],
+    args: [{ name: "index", type: "int" }],
     returnType: "string",
     description:
       "Returns the name of a global variable by it's ordinal number in the list of global variables",
   },
   GlobalVariablesDeleteAll: {
-    args: [],
-    returnType: "bool",
+    args: [
+      { name: "prefix_name", type: "string", optional: true },
+      { name: "limit_data", type: "datetime", optional: true },
+    ],
+    returnType: "int",
     description: "Deletes global variables with the specified prefix in their names",
   },
   GlobalVariableSet: {
-    args: [],
-    returnType: "bool",
+    args: [
+      { name: "name", type: "string" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "datetime",
     description: "Sets the new value to a global variable",
   },
   GlobalVariableSetOnCondition: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "value", type: "double" },
+      { name: "check_value", type: "double" },
+    ],
     returnType: "bool",
     description: "Sets the new value of the existing global variable by condition",
   },
   GlobalVariablesFlush: {
     args: [],
-    returnType: "bool",
+    returnType: "void",
     description: "Forcibly saves contents of all global variables to a disk",
   },
   GlobalVariablesTotal: {
@@ -1425,13 +1637,13 @@ const globalsBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns the total number of global variables",
   },
   GlobalVariableTemp: {
-    args: [],
+    args: [{ name: "name", type: "string" }],
     returnType: "bool",
     description:
       "Sets the new value to a global variable, that exists only in the current session of the terminal",
   },
   GlobalVariableTime: {
-    args: [],
+    args: [{ name: "name", type: "string" }],
     returnType: "datetime",
     description: "Returns time of the last accessing the global variable",
   },
@@ -1440,57 +1652,90 @@ const globalsBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/marketinformation
 const marketinformationBuiltinSignatures: BuiltinSignaturesMap = {
   MarketInfo: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "type", type: "int" },
+    ],
     returnType: "double",
     description: "Returns various data about securities listed in the 'Market Watch' window",
   },
   SymbolInfoDouble: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
     returnType: "double",
     description: "Returns the double value of the symbol for the corresponding property",
   },
   SymbolInfoInteger: {
-    args: [],
-    returnType: "int",
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
+    returnType: "long",
     description:
       "Returns a value of an integer type (long, datetime, int or bool) of a specified symbol for the corresponding property",
   },
   SymbolInfoSessionQuote: {
-    args: [],
-    returnType: "datetime",
+    args: [
+      { name: "name", type: "string" },
+      { name: "day_of_week", type: "int" },
+      { name: "session_index", type: "int" },
+      { name: "from", type: "datetime" },
+      { name: "to", type: "datetime" },
+    ],
+    returnType: "bool",
     description:
       "Allows receiving time of beginning and end of the specified quoting sessions for a specified symbol and day of week.",
   },
   SymbolInfoSessionTrade: {
-    args: [],
-    returnType: "datetime",
+    args: [
+      { name: "name", type: "string" },
+      { name: "day_of_week", type: "int" },
+      { name: "session_index", type: "int" },
+      { name: "from", type: "datetime" },
+      { name: "to", type: "datetime" },
+    ],
+    returnType: "bool",
     description:
       "Allows receiving time of beginning and end of the specified trading sessions for a specified symbol and day of week.",
   },
   SymbolInfoString: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "prop_id", type: "int" },
+    ],
     returnType: "string",
     description:
       "Returns a value of the string type of a specified symbol for the corresponding property",
   },
   SymbolInfoTick: {
-    args: [],
-    returnType: "MqlTick",
+    args: [
+      { name: "name", type: "string" },
+      { name: "tick", type: "MqlTick" },
+    ],
+    returnType: "bool",
     description:
       "Returns the current prices for the specified symbol in a variable of the MqlTick type",
   },
   SymbolName: {
-    args: [],
+    args: [
+      { name: "pos", type: "int" },
+      { name: "selected", type: "bool", optional: true },
+    ],
     returnType: "string",
     description: "Returns the name of a specified symbol",
   },
   SymbolSelect: {
-    args: [],
+    args: [
+      { name: "name", type: "string" },
+      { name: "select", type: "bool" },
+    ],
     returnType: "bool",
     description: "Selects a symbol in the Market Watch window or removes a symbol from the window",
   },
   SymbolsTotal: {
-    args: [],
+    args: [{ name: "selected", type: "bool", optional: true }],
     returnType: "int",
     description: "Returns the number of available (selected in Market Watch or all) symbols",
   },
@@ -1499,142 +1744,163 @@ const marketinformationBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/math
 const mathBuiltinSignatures: BuiltinSignaturesMap = {
   acos: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the arc cosine of x in radians",
   },
   asin: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the arc sine of x in radians",
   },
   atan: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the arc tangent of x in radians",
   },
   ceil: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns integer numeric value closest from above",
   },
   cos: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the cosine of a number",
   },
   exp: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns exponent of a number",
   },
   fabs: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns absolute value (modulus) of the specified numeric value",
   },
   floor: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns integer numeric value closest from below",
   },
   fmax: {
-    args: [],
+    args: [
+      { name: "x", type: "double" },
+      { name: "y", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the maximal value of the two numeric values",
   },
   fmin: {
-    args: [],
+    args: [
+      { name: "x", type: "double" },
+      { name: "y", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the minimal value of the two numeric values",
   },
   fmod: {
-    args: [],
+    args: [
+      { name: "x", type: "double" },
+      { name: "y", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the real remainder after the division of two numbers",
   },
   log: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns natural logarithm",
   },
   log10: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the logarithm of a number by base 10",
   },
   MathAbs: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns absolute value (modulus) of the specified numeric value",
   },
   MathArccos: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the arc cosine of x in radians",
   },
   MathArcsin: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the arc sine of x in radians",
   },
   MathArctan: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the arc tangent of x in radians",
   },
   MathCeil: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns integer numeric value closest from above",
   },
   MathCos: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the cosine of a number",
   },
   MathExp: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns exponent of a number",
   },
   MathFloor: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns integer numeric value closest from below",
   },
   MathIsValidNumber: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "bool",
     description: "Checks the correctness of a real number",
   },
   MathLog: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns natural logarithm",
   },
   MathLog10: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the logarithm of a number by base 10",
   },
   MathMax: {
-    args: [],
+    args: [
+      { name: "value1", type: "double" },
+      { name: "value2", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the maximal value of the two numeric values",
   },
   MathMin: {
-    args: [],
+    args: [
+      { name: "value1", type: "double" },
+      { name: "value2", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the minimal value of the two numeric values",
   },
   MathMod: {
-    args: [],
+    args: [
+      { name: "value1", type: "double" },
+      { name: "value2", type: "double" },
+    ],
     returnType: "double",
     description: "Returns the real remainder after the division of two numbers",
   },
   MathPow: {
-    args: [],
+    args: [
+      { name: "base", type: "double" },
+      { name: "exponent", type: "double" },
+    ],
     returnType: "double",
     description: "Raises the base to the specified power",
   },
@@ -1644,32 +1910,35 @@ const mathBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns a pseudorandom value within the range of 0 to 32767",
   },
   MathRound: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Rounds of a value to the nearest integer",
   },
   MathSin: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the sine of a number",
   },
   MathSqrt: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns a square root",
   },
   MathSrand: {
-    args: [],
+    args: [{ name: "seed", type: "int" }],
     returnType: "void",
     description: "Sets the starting point for generating a series of pseudorandom integers",
   },
   MathTan: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Returns the tangent of a number",
   },
   pow: {
-    args: [],
+    args: [
+      { name: "base", type: "double" },
+      { name: "exponent", type: "double" },
+    ],
     returnType: "double",
     description: "Raises the base to the specified power",
   },
@@ -1679,168 +1948,375 @@ const mathBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns a pseudorandom value within the range of 0 to 32767",
   },
   round: {
-    args: [],
+    args: [{ name: "value", type: "double" }],
     returnType: "double",
     description: "Rounds of a value to the nearest integer",
   },
   sin: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the sine of a number",
   },
   sqrt: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns a square root",
   },
   srand: {
-    args: [],
+    args: [{ name: "seed", type: "int" }],
     returnType: "void",
     description: "Sets the starting point for generating a series of pseudorandom integers",
   },
   tan: {
-    args: [],
+    args: [{ name: "x", type: "double" }],
     returnType: "double",
     description: "Returns the tangent of a number",
   },
 };
 
 // https://docs.mql4.com/objects
-const objectsBuilinSignatures: BuiltinSignaturesMap = {
+const objectsBuiltinSignatures: BuiltinSignaturesMap = {
   ObjectCreate: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "object_type", type: "int" },
+      { name: "sub_window", type: "int" },
+      { name: "time1", type: "datetime" },
+      { name: "price1", type: "double" },
+      { name: "time2", type: "datetime", optional: true },
+      { name: "price2", type: "double", optional: true },
+      { name: "time3", type: "datetime", optional: true },
+      { name: "price3", type: "double", optional: true },
+    ],
+    returnType: "bool",
     description: "Creates an object of the specified type in a specified chart",
   },
   ObjectDelete: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "bool",
     description: "Removes the object having the specified name",
   },
   ObjectDescription: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
     returnType: "string",
     description: "Returns the object description",
   },
   ObjectFind: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "int",
     description: "Searches for an object having the specified name",
   },
   ObjectGet: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+    ],
     returnType: "double",
     description: "Returns the value of the specified object property",
   },
   ObjectGetDouble: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Returns the double value of the corresponding object property",
   },
   ObjectGetFiboDescription: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+    ],
     returnType: "string",
     description: "Returns the level description of a Fibonacci object",
   },
   ObjectGetInteger: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
+    returnType: "long",
     description: "Returns the integer value of the corresponding object property",
   },
   ObjectGetShiftByValue: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "int",
     description: "Calculates and returns bar index for the given price",
   },
   ObjectGetString: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "prop_id", type: "int" },
+      { name: "prop_modifier", type: "int", optional: true },
+    ],
     returnType: "string",
     description: "Returns the string value of the corresponding object property",
   },
   ObjectGetTimeByValue: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "value", type: "double" },
+      { name: "line_id", type: "int", optional: true },
+    ],
     returnType: "datetime",
     description: "Returns the time value for the specified object price value",
   },
   ObjectGetValueByShift: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description: "Calculates and returns the price value for the specified bar",
   },
   ObjectGetValueByTime: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "time", type: "datetime" },
+      { name: "line_id", type: "int", optional: true },
+    ],
     returnType: "double",
     description: "Returns the price value of an object for the specified time",
   },
   ObjectMove: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "point_index", type: "int" },
+      { name: "time", type: "datetime" },
+      { name: "price", type: "double" },
+    ],
+    returnType: "bool",
     description: "Changes the coordinates of the specified object anchor point",
   },
   ObjectName: {
-    args: [],
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "index", type: "int" },
+    ],
     returnType: "string",
     description: "Returns the name of an object by its index in the objects list",
   },
-  ObjectsDeleteAll: {
-    args: [],
-    returnType: "void",
-    description: "Removes all objects of the specified type from the specified chart subwindow",
-  },
+  ObjectsDeleteAll: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "prefix", type: "string" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+    {
+      args: [
+        { name: "prefix", type: "string" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "object_type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Removes all objects of the specified type from the specified chart subwindow",
+    },
+  ],
   ObjectSet: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "bool",
     description: "Changes the value of the specified object property",
   },
-  ObjectSetDouble: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
+  ObjectSetDouble: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "double" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
   ObjectSetFiboDescription: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "index", type: "int" },
+      { name: "text", type: "string" },
+    ],
+    returnType: "bool",
     description: "Sets a new description to a level of a Fibonacci object",
   },
-  ObjectSetInteger: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
-  ObjectSetString: {
-    args: [],
-    returnType: "void",
-    description: "Sets the value of the corresponding object property",
-  },
+  ObjectSetInteger: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
+  ObjectSetString: [
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "value", type: "string" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+    {
+      args: [
+        { name: "chart_id", type: "long", optional: true },
+        { name: "object_name", type: "string" },
+        { name: "prop_id", type: "int" },
+        { name: "prop_modifier", type: "int" },
+        { name: "value", type: "string" },
+      ],
+      returnType: "bool",
+      description: "Sets the value of the corresponding object property",
+    },
+  ],
   ObjectSetText: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+      { name: "text", type: "string" },
+      { name: "font_size", type: "int", optional: true },
+      { name: "font_name", type: "string", optional: true },
+      { name: "text_color", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Changes the object description",
   },
-  ObjectsTotal: {
-    args: [],
-    returnType: "integer",
-    description: "Returns the number of objects of the specified type",
-  },
+  ObjectsTotal: [
+    {
+      args: [
+        { name: "chart_id", type: "long" },
+        { name: "sub_window", type: "int", optional: true },
+        { name: "type", type: "int", optional: true },
+      ],
+      returnType: "int",
+      description: "Returns the number of objects of the specified type",
+    },
+    {
+      args: [{ name: "type", type: "int", optional: true }],
+      returnType: "int",
+      description: "Returns the number of objects of the specified type",
+    },
+  ],
   ObjectType: {
-    args: [],
-    returnType: "integer",
+    args: [
+      { name: "chart_id", type: "long", optional: true },
+      { name: "object_name", type: "string" },
+    ],
+    returnType: "int",
     description: "Returns the object type",
   },
   TextGetSize: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "text", type: "string" },
+      { name: "width", type: "uint" },
+      { name: "height", type: "uint" },
+    ],
+    returnType: "bool",
     description: "Returns the string's width and height at the current font settings",
   },
   TextOut: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "text", type: "string" },
+      { name: "x", type: "int" },
+      { name: "y", type: "int" },
+      { name: "anchor", type: "uint" },
+      { name: "data", type: "uint[]" },
+      { name: "width", type: "uint" },
+      { name: "height", type: "uint" },
+      { name: "color", type: "uint" },
+      { name: "color_format", type: "int" },
+    ],
+    returnType: "bool",
     description:
       "Transfers the text to the custom array (buffer) designed for creation of a graphical resource",
   },
   TextSetFont: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "name", type: "string" },
+      { name: "size", type: "int" },
+      { name: "flags", type: "uint", optional: true },
+      { name: "orientation", type: "int", optional: true },
+    ],
+    returnType: "bool",
     description:
       "Sets the font for displaying the text using drawing methods (Arial 20 used by default)",
   },
@@ -1849,100 +2325,147 @@ const objectsBuilinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/strings
 const stringsBuiltinSignatures: BuiltinSignaturesMap = {
   StringAdd: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "add_substring", type: "string" },
+    ],
+    returnType: "bool",
     description: "Adds a string to the end of another string",
   },
   StringBufferLen: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "int",
     description: "Returns the size of buffer allocated for the string",
   },
   StringCompare: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string1", type: "string" },
+      { name: "string2", type: "string" },
+      { name: "case_sensitive", type: "bool", optional: true },
+    ],
+    returnType: "int",
     description:
       "Compares two strings and returns 1 if the first string is greater than the second; 0 - if the strings are equal; -1 (minus 1) - if the first string is less than the second one",
   },
   StringConcatenate: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "first", type: "any" },
+      { name: "args", type: "any", variadic: true },
+    ],
+    returnType: "string",
     description: "Forms a string of parameters passed",
   },
   StringFill: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Fills out a specified string by selected symbols",
   },
   StringFind: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "match_substring", type: "string" },
+      { name: "start_pos", type: "int", optional: true },
+    ],
+    returnType: "int",
     description: "Search for a substring in a string",
   },
   StringGetChar: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "pos", type: "int" },
+    ],
+    returnType: "ushort",
     description: "Returns character (code) from the specified position in the string",
   },
   StringGetCharacter: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "pos", type: "int" },
+    ],
+    returnType: "ushort",
     description: "Returns the value of a number located in the specified string position",
   },
   StringInit: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "len", type: "int" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Initializes string by specified symbols and provides the specified string length",
   },
   StringLen: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "int",
     description: "Returns the number of symbols in a string",
   },
   StringReplace: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "str", type: "string" },
+      { name: "find", type: "string" },
+      { name: "replacement", type: "string" },
+    ],
+    returnType: "int",
     description: "Replaces all the found substrings of a string by a set sequence of symbols",
   },
   StringSetChar: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "pos", type: "int" },
+      { name: "value", type: "ushort" },
+    ],
+    returnType: "string",
     description: "Returns the string copy with changed character in the specified position",
   },
   StringSetCharacter: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_var", type: "string" },
+      { name: "pos", type: "int" },
+      { name: "character", type: "ushort" },
+    ],
+    returnType: "bool",
     description: "Returns true is a symbol is successfully inserted to the passed string.",
   },
   StringSplit: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "separator", type: "ushort" },
+      { name: "result", type: "string[]" },
+    ],
+    returnType: "int",
     description:
       "Gets substrings by a specified separator from the specified string, returns the number of substrings obtained",
   },
   StringSubstr: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "string_value", type: "string" },
+      { name: "start_pos", type: "int" },
+      { name: "length", type: "int", optional: true },
+    ],
+    returnType: "string",
     description: "Extracts a substring from a text string starting from a specified position",
   },
   StringToLower: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "bool",
     description: "Transforms all symbols of a selected string to lowercase by location",
   },
   StringToUpper: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "string_var", type: "string" }],
+    returnType: "bool",
     description: "Transforms all symbols of a selected string into capitals by location",
   },
   StringTrimLeft: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "text", type: "string" }],
+    returnType: "string",
     description: "Cuts line feed characters, spaces and tabs in the left part of the string",
   },
   StringTrimRight: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "text", type: "string" }],
+    returnType: "string",
     description: "Cuts line feed characters, spaces and tabs in the right part of the string",
   },
 };
@@ -2256,8 +2779,14 @@ const seriesBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/trading
 const tradingBuiltinSignatures: BuiltinSignaturesMap = {
   OrderClose: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "ticket", type: "int" },
+      { name: "lots", type: "double" },
+      { name: "price", type: "double" },
+      { name: "slippage", type: "int", optional: true },
+      { name: "arrowColor", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Closes opened order",
   },
   OrderCloseBy: {
@@ -2336,7 +2865,19 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
     description: "The function selects an order for further processing",
   },
   OrderSend: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "cmd", type: "int" },
+      { name: "volume", type: "double" },
+      { name: "price", type: "double" },
+      { name: "slippage", type: "int" },
+      { name: "stoploss", type: "double" },
+      { name: "takeprofit", type: "double" },
+      { name: "comment", type: "string", optional: true },
+      { name: "magic", type: "int", optional: true },
+      { name: "expiration", type: "datetime", optional: true },
+      { name: "arrowColor", type: "color", optional: true },
+    ],
     returnType: "int",
     description: "The main function used to open an order or place a pending order",
   },
@@ -2386,23 +2927,23 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/signals
 const signalsBuiltinSignatures: BuiltinSignaturesMap = {
   SignalBaseGetDouble: {
-    args: [],
+    args: [{ name: "property_id", type: "int" }],
     returnType: "double",
     description: "Returns the value of double type property for selected signal",
   },
   SignalBaseGetInteger: {
-    args: [],
-    returnType: "int",
+    args: [{ name: "property_id", type: "int" }],
+    returnType: "long",
     description: "Returns the value of integer type property for selected signal",
   },
   SignalBaseGetString: {
-    args: [],
+    args: [{ name: "property_id", type: "int" }],
     returnType: "string",
     description: "Returns the value of string type property for selected signal",
   },
   SignalBaseSelect: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "index", type: "int" }],
+    returnType: "bool",
     description: "Selects a signal from signals, available in terminal for further working with it",
   },
   SignalBaseTotal: {
@@ -2411,38 +2952,44 @@ const signalsBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns the total amount of signals, available in terminal",
   },
   SignalInfoGetDouble: {
-    args: [],
+    args: [{ name: "property_id", type: "int" }],
     returnType: "double",
     description: "Returns the value of double type property of signal copy settings",
   },
   SignalInfoGetInteger: {
-    args: [],
-    returnType: "int",
+    args: [{ name: "property_id", type: "int" }],
+    returnType: "long",
     description: "Returns the value of integer type property of signal copy settings",
   },
   SignalInfoGetString: {
-    args: [],
+    args: [{ name: "property_id", type: "int" }],
     returnType: "string",
     description: "Returns the value of string type property of signal copy settings",
   },
   SignalInfoSetDouble: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "property_id", type: "int" },
+      { name: "value", type: "double" },
+    ],
+    returnType: "bool",
     description: "Sets the value of double type property of signal copy settings",
   },
   SignalInfoSetInteger: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "property_id", type: "int" },
+      { name: "value", type: "long" },
+    ],
+    returnType: "bool",
     description: "Sets the value of integer type property of signal copy settings",
   },
   SignalSubscribe: {
-    args: [],
-    returnType: "void",
+    args: [{ name: "signal_id", type: "long" }],
+    returnType: "bool",
     description: "Subscribes to the trading signal",
   },
   SignalUnsubscribe: {
     args: [],
-    returnType: "void",
+    returnType: "bool",
     description: "Cancels subscription",
   },
 };
@@ -2450,8 +2997,14 @@ const signalsBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/eventfunctions
 const eventfunctionsBuiltinSignatures: BuiltinSignaturesMap = {
   EventChartCustom: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "chart_id", type: "long" },
+      { name: "custom_event_id", type: "ushort" },
+      { name: "lparam", type: "long" },
+      { name: "dparam", type: "double" },
+      { name: "sparam", type: "string" },
+    ],
+    returnType: "bool",
     description: "Generates a custom event for the specified chart",
   },
   EventKillTimer: {
@@ -2460,13 +3013,13 @@ const eventfunctionsBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Stops the generation of events by the timer in the current chart",
   },
   EventSetMillisecondTimer: {
-    args: [],
+    args: [{ name: "milliseconds", type: "int" }],
     returnType: "void",
     description:
       "Launches event generator of the high-resolution timer with a period less than 1 second for the current chart",
   },
   EventSetTimer: {
-    args: [],
+    args: [{ name: "seconds", type: "int" }],
     returnType: "void",
     description:
       "Starts the timer event generator with the specified periodicity for the current chart",
@@ -2486,7 +3039,7 @@ export const builtinSignatures: BuiltinSignaturesMap = {
   ...globalsBuiltinSignatures,
   ...marketinformationBuiltinSignatures,
   ...mathBuiltinSignatures,
-  ...objectsBuilinSignatures,
+  ...objectsBuiltinSignatures,
   ...stringsBuiltinSignatures,
   ...indicatorsBuiltinSignatures,
   ...seriesBuiltinSignatures,
