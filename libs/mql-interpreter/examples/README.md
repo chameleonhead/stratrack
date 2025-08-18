@@ -18,7 +18,7 @@ Run the bundled MACD sample expert advisor on sample GBPUSD data.
 Execute the CLI directly without building:
 
 ```bash
-npm run dev:cli -- backtest "examples/MACD Sample.mq4" examples/data/GBPUSD_M1.csv
+npm run dev:cli -- backtest "examples/MACD Sample.mq4" --candles examples/data/GBPUSD_M1.csv
 ```
 
 ### Built
