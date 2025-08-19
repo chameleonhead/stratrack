@@ -167,8 +167,8 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
       args: [
         { name: "dest", type: "any[]" },
         { name: "src", type: "any[]" },
-        { name: "destStart", type: "int" },
-        { name: "srcStart", type: "int" },
+        { name: "dst_start", type: "int" },
+        { name: "src_start", type: "int" },
         { name: "count", type: "int" },
       ],
       returnType: "int",
@@ -180,7 +180,7 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
       { name: "dest", type: "MqlRates[]" },
       { name: "symbol", type: "string" },
       { name: "timeframe", type: "int", optional: true },
-      { name: "startPos", type: "int", optional: true },
+      { name: "start_pos", type: "int", optional: true },
       { name: "count", type: "int", optional: true },
     ],
     returnType: "int",
@@ -190,7 +190,7 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
   ArrayCopySeries: {
     args: [
       { name: "dest", type: "any[]" },
-      { name: "seriesIndex", type: "int" },
+      { name: "series_index", type: "int" },
       { name: "symbol", type: "string", optional: true },
       { name: "timeframe", type: "int", optional: true },
     ],
@@ -271,8 +271,8 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
   ArrayResize: {
     args: [
       { name: "array", type: "any[]" },
-      { name: "newSize", type: "int" },
-      { name: "reserveSize", type: "int", optional: true },
+      { name: "new_size", type: "int" },
+      { name: "reserve_size", type: "int", optional: true },
     ],
     returnType: "int",
     description: "Sets the new size in the first dimension of the array",
@@ -280,7 +280,7 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
   ArraySetAsSeries: {
     args: [
       { name: "array", type: "any[]" },
-      { name: "asSeries", type: "bool" },
+      { name: "as_series", type: "bool" },
     ],
     returnType: "int",
     description: "Sets the direction of array indexing",
@@ -295,7 +295,7 @@ const arrayBuiltinSignatures: BuiltinSignaturesMap = {
       { name: "array", type: "any[]" },
       { name: "count", type: "int", optional: true },
       { name: "start", type: "int", optional: true },
-      { name: "sortDir", type: "int", optional: true },
+      { name: "sort_dir", type: "int", optional: true },
     ],
     returnType: "int",
     description: "Sorting of numeric arrays by the first dimension",
@@ -573,16 +573,6 @@ const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
     returnType: "int",
     description:
       "Returns the Y coordinate of the chart point, the Expert Advisor or script has been dropped to",
-  },
-  Period: {
-    args: [],
-    returnType: "int",
-    description: "Returns timeframe of the current chart",
-  },
-  Symbol: {
-    args: [],
-    returnType: "string",
-    description: "Returns a text string with the name of the current financial instrument",
   },
   WindowBarsPerChart: {
     args: [],
@@ -2473,189 +2463,439 @@ const stringsBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/indicators
 const indicatorsBuiltinSignatures: BuiltinSignaturesMap = {
   iAC: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Accelerator Oscillator",
   },
   iAD: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Accumulation/Distribution",
   },
   iADX: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Average Directional Index",
   },
   iAlligator: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "jaw_period", type: "int" },
+      { name: "jaw_shift", type: "int" },
+      { name: "teeth_period", type: "int" },
+      { name: "teeth_shift", type: "int" },
+      { name: "lips_period", type: "int" },
+      { name: "lips_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Alligator",
   },
   iAO: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Awesome Oscillator",
   },
   iATR: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Average True Range",
   },
   iBands: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "deviation", type: "double" },
+      { name: "bands_shift", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Bollinger Bands®",
   },
   iBandsOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "period", type: "int" },
+      { name: "deviation", type: "double" },
+      { name: "bands_shift", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Bollinger Bands® indicator on data, stored in a numeric array",
   },
   iBearsPower: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Bears Power",
   },
   iBullsPower: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Bulls Power",
   },
   iBWMFI: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Market Facilitation Index by Bill Williams",
   },
   iCCI: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Commodity Channel Index",
   },
   iCCIOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description:
       "Calculation of Commodity Channel Index indicator on data, stored in a numeric array",
   },
   iCustom: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "name", type: "string" },
+      { name: "args", type: "any", variadic: true },
+    ],
+    returnType: "double",
     description: "Custom indicator",
   },
   iDeMarker: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "DeMarker",
   },
   iEnvelopes: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "ma_period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "deviation", type: "double" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Envelopes",
   },
   iEnvelopesOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "ma_period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "deviation", type: "double" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Envelopes indicator on data, stored in a numeric array",
   },
   iForce: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Force Index",
   },
   iFractals: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Fractals",
   },
   iGator: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "jaw_period", type: "int" },
+      { name: "jaw_shift", type: "int" },
+      { name: "teeth_period", type: "int" },
+      { name: "teeth_shift", type: "int" },
+      { name: "lips_period", type: "int" },
+      { name: "lips_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Gator Oscillator",
   },
   iIchimoku: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "tenkan_sen", type: "int" },
+      { name: "kijun_sen", type: "int" },
+      { name: "senkou_span_b", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Ichimoku Kinko Hyo",
   },
   iMA: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Moving Average",
   },
   iMACD: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "fast_ema_period", type: "int" },
+      { name: "slow_ema_period", type: "int" },
+      { name: "signal_period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Moving Averages Convergence-Divergence",
   },
   iMAOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Moving Average indicator on data, stored in a numeric array",
   },
   iMFI: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Money Flow Index",
   },
   iMomentum: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Momentum",
   },
   iMomentumOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Momentum indicator on data, stored in a numeric array",
   },
   iOBV: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "On Balance Volume",
   },
   iOsMA: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "fast_ema_period", type: "int" },
+      { name: "slow_ema_period", type: "int" },
+      { name: "signal_period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Moving Average of Oscillator (MACD histogram)",
   },
   iRSI: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Relative Strength Index",
   },
   iRSIOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Momentum indicator on data, stored in a numeric array",
   },
   iRVI: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Relative Vigor Index",
   },
   iSAR: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "step", type: "double" },
+      { name: "maximum", type: "double" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Parabolic Stop And Reverse System",
   },
   iStdDev: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "ma_period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "applied_price", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Standard Deviation",
   },
   iStdDevOnArray: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "array", type: "double[]" },
+      { name: "total", type: "int" },
+      { name: "ma_period", type: "int" },
+      { name: "ma_shift", type: "int" },
+      { name: "ma_method", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Calculation of Standard Deviation indicator on data, stored in a numeric array",
   },
   iStochastic: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "k_period", type: "int" },
+      { name: "d_period", type: "int" },
+      { name: "slowing", type: "int" },
+      { name: "method", type: "int" },
+      { name: "price_field", type: "int" },
+      { name: "mode", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Stochastic Oscillator",
   },
   iWPR: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "period", type: "int" },
+      { name: "shift", type: "int" },
+    ],
+    returnType: "double",
     description: "Williams' Percent Range",
   },
 };
@@ -2663,117 +2903,404 @@ const indicatorsBuiltinSignatures: BuiltinSignaturesMap = {
 // https://docs.mql4.com/series
 const seriesBuiltinSignatures: BuiltinSignaturesMap = {
   Bars: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string", optional: true },
+      { name: "timeframe", type: "int", optional: true },
+    ],
     returnType: "int",
     description:
       "Returns the number of bars count in the history for a specified symbol and period",
   },
-  CopyClose: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on bar closing price for a specified symbol and period into an array",
-  },
-  CopyHigh: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on maximal bar price for a specified symbol and period into an array",
-  },
-  CopyLow: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on minimal bar price for a specified symbol and period into an array",
-  },
-  CopyOpen: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on bar opening price for a specified symbol and period into an array",
-  },
-  CopyRates: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data of the Rates structure for a specified symbol and period into an array",
-  },
-  CopyTickVolume: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on tick volumes for a specified symbol and period into an array",
-  },
-  CopyTime: {
-    args: [],
-    returnType: "void",
-    description:
-      "Gets history data on bar opening time for a specified symbol and period into an array",
-  },
+  CopyClose: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "close_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar closing price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "close_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar closing price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "close_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar closing price for a specified symbol and period into an array",
+    },
+  ],
+  CopyHigh: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "high_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on maximal bar price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "high_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on maximal bar price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "high_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on maximal bar price for a specified symbol and period into an array",
+    },
+  ],
+  CopyLow: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "low_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on minimal bar price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "low_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on minimal bar price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "low_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on minimal bar price for a specified symbol and period into an array",
+    },
+  ],
+  CopyOpen: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "open_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "open_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening price for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "open_array", type: "double[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening price for a specified symbol and period into an array",
+    },
+  ],
+  CopyRates: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "rates_array", type: "MqlRates[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data of the Rates structure for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "rates_array", type: "MqlRates[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data of the Rates structure for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "rates_array", type: "MqlRates[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data of the Rates structure for a specified symbol and period into an array",
+    },
+  ],
+  CopyTickVolume: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "volume_array", type: "long[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on tick volumes for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "volume_array", type: "long[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on tick volumes for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "volume_array", type: "long[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on tick volumes for a specified symbol and period into an array",
+    },
+  ],
+  CopyTime: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_pos", type: "int" },
+        { name: "count", type: "int" },
+        { name: "time_array", type: "datetime[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening time for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "count", type: "int" },
+        { name: "time_array", type: "datetime[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening time for a specified symbol and period into an array",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "start_time", type: "datetime" },
+        { name: "stop_time", type: "datetime" },
+        { name: "time_array", type: "datetime[]" },
+      ],
+      returnType: "int",
+      description:
+        "Gets history data on bar opening time for a specified symbol and period into an array",
+    },
+  ],
   iBars: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+    ],
     returnType: "int",
     description: "Returns the number of bars on the specified chart",
   },
   iBarShift: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "time", type: "datetime" },
+      { name: "exact", type: "bool", optional: true },
+    ],
     returnType: "int",
     description: "Returns the index of the bar which covers the specified time",
   },
   iClose: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description:
       "Returns Close price value for the bar of specified symbol with timeframe and shift",
   },
   iHigh: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description:
       "Returns High price value for the bar of specified symbol with timeframe and shift",
   },
   iHighest: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "type", type: "int" },
+      { name: "count", type: "int" },
+      { name: "start", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Returns the shift of the maximum value over a specific number of bars",
   },
   iLow: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description: "Returns Low price value for the bar of indicated symbol with timeframe and shift",
   },
   iLowest: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "type", type: "int" },
+      { name: "count", type: "int" },
+      { name: "start", type: "int", optional: true },
+    ],
     returnType: "int",
     description: "Returns the shift of the lowest value over a specific number of bars",
   },
   iOpen: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "double",
     description:
       "Returns Open price value for the bar of specified symbol with timeframe and shift",
   },
   iTime: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "datetime",
     description: "Returns time value for the bar of specified symbol with timeframe and shift",
   },
   iVolume: {
-    args: [],
+    args: [
+      { name: "symbol", type: "string" },
+      { name: "timeframe", type: "int" },
+      { name: "shift", type: "int" },
+    ],
     returnType: "long",
     description:
       "Returns Tick Volume value for the bar of specified symbol with timeframe and shift",
   },
   RefreshRates: {
     args: [],
-    returnType: "void",
+    returnType: "bool",
     description: "Refreshing of data in pre-defined variables and series arrays",
   },
-  SeriesInfoInteger: {
-    args: [],
-    returnType: "int",
-    description: "Returns information about the state of historical data",
-  },
+  SeriesInfoInteger: [
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "prop_id", type: "int" },
+      ],
+      returnType: "long",
+      description: "Returns information about the state of historical data",
+    },
+    {
+      args: [
+        { name: "symbol", type: "string" },
+        { name: "timeframe", type: "int" },
+        { name: "prop_id", type: "int" },
+        { name: "long_var", type: "long" },
+      ],
+      returnType: "bool",
+      description: "Returns information about the state of historical data",
+    },
+  ],
 };
 
 // https://docs.mql4.com/trading
@@ -2784,14 +3311,18 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
       { name: "lots", type: "double" },
       { name: "price", type: "double" },
       { name: "slippage", type: "int", optional: true },
-      { name: "arrowColor", type: "color", optional: true },
+      { name: "arrow_color", type: "color", optional: true },
     ],
     returnType: "bool",
     description: "Closes opened order",
   },
   OrderCloseBy: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "ticket", type: "int" },
+      { name: "opposite", type: "int" },
+      { name: "arrow_color", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Closes an opened order by another opposite opened order",
   },
   OrderClosePrice: {
@@ -2815,8 +3346,11 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns calculated commission of the currently selected order",
   },
   OrderDelete: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "ticket", type: "int" },
+      { name: "arrow_color", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Deletes previously opened pending order",
   },
   OrderExpiration: {
@@ -2835,8 +3369,15 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns an identifying (magic) number of the currently selected order",
   },
   OrderModify: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "ticket", type: "int" },
+      { name: "price", type: "double" },
+      { name: "stoploss", type: "double" },
+      { name: "takeprofit", type: "double" },
+      { name: "expiration", type: "datetime", optional: true },
+      { name: "arrow_color", type: "color", optional: true },
+    ],
+    returnType: "bool",
     description: "Modification of characteristics of the previously opened or pending orders",
   },
   OrderOpenPrice: {
@@ -2860,7 +3401,11 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns profit of the currently selected order",
   },
   OrderSelect: {
-    args: [],
+    args: [
+      { name: "index", type: "int" },
+      { name: "select", type: "int" },
+      { name: "pool", type: "int", optional: true },
+    ],
     returnType: "bool",
     description: "The function selects an order for further processing",
   },
@@ -2876,7 +3421,7 @@ const tradingBuiltinSignatures: BuiltinSignaturesMap = {
       { name: "comment", type: "string", optional: true },
       { name: "magic", type: "int", optional: true },
       { name: "expiration", type: "datetime", optional: true },
-      { name: "arrowColor", type: "color", optional: true },
+      { name: "arrow_color", type: "color", optional: true },
     ],
     returnType: "int",
     description: "The main function used to open an order or place a pending order",

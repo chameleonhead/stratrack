@@ -3,8 +3,7 @@ import { resolve } from "path";
 import { builtinSignatures } from "../dist/src/parser/builtins/signatures.js";
 
 const header =
-  "# Builtin Signatures\n\n" +
-  "Generated from src/parser/builtins/signatures.ts. Do not edit.\n\n";
+  "# Builtin Signatures\n\n" + "Generated from src/parser/builtins/signatures.ts. Do not edit.\n\n";
 
 function formatSignature(sig) {
   const params = sig.parameters.map((p) => (p.optional ? `[${p.type}]` : p.type));
