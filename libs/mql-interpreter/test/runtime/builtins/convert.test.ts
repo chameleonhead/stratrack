@@ -10,7 +10,7 @@ import {
   IntegerToString,
   StringToInteger,
   NormalizeDouble,
-} from "../../../src/libs/builtins/convert";
+} from "../../../src/libs/common/convert";
 import { describe, it, expect } from "vitest";
 
 describe("convert builtins", () => {

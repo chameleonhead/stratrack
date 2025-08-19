@@ -17,7 +17,7 @@ import {
   TimeMonth,
   TimeSeconds,
   TimeYear,
-} from "../../../src/libs/builtins/datetime";
+} from "../../../src/libs/common/datetime";
 import { describe, it, expect } from "vitest";
 
 const t = 946782245; // 2000-01-02T03:04:05Z

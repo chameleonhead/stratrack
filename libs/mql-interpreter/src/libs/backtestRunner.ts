@@ -3,16 +3,16 @@ import { preprocessWithProperties, PreprocessOptions } from "../parser/preproces
 import { execute, callFunction } from "../runtime/runtime";
 import { semanticCheck } from "../semantic/checker";
 import { builtinSignatures } from "./signatures";
-import { registerEnvBuiltins } from "./builtins";
+import { registerEnvBuiltins } from "./common";
 import type { RuntimeState, ProgramType } from "../runtime/types";
 import type { Declaration } from "../parser/ast";
-import type { BuiltinFunction } from "./builtins/types";
+import type { BuiltinFunction } from "./common/types";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
 import { MarketData } from "./marketData";
 import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setTerminal } from "./builtins/common";
+import { setTerminal } from "./common/common";
 
 export interface BacktestSession {
   broker: Broker;

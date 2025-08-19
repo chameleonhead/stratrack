@@ -1,6 +1,5 @@
 import type { BuiltinFunction } from "./types";
-import * as AccountInfo from "./AccountInfo";
-import { OrderSend } from "./OrderSend";
+import * as AccountInfo from "./account";
 import { iMA } from "./iMA";
 import { iMACD } from "./iMACD";
 import { iRSI } from "./iRSI";
@@ -341,7 +340,6 @@ const ResetLastError: BuiltinFunction = () => 0;
 
 export const envBuiltins: Record<string, BuiltinFunction> = {
   ...AccountInfo,
-  OrderSend,
   iMA,
   iMACD,
   iRSI,
@@ -380,7 +378,6 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
 export {
   Print,
   Alert,
-  OrderSend,
   iMA,
   iMACD,
   iRSI,
