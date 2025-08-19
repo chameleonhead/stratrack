@@ -26,6 +26,9 @@ import {
   IsTradeContextBusy,
   IsDemo,
   UninitializeReason,
+  WebRequest,
+} from "../../../src/libs/common/common";
+import {
   GlobalVariableSet,
   GlobalVariableGet,
   GlobalVariableDel,
@@ -37,10 +40,9 @@ import {
   GlobalVariableSetOnCondition,
   GlobalVariableTemp,
   GlobalVariablesFlush,
-  WebRequest,
-  setTerminal,
-} from "../../../src/libs/common/common";
-import { StructToTime } from "../../../src/libs/common/datetime";
+} from "../../../src/libs/common/globals";
+import { setTerminal } from "../../../src/libs/common/terminal";
+import { StructToTime } from "../../../src/libs/common/dateandtime";
 import { builtinSignatures } from "../../../src/libs/signatures";
 import { coreBuiltins, envBuiltins } from "../../../src/libs/common/registry";
 import { VirtualTerminal } from "../../../src/libs/virtualTerminal";

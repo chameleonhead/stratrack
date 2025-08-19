@@ -12,7 +12,7 @@ import { Account, AccountMetrics } from "./account";
 import { MarketData } from "./marketData";
 import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setTerminal } from "./common/common";
+import { setTerminal } from "./common/terminal";
 
 export interface BacktestSession {
   broker: Broker;
