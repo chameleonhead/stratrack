@@ -574,16 +574,6 @@ const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
     description:
       "Returns the Y coordinate of the chart point, the Expert Advisor or script has been dropped to",
   },
-  Period: {
-    args: [],
-    returnType: "int",
-    description: "Returns timeframe of the current chart",
-  },
-  Symbol: {
-    args: [],
-    returnType: "string",
-    description: "Returns a text string with the name of the current financial instrument",
-  },
   WindowBarsPerChart: {
     args: [],
     returnType: "int",
