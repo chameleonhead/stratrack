@@ -11,6 +11,6 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "mql-interpreter": "^0.1.0"
+    "mql-interpreter": "^0.1.2"
   }
 }

@@ -22,7 +22,7 @@ npx mqli check "MACD Sample.mq4"
 Run the bundled MACD sample expert advisor on sample GBPUSD data using the published package:
 
 ```bash
-npx mql-interpreter backtest "MACD Sample.mq4" --candles data/GBPUSD_M1.csv
+npx mql-interpreter backtest "MACD Sample.mq4" data/GBPUSD_M1.csv
 ```
 
 The command prints a JSON report containing global variables, account metrics and executed orders. By default the backtest runs with a 10,000\u00a0USD balance; adjust account settings using `--balance`, `--margin` and `--currency` if needed. Replace the CSV file with history exported from MetaTrader to backtest your own data.

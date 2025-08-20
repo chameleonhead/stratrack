@@ -3,3 +3,4 @@ export { semanticCheck } from "./semantic/checker";
 export { builtinSignatures } from "./libs/signatures";
 export { Runtime } from "./runtime/runtime";
 export { createBacktestLibs, createLiveLibs, BrokerApi } from "./libs";
+export { BacktestRunner, parseCsv } from "./libs/backtestRunner";
