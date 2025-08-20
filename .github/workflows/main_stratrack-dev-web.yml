@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # デプロイ対象ブランチを指定
+    paths:
+      - 'frontend/**'
 
 permissions:
   id-token: write
