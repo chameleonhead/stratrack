@@ -1,12 +1,19 @@
-name: Publish mql-interpreter
+name: mql-interpreter CI
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'libs/mql-interpreter/**'
+  pull_request:
+    paths:
+      - 'libs/mql-interpreter/**'
   release:
     types: [published]
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,7 +28,9 @@ jobs:
       - run: npm run lint
       - run: npm test -- --run
       - run: npm run build
-      - run: npm publish
+      - name: Publish
+        if: github.event_name == 'release'
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
