@@ -204,6 +204,8 @@ file and print the resulting runtime information:
 
 ```bash
 npx mql-interpreter path/to/file.mq4
+# or use the shorter alias
+npx mqli path/to/file.mq4
 ```
 
 The CLI performs compilation first. Any warnings are printed but do not halt

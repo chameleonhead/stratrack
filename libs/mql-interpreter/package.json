@@ -5,6 +5,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -13,6 +16,7 @@
     "./cli": "./dist/cli.cjs"
   },
   "bin": {
+    "mql-interpreter": "./dist/cli.cjs",
     "mqli": "./dist/cli.cjs"
   },
   "scripts": {
@@ -21,7 +25,8 @@
     "build": "tsup src/index.ts src/cli.ts --format cjs,esm,iife --dts",
     "dev": "tsup src/index.ts src/cli.ts --watch",
     "dev:cli": "tsx src/cli.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
