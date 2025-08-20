@@ -3,16 +3,16 @@ import { preprocessWithProperties, PreprocessOptions } from "../parser/preproces
 import { execute, callFunction } from "../runtime/runtime";
 import { semanticCheck } from "../semantic/checker";
 import { builtinSignatures } from "./signatures";
-import { registerEnvBuiltins } from "./common";
+import { registerEnvBuiltins } from "./functions";
 import type { RuntimeState, ProgramType } from "../runtime/types";
 import type { Declaration } from "../parser/ast";
-import type { BuiltinFunction } from "./common/types";
+import type { BuiltinFunction } from "./functions/types";
 import { Broker, Order } from "./broker";
 import { Account, AccountMetrics } from "./account";
 import { MarketData } from "./marketData";
 import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setTerminal } from "./common/terminal";
+import { setContext } from "./functions/context";
 
 export interface BacktestSession {
   broker: Broker;
@@ -157,7 +157,6 @@ export class BacktestRunner {
     );
     this.session = { broker, account };
     this.terminal = new VirtualTerminal(options.storage, options.log);
-    setTerminal(this.terminal);
     const symbol = options.symbol ?? "TEST";
     const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
     const baseTicks = candles.map((c) => ({ time: c.time, bid: c.close, ask: c.close }));
@@ -167,6 +166,16 @@ export class BacktestRunner {
       Record<number, Candle[]>
     >;
     this.market = new MarketData(ticks, candleData);
+    const period =
+      options.timeframe ?? (candles.length > 1 ? candles[1].time - candles[0].time : 0);
+    setContext({
+      terminal: this.terminal,
+      broker,
+      account,
+      market: this.market,
+      symbol,
+      timeframe: period,
+    });
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
     registerEnvBuiltins(builtins);

@@ -2,25 +2,25 @@
 import type { BuiltinFunction } from "./types";
 import { formatString } from "./format";
 import { DateTimeValue } from "../../runtime/datetimeValue";
-import { getTerminal } from "./terminal";
+import { getContext } from "./context";
 
 export const Print: BuiltinFunction = (...args: any[]) => {
   const formatted = args.map((a) => (a instanceof DateTimeValue ? a.toString() : a));
-  const term = getTerminal();
+  const term = getContext().terminal;
   if (term) return term.print(...formatted);
   console.log(...formatted);
   return 0;
 };
 
 export const Alert: BuiltinFunction = (...args: any[]) => {
-  const term = getTerminal();
+  const term = getContext().terminal;
   if (term) return term.alert(...args);
   console.log(...args);
   return true;
 };
 
 export const Comment: BuiltinFunction = (...args: any[]) => {
-  const term = getTerminal();
+  const term = getContext().terminal;
   if (term) return term.comment(...args);
   console.log(...args);
   return 0;
@@ -28,7 +28,7 @@ export const Comment: BuiltinFunction = (...args: any[]) => {
 
 export const PrintFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
   const text = formatString(fmt, ...args);
-  const term = getTerminal();
+  const term = getContext().terminal;
   if (term) return term.print(text);
   console.log(text);
   return 0;
@@ -45,7 +45,7 @@ export const Sleep: BuiltinFunction = (ms: number) => {
 };
 
 export const PlaySound: BuiltinFunction = (file: string) => {
-  const term = getTerminal();
+  const term = getContext().terminal;
   return term ? term.playSound(file) : true;
 };
 export const SendMail: BuiltinFunction = (_to: string, _subj: string, _body: string) => true;

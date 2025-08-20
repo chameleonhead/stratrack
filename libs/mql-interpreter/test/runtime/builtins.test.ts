@@ -1,4 +1,4 @@
-import { getBuiltin, registerEnvBuiltins } from "../../src/libs/common";
+import { getBuiltin, registerEnvBuiltins } from "../../src/libs/functions";
 import { describe, it, expect } from "vitest";
 
 describe("builtins", () => {

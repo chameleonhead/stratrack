@@ -27,7 +27,7 @@ import {
   IsDemo,
   UninitializeReason,
   WebRequest,
-} from "../../../src/libs/common/common";
+} from "../../../src/libs/functions/common";
 import {
   GlobalVariableSet,
   GlobalVariableGet,
@@ -40,18 +40,18 @@ import {
   GlobalVariableSetOnCondition,
   GlobalVariableTemp,
   GlobalVariablesFlush,
-} from "../../../src/libs/common/globals";
-import { setTerminal } from "../../../src/libs/common/terminal";
-import { StructToTime } from "../../../src/libs/common/dateandtime";
+} from "../../../src/libs/functions/globals";
+import { setContext } from "../../../src/libs/functions/context";
+import { StructToTime } from "../../../src/libs/functions/dateandtime";
 import { builtinSignatures } from "../../../src/libs/signatures";
-import { coreBuiltins, envBuiltins } from "../../../src/libs/common/registry";
+import { coreBuiltins, envBuiltins } from "../../../src/libs/functions/registry";
 import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {
   beforeEach(() => {
     const term = new VirtualTerminal();
-    setTerminal(term);
+    setContext({ terminal: term, broker: null, account: null, market: null });
   });
   it("Print and Comment output and return 0", () => {
     expect(Print("a")).toBe(0);

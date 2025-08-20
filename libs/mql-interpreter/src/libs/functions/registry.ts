@@ -192,7 +192,7 @@ import {
   GlobalVariableSetOnCondition,
   GlobalVariablesFlush,
 } from "./globals";
-import { setTerminal } from "./terminal";
+import { setContext } from "./context";
 
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   Print,
@@ -379,4 +379,4 @@ export const envBuiltins: Record<string, BuiltinFunction> = {
   IndicatorShortName,
 };
 
-export { setTerminal };
+export { setContext };

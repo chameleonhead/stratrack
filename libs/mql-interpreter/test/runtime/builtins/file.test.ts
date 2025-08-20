@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
-import { setTerminal } from "../../../src/libs/common/terminal";
+import { setContext } from "../../../src/libs/functions/context";
 import {
   FileOpen,
   FileReadString,
   FileWriteString,
   FileClose,
-} from "../../../src/libs/common/files";
+} from "../../../src/libs/functions/files";
 
 describe("file builtins", () => {
   beforeEach(() => {
     const term = new VirtualTerminal();
-    setTerminal(term);
+    setContext({ terminal: term, broker: null, account: null, market: null });
   });
 
   it("writes and reads strings", () => {

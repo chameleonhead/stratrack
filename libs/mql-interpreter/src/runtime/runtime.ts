@@ -11,8 +11,8 @@ import {
   FunctionDeclaration,
   VariableDeclaration,
 } from "../parser/ast";
-import { getBuiltin, registerEnvBuiltins } from "../libs/common";
-import type { BuiltinFunction } from "../libs/common/types";
+import { getBuiltin, registerEnvBuiltins } from "../libs/functions";
+import type { BuiltinFunction } from "../libs/functions/types";
 import { cast, PrimitiveType } from "./casting";
 import { executeStatements } from "./statements";
 import { DateTimeValue } from "./datetimeValue";

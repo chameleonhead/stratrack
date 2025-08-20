@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { coreBuiltins, envBuiltins } from "../../../src/libs/common/registry";
+import { coreBuiltins, envBuiltins } from "../../../src/libs/functions/registry";
 import { builtinSignatures } from "../../../src/libs/signatures";
 
 describe("builtin signatures", () => {

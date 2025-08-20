@@ -15,7 +15,7 @@ import {
   ArrayMinimum,
   ArrayBsearch,
   ArrayCompare,
-} from "../../../src/libs/common/array";
+} from "../../../src/libs/functions/array";
 import { describe, it, expect } from "vitest";
 
 describe("array builtins", () => {

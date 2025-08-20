@@ -1,10 +1,11 @@
-import type { BuiltinFunction } from "../../common/types";
-import { MarketData } from "../../marketData";
+import type { BuiltinFunction } from "../types";
+import { getContext } from "../context";
 
-export function createMarketInformation(data: MarketData): Record<string, BuiltinFunction> {
+export function createMarketInformation(): Record<string, BuiltinFunction> {
+  const market = getContext().market!;
   return {
     MarketInfo: (symbol: string, type: number) => {
-      const tick = data.getTick(symbol, Date.now() / 1000);
+      const tick = market.getTick(symbol, Date.now() / 1000);
       switch (type) {
         case 9:
           return tick?.bid ?? 0;
@@ -20,11 +21,11 @@ export function createMarketInformation(data: MarketData): Record<string, Builti
           return 0;
       }
     },
-    SymbolsTotal: (selected = false) => data.getSymbols(selected).length,
+    SymbolsTotal: (selected = false) => market.getSymbols(selected).length,
     SymbolName: (index: number, selected = false) => {
-      const list = data.getSymbols(selected);
+      const list = market.getSymbols(selected);
       return list[index] ?? "";
     },
-    SymbolSelect: (symbol: string, enable: boolean) => data.select(symbol, enable),
+    SymbolSelect: (symbol: string, enable: boolean) => market.select(symbol, enable),
   };
 }

@@ -3,8 +3,9 @@ import { MarketData } from "../marketData";
 import { Broker } from "../broker";
 import { Account } from "../account";
 import { MqlLibrary } from "../types";
-import { createMarketInformation } from "../domain/marketInformation/backtest";
-import { createTrading } from "../domain/trading/backtest";
+import { createMarketInformation } from "../functions/marketInformation/backtest";
+import { createTrading } from "../functions/trading/backtest";
+import { setContext } from "../functions/context";
 
 export function createBacktestLibs(data: MarketData): MqlLibrary {
   const indicatorBuffers: any[] = [];
@@ -13,6 +14,7 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
   let _lastError = 0;
   const broker = new Broker();
   const account = new Account();
+  setContext({ terminal: null, broker, account, market: data, symbol: "", timeframe: 0 });
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
     data.getCandles(symbol, timeframe);
@@ -307,7 +309,7 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
       const rs = avgGain / avgLoss;
       return 100 - 100 / (1 + rs);
     },
-    ...createMarketInformation(data),
-    ...createTrading(broker, account),
+    ...createMarketInformation(),
+    ...createTrading(),
   };
 }
