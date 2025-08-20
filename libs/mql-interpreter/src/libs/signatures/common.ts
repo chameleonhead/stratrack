@@ -75,12 +75,15 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Plays a sound file",
   },
   Print: {
-    args: [{ name: "message", type: "string", optional: false }],
+    args: [{ name: "args", type: "any", variadic: true }],
     returnType: "void",
     description: "Displays a message in the log",
   },
   PrintFormat: {
-    args: [{ name: "format", type: "string", optional: false }],
+    args: [
+      { name: "format", type: "string" },
+      { name: "args", type: "any", variadic: true },
+    ],
     returnType: "void",
     description:
       "Formats and prints the sets of symbols and values in a log file in accordance with a preset format",

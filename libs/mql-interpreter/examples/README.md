@@ -9,6 +9,14 @@ cd libs/mql-interpreter/examples
 npm install
 ```
 
+## Syntax Check
+
+Verify that the sample compiles without errors:
+
+```bash
+npx mqli check "MACD Sample.mq4"
+```
+
 ## CLI Backtest
 
 Run the bundled MACD sample expert advisor on sample GBPUSD data using the published package:
