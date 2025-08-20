@@ -4,41 +4,24 @@ export interface IndicatorKey {
   timeframe: number;
   params: unknown;
 }
-
-interface CacheEntry {
-  values: number[];
-  last: number; // index of last computed bar
-}
-
 export class IndicatorCache {
-  private cache = new Map<string, CacheEntry>();
+  private cache = new Map<string, any>();
 
   private key(k: IndicatorKey): string {
     return `${k.type}:${k.symbol}:${k.timeframe}:${JSON.stringify(k.params)}`;
   }
 
-  private computeRange(
-    entry: CacheEntry,
-    from: number,
-    to: number,
-    compute: (index: number) => number
-  ): void {
-    for (let i = from; i <= to; i++) {
-      entry.values[i] = compute(i);
-    }
-  }
-
-  get(key: IndicatorKey, totalBars: number, compute: (index: number) => number): number[] {
+  getOrCreate<T extends { last: number }>(key: IndicatorKey, init: () => T): T {
     const k = this.key(key);
-    let entry = this.cache.get(k);
+    let entry = this.cache.get(k) as T | undefined;
     if (!entry) {
-      entry = { values: [], last: -1 };
+      entry = init();
       this.cache.set(k, entry);
     }
-    if (entry.last < totalBars - 1) {
-      this.computeRange(entry, entry.last + 1, totalBars - 1, compute);
-      entry.last = totalBars - 1;
-    }
-    return entry.values;
+    return entry;
+  }
+
+  peek<T extends { last: number }>(key: IndicatorKey): T | undefined {
+    return this.cache.get(this.key(key));
   }
 }
