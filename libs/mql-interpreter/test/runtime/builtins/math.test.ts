@@ -17,7 +17,7 @@ import {
   MathSrand,
   MathTan,
   MathIsValidNumber,
-} from "../../../src/libs/builtins/math";
+} from "../../../src/libs/functions/math";
 import { describe, it, expect } from "vitest";
 
 describe("math builtins", () => {

@@ -64,3 +64,8 @@ export const IndicatorShortName: BuiltinFunction = (name: string) => {
   state.shortName = name;
   return 0;
 };
+
+export const iMA: BuiltinFunction = (..._args: any[]) => 0;
+export const iMACD: BuiltinFunction = (..._args: any[]) => 0;
+export const iRSI: BuiltinFunction = (..._args: any[]) => 0;
+export const iATR: BuiltinFunction = (..._args: any[]) => 0;

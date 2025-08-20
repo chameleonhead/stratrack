@@ -26,6 +26,9 @@ import {
   IsTradeContextBusy,
   IsDemo,
   UninitializeReason,
+  WebRequest,
+} from "../../../src/libs/functions/common";
+import {
   GlobalVariableSet,
   GlobalVariableGet,
   GlobalVariableDel,
@@ -37,19 +40,18 @@ import {
   GlobalVariableSetOnCondition,
   GlobalVariableTemp,
   GlobalVariablesFlush,
-  WebRequest,
-  setTerminal,
-} from "../../../src/libs/builtins/common";
-import { StructToTime } from "../../../src/libs/builtins/datetime";
+} from "../../../src/libs/functions/globals";
+import { setContext } from "../../../src/libs/functions/context";
+import { StructToTime } from "../../../src/libs/functions/dateandtime";
 import { builtinSignatures } from "../../../src/libs/signatures";
-import { coreBuiltins, envBuiltins } from "../../../src/libs/builtins/registry";
+import { coreBuiltins, envBuiltins } from "../../../src/libs/functions/registry";
 import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {
   beforeEach(() => {
     const term = new VirtualTerminal();
-    setTerminal(term);
+    setContext({ terminal: term, broker: null, account: null, market: null });
   });
   it("Print and Comment output and return 0", () => {
     expect(Print("a")).toBe(0);

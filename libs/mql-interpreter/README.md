@@ -34,7 +34,7 @@ import { Parser } from "mql-interpreter/parser/parser";
 import { semanticCheck } from "mql-interpreter/semantic/checker";
 import { builtinSignatures } from "mql-interpreter/libs/signatures";
 import { Runtime } from "mql-interpreter/runtime/runtime";
-import { createBacktestLibs } from "mql-interpreter/libs/backtest";
+import { createBacktestLibs } from "mql-interpreter/libs";
 
 const ast = Parser.parse(source);
 const errors = semanticCheck(ast, builtinSignatures);
