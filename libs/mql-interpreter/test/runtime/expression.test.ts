@@ -68,4 +68,10 @@ describe("evaluateExpression", () => {
     const found = bad.errors.some((e) => e.message.includes("Incorrect argument count"));
     expect(found).toBe(true);
   });
+
+  it("allows variadic Print arguments", () => {
+    const result = buildProgram('void start(){ Print("x", 1, "y"); }');
+    const found = result.errors.some((e) => e.message.includes("Incorrect argument count"));
+    expect(found).toBe(false);
+  });
 });
