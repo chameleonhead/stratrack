@@ -1,5 +1,5 @@
-// Import the built interpreter; ensure the static server exposes `dist/index.js` relative to this file.
-import { BacktestRunner, parseCsv } from "../dist/index.js";
+// Import the interpreter from node_modules.
+import { BacktestRunner, parseCsv } from "./node_modules/mql-interpreter/dist/index.js";
 
 const PERIODS = {
   M1: 60,
