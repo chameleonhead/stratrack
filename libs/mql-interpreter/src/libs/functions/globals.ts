@@ -1,61 +1,44 @@
 import type { BuiltinFunction } from "./types";
 import { getContext } from "./context";
 
-const globalVars: Record<string, { value: number; time: number }> = {};
-
 export const GlobalVariableSet: BuiltinFunction = (name: string, value: number) => {
   const term = getContext().terminal;
-  if (term) return term.setGlobalVariable(name, value);
-  globalVars[name] = { value, time: Math.floor(Date.now() / 1000) };
-  return value;
+  return term ? term.setGlobalVariable(name, value) : value;
 };
 
 export const GlobalVariableGet: BuiltinFunction = (name: string) => {
   const term = getContext().terminal;
-  return term ? term.getGlobalVariable(name) : (globalVars[name]?.value ?? 0);
+  return term ? term.getGlobalVariable(name) : 0;
 };
 
 export const GlobalVariableDel: BuiltinFunction = (name: string) => {
   const term = getContext().terminal;
-  if (term) return term.deleteGlobalVariable(name);
-  const existed = name in globalVars;
-  delete globalVars[name];
-  return existed;
+  return term ? term.deleteGlobalVariable(name) : false;
 };
 
 export const GlobalVariableCheck: BuiltinFunction = (name: string) => {
   const term = getContext().terminal;
-  return term ? term.checkGlobalVariable(name) : name in globalVars;
+  return term ? term.checkGlobalVariable(name) : false;
 };
 
 export const GlobalVariableTime: BuiltinFunction = (name: string) => {
   const term = getContext().terminal;
-  return term ? term.getGlobalVariableTime(name) : (globalVars[name]?.time ?? 0);
+  return term ? term.getGlobalVariableTime(name) : 0;
 };
 
 export const GlobalVariablesDeleteAll: BuiltinFunction = (prefix = "") => {
   const term = getContext().terminal;
-  if (term) return term.deleteAllGlobalVariables(prefix);
-  let count = 0;
-  for (const k of Object.keys(globalVars)) {
-    if (!prefix || k.startsWith(prefix)) {
-      delete globalVars[k];
-      count++;
-    }
-  }
-  return count;
+  return term ? term.deleteAllGlobalVariables(prefix) : 0;
 };
 
 export const GlobalVariablesTotal: BuiltinFunction = () => {
   const term = getContext().terminal;
-  return term ? term.globalVariablesTotal() : Object.keys(globalVars).length;
+  return term ? term.globalVariablesTotal() : 0;
 };
 
 export const GlobalVariableName: BuiltinFunction = (index: number) => {
   const term = getContext().terminal;
-  if (term) return term.getGlobalVariableName(index);
-  const names = Object.keys(globalVars);
-  return names[index] ?? "";
+  return term ? term.getGlobalVariableName(index) : "";
 };
 
 export const GlobalVariableTemp: BuiltinFunction = (name: string, value: number) =>
@@ -67,12 +50,7 @@ export const GlobalVariableSetOnCondition: BuiltinFunction = (
   check: number
 ) => {
   const term = getContext().terminal;
-  if (term) return term.setGlobalVariableOnCondition(name, value, check);
-  if (!globalVars[name] || globalVars[name].value === check) {
-    globalVars[name] = { value, time: Math.floor(Date.now() / 1000) };
-    return true;
-  }
-  return false;
+  return term ? term.setGlobalVariableOnCondition(name, value, check) : false;
 };
 
 export const GlobalVariablesFlush: BuiltinFunction = () => {
