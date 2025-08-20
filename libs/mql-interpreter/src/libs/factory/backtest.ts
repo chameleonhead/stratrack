@@ -5,7 +5,8 @@ import { Account } from "../account";
 import { MqlLibrary } from "../types";
 import { createMarketInformation } from "../functions/marketInformation/backtest";
 import { createTrading } from "../functions/trading/backtest";
-import { setContext } from "../functions/context";
+import { setContext, getContext } from "../functions/context";
+import { IndicatorCache } from "../indicatorCache";
 
 export function createBacktestLibs(data: MarketData): MqlLibrary {
   const indicatorBuffers: any[] = [];
@@ -14,7 +15,16 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
   let _lastError = 0;
   const broker = new Broker();
   const account = new Account();
-  setContext({ terminal: null, broker, account, market: data, symbol: "", timeframe: 0 });
+  const indicators = new IndicatorCache();
+  setContext({
+    terminal: null,
+    broker,
+    account,
+    market: data,
+    symbol: "",
+    timeframe: 0,
+    indicators,
+  });
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
     data.getCandles(symbol, timeframe);
@@ -228,13 +238,23 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
       shift: number
     ) => {
       const arr = candlesFor(symbol, timeframe);
+      const cache = getContext().indicators!;
+      const key = {
+        type: "iMA",
+        symbol,
+        timeframe,
+        params: { period, maShift, maMethod: _maMethod, applied },
+      } as const;
+      const values = cache.get(key, arr.length, (i) => {
+        if (i < period - 1) return 0;
+        let sum = 0;
+        for (let j = i - period + 1; j <= i; j++) {
+          sum += priceVal(arr[j], applied);
+        }
+        return sum / period;
+      });
       const idx = arr.length - 1 - (shift + maShift);
-      if (idx < period - 1) return 0;
-      let sum = 0;
-      for (let i = idx - period + 1; i <= idx; i++) {
-        sum += priceVal(arr[i], applied);
-      }
-      return sum / period;
+      return idx < 0 ? 0 : (values[idx] ?? 0);
     },
     iMACD: (
       symbol: string,
@@ -247,67 +267,97 @@ export function createBacktestLibs(data: MarketData): MqlLibrary {
       shift: number
     ) => {
       const arr = candlesFor(symbol, timeframe);
+      const cache = getContext().indicators!;
+      const key = {
+        type: "iMACD",
+        symbol,
+        timeframe,
+        params: { fast, slow, signal, applied, mode },
+      } as const;
+      const values = cache.get(key, arr.length, (i) => {
+        if (i < Math.max(fast, slow)) return 0;
+        const kFast = 2 / (fast + 1);
+        const kSlow = 2 / (slow + 1);
+        const kSig = 2 / (signal + 1);
+        let emaFast = priceVal(arr[0], applied);
+        let emaSlow = priceVal(arr[0], applied);
+        const macdVals: number[] = [emaFast - emaSlow];
+        for (let j = 1; j <= i; j++) {
+          const price = priceVal(arr[j], applied);
+          emaFast = price * kFast + emaFast * (1 - kFast);
+          emaSlow = price * kSlow + emaSlow * (1 - kSlow);
+          macdVals.push(emaFast - emaSlow);
+        }
+        let sig = macdVals[0];
+        for (let j = 1; j < macdVals.length; j++) {
+          sig = macdVals[j] * kSig + sig * (1 - kSig);
+        }
+        const macd = macdVals[macdVals.length - 1];
+        return mode === 1 ? sig : macd;
+      });
       const idx = arr.length - 1 - shift;
-      if (idx < Math.max(fast, slow)) return 0;
-      const kFast = 2 / (fast + 1);
-      const kSlow = 2 / (slow + 1);
-      const kSig = 2 / (signal + 1);
-      let emaFast = priceVal(arr[0], applied);
-      let emaSlow = priceVal(arr[0], applied);
-      const macdVals: number[] = [emaFast - emaSlow];
-      for (let i = 1; i <= idx; i++) {
-        const price = priceVal(arr[i], applied);
-        emaFast = price * kFast + emaFast * (1 - kFast);
-        emaSlow = price * kSlow + emaSlow * (1 - kSlow);
-        macdVals.push(emaFast - emaSlow);
-      }
-      let sig = macdVals[0];
-      for (let i = 1; i < macdVals.length; i++) {
-        sig = macdVals[i] * kSig + sig * (1 - kSig);
-      }
-      const macd = macdVals[macdVals.length - 1];
-      return mode === 1 ? sig : macd;
+      return idx < 0 ? 0 : (values[idx] ?? 0);
     },
     iATR: (symbol: string, timeframe: number, period: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
-      const idx = arr.length - 1 - shift;
-      if (idx < period || idx <= 0) return 0;
-      let atr = 0;
-      for (let i = 1; i <= idx; i++) {
-        const cur = arr[i];
-        const prev = arr[i - 1];
-        const tr = Math.max(
-          cur.high - cur.low,
-          Math.abs(cur.high - prev.close),
-          Math.abs(cur.low - prev.close)
-        );
-        if (i <= period) {
-          atr = (atr * (i - 1) + tr) / i;
-        } else {
-          atr = (atr * (period - 1) + tr) / period;
+      const cache = getContext().indicators!;
+      const key = {
+        type: "iATR",
+        symbol,
+        timeframe,
+        params: { period },
+      } as const;
+      const values = cache.get(key, arr.length, (i) => {
+        if (i < period || i <= 0) return 0;
+        let atr = 0;
+        for (let j = 1; j <= i; j++) {
+          const cur = arr[j];
+          const prev = arr[j - 1];
+          const tr = Math.max(
+            cur.high - cur.low,
+            Math.abs(cur.high - prev.close),
+            Math.abs(cur.low - prev.close)
+          );
+          if (j <= period) {
+            atr = (atr * (j - 1) + tr) / j;
+          } else {
+            atr = (atr * (period - 1) + tr) / period;
+          }
         }
-      }
-      return atr;
+        return atr;
+      });
+      const idx = arr.length - 1 - shift;
+      return idx < 0 ? 0 : (values[idx] ?? 0);
     },
     iRSI: (symbol: string, timeframe: number, period: number, applied: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
+      const cache = getContext().indicators!;
+      const key = {
+        type: "iRSI",
+        symbol,
+        timeframe,
+        params: { period, applied },
+      } as const;
+      const values = cache.get(key, arr.length, (i) => {
+        if (i < period) return 0;
+        let gains = 0;
+        let losses = 0;
+        for (let j = i - period + 1; j <= i; j++) {
+          const cur = priceVal(arr[j], applied);
+          const prev = priceVal(arr[j - 1], applied);
+          const diff = cur - prev;
+          if (diff > 0) gains += diff;
+          else losses -= diff;
+        }
+        const avgGain = gains / period;
+        const avgLoss = losses / period;
+        if (avgLoss === 0) return 100;
+        if (avgGain === 0) return 0;
+        const rs = avgGain / avgLoss;
+        return 100 - 100 / (1 + rs);
+      });
       const idx = arr.length - 1 - shift;
-      if (idx < period) return 0;
-      let gains = 0;
-      let losses = 0;
-      for (let i = idx - period + 1; i <= idx; i++) {
-        const cur = priceVal(arr[i], applied);
-        const prev = priceVal(arr[i - 1], applied);
-        const diff = cur - prev;
-        if (diff > 0) gains += diff;
-        else losses -= diff;
-      }
-      const avgGain = gains / period;
-      const avgLoss = losses / period;
-      if (avgLoss === 0) return 100;
-      if (avgGain === 0) return 0;
-      const rs = avgGain / avgLoss;
-      return 100 - 100 / (1 + rs);
+      return idx < 0 ? 0 : (values[idx] ?? 0);
     },
     ...createMarketInformation(),
     ...createTrading(),

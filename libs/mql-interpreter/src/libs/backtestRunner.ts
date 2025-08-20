@@ -12,7 +12,8 @@ import { Account, AccountMetrics } from "./account";
 import { MarketData } from "./marketData";
 import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setContext } from "./functions/context";
+import { setContext, getContext } from "./functions/context";
+import { IndicatorCache } from "./indicatorCache";
 
 export interface BacktestSession {
   broker: Broker;
@@ -100,6 +101,7 @@ export class BacktestRunner {
   private initialized = false;
   private deinitialized = false;
   private pendingTradeEvents: Order[] = [];
+  private indicators = new IndicatorCache();
   constructor(
     private source: string,
     private candles: Candle[],
@@ -175,6 +177,7 @@ export class BacktestRunner {
       market: this.market,
       symbol,
       timeframe: period,
+      indicators: this.indicators,
     });
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
@@ -422,12 +425,24 @@ export class BacktestRunner {
         shift: number
       ) => {
         const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0) - maShift;
-        if (idx < period - 1) return 0;
-        const start = idx - period + 1;
-        const slice = arr.slice(start, idx + 1);
-        const sum = slice.reduce((s, c) => s + priceVal(c, applied), 0);
-        return sum / slice.length;
+        const curIdx = findIndex(arr, currentTime());
+        const cache = getContext().indicators!;
+        const key = {
+          type: "iMA",
+          symbol: sym,
+          timeframe: tf,
+          params: { period, maShift, maMethod: _maMethod, applied },
+        } as const;
+        const values = cache.get(key, curIdx + 1, (i) => {
+          if (i < period - 1) return 0;
+          let sum = 0;
+          for (let j = i - period + 1; j <= i; j++) {
+            sum += priceVal(arr[j], applied);
+          }
+          return sum / period;
+        });
+        const idx = curIdx - (shift ?? 0) - maShift;
+        return idx < 0 ? 0 : (values[idx] ?? 0);
       },
       iMACD: (
         sym: any,
@@ -440,67 +455,100 @@ export class BacktestRunner {
         shift: number
       ) => {
         const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        if (idx < Math.max(fast, slow)) return 0;
-        const kFast = 2 / (fast + 1);
-        const kSlow = 2 / (slow + 1);
-        const kSig = 2 / (signal + 1);
-        let emaFast = priceVal(arr[0], applied);
-        let emaSlow = priceVal(arr[0], applied);
-        const macdVals: number[] = [emaFast - emaSlow];
-        for (let i = 1; i <= idx; i++) {
-          const price = priceVal(arr[i], applied);
-          emaFast = price * kFast + emaFast * (1 - kFast);
-          emaSlow = price * kSlow + emaSlow * (1 - kSlow);
-          macdVals.push(emaFast - emaSlow);
-        }
-        let sig = macdVals[0];
-        for (let i = 1; i < macdVals.length; i++) {
-          sig = macdVals[i] * kSig + sig * (1 - kSig);
-        }
-        const macd = macdVals[macdVals.length - 1];
-        return mode === 1 ? sig : macd;
+        const curIdx = findIndex(arr, currentTime());
+        const cache = getContext().indicators!;
+        const key = {
+          type: "iMACD",
+          symbol: sym,
+          timeframe: tf,
+          params: { fast, slow, signal, applied, mode },
+        } as const;
+        const values = cache.get(key, curIdx + 1, (i) => {
+          if (i < Math.max(fast, slow)) return 0;
+          const kFast = 2 / (fast + 1);
+          const kSlow = 2 / (slow + 1);
+          const kSig = 2 / (signal + 1);
+          let emaFast = priceVal(arr[0], applied);
+          let emaSlow = priceVal(arr[0], applied);
+          const macdVals: number[] = [emaFast - emaSlow];
+          for (let j = 1; j <= i; j++) {
+            const price = priceVal(arr[j], applied);
+            emaFast = price * kFast + emaFast * (1 - kFast);
+            emaSlow = price * kSlow + emaSlow * (1 - kSlow);
+            macdVals.push(emaFast - emaSlow);
+          }
+          let sig = macdVals[0];
+          for (let j = 1; j < macdVals.length; j++) {
+            sig = macdVals[j] * kSig + sig * (1 - kSig);
+          }
+          const macd = macdVals[macdVals.length - 1];
+          return mode === 1 ? sig : macd;
+        });
+        const idx = curIdx - (shift ?? 0);
+        return idx < 0 ? 0 : (values[idx] ?? 0);
       },
       iATR: (sym: any, tf: any, period: number, shift: number) => {
         const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        if (idx < period || idx <= 0) return 0;
-        let atr = 0;
-        for (let i = 1; i <= idx; i++) {
-          const cur = arr[i];
-          const prev = arr[i - 1];
-          const tr = Math.max(
-            cur.high - cur.low,
-            Math.abs(cur.high - prev.close),
-            Math.abs(cur.low - prev.close)
-          );
-          if (i <= period) {
-            atr = (atr * (i - 1) + tr) / i;
-          } else {
-            atr = (atr * (period - 1) + tr) / period;
+        const curIdx = findIndex(arr, currentTime());
+        const cache = getContext().indicators!;
+        const key = {
+          type: "iATR",
+          symbol: sym,
+          timeframe: tf,
+          params: { period },
+        } as const;
+        const values = cache.get(key, curIdx + 1, (i) => {
+          if (i < period || i <= 0) return 0;
+          let atr = 0;
+          for (let j = 1; j <= i; j++) {
+            const cur = arr[j];
+            const prev = arr[j - 1];
+            const tr = Math.max(
+              cur.high - cur.low,
+              Math.abs(cur.high - prev.close),
+              Math.abs(cur.low - prev.close)
+            );
+            if (j <= period) {
+              atr = (atr * (j - 1) + tr) / j;
+            } else {
+              atr = (atr * (period - 1) + tr) / period;
+            }
           }
-        }
-        return atr;
+          return atr;
+        });
+        const idx = curIdx - (shift ?? 0);
+        return idx < 0 ? 0 : (values[idx] ?? 0);
       },
       iRSI: (sym: any, tf: any, period: number, applied: number, shift: number) => {
         const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        if (idx < period) return 0;
-        let gains = 0;
-        let losses = 0;
-        for (let i = idx - period + 1; i <= idx; i++) {
-          const cur = priceVal(arr[i], applied);
-          const prev = priceVal(arr[i - 1], applied);
-          const diff = cur - prev;
-          if (diff > 0) gains += diff;
-          else losses -= diff;
-        }
-        const avgGain = gains / period;
-        const avgLoss = losses / period;
-        if (avgLoss === 0) return 100;
-        if (avgGain === 0) return 0;
-        const rs = avgGain / avgLoss;
-        return 100 - 100 / (1 + rs);
+        const curIdx = findIndex(arr, currentTime());
+        const cache = getContext().indicators!;
+        const key = {
+          type: "iRSI",
+          symbol: sym,
+          timeframe: tf,
+          params: { period, applied },
+        } as const;
+        const values = cache.get(key, curIdx + 1, (i) => {
+          if (i < period) return 0;
+          let gains = 0;
+          let losses = 0;
+          for (let j = i - period + 1; j <= i; j++) {
+            const cur = priceVal(arr[j], applied);
+            const prev = priceVal(arr[j - 1], applied);
+            const diff = cur - prev;
+            if (diff > 0) gains += diff;
+            else losses -= diff;
+          }
+          const avgGain = gains / period;
+          const avgLoss = losses / period;
+          if (avgLoss === 0) return 100;
+          if (avgGain === 0) return 0;
+          const rs = avgGain / avgLoss;
+          return 100 - 100 / (1 + rs);
+        });
+        const idx = curIdx - (shift ?? 0);
+        return idx < 0 ? 0 : (values[idx] ?? 0);
       },
       GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
