@@ -51,6 +51,7 @@ export type MqlLibraryName =
   | "iMACD"
   | "iATR"
   | "iRSI"
+  | "iCustom"
   | "MarketInfo"
   | "SymbolsTotal"
   | "SymbolName"
@@ -161,6 +162,7 @@ export interface MqlLibraryFunctions {
     appliedPrice: number,
     shift: number
   ): number;
+  iCustom(symbol: string, timeframe: number, name: string, ...args: any[]): number;
   MarketInfo(symbol: string, type: number): number;
   SymbolsTotal(selected?: boolean): number;
   SymbolName(index: number, selected?: boolean): string;
