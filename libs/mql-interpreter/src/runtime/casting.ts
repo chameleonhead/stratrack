@@ -25,6 +25,7 @@ export function cast(value: any, type: PrimitiveType): any {
     case "bool":
       return value ? 1 : 0;
     case "float":
+      return Math.fround(Number(value));
     case "double":
       return Number(value);
     case "char":

@@ -138,8 +138,8 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         const val = intBinaryOp("+", old, step, info.bits, info.unsigned);
         env[name] = cast(val, varType as any);
       } else {
-        if (op === "++") env[name] = old + 1;
-        else env[name] = old - 1;
+        const step = op === "++" ? 1 : -1;
+        env[name] = varType ? cast(old + step, varType as any) : old + step;
       }
       result = { value: old, type: varType, ref: name };
     }
@@ -162,8 +162,8 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
           const v = intBinaryOp("+", val, step, info.bits, info.unsigned);
           env[name] = cast(v, varType as any);
         } else {
-          if (op === "++") env[name] = val + 1;
-          else env[name] = val - 1;
+          const step = op === "++" ? 1 : -1;
+          env[name] = varType ? cast(val + step, varType as any) : val + step;
         }
         return { value: env[name], type: varType };
       }
@@ -175,13 +175,13 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         const res = parseUnary();
         switch (op) {
           case "+":
-            return { value: +res.value };
+            return { value: +res.value, type: res.type };
           case "-":
-            return { value: -res.value };
+            return { value: -res.value, type: res.type };
           case "!":
             return { value: !res.value };
           case "~":
-            return { value: ~res.value };
+            return { value: ~res.value, type: res.type };
         }
       }
       if (t.type === TokenType.Keyword && t.value === "delete") {
@@ -272,7 +272,10 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
                   : left.type === "float" || right.type === "float"
                     ? "float"
                     : undefined;
-              left = { value, type: resultType };
+              left = {
+                value: resultType === "float" ? Math.fround(value) : value,
+                type: resultType,
+              };
             }
             break;
           case "<":
