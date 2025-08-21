@@ -40,10 +40,10 @@ void OnTick(void)
       return;
      }
 //--- to simplify the coding and speed up access data are put into internal variables
-   MacdCurrent=iMACD(NULL,0,12,26,9,PRICE_CLOSE,MODE_MAIN,0);
-   MacdPrevious=iMACD(NULL,0,12,26,9,PRICE_CLOSE,MODE_MAIN,1);
-   SignalCurrent=iMACD(NULL,0,12,26,9,PRICE_CLOSE,MODE_SIGNAL,0);
-   SignalPrevious=iMACD(NULL,0,12,26,9,PRICE_CLOSE,MODE_SIGNAL,1);
+   MacdCurrent=iCustom(NULL,0,"CustomMACD",12,26,9,MODE_MAIN,0);
+   MacdPrevious=iCustom(NULL,0,"CustomMACD",12,26,9,MODE_MAIN,1);
+   SignalCurrent=iCustom(NULL,0,"CustomMACD",12,26,9,MODE_SIGNAL,0);
+   SignalPrevious=iCustom(NULL,0,"CustomMACD",12,26,9,MODE_SIGNAL,1);
    MaCurrent=iMA(NULL,0,MATrendPeriod,0,MODE_EMA,PRICE_CLOSE,0);
    MaPrevious=iMA(NULL,0,MATrendPeriod,0,MODE_EMA,PRICE_CLOSE,1);
 

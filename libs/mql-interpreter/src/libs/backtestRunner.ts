@@ -83,6 +83,8 @@ export interface BacktestOptions {
   log?: (...args: any[]) => void;
   /** Default timeframe for the expert advisor in seconds */
   timeframe?: number;
+  /** Custom indicator sources referenced by iCustom */
+  customIndicators?: Record<string, string>;
 }
 
 export interface BacktestReport {
@@ -606,6 +608,38 @@ export class BacktestRunner {
         }
         const idx = curIdx - (shift ?? 0);
         return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
+      },
+      iCustom: (sym: any, tf: any, name: string, ...args: any[]) => {
+        const arr = candlesFor(sym, tf);
+        const curIdx = findIndex(arr, currentTime());
+        const mode = Number(args[args.length - 2] ?? 0);
+        const shift = Number(args[args.length - 1] ?? 0);
+        const params = args.slice(0, -2);
+        const source = this.options.customIndicators?.[name];
+        if (!source) return 0;
+        const cache = getContext().indicators!;
+        const key = {
+          type: `iCustom:${name}`,
+          symbol: sym,
+          timeframe: tf,
+          params,
+        } as const;
+        const ctx = cache.getOrCreate(key, () => ({
+          last: -1,
+          buffers: [] as number[][],
+          runner: new BacktestRunner(source, arr, {
+            symbol: sym && String(sym).length ? String(sym) : undefined,
+            timeframe: tf,
+            customIndicators: this.options.customIndicators,
+          }),
+        }));
+        if (ctx.last < curIdx) {
+          for (let i = ctx.last + 1; i <= curIdx; i++) ctx.runner.step();
+          ctx.buffers = ctx.runner.getRuntime().globalValues._IndicatorBuffers ?? [];
+          ctx.last = curIdx;
+        }
+        const idx = curIdx - shift;
+        return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
       },
       GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
