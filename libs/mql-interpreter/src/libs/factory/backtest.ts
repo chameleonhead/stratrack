@@ -8,10 +8,11 @@ import { createTrading } from "../functions/trading/backtest";
 import { setContext, getContext } from "../functions/context";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
+import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
 
 export function createBacktestLibs(
   data: MarketData,
-  customIndicators: Record<string, string> = {}
+  indicatorSource: IndicatorSource = new InMemoryIndicatorSource()
 ): MqlLibrary {
   const indicatorBuffers: any[] = [];
   const indicatorLabels: string[] = [];
@@ -430,7 +431,7 @@ export function createBacktestLibs(
       const mode = Number(args[args.length - 2] ?? 0);
       const shift = Number(args[args.length - 1] ?? 0);
       const params = args.slice(0, -2);
-      const source = customIndicators[name];
+      const source = indicatorSource.get(name);
       if (!source) return 0;
       const cache = getContext().indicators!;
       const key = {
@@ -445,7 +446,7 @@ export function createBacktestLibs(
         runner: new BacktestRunner(source, arr, {
           symbol,
           timeframe,
-          customIndicators,
+          indicatorSource,
         }),
       }));
       if (ctx.last < curIdx) {

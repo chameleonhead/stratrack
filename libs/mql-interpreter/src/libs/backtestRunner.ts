@@ -14,6 +14,7 @@ import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
 import { setContext, getContext } from "./functions/context";
 import { IndicatorCache } from "./indicatorCache";
+import { IndicatorSource, InMemoryIndicatorSource } from "./indicatorSource";
 
 export interface BacktestSession {
   broker: Broker;
@@ -83,8 +84,8 @@ export interface BacktestOptions {
   log?: (...args: any[]) => void;
   /** Default timeframe for the expert advisor in seconds */
   timeframe?: number;
-  /** Custom indicator sources referenced by iCustom */
-  customIndicators?: Record<string, string>;
+  /** Source provider for custom indicators referenced by iCustom */
+  indicatorSource?: IndicatorSource;
 }
 
 export interface BacktestReport {
@@ -104,6 +105,7 @@ export class BacktestRunner {
   private deinitialized = false;
   private pendingTradeEvents: Order[] = [];
   private indicators = new IndicatorCache();
+  private indicatorSource: IndicatorSource;
   constructor(
     private source: string,
     private candles: Candle[],
@@ -142,6 +144,7 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = runtime;
+    this.indicatorSource = this.options.indicatorSource ?? new InMemoryIndicatorSource();
     if (options.inputValues) {
       for (const name in this.runtime.variables) {
         const info = this.runtime.variables[name];
@@ -615,7 +618,7 @@ export class BacktestRunner {
         const mode = Number(args[args.length - 2] ?? 0);
         const shift = Number(args[args.length - 1] ?? 0);
         const params = args.slice(0, -2);
-        const source = this.options.customIndicators?.[name];
+        const source = this.indicatorSource.get(name);
         if (!source) return 0;
         const cache = getContext().indicators!;
         const key = {
@@ -630,7 +633,7 @@ export class BacktestRunner {
           runner: new BacktestRunner(source, arr, {
             symbol: sym && String(sym).length ? String(sym) : undefined,
             timeframe: tf,
-            customIndicators: this.options.customIndicators,
+            indicatorSource: this.indicatorSource,
           }),
         }));
         if (ctx.last < curIdx) {

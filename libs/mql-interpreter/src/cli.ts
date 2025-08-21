@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
+import { basename, extname } from "node:path";
 import { program } from "commander";
 import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
 import { builtinSignatures } from "./libs/signatures";
 import { BacktestRunner, parseCsv } from "./libs/backtestRunner";
+import { InMemoryIndicatorSource } from "./libs/indicatorSource";
 
 program.name("mqli").description("MQL interpreter CLI").version("0.1.0");
 
@@ -33,6 +35,15 @@ program
   .option("--margin <margin>", "初期証拠金", (v) => Number(v))
   .option("--currency <code>", "口座通貨")
   .option("--timeframe <seconds>", "デフォルト時間足", (v) => Number(v))
+  .option(
+    "--indicator <file>",
+    "カスタムインジケータファイル",
+    (v: string, p: string[]) => {
+      p.push(v);
+      return p;
+    },
+    [] as string[]
+  )
   .action((file: string, candles: string | undefined, opts: any) => {
     const csvFile = candles ?? opts.candles;
     if (!csvFile) {
@@ -42,11 +53,17 @@ program
     const code = readFileSync(file, "utf8");
     const csv = readFileSync(csvFile, "utf8");
     const data = parseCsv(csv);
+    const indicatorSource = new InMemoryIndicatorSource();
+    for (const ind of opts.indicator as string[]) {
+      const name = basename(ind, extname(ind));
+      indicatorSource.set(name, readFileSync(ind, "utf8"));
+    }
     const runner = new BacktestRunner(code, data, {
       initialBalance: opts.balance,
       initialMargin: opts.margin,
       accountCurrency: opts.currency,
       timeframe: opts.timeframe,
+      indicatorSource,
     });
     runner.run();
     console.log(JSON.stringify(runner.getReport(), null, 2));
