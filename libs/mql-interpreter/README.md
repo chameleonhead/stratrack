@@ -1,33 +1,11 @@
 # MQL Interpreter
 
-This package provides a basic framework for executing MQL4/5 code within Node.js.
-It currently includes a simple lexer and parser. The parser recognizes
-enumerations, class and struct declarations with single inheritance. Class fields
-declared as `<type> <name>;` are captured, including simple dynamic array
-declarations like `int values[];`. These fields are stored in the runtime
-with their array dimensions. Top-level functions are also parsed. Their return
-type, name and parameter list (including any default values) are recorded in the
-runtime for inspection. A single name may have multiple declarations with
-different parameter lists, mirroring MQL's function overloading rules. The
-runtime stores every overload so `callFunction()` can choose the one matching
-the argument count. The parser also captures class methods, including
-constructors, destructors and operator overloads like `operator+`. Only the
-method signatures are stored; method bodies are ignored during execution.
-Fields and methods may be marked `static`, and methods may be marked
-`virtual`. Pure virtual methods using `=0` are recognized, and classes may be
-prefixed with `abstract`. These attributes are captured and appear in the
-runtime so you can inspect class layouts.
-Template classes and functions are also recognized when preceded by
-`template<typename T>` or `template<class U>` declarations. The list of
-template parameter names is stored alongside the class or function.
-A parameter can be prefixed with `&` to indicate it is passed by reference.
-Arrays are always treated as references. The runtime stores this information for
-each parameter.
-A reference argument must be an object, e.g. `{value: 10}`. Builtins like
-`StringTrimLeft` will mutate the passed object.
-A `void` type is recognized as a keyword for functions but cannot be used
-as a class field type. The library exposes individual building blocks so
-hosts can control parsing, semantic analysis and execution:
+This package is a TypeScript-based framework for executing MQL4/5 code within Node.js. It ships with a lexer, parser, semantic checker, runtime and a growing set of built-in function stubs.
+The parser understands enumerations along with class and struct declarations using single inheritance. Fields defined as `<type> <name>;` are recorded, including dynamic array declarations like `int values[];` with their dimensions.
+Top-level functions are parsed with their return type, parameter list and default values, and multiple overloads may coexist under the same name. Class methods, constructors, destructors and operator overloads such as `operator+` are recognized. Members may be marked `static` or `virtual`, pure virtual methods (`=0`) are supported and classes can be prefixed with `abstract`.
+Template classes and functions introduced by `template<typename T>` or `template<class U>` are also handled. Parameters prefixed with `&` are treated as references while arrays are always passed by reference; reference arguments must be objects (e.g. `{value: 10}`) so builtins like `StringTrimLeft` can mutate them. A `void` type is recognized for functions but cannot be used as a class field type. Only method signatures are stored; method bodies are ignored during execution, but the runtime captures all declarations so class layouts can be inspected.
+
+## Usage
 
 ```ts
 import { Parser } from "mql-interpreter/parser/parser";
