@@ -63,7 +63,13 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     const t = tokens[pos];
     if (!t) throw new Error("Unexpected end of expression");
     if (type && t.type !== type) throw new Error(`Expected ${type} but got ${t.type}`);
-    if (value && t.value !== value) throw new Error(`Expected ${value} but got ${t.value}`);
+    if (value && t.value !== value) {
+      // Debug info
+      const context = tokens.slice(Math.max(0, pos - 3), Math.min(tokens.length, pos + 4))
+        .map((tk, i) => (i === 3 ? `[${tk.value}:${tk.type}]` : `${tk.value}:${tk.type}`))
+        .join(' ');
+      throw new Error(`Expected ${value} but got ${t.value}. Context: ${context}. At position ${pos}`);
+    }
     pos++;
     return t;
   };
@@ -120,6 +126,8 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       const vtype = runtime?.variables[name]?.type;
       if (!atEnd() && peek().value === "(") {
         if (!runtime) throw new Error("Runtime required for function call");
+        // Treat any identifier followed by parentheses as a function call
+        // The callFunction will handle whether it's a valid function or not
         consume(TokenType.Punctuation, "(");
         const args: any[] = [];
         if (peek().value !== ")") {
@@ -144,13 +152,52 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       if (!runtime) throw new Error("Runtime required for new operator");
       return { value: instantiate(runtime, cls) };
     }
+    // Handle type casting: int(value), double(value), string(value), etc.
+    if (t.type === TokenType.Keyword && ["int", "double", "float", "string", "bool", "datetime", "color", "long", "short", "char", "uchar", "uint", "ulong", "ushort"].includes(t.value)) {
+      // Look ahead to see if this is actually a type cast (type followed by opening parenthesis)
+      if (!atEnd() && pos + 1 < tokens.length && tokens[pos + 1].value === "(") {
+        const castType = consume(TokenType.Keyword).value;
+        consume(TokenType.Punctuation, "(");
+        const expr = parseAssignment();
+        consume(TokenType.Punctuation, ")");
+        // Perform type casting
+        const value = expr.value;
+        switch (castType) {
+          case "int":
+          case "long":
+          case "short":
+          case "char":
+          case "uchar":
+          case "uint":
+          case "ulong":
+          case "ushort":
+            return { value: Math.trunc(Number(value)) };
+          case "double":
+          case "float":
+            return { value: Number(value) };
+          case "string":
+            return { value: String(value) };
+          case "bool":
+            return { value: Boolean(value) };
+          case "datetime":
+          case "color":
+            return { value: Number(value) };
+          default:
+            return expr;
+        }
+      }
+      // If no immediate parentheses, treat as identifier (may be a variable name)
+      const name = consume(TokenType.Keyword).value;
+      return { value: env[name], ref: name };
+    }
     if (t.value === "(") {
       consume(TokenType.Punctuation, "(");
       const r = parseAssignment();
       consume(TokenType.Punctuation, ")");
       return r;
     }
-    throw new Error(`Unexpected token ${t.value}`);
+
+    throw new Error(`Unexpected token ${t.value} (type: ${t.type})`);
   }
 
   function parsePostfix(): EvalResult {
@@ -240,7 +287,7 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         consume(TokenType.Keyword, "delete");
         const res = parseUnary();
         if (!res.ref) throw new Error("Invalid operand for delete");
-        delete env[res.ref];
+        delete env[res.ref as string];
         return { value: undefined };
       }
     }

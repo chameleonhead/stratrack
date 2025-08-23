@@ -66,10 +66,32 @@ function resolveValue(
 }
 
 function checkPrimitive(value: any, type: string): boolean {
+  // Allow undefined values - they will be converted to appropriate defaults
+  if (value === undefined) return true;
   if (numericTypes.has(type)) return typeof value === "number" || value instanceof DateTimeValue;
   if (type === "bool") return typeof value === "boolean" || typeof value === "number";
-  if (type === "string") return typeof value === "string";
+  if (type === "string") return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
   return true;
+}
+
+function convertToType(value: any, type: string): any {
+  // Convert undefined to appropriate defaults
+  if (value === undefined) {
+    if (numericTypes.has(type)) return 0;
+    if (type === "bool") return false;
+    if (type === "string") return "";
+    return null;
+  }
+  if (numericTypes.has(type)) {
+    return typeof value === "number" ? value : Number(value);
+  }
+  if (type === "bool") {
+    return typeof value === "boolean" ? value : Boolean(value);
+  }
+  if (type === "string") {
+    return typeof value === "string" ? value : String(value);
+  }
+  return value;
 }
 
 export function execute(
@@ -320,8 +342,12 @@ export function callFunction(runtime: RuntimeState, name: string, args: any[] = 
         }
         if (!decl.parameters[i].byRef && !checkPrimitive(args[i], decl.parameters[i].type)) {
           throw new Error(
-            `Argument ${decl.parameters[i].name} expected ${decl.parameters[i].type}`
+            `Argument ${decl.parameters[i].name} expected ${decl.parameters[i].type}, got ${typeof args[i]} (${args[i]})`
           );
+        }
+        // Perform type conversion for non-reference parameters
+        if (!decl.parameters[i].byRef) {
+          args[i] = convertToType(args[i], decl.parameters[i].type);
         }
       }
     } else if (!builtin) {

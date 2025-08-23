@@ -37,9 +37,13 @@ export const ArrayIsSeries: BuiltinFunction = (arr: any[]) => {
 
 export const ArrayIsDynamic: BuiltinFunction = () => 1;
 
-export const ArraySize: BuiltinFunction = (arr: any[]) => arr.length;
+export const ArraySize: BuiltinFunction = (arr: any[]) => {
+  if (!arr || !Array.isArray(arr)) return 0;
+  return arr.length;
+};
 
 export const ArrayRange: BuiltinFunction = (arr: any[], dimension: number) => {
+  if (!arr || !Array.isArray(arr)) return 0;
   let cur: any = arr;
   for (let i = 0; i < dimension; i++) {
     if (Array.isArray(cur) && cur.length) cur = cur[0];
@@ -49,6 +53,7 @@ export const ArrayRange: BuiltinFunction = (arr: any[], dimension: number) => {
 };
 
 export const ArrayDimension: BuiltinFunction = (arr: any[]) => {
+  if (!arr || !Array.isArray(arr)) return 0;
   let dim = 0;
   let cur: any = arr;
   while (Array.isArray(cur)) {

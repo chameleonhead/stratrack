@@ -219,7 +219,19 @@ export function executeStatements(
           const post = readExpression(")");
           consume(TokenType.Punctuation, ")");
           const body = captureStatementSource();
-          if (init.trim()) evaluateExpression(init, env, runtime);
+          
+          // Handle for loop initialization (may include variable declaration)
+          if (init.trim()) {
+            try {
+              // Try to execute as a statement first (handles variable declarations)
+              const initResult = executeStatements(init + ";", env, runtime);
+              if (initResult.return !== undefined) return initResult;
+            } catch {
+              // If statement execution fails, try as expression
+              evaluateExpression(init, env, runtime);
+            }
+          }
+          
           while (true) {
             if (cond.trim() && !evaluateExpression(cond, env, runtime)) break;
             const r = executeStatements(body, env, runtime);
@@ -285,11 +297,11 @@ export function executeStatements(
         case "return": {
           consume(TokenType.Keyword, "return");
           let val: any = undefined;
-          if (peek().value !== ";") {
+          if (!atEnd() && peek()?.value !== ";") {
             const expr = readExpression(";");
             val = evaluateExpression(expr, env, runtime);
           }
-          if (!atEnd() && peek().value === ";") consume(TokenType.Punctuation, ";");
+          if (!atEnd() && peek()?.value === ";") consume(TokenType.Punctuation, ";");
           return { return: val };
         }
       }
