@@ -138,6 +138,36 @@ int OnCalculate(){return Bars;}
       const result = functions.iCustom("GBPUSD", 15, "TestIndicator", 0, 0);
       expect(result).toBeCloseTo(1.25, 4);
     });
+
+    it("supports nested iCustom with shared data and cache", () => {
+      context.indicatorEngine!.set(
+        "Inner",
+        `
+int OnInit(){IndicatorBuffers(1);SetIndexBuffer(0,Close);return 0;}
+int OnCalculate(){return Bars;}
+`
+      );
+      context.indicatorEngine!.set(
+        "Outer",
+        `
+double ExtMapBuffer[];
+int OnInit(){IndicatorBuffers(1);SetIndexBuffer(0,ExtMapBuffer);return 0;}
+int OnCalculate(){ExtMapBuffer[Bars-1]=iCustom(_Symbol,_Period,"Inner",0,0);return Bars;}
+`
+      );
+      const functions = createIndicators(context);
+      const key = { type: "iCustom:Inner", symbol: "GBPUSD", timeframe: 15, params: [] } as const;
+      const value1 = functions.iCustom("GBPUSD", 15, "Outer", 0, 0);
+      const innerValue = functions.iCustom("GBPUSD", 15, "Inner", 0, 0);
+      expect(value1).toBeCloseTo(innerValue, 4);
+      const cache1 = context.indicatorEngine!.peek<any>(key)!;
+      const last = cache1.last;
+      const value2 = functions.iCustom("GBPUSD", 15, "Outer", 0, 0);
+      const cache2 = context.indicatorEngine!.peek<any>(key)!;
+      expect(cache2).toBe(cache1);
+      expect(cache2.last).toBe(last);
+      expect(value2).toBeCloseTo(innerValue, 4);
+    });
   });
 
   describe("Other indicator functions", () => {

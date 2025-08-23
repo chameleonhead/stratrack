@@ -12,7 +12,7 @@ import { InMemoryAccount as Account, AccountMetrics } from "./libs/domain/accoun
 import { InMemoryMarketData as MarketData } from "./libs/domain/marketData";
 import type { Candle, Tick } from "./libs/domain/marketData";
 import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "./libs/domain/terminal";
-import { IndicatorEngine, InMemoryIndicatorEngine } from "./libs/domain/indicator";
+import { IndicatorEngine, InMemoryIndicatorEngine, IndicatorCache } from "./libs/domain/indicator";
 import { createLibs } from "./libs/factory";
 
 export interface BacktestSession {
@@ -85,6 +85,12 @@ export interface BacktestOptions {
   timeframe?: number;
   /** Source provider for custom indicators referenced by iCustom */
   indicatorEngine?: IndicatorEngine;
+  /** Existing market data instance to reuse */
+  market?: MarketData;
+  /** Shared indicator cache instance */
+  indicatorCache?: IndicatorCache;
+  /** Existing virtual terminal instance */
+  terminal?: VirtualTerminal;
 }
 
 export interface BacktestReport {
@@ -153,7 +159,9 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = runtime;
-    this.indicatorEngine = this.options.indicatorEngine ?? new InMemoryIndicatorEngine();
+    this.indicatorEngine =
+      this.options.indicatorEngine ??
+      new InMemoryIndicatorEngine(undefined, this.options.indicatorCache);
     if (options.inputValues) {
       for (const name in this.runtime.variables) {
         const info = this.runtime.variables[name];
@@ -172,26 +180,40 @@ export class BacktestRunner {
       options.accountCurrency ?? "USD"
     );
     this.session = { broker, account };
-    this.terminal = new VirtualTerminal(options.storage, options.log);
+    this.terminal = options.terminal ?? new VirtualTerminal(options.storage, options.log);
     const symbol = options.symbol ?? "TEST";
-    const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
-    const baseTicks = candles.map((c) => ({ time: c.time, bid: c.close, ask: c.close }));
-    const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
-    const candleData = { [symbol]: { [dataPeriod]: candles } } as Record<
-      string,
-      Record<number, Candle[]>
-    >;
-    this.market = new MarketData(ticks, candleData);
-    const baseGetCandles = this.market.getCandles.bind(this.market);
-    (this.market as any).getCandles = (symbol: string, timeframe: number): Candle[] => {
-      const sym = symbol && String(symbol).length ? symbol : (this.options.symbol ?? "TEST");
-      const tf = timeframe || this.runtime.globalValues._Period;
-      const arr = baseGetCandles(sym, tf);
-      const time = this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0;
-      let i = arr.length - 1;
-      while (i >= 0 && arr[i].time > time) i--;
-      return arr.slice(0, i + 1);
-    };
+    if (options.market) {
+      this.market = Object.create(options.market) as MarketData;
+      const baseGetCandles = options.market.getCandles.bind(options.market);
+      (this.market as any).getCandles = (symbol: string, timeframe: number): Candle[] => {
+        const sym = symbol && String(symbol).length ? symbol : (this.options.symbol ?? "TEST");
+        const tf = timeframe || this.runtime.globalValues._Period;
+        const arr = baseGetCandles(sym, tf);
+        const time = this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0;
+        let i = arr.length - 1;
+        while (i >= 0 && arr[i].time > time) i--;
+        return arr.slice(0, i + 1);
+      };
+    } else {
+      const dataPeriod = candles.length > 1 ? candles[1].time - candles[0].time : 0;
+      const baseTicks = candles.map((c) => ({ time: c.time, bid: c.close, ask: c.close }));
+      const ticks: Record<string, Tick[]> = { [symbol]: baseTicks, ...(options.ticks ?? {}) };
+      const candleData = { [symbol]: { [dataPeriod]: candles } } as Record<
+        string,
+        Record<number, Candle[]>
+      >;
+      this.market = new MarketData(ticks, candleData);
+      const baseGetCandles = this.market.getCandles.bind(this.market);
+      (this.market as any).getCandles = (symbol: string, timeframe: number): Candle[] => {
+        const sym = symbol && String(symbol).length ? symbol : (this.options.symbol ?? "TEST");
+        const tf = timeframe || this.runtime.globalValues._Period;
+        const arr = baseGetCandles(sym, tf);
+        const time = this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0;
+        let i = arr.length - 1;
+        while (i >= 0 && arr[i].time > time) i--;
+        return arr.slice(0, i + 1);
+      };
+    }
     const period =
       options.timeframe ?? (candles.length > 1 ? candles[1].time - candles[0].time : 0);
     this.context = {
