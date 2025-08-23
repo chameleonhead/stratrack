@@ -7,6 +7,7 @@ import { createEventFunctions } from "../functions/eventFunctions";
 import { createFiles } from "../functions/files";
 import { createCustomInd } from "../functions/customind";
 import { createGlobals } from "../functions/globals";
+import { createIndicators } from "../functions/indicators";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
 
@@ -47,6 +48,7 @@ export function createLiveLibs(api: BrokerApi): MqlLibrary {
     ...createEventFunctions(context),
     ...createFiles(context),
     ...createGlobals(context),
+    ...createIndicators(context),
     ...createMarketInformation(context),
     ...createTrading(context),
   };
