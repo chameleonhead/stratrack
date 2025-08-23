@@ -34,6 +34,9 @@ export const PrintFormat: BuiltinFunction = (fmt: string, ...args: any[]) => {
   return 0;
 };
 
+// alias for MQL printf
+export const printf = PrintFormat;
+
 export const GetTickCount: BuiltinFunction = () => Date.now();
 
 export const Sleep: BuiltinFunction = (ms: number) => {

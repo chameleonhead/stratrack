@@ -13,7 +13,7 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns the type of the object pointer",
   },
   Comment: {
-    args: [],
+    args: [{ name: "args", type: "any", variadic: true }],
     returnType: "void",
     description: "Outputs a comment in the left top corner of the chart",
   },
@@ -80,6 +80,15 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Displays a message in the log",
   },
   PrintFormat: {
+    args: [
+      { name: "format", type: "string" },
+      { name: "args", type: "any", variadic: true },
+    ],
+    returnType: "void",
+    description:
+      "Formats and prints the sets of symbols and values in a log file in accordance with a preset format",
+  },
+  printf: {
     args: [
       { name: "format", type: "string" },
       { name: "args", type: "any", variadic: true },
