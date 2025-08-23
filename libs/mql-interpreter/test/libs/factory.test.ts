@@ -3,7 +3,7 @@ import { createLibs } from "../../src/libs";
 import { InMemoryBroker } from "../../src/libs/domain/broker";
 import { InMemoryAccount } from "../../src/libs/domain/account";
 import { InMemoryMarketData } from "../../src/libs/domain/marketData";
-import { IndicatorCache } from "../../src/libs/indicatorCache";
+import { InMemoryIndicatorEngine } from "../../src/libs/domain/indicator";
 
 describe("createLibs", () => {
   it("routes trading calls through the provided broker", () => {
@@ -32,7 +32,7 @@ describe("createLibs", () => {
       account,
       market,
       terminal: null,
-      indicators: new IndicatorCache(),
+      indicatorEngine: new InMemoryIndicatorEngine(),
       hideTestIndicators: true,
       indicatorBuffers: [[1]],
       indicatorCounted: 10,

@@ -23,7 +23,7 @@ describe("common builtins", () => {
       market: null,
       symbol: "TEST",
       timeframe: 60,
-      indicators: undefined,
+      indicatorEngine: undefined,
     };
     commonFuncs = createCommon(context);
     checkFuncs = createCheck(context);

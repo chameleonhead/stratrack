@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createSeries } from "../../../src/libs/functions/series";
 import type { ExecutionContext } from "../../../src/libs/domain/types";
-import { IndicatorCache } from "../../../src/libs/indicatorCache";
+import { InMemoryIndicatorEngine } from "../../../src/libs/domain/indicator";
 import { InMemoryMarketData } from "../../../src/libs/domain/marketData";
 import type { Candle } from "../../../src/libs/domain/marketData";
 
@@ -18,11 +18,11 @@ describe("series functions", () => {
       { time: 4000, open: 1.15, high: 1.25, low: 1.1, close: 1.2, volume: 1300 },
       { time: 5000, open: 1.2, high: 1.3, low: 1.15, close: 1.25, volume: 1400 },
     ];
-    
+
     // コンストラクタでデータを渡す
     marketData = new InMemoryMarketData(
       {}, // 空のtickData
-      { "GBPUSD": { 15: testCandles } } // candleData
+      { GBPUSD: { 15: testCandles } } // candleData
     );
 
     context = {
@@ -32,7 +32,7 @@ describe("series functions", () => {
       market: marketData,
       symbol: "GBPUSD",
       timeframe: 15,
-      indicators: new IndicatorCache(),
+      indicatorEngine: new InMemoryIndicatorEngine(),
     };
   });
 
@@ -175,7 +175,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: any[] = [];
       const result = functions.CopyRates("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toEqual({
         open: 1.0,
@@ -191,7 +191,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyTime("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(1000);
       expect(dst[1]).toBe(2000);
@@ -202,7 +202,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyOpen("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(1.0);
       expect(dst[1]).toBe(1.05);
@@ -213,7 +213,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyHigh("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(1.1);
       expect(dst[1]).toBe(1.15);
@@ -224,7 +224,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyLow("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(0.9);
       expect(dst[1]).toBe(1.0);
@@ -235,7 +235,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyClose("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(1.05);
       expect(dst[1]).toBe(1.1);
@@ -246,7 +246,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyTickVolume("GBPUSD", 15, 0, 3, dst);
-      
+
       expect(result).toBe(3);
       expect(dst[0]).toBe(1000);
       expect(dst[1]).toBe(1100);
@@ -257,7 +257,7 @@ describe("series functions", () => {
       const functions = createSeries(context);
       const dst: number[] = [];
       const result = functions.CopyClose("GBPUSD", 15, 3, 5, dst); // start at 3, copy 5
-      
+
       expect(result).toBe(2); // only 2 bars available from index 3
       expect(dst[0]).toBe(1.2);
       expect(dst[1]).toBe(1.25);
@@ -311,11 +311,11 @@ describe("series functions", () => {
         broker: null,
         account: null,
         market: null,
-        indicators: new IndicatorCache(),
+        indicatorEngine: new InMemoryIndicatorEngine(),
       };
-      
+
       const functions = createSeries(contextWithoutMarket);
-      
+
       expect(functions.Bars("GBPUSD", 15)).toBe(0);
       expect(functions.iOpen("GBPUSD", 15, 0)).toBe(0);
       expect(functions.CopyClose("GBPUSD", 15, 0, 3, [])).toBe(0);
@@ -324,21 +324,18 @@ describe("series functions", () => {
 
   describe("Edge cases", () => {
     it("should handle empty candle array", () => {
-      const emptyMarketData = new InMemoryMarketData(
-        {},
-        { "EMPTY": { 15: [] } }
-      );
-      
+      const emptyMarketData = new InMemoryMarketData({}, { EMPTY: { 15: [] } });
+
       const contextWithEmptyMarket: ExecutionContext = {
         terminal: null,
         broker: null,
         account: null,
         market: emptyMarketData,
-        indicators: new IndicatorCache(),
+        indicatorEngine: new InMemoryIndicatorEngine(),
       };
-      
+
       const functions = createSeries(contextWithEmptyMarket);
-      
+
       expect(functions.Bars("EMPTY", 15)).toBe(0);
       expect(functions.iOpen("EMPTY", 15, 0)).toBe(0);
       expect(functions.CopyClose("EMPTY", 15, 0, 3, [])).toBe(0);

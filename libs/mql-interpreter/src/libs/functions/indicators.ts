@@ -43,8 +43,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     ) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = context.indicators;
-      if (!cache) return 0;
+      const engine = context.indicatorEngine;
+      if (!engine) return 0;
 
       const key = {
         type: "iMA",
@@ -53,7 +53,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         params: { period, maMethod: _maMethod, applied },
       } as const;
 
-      const ctx = cache.getOrCreate(key, () => ({
+      const ctx = engine.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         sum: 0,
@@ -86,8 +86,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     ) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = context.indicators;
-      if (!cache) return 0;
+      const engine = context.indicatorEngine;
+      if (!engine) return 0;
 
       const key = {
         type: "iMACD",
@@ -96,7 +96,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         params: { fast, slow, signal, applied },
       } as const;
 
-      const ctx = cache.getOrCreate(key, () => ({
+      const ctx = engine.getOrCreate(key, () => ({
         last: -1,
         macd: [] as number[],
         signal: [] as number[],
@@ -147,8 +147,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     iATR: (symbol: string, timeframe: number, period: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = context.indicators;
-      if (!cache) return 0;
+      const engine = context.indicatorEngine;
+      if (!engine) return 0;
 
       const key = {
         type: "iATR",
@@ -157,7 +157,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         params: { period },
       } as const;
 
-      const ctx = cache.getOrCreate(key, () => ({
+      const ctx = engine.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         atr: 0,
@@ -198,8 +198,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     iRSI: (symbol: string, timeframe: number, period: number, applied: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = context.indicators;
-      if (!cache) return 0;
+      const engine = context.indicatorEngine;
+      if (!engine) return 0;
 
       const key = {
         type: "iRSI",
@@ -208,7 +208,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         params: { period, applied },
       } as const;
 
-      const ctx = cache.getOrCreate(key, () => ({
+      const ctx = engine.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         gains: [] as number[],
@@ -266,18 +266,18 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const shift = Number(args[args.length - 1] ?? 0);
       const params = args.slice(0, -2);
 
-      const source = context.indicatorSource?.get(name);
-      const cache = context.indicators;
-      if (!source || !cache) return 0;
+      const engine = context.indicatorEngine;
+      const source = engine?.getSource(name);
+      if (!source || !engine) return 0;
 
       const key = { type: `iCustom:${name}`, symbol: sym, timeframe: tf, params } as const;
-      const ctx = cache.getOrCreate(key, () => ({
+      const ctx = engine.getOrCreate(key, () => ({
         last: -1,
         buffers: [] as number[][],
         runner: new BacktestRunner(source, arr, {
           symbol: sym && String(sym).length ? sym : undefined,
           timeframe: tf,
-          indicatorSource: context.indicatorSource ?? undefined,
+          indicatorEngine: engine,
         }),
       }));
 

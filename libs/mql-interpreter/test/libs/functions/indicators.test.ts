@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createIndicators } from "../../../src/libs/functions/indicators";
 import type { ExecutionContext } from "../../../src/libs/domain/types";
-import { IndicatorCache } from "../../../src/libs/indicatorCache";
+import { InMemoryIndicatorEngine } from "../../../src/libs/domain/indicator";
 import { InMemoryMarketData } from "../../../src/libs/domain/marketData";
 import type { Candle } from "../../../src/libs/domain/marketData";
 
@@ -18,11 +18,11 @@ describe("indicators functions", () => {
       { time: 4000, open: 1.15, high: 1.25, low: 1.1, close: 1.2, volume: 1300 },
       { time: 5000, open: 1.2, high: 1.3, low: 1.15, close: 1.25, volume: 1400 },
     ];
-    
+
     // コンストラクタでデータを渡す
     marketData = new InMemoryMarketData(
       {}, // 空のtickData
-      { "GBPUSD": { 15: testCandles } } // candleData
+      { GBPUSD: { 15: testCandles } } // candleData
     );
 
     context = {
@@ -32,7 +32,7 @@ describe("indicators functions", () => {
       market: marketData,
       symbol: "GBPUSD",
       timeframe: 15,
-      indicators: new IndicatorCache(),
+      indicatorEngine: new InMemoryIndicatorEngine(),
     };
   });
 
@@ -130,7 +130,7 @@ describe("indicators functions", () => {
   describe("Other indicator functions", () => {
     it("should return 0 for unimplemented indicators", () => {
       const functions = createIndicators(context);
-      
+
       // 基本的なインジケーター関数
       expect(functions.iAC("GBPUSD", 15, 0)).toBe(0);
       expect(functions.iAD("GBPUSD", 15, 0)).toBe(0);
@@ -156,7 +156,7 @@ describe("indicators functions", () => {
     it("should handle array-based indicators", () => {
       const functions = createIndicators(context);
       const testArray = [1.0, 1.1, 1.2, 1.3, 1.4];
-      
+
       expect(functions.iBandsOnArray(testArray, 5, 20, 2, 0, 0, 0)).toBe(0);
       expect(functions.iCCIOnArray(testArray, 5, 14, 0)).toBe(0);
       expect(functions.iEnvelopesOnArray(testArray, 5, 20, 0, 0, 0.1, 0, 0)).toBe(0);
@@ -168,7 +168,7 @@ describe("indicators functions", () => {
 
     it("should handle complex indicators", () => {
       const functions = createIndicators(context);
-      
+
       expect(functions.iADX("GBPUSD", 15, 14, 6, 0, 0)).toBe(0);
       expect(functions.iAlligator("GBPUSD", 15, 13, 8, 8, 5, 5, 3, 3, 0, 6, 0, 0)).toBe(0);
       expect(functions.iBearsPower("GBPUSD", 15, 13, 6, 0)).toBe(0);
@@ -185,9 +185,9 @@ describe("indicators functions", () => {
         broker: null,
         account: null,
         market: null,
-        indicators: new IndicatorCache(),
+        indicatorEngine: new InMemoryIndicatorEngine(),
       };
-      
+
       const functions = createIndicators(contextWithoutMarket);
       expect(functions.iMA("GBPUSD", 15, 3, 0, 0, 6, 0)).toBe(0);
     });
@@ -198,9 +198,9 @@ describe("indicators functions", () => {
         broker: null,
         account: null,
         market: marketData,
-        indicators: undefined,
+        indicatorEngine: undefined,
       };
-      
+
       const functions = createIndicators(contextWithoutIndicators);
       expect(functions.iMA("GBPUSD", 15, 3, 0, 0, 6, 0)).toBe(0);
     });
@@ -209,7 +209,7 @@ describe("indicators functions", () => {
   describe("Price calculation", () => {
     it("should calculate different price types correctly", () => {
       const functions = createIndicators(context);
-      
+
       // 各価格タイプでテスト
       const result1 = functions.iMA("GBPUSD", 15, 2, 0, 0, 1, 0); // open
       const result2 = functions.iMA("GBPUSD", 15, 2, 0, 0, 2, 0); // high
@@ -218,7 +218,7 @@ describe("indicators functions", () => {
       const result5 = functions.iMA("GBPUSD", 15, 2, 0, 0, 5, 0); // (high+low+close)/3
       const result6 = functions.iMA("GBPUSD", 15, 2, 0, 0, 6, 0); // (high+low+2*close)/4
       const result0 = functions.iMA("GBPUSD", 15, 2, 0, 0, 0, 0); // close (default)
-      
+
       expect(typeof result1).toBe("number");
       expect(typeof result2).toBe("number");
       expect(typeof result3).toBe("number");
@@ -232,20 +232,20 @@ describe("indicators functions", () => {
   describe("Caching behavior", () => {
     it("should use indicator cache for repeated calls", () => {
       const functions = createIndicators(context);
-      
+
       // 同じパラメータで複数回呼び出し
       const result1 = functions.iMA("GBPUSD", 15, 3, 0, 0, 6, 0);
       const result2 = functions.iMA("GBPUSD", 15, 3, 0, 0, 6, 0);
-      
+
       expect(result1).toBe(result2);
     });
 
     it("should handle different parameters separately", () => {
       const functions = createIndicators(context);
-      
+
       const result1 = functions.iMA("GBPUSD", 15, 3, 0, 0, 6, 0);
       const result2 = functions.iMA("GBPUSD", 15, 5, 0, 0, 6, 0);
-      
+
       expect(result1).not.toBe(result2);
     });
   });

@@ -14,7 +14,7 @@ describe("runtime", () => {
       market: null,
       symbol: "TEST",
       timeframe: 60,
-      indicators: null,
+      indicatorEngine: null,
     };
     const commonFuncs = createCommon(context);
     registerEnvBuiltins(commonFuncs);

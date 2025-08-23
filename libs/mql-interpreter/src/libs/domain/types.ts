@@ -2,8 +2,7 @@ import type { ITerminal } from "../domain/terminal";
 import type { IBroker, Order } from "../domain/broker";
 import type { IAccount } from "../domain/account";
 import type { IMarketData } from "../domain/marketData";
-import type { IndicatorCache } from "../indicatorCache";
-import type { IndicatorSource } from "../indicatorSource";
+import type { IndicatorEngine } from "./indicator";
 
 export interface ExecutionContext {
   symbol?: string;
@@ -19,8 +18,7 @@ export interface ExecutionContext {
   getTime?: () => number;
   getStopFlag?: () => number;
   selectedOrder?: Order;
-  indicatorSource?: IndicatorSource | null;
-  indicators?: IndicatorCache;
+  indicatorEngine?: IndicatorEngine | null;
   // Custom indicator state
   hideTestIndicators?: boolean;
   indicatorBuffers?: number[][];

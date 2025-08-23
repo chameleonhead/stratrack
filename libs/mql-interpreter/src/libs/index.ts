@@ -1,4 +1,4 @@
 export { createLibs } from "./factory";
 export type { MqlLibrary } from "./types";
-export { InMemoryIndicatorSource } from "./indicatorSource";
-export type { IndicatorSource } from "./indicatorSource";
+export { InMemoryIndicatorEngine, InMemoryIndicatorSource } from "./domain/indicator";
+export type { IndicatorEngine, IndicatorSource } from "./domain/indicator";

@@ -1,6 +1,6 @@
 import { BacktestRunner } from "../../../src/backtestRunner";
 import { callFunction } from "../../../src/runtime/runtime";
-import type { IndicatorKey } from "../../../src/libs/indicatorCache";
+import type { IndicatorKey } from "../../../src/libs/domain/indicator";
 import { describe, it, expect } from "vitest";
 
 describe("indicator cache", () => {
@@ -15,7 +15,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = runner.getContext().indicators!;
+    const engine = runner.getContext().indicatorEngine!;
     const key: IndicatorKey = {
       type: "iMA",
       symbol: "TEST",
@@ -23,9 +23,9 @@ describe("indicator cache", () => {
       params: { period: 2, maMethod: 0, applied: 0 },
     };
     callFunction(rt, "iMA", ["TEST", 0, 2, 0, 0, 0, 0]);
-    const first = cache.peek<any>(key)!;
+    const first = engine.peek<any>(key)!;
     callFunction(rt, "iMA", ["TEST", 0, 2, 1, 0, 0, 0]);
-    const second = cache.peek<any>(key)!;
+    const second = engine.peek<any>(key)!;
     expect(second.last).toBe(first.last);
   });
 
@@ -41,7 +41,7 @@ describe("indicator cache", () => {
     const runner = new BacktestRunner(code, candles);
     for (let i = 0; i < 4; i++) runner.step();
     const rt = runner.getRuntime();
-    const cache = runner.getContext().indicators!;
+    const engine = runner.getContext().indicatorEngine!;
     const key: IndicatorKey = {
       type: "iMACD",
       symbol: "TEST",
@@ -49,9 +49,9 @@ describe("indicator cache", () => {
       params: { fast: 2, slow: 3, signal: 2, applied: 0 },
     };
     callFunction(rt, "iMACD", ["TEST", 0, 2, 3, 2, 0, 0, 0]);
-    const first = cache.peek<any>(key)!;
+    const first = engine.peek<any>(key)!;
     callFunction(rt, "iMACD", ["TEST", 0, 2, 3, 2, 0, 1, 0]);
-    const second = cache.peek<any>(key)!;
+    const second = engine.peek<any>(key)!;
     expect(second.last).toBe(first.last);
   });
 
@@ -66,7 +66,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = runner.getContext().indicators!;
+    const engine = runner.getContext().indicatorEngine!;
     const key: IndicatorKey = {
       type: "iATR",
       symbol: "TEST",
@@ -74,9 +74,9 @@ describe("indicator cache", () => {
       params: { period: 2 },
     };
     callFunction(rt, "iATR", ["TEST", 0, 2, 0]);
-    const first = cache.peek<any>(key)!;
+    const first = engine.peek<any>(key)!;
     callFunction(rt, "iATR", ["TEST", 0, 2, 1]);
-    const second = cache.peek<any>(key)!;
+    const second = engine.peek<any>(key)!;
     expect(second.last).toBe(first.last);
   });
 
@@ -93,7 +93,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = runner.getContext().indicators!;
+    const engine = runner.getContext().indicatorEngine!;
     const key: IndicatorKey = {
       type: "iRSI",
       symbol: "TEST",
@@ -101,9 +101,9 @@ describe("indicator cache", () => {
       params: { period: 2, applied: 0 },
     };
     callFunction(rt, "iRSI", ["TEST", 0, 2, 0, 0]);
-    const first = cache.peek<any>(key)!;
+    const first = engine.peek<any>(key)!;
     callFunction(rt, "iRSI", ["TEST", 0, 2, 0, 1]);
-    const second = cache.peek<any>(key)!;
+    const second = engine.peek<any>(key)!;
     expect(second.last).toBe(first.last);
   });
 });
