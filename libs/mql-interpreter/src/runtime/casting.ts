@@ -1,4 +1,5 @@
 import { DateTimeValue } from "./datetimeValue";
+import { toInt32, toUInt32, toInt64, toUInt64 } from "./intMath";
 
 export type PrimitiveType =
   | "char"
@@ -24,20 +25,24 @@ export function cast(value: any, type: PrimitiveType): any {
     case "bool":
       return value ? 1 : 0;
     case "float":
+      return Math.fround(Number(value));
     case "double":
       return Number(value);
     case "char":
-    case "uchar":
     case "short":
-    case "ushort":
     case "int":
-    case "uint":
-    case "long":
-    case "ulong":
     case "color":
-      return Number(value) | 0;
+      return toInt32(value);
+    case "uchar":
+    case "ushort":
+    case "uint":
+      return toUInt32(value);
+    case "long":
+      return toInt64(value);
+    case "ulong":
+      return toUInt64(value);
     case "datetime":
-      return new DateTimeValue(Number(value) | 0);
+      return new DateTimeValue(Number(toInt64(value)));
     default:
       throw new Error(`Unknown cast target: ${type}`);
   }

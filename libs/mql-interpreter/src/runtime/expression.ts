@@ -4,11 +4,12 @@ export interface EvalEnv {
 
 import { lex, Token, TokenType } from "../parser/lexer";
 import { cast } from "./casting";
-import { DateTimeValue } from "./datetimeValue";
+import { intBinaryOp } from "./intMath";
 
 interface EvalResult {
   value: any;
   ref?: string;
+  type?: string;
 }
 
 // Operators for assignment
@@ -23,6 +24,33 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     throw new Error(errors.map((e) => e.message).join("\n"));
   }
   let pos = 0;
+
+  const intTypes = new Set([
+    "char",
+    "uchar",
+    "short",
+    "ushort",
+    "int",
+    "uint",
+    "long",
+    "ulong",
+    "bool",
+    "color",
+    "datetime",
+  ]);
+  const unsignedTypes = new Set(["uchar", "ushort", "uint", "ulong"]);
+
+  const getIntInfo = (r: EvalResult): { bits: 32 | 64; unsigned: boolean } | undefined => {
+    if (r.type) {
+      if (!intTypes.has(r.type)) return undefined;
+      const bits = r.type === "long" || r.type === "ulong" || r.type === "datetime" ? 64 : 32;
+      return { bits, unsigned: unsignedTypes.has(r.type) };
+    }
+    if (typeof r.value === "bigint") return { bits: 64, unsigned: false };
+    if (typeof r.value === "number" && Number.isInteger(r.value))
+      return { bits: 32, unsigned: false };
+    return undefined;
+  };
 
   const peek = () => tokens[pos];
   const atEnd = () => pos >= tokens.length;
@@ -40,7 +68,14 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     if (!t) throw new Error("Unexpected end");
     if (t.type === TokenType.Number) {
       consume();
-      return { value: Number(t.value) };
+      if (t.value.includes(".") || t.value.includes("e") || t.value.includes("E")) {
+        return { value: Number(t.value), type: "double" };
+      }
+      const bi = BigInt(t.value);
+      if (bi >= -2147483648n && bi <= 2147483647n) {
+        return { value: Number(bi), type: "int" };
+      }
+      return { value: bi, type: "long" };
     }
     if (t.type === TokenType.String) {
       consume();
@@ -48,11 +83,12 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     }
     if (t.type === TokenType.Keyword && (t.value === "true" || t.value === "false")) {
       consume();
-      return { value: t.value === "true" ? 1 : 0 };
+      return { value: t.value === "true" ? 1 : 0, type: "bool" };
     }
     if (t.type === TokenType.Identifier) {
       consume();
       const name = t.value;
+      const vtype = runtime?.variables[name]?.type;
       if (!atEnd() && peek().value === "(") {
         if (!runtime) throw new Error("Runtime required for function call");
         consume(TokenType.Punctuation, "(");
@@ -71,7 +107,7 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         consume(TokenType.Punctuation, ")");
         return { value: callFunction(runtime, name, args) };
       }
-      return { value: env[name], ref: name };
+      return { value: env[name], ref: name, type: vtype };
     }
     if (t.type === TokenType.Keyword && t.value === "new") {
       consume(TokenType.Keyword, "new");
@@ -95,9 +131,17 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       if (!result.ref) throw new Error("Invalid operand for " + op);
       const name = result.ref;
       const old = env[name] ?? 0;
-      if (op === "++") env[name] = old + 1;
-      else env[name] = old - 1;
-      result = { value: old };
+      const varType = runtime?.variables[name]?.type;
+      if (varType && intTypes.has(varType)) {
+        const info = getIntInfo({ value: old, type: varType })!;
+        const step = op === "++" ? 1 : -1;
+        const val = intBinaryOp("+", old, step, info.bits, info.unsigned);
+        env[name] = cast(val, varType as any);
+      } else {
+        const step = op === "++" ? 1 : -1;
+        env[name] = varType ? cast(old + step, varType as any) : old + step;
+      }
+      result = { value: old, type: varType, ref: name };
     }
     return result;
   }
@@ -111,9 +155,17 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         if (!res.ref) throw new Error("Invalid operand for " + op);
         const name = res.ref;
         const val = env[name] ?? 0;
-        if (op === "++") env[name] = val + 1;
-        else env[name] = val - 1;
-        return { value: env[name] };
+        const varType = runtime?.variables[name]?.type;
+        if (varType && intTypes.has(varType)) {
+          const info = getIntInfo({ value: val, type: varType })!;
+          const step = op === "++" ? 1 : -1;
+          const v = intBinaryOp("+", val, step, info.bits, info.unsigned);
+          env[name] = cast(v, varType as any);
+        } else {
+          const step = op === "++" ? 1 : -1;
+          env[name] = varType ? cast(val + step, varType as any) : val + step;
+        }
+        return { value: env[name], type: varType };
       }
       if (
         t.type === TokenType.Operator &&
@@ -123,13 +175,13 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         const res = parseUnary();
         switch (op) {
           case "+":
-            return { value: +res.value };
+            return { value: +res.value, type: res.type };
           case "-":
-            return { value: -res.value };
+            return { value: -res.value, type: res.type };
           case "!":
             return { value: !res.value };
           case "~":
-            return { value: ~res.value };
+            return { value: ~res.value, type: res.type };
         }
       }
       if (t.type === TokenType.Keyword && t.value === "delete") {
@@ -149,27 +201,82 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       while (!atEnd() && peek().type === TokenType.Operator && ops.has(peek().value)) {
         const op = consume(TokenType.Operator).value;
         const right = nextFn();
+        const lInfo = getIntInfo(left);
+        const rInfo = getIntInfo(right);
+        const useInt = lInfo && rInfo;
+        const bits = useInt && (lInfo.bits === 64 || rInfo.bits === 64) ? 64 : 32;
+        const unsigned = Boolean(lInfo?.unsigned || rInfo?.unsigned);
         switch (op) {
           case "*":
-            left = { value: left.value * right.value };
-            break;
           case "/":
-            left = { value: left.value / right.value };
-            break;
           case "%":
-            left = { value: left.value % right.value };
-            break;
           case "+":
-            left = { value: left.value + right.value };
-            break;
           case "-":
-            left = { value: left.value - right.value };
-            break;
           case "<<":
-            left = { value: left.value << right.value };
-            break;
           case ">>":
-            left = { value: left.value >> right.value };
+          case "&":
+          case "^":
+          case "|":
+            if (useInt) {
+              const resultType =
+                left.type === "datetime" || right.type === "datetime"
+                  ? "datetime"
+                  : bits === 64
+                    ? unsigned
+                      ? "ulong"
+                      : "long"
+                    : unsigned
+                      ? "uint"
+                      : "int";
+              left = {
+                value: intBinaryOp(op, left.value, right.value, bits, unsigned),
+                type: resultType,
+              };
+            } else {
+              let value;
+              switch (op) {
+                case "*":
+                  value = left.value * right.value;
+                  break;
+                case "/":
+                  value = left.value / right.value;
+                  break;
+                case "%":
+                  value = left.value % right.value;
+                  break;
+                case "+":
+                  value = left.value + right.value;
+                  break;
+                case "-":
+                  value = left.value - right.value;
+                  break;
+                case "<<":
+                  value = left.value << right.value;
+                  break;
+                case ">>":
+                  value = left.value >> right.value;
+                  break;
+                case "&":
+                  value = left.value & right.value;
+                  break;
+                case "^":
+                  value = left.value ^ right.value;
+                  break;
+                case "|":
+                  value = left.value | right.value;
+                  break;
+              }
+              const resultType =
+                left.type === "double" || right.type === "double"
+                  ? "double"
+                  : left.type === "float" || right.type === "float"
+                    ? "float"
+                    : undefined;
+              left = {
+                value: resultType === "float" ? Math.fround(value) : value,
+                type: resultType,
+              };
+            }
             break;
           case "<":
             left = { value: left.value < right.value };
@@ -188,15 +295,6 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
             break;
           case "!=":
             left = { value: left.value != right.value };
-            break;
-          case "&":
-            left = { value: left.value & right.value };
-            break;
-          case "^":
-            left = { value: left.value ^ right.value };
-            break;
-          case "|":
-            left = { value: left.value | right.value };
             break;
           case "&&":
             left = { value: left.value && right.value };
@@ -240,47 +338,51 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       if (!left.ref) throw new Error("Invalid assignment target");
       const right = parseAssignment();
       const oldVal = env[left.ref] ?? 0;
+      const varType = runtime?.variables[left.ref]?.type as string | undefined;
       let newVal;
-      switch (op) {
-        case "=":
-          newVal = right.value;
-          break;
-        case "+=":
-          newVal = oldVal + right.value;
-          break;
-        case "-=":
-          newVal = oldVal - right.value;
-          break;
-        case "*=":
-          newVal = oldVal * right.value;
-          break;
-        case "/=":
-          newVal = oldVal / right.value;
-          break;
-        case "%=":
-          newVal = oldVal % right.value;
-          break;
-        case "&=":
-          newVal = oldVal & right.value;
-          break;
-        case "|=":
-          newVal = oldVal | right.value;
-          break;
-        case "^=":
-          newVal = oldVal ^ right.value;
-          break;
-        case "<<=":
-          newVal = oldVal << right.value;
-          break;
-        case ">>=":
-          newVal = oldVal >> right.value;
-          break;
+      if (op === "=") {
+        newVal = right.value;
+      } else if (varType && intTypes.has(varType)) {
+        const info = getIntInfo({ value: oldVal, type: varType })!;
+        const baseOp = op.slice(0, -1);
+        const rVal = cast(right.value, varType as any);
+        newVal = intBinaryOp(baseOp, oldVal, rVal, info.bits, info.unsigned);
+      } else {
+        switch (op) {
+          case "+=":
+            newVal = oldVal + right.value;
+            break;
+          case "-=":
+            newVal = oldVal - right.value;
+            break;
+          case "*=":
+            newVal = oldVal * right.value;
+            break;
+          case "/=":
+            newVal = oldVal / right.value;
+            break;
+          case "%=":
+            newVal = oldVal % right.value;
+            break;
+          case "&=":
+            newVal = oldVal & right.value;
+            break;
+          case "|=":
+            newVal = oldVal | right.value;
+            break;
+          case "^=":
+            newVal = oldVal ^ right.value;
+            break;
+          case "<<=":
+            newVal = oldVal << right.value;
+            break;
+          case ">>=":
+            newVal = oldVal >> right.value;
+            break;
+        }
       }
-      const isDate =
-        (runtime && runtime.variables[left.ref]?.type === "datetime") ||
-        oldVal instanceof DateTimeValue;
-      env[left.ref] = isDate ? cast(newVal, "datetime") : newVal;
-      left = { value: env[left.ref] };
+      env[left.ref] = varType ? cast(newVal, varType as any) : newVal;
+      left = { value: env[left.ref], type: varType };
     }
     return left;
   }
