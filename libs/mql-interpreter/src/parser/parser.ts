@@ -74,7 +74,12 @@ export function parse(tokens: Token[]): Declaration[] {
       let mValue: string | undefined;
       if (!atEnd() && peek().value === "=") {
         consume(TokenType.Operator, "=");
-        mValue = consume(TokenType.Number).value;
+        // Support negative numbers
+        let sign = "";
+        if (peek().type === TokenType.Operator && peek().value === "-") {
+          sign = consume(TokenType.Operator, "-").value;
+        }
+        mValue = sign + consume(TokenType.Number).value;
       }
       members.push({ name: mName, value: mValue });
       if (peek().value === ",") {

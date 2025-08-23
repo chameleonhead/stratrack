@@ -17,6 +17,9 @@ export function readTextFile(file: string): string {
     if (b0 === 0xff && b1 === 0xfe) {
       return buf.toString("utf16le", 2);
     }
+    if (b0 === 0xfe && b1 === 0xff) {
+      return buf.subarray(2).swap16().toString("utf16le");
+    }
     if (buf.length >= 3 && b0 === 0xef && b1 === 0xbb && buf[2] === 0xbf) {
       return buf.toString("utf8", 3);
     }
