@@ -42,7 +42,7 @@ export function createCustomInd(context: ExecutionContext): Record<string, Built
     },
 
     // インジケーターの倍精度プロパティを設定
-    IndicatorSetDouble: (prop: number, value: number) => {
+    IndicatorSetDouble: (prop: number, _value: number) => {
       // プロパティIDに応じて値を設定
       switch (prop) {
         case 0: // INDICATOR_LEVELVALUE

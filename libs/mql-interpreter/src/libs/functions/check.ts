@@ -5,8 +5,7 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
   return {
     // Symbol and period information
     Digits: () => {
-      // Default to 5 digits for most forex pairs
-      return 5;
+      return context.digits ?? 5;
     },
 
     Period: () => {
@@ -14,8 +13,8 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
     },
 
     Point: () => {
-      // Default to 0.00001 for most forex pairs
-      return 0.00001;
+      const d = context.digits ?? 5;
+      return Math.pow(10, -d);
     },
 
     Symbol: () => {
@@ -24,8 +23,7 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
 
     // Error handling
     GetLastError: () => {
-      // In a real implementation, this would return the last error code
-      return 0;
+      return context.lastError ?? 0;
     },
 
     // Connection and environment checks
@@ -60,8 +58,7 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
     },
 
     IsStopped: () => {
-      // In backtesting, we're not stopped
-      return false;
+      return context.getStopFlag ? context.getStopFlag() : 0;
     },
 
     IsTesting: () => {

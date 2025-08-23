@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { basename, extname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { program } from "commander";
 import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
 import { builtinSignatures } from "./libs/signatures";
-import { BacktestRunner, parseCsv } from "./libs/backtestRunner";
+import { BacktestRunner, parseCsv } from "./backtestRunner";
 import { InMemoryIndicatorSource } from "./libs/indicatorSource";
 
 export function readTextFile(file: string): string {
@@ -89,9 +88,7 @@ program
   });
 
 const isDirectRun =
-  typeof require !== "undefined" && typeof module !== "undefined"
-    ? require.main === module
-    : process.argv[1] === fileURLToPath(import.meta.url);
+  typeof require !== "undefined" && typeof module !== "undefined" ? require.main === module : true;
 
 if (isDirectRun) {
   program.parse();

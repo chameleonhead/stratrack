@@ -1,5 +1,4 @@
-export { createBacktestLibs } from "./factory/backtest";
-export { createLiveLibs, BrokerApi } from "./factory/live";
+export { createLibs } from "./factory";
 export type { MqlLibrary } from "./types";
 export { InMemoryIndicatorSource } from "./indicatorSource";
 export type { IndicatorSource } from "./indicatorSource";

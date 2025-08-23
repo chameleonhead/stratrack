@@ -241,7 +241,7 @@ export class InMemoryTerminal implements ITerminal {
     return 15; // Default for other charts
   }
 
-  getChartProperty(chartId: number, propId: number, subWindow: number = 0): any {
+  getChartProperty(_chartId: number, propId: number, _subWindow: number = 0): any {
     // Basic implementation - return dummy values for common chart properties
     if (propId === 0) {
       // CHART_PRICE_MAX
@@ -253,17 +253,22 @@ export class InMemoryTerminal implements ITerminal {
     return 0.0;
   }
 
-  setChartProperty(chartId: number, propId: number, value: any, subWindow: number = 0): boolean {
+  setChartProperty(
+    _chartId: number,
+    _propId: number,
+    _value: any,
+    _subWindow: number = 0
+  ): boolean {
     // Basic implementation - just return success
     return true;
   }
 
-  redrawChart(chartId?: number): boolean {
+  redrawChart(_chartId?: number): boolean {
     // Basic implementation - just return success
     return true;
   }
 
-  getWindowInfo(subWindow: number = 0): any {
+  getWindowInfo(_subWindow: number = 0): any {
     // Basic implementation - return dummy values
     return {
       height: 600,

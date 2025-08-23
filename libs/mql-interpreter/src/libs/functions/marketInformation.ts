@@ -5,20 +5,23 @@ export function createMarketInformation(
   context: ExecutionContext
 ): Record<string, BuiltinFunction> {
   const market = context.market!;
+  const getTime = context.getTime ?? (() => Date.now() / 1000);
+  const digits = context.digits ?? 5;
+  const point = Math.pow(10, -digits);
   return {
     MarketInfo: (symbol: string, type: number) => {
-      const tick = market.getTick(symbol, Date.now() / 1000);
+      const tick = market.getTick(symbol, getTime());
       switch (type) {
         case 9:
           return tick?.bid ?? 0;
         case 10:
           return tick?.ask ?? 0;
         case 11:
-          return 0.00001;
+          return point;
         case 12:
-          return 5;
+          return digits;
         case 13:
-          return tick ? Math.round((tick.ask - tick.bid) / 0.00001) : 0;
+          return tick ? Math.round((tick.ask - tick.bid) / point) : 0;
         default:
           return 0;
       }

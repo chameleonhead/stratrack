@@ -34,13 +34,19 @@ import { Parser } from "mql-interpreter/parser/parser";
 import { semanticCheck } from "mql-interpreter/semantic/checker";
 import { builtinSignatures } from "mql-interpreter/libs/signatures";
 import { Runtime } from "mql-interpreter/runtime/runtime";
-import { createBacktestLibs } from "mql-interpreter/libs";
+import { createLibs } from "mql-interpreter/libs";
+import { InMemoryBroker, InMemoryAccount, InMemoryMarketData } from "mql-interpreter/libs/domain";
+
+const broker = new InMemoryBroker();
+const account = new InMemoryAccount();
+const market = new InMemoryMarketData(marketData);
 
 const ast = Parser.parse(source);
 const errors = semanticCheck(ast, builtinSignatures);
 if (errors.length === 0) {
   const runtime = new Runtime();
-  runtime.run(ast, { libs: createBacktestLibs(marketData) });
+  const libs = createLibs({ broker, account, market });
+  runtime.run(ast, { libs });
 }
 ```
 

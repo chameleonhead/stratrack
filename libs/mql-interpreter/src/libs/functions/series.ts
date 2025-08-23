@@ -17,10 +17,10 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
   return {
     // バーの総数を取得
     Bars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
-    
+
     // バーの総数を取得（iBarsはBarsのエイリアス）
     iBars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
-    
+
     // 指定された時間をカバーするバーのインデックスを取得
     iBarShift: (symbol: string, timeframe: number, time: number, exact?: boolean) => {
       const arr = candlesFor(symbol, timeframe);
@@ -32,99 +32,135 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return -1;
     },
-    
+
     // 指定されたバーの始値
     iOpen: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.open ?? 0;
     },
-    
+
     // 指定されたバーの高値
     iHigh: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.high ?? 0;
     },
-    
+
     // 指定されたバーの安値
     iLow: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.low ?? 0;
     },
-    
+
     // 指定されたバーの終値
     iClose: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.close ?? 0;
     },
-    
+
     // 指定されたバーの時間
     iTime: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.time ?? 0;
     },
-    
+
     // 指定されたバーの出来高
     iVolume: (symbol: string, timeframe: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       return arr[barIndex(arr, shift)]?.volume ?? 0;
     },
-    
+
     // 指定された期間の最高値のシフトを取得
-    iHighest: (symbol: string, timeframe: number, type: number, count: number, start: number = 0) => {
+    iHighest: (
+      symbol: string,
+      timeframe: number,
+      type: number,
+      count: number,
+      start: number = 0
+    ) => {
       const arr = candlesFor(symbol, timeframe);
       if (start + count > arr.length) return -1;
-      
+
       let maxValue = -Infinity;
       let maxIndex = -1;
-      
+
       for (let i = start; i < start + count; i++) {
         let value: number;
         switch (type) {
-          case 0: value = arr[i].high; break;   // PRICE_HIGH
-          case 1: value = arr[i].low; break;    // PRICE_LOW
-          case 2: value = arr[i].close; break;  // PRICE_CLOSE
-          case 3: value = arr[i].open; break;   // PRICE_OPEN
-          case 4: value = arr[i].volume ?? 0; break; // PRICE_VOLUME
-          default: value = arr[i].close; break;
+          case 0:
+            value = arr[i].high;
+            break; // PRICE_HIGH
+          case 1:
+            value = arr[i].low;
+            break; // PRICE_LOW
+          case 2:
+            value = arr[i].close;
+            break; // PRICE_CLOSE
+          case 3:
+            value = arr[i].open;
+            break; // PRICE_OPEN
+          case 4:
+            value = arr[i].volume ?? 0;
+            break; // PRICE_VOLUME
+          default:
+            value = arr[i].close;
+            break;
         }
-        
+
         if (value > maxValue) {
           maxValue = value;
           maxIndex = i;
         }
       }
-      
+
       return maxIndex;
     },
-    
+
     // 指定された期間の最安値のシフトを取得
-    iLowest: (symbol: string, timeframe: number, type: number, count: number, start: number = 0) => {
+    iLowest: (
+      symbol: string,
+      timeframe: number,
+      type: number,
+      count: number,
+      start: number = 0
+    ) => {
       const arr = candlesFor(symbol, timeframe);
       if (start + count > arr.length) return -1;
-      
+
       let minValue = Infinity;
       let minIndex = -1;
-      
+
       for (let i = start; i < start + count; i++) {
         let value: number;
         switch (type) {
-          case 0: value = arr[i].high; break;   // PRICE_HIGH
-          case 1: value = arr[i].low; break;    // PRICE_LOW
-          case 2: value = arr[i].close; break;  // PRICE_CLOSE
-          case 3: value = arr[i].open; break;   // PRICE_OPEN
-          case 4: value = arr[i].volume ?? 0; break; // PRICE_VOLUME
-          default: value = arr[i].close; break;
+          case 0:
+            value = arr[i].high;
+            break; // PRICE_HIGH
+          case 1:
+            value = arr[i].low;
+            break; // PRICE_LOW
+          case 2:
+            value = arr[i].close;
+            break; // PRICE_CLOSE
+          case 3:
+            value = arr[i].open;
+            break; // PRICE_OPEN
+          case 4:
+            value = arr[i].volume ?? 0;
+            break; // PRICE_VOLUME
+          default:
+            value = arr[i].close;
+            break;
         }
-        
+
         if (value < minValue) {
           minValue = value;
           minIndex = i;
         }
       }
-      
+
       return minIndex;
     },
-    
+
     // レート構造体の履歴データを配列にコピー
     CopyRates: (symbol: string, timeframe: number, start: number, count: number, dst: any[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -143,7 +179,7 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 時間データを配列にコピー
     CopyTime: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -154,7 +190,7 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 始値データを配列にコピー
     CopyOpen: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -165,7 +201,7 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 高値データを配列にコピー
     CopyHigh: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -176,7 +212,7 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 安値データを配列にコピー
     CopyLow: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -187,7 +223,7 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 終値データを配列にコピー
     CopyClose: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
       const arr = candlesFor(symbol, timeframe);
@@ -198,9 +234,15 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // 出来高データを配列にコピー
-    CopyTickVolume: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
+    CopyTickVolume: (
+      symbol: string,
+      timeframe: number,
+      start: number,
+      count: number,
+      dst: number[]
+    ) => {
       const arr = candlesFor(symbol, timeframe);
       let copied = 0;
       for (let i = 0; i < count && start + i < arr.length; i++) {
@@ -209,17 +251,17 @@ export function createSeries(context: ExecutionContext): Record<string, BuiltinF
       }
       return copied;
     },
-    
+
     // データの更新
     RefreshRates: () => {
       // 簡易実装：データ更新をシミュレート
       return true;
     },
-    
+
     // 履歴データの状態に関する情報を取得
-    SeriesInfoInteger: (symbol: string, timeframe: number, propId: number, longVar?: number) => {
+    SeriesInfoInteger: (symbol: string, timeframe: number, propId: number, _longVar?: number) => {
       const arr = candlesFor(symbol, timeframe);
-      
+
       // プロパティIDに応じて値を返す
       switch (propId) {
         case 0: // SERIES_BARS_COUNT

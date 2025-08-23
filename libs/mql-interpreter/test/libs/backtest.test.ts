@@ -1,4 +1,4 @@
-import { BacktestRunner } from "../../src/libs/backtestRunner";
+import { BacktestRunner } from "../../src/backtestRunner";
 import { ticksToCandles } from "../../src/libs/domain/marketData";
 import { callFunction } from "../../src/runtime/runtime";
 import { describe, it, expect } from "vitest";
@@ -209,9 +209,17 @@ describe("BacktestRunner", () => {
     const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
     const runner = new BacktestRunner(code, candles);
     const rt = runner.getRuntime();
+    const ctx = runner.getContext();
     expect(rt.globalValues._Digits).toBe(5);
-    rt.globalValues._LastError = 5;
+    expect(ctx.digits).toBe(5);
+    ctx.digits = 6;
+    expect(rt.globalValues._Digits).toBe(6);
+    expect(rt.globalValues.Digits).toBe(6);
+    expect(callFunction(rt, "Digits")).toBe(6);
+    ctx.lastError = 5;
+    expect(rt.globalValues._LastError).toBe(5);
     callFunction(rt, "ResetLastError");
+    expect(ctx.lastError).toBe(0);
     expect(rt.globalValues._LastError).toBe(0);
   });
 
@@ -220,7 +228,9 @@ describe("BacktestRunner", () => {
     const candles = [{ time: 1, open: 1, high: 1, low: 1, close: 1 }];
     const runner = new BacktestRunner(code, candles);
     const rt = runner.getRuntime();
-    rt.globalValues._LastError = 7;
+    const ctx = runner.getContext();
+    ctx.lastError = 7;
+    expect(rt.globalValues._LastError).toBe(7);
     expect(callFunction(rt, "GetLastError", [])).toBe(7);
     rt.globalValues._StopFlag = 1;
     expect(callFunction(rt, "IsStopped", [])).toBe(1);

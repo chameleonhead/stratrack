@@ -47,6 +47,11 @@ export function createCommon(context: ExecutionContext): Record<string, BuiltinF
 
     GetTickCount: () => Date.now(),
 
+    PeriodSeconds: (period?: number) => {
+      if (typeof period === "number") return period;
+      return context.timeframe ?? 0;
+    },
+
     Sleep: (ms: number) => {
       const end = Date.now() + ms;
       while (Date.now() < end) {
@@ -72,6 +77,32 @@ export function createCommon(context: ExecutionContext): Record<string, BuiltinF
       const t = typeof performance !== "undefined" ? performance.now() : Date.now();
       return Math.floor(t * 1000);
     },
+
+    ResetLastError: () => {
+      context.lastError = 0;
+      return 0;
+    },
+
+    ZeroMemory: (variable: any) => {
+      if (Array.isArray(variable)) {
+        variable.fill(0);
+      } else if (variable && typeof variable === "object") {
+        for (const key of Object.keys(variable)) {
+          (variable as any)[key] = 0;
+        }
+      }
+      return 0;
+    },
+
+    CheckPointer: () => 0,
+    GetPointer: () => 0,
+    CryptDecode: () => 0,
+    CryptEncode: () => 0,
+    ResourceCreate: () => 0,
+    ResourceFree: () => 0,
+    ResourceReadImage: () => 0,
+    ResourceSave: () => 0,
+    TesterStatistics: () => 0,
 
     WebRequest: (
       _method: string,
