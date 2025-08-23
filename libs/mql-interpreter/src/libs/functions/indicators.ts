@@ -1,7 +1,6 @@
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
 import type { Candle } from "../domain/marketData";
-import { BacktestRunner } from "../backtestRunner";
 import type { IndicatorSource } from "../indicatorSource";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
@@ -47,20 +46,20 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const curIdx = arr.length - 1;
       const cache = context.indicators;
       if (!cache) return 0;
-      
+
       const key = {
         type: "iMA",
         symbol,
         timeframe,
         params: { period, maMethod: _maMethod, applied },
       } as const;
-      
+
       const ctx = cache.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         sum: 0,
       }));
-      
+
       if (ctx.last < curIdx) {
         for (let i = ctx.last + 1; i <= curIdx; i++) {
           const price = priceVal(arr[i], applied);
@@ -70,7 +69,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
           ctx.last = i;
         }
       }
-      
+
       const idx = arr.length - 1 - (shift + maShift);
       return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
     },
@@ -90,14 +89,14 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const curIdx = arr.length - 1;
       const cache = context.indicators;
       if (!cache) return 0;
-      
+
       const key = {
         type: "iMACD",
         symbol,
         timeframe,
         params: { fast, slow, signal, applied },
       } as const;
-      
+
       const ctx = cache.getOrCreate(key, () => ({
         last: -1,
         macd: [] as number[],
@@ -107,11 +106,11 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         emaSlow: 0,
         sig: 0,
       }));
-      
+
       const kFast = 2 / (fast + 1);
       const kSlow = 2 / (slow + 1);
       const kSig = 2 / (signal + 1);
-      
+
       if (ctx.last < 0 && curIdx >= 0) {
         const price0 = priceVal(arr[0], applied);
         ctx.emaFast = price0;
@@ -122,7 +121,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         ctx.hist[0] = 0;
         ctx.last = 0;
       }
-      
+
       if (ctx.last < curIdx) {
         for (let i = ctx.last + 1; i <= curIdx; i++) {
           const price = priceVal(arr[i], applied);
@@ -137,7 +136,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
           ctx.last = i;
         }
       }
-      
+
       const idx = arr.length - 1 - shift;
       if (idx < 0) return 0;
       if (mode === 1) return ctx.signal[idx] ?? 0;
@@ -151,28 +150,28 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const curIdx = arr.length - 1;
       const cache = context.indicators;
       if (!cache) return 0;
-      
+
       const key = {
         type: "iATR",
         symbol,
         timeframe,
         params: { period },
       } as const;
-      
+
       const ctx = cache.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         atr: 0,
         prevClose: 0,
       }));
-      
+
       if (ctx.last < 0 && curIdx >= 0) {
         const first = arr[0];
         ctx.prevClose = first.close;
         ctx.values[0] = 0;
         ctx.last = 0;
       }
-      
+
       if (ctx.last < curIdx) {
         for (let i = ctx.last + 1; i <= curIdx; i++) {
           const cur = arr[i];
@@ -191,7 +190,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
           ctx.last = i;
         }
       }
-      
+
       const idx = arr.length - 1 - shift;
       return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
     },
@@ -202,28 +201,28 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const curIdx = arr.length - 1;
       const cache = context.indicators;
       if (!cache) return 0;
-      
+
       const key = {
         type: "iRSI",
         symbol,
         timeframe,
         params: { period, applied },
       } as const;
-      
+
       const ctx = cache.getOrCreate(key, () => ({
         last: -1,
         values: [] as number[],
         gains: [] as number[],
         losses: [] as number[],
       }));
-      
+
       if (ctx.last < 0 && curIdx >= 0) {
         ctx.values[0] = 0;
         ctx.gains[0] = 0;
         ctx.losses[0] = 0;
         ctx.last = 0;
       }
-      
+
       if (ctx.last < curIdx) {
         for (let i = ctx.last + 1; i <= curIdx; i++) {
           const price = priceVal(arr[i], applied);
@@ -252,7 +251,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
           ctx.last = i;
         }
       }
-      
+
       const idx = arr.length - 1 - shift;
       return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
     },
@@ -264,22 +263,22 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       const mode = Number(args[args.length - 2] ?? 0);
       const shift = Number(args[args.length - 1] ?? 0);
       const params = args.slice(0, -2);
-      
+
       // indicatorSourceはcontextから取得する必要がありますが、
       // 現在のExecutionContextには含まれていないため、デフォルト値を返します
       // TODO: indicatorSourceをExecutionContextに追加するか、別の方法で取得する
       if (!context.market) return 0;
-      
+
       const cache = context.indicators;
       if (!cache) return 0;
-      
+
       const key = {
         type: `iCustom:${name}`,
         symbol,
         timeframe,
         params,
       } as const;
-      
+
       // 簡易実装：カスタムインジケーターが利用できない場合は0を返す
       return 0;
     },
@@ -287,35 +286,189 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     // その他のインジケーター関数（簡易実装）
     iAC: (symbol: string, timeframe: number, shift: number) => 0,
     iAD: (symbol: string, timeframe: number, shift: number) => 0,
-    iADX: (symbol: string, timeframe: number, period: number, applied_price: number, mode: number, shift: number) => 0,
-    iAlligator: (symbol: string, timeframe: number, jaw_period: number, jaw_shift: number, teeth_period: number, teeth_shift: number, lips_period: number, lips_shift: number, ma_method: number, applied_price: number, mode: number, shift: number) => 0,
+    iADX: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iAlligator: (
+      symbol: string,
+      timeframe: number,
+      jaw_period: number,
+      jaw_shift: number,
+      teeth_period: number,
+      teeth_shift: number,
+      lips_period: number,
+      lips_shift: number,
+      ma_method: number,
+      applied_price: number,
+      mode: number,
+      shift: number
+    ) => 0,
     iAO: (symbol: string, timeframe: number, shift: number) => 0,
-    iBands: (symbol: string, timeframe: number, period: number, deviation: number, bands_shift: number, applied_price: number, mode: number, shift: number) => 0,
-    iBandsOnArray: (array: number[], total: number, period: number, deviation: number, bands_shift: number, mode: number, shift: number) => 0,
-    iBearsPower: (symbol: string, timeframe: number, period: number, applied_price: number, shift: number) => 0,
-    iBullsPower: (symbol: string, timeframe: number, period: number, applied_price: number, shift: number) => 0,
+    iBands: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      deviation: number,
+      bands_shift: number,
+      applied_price: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iBandsOnArray: (
+      array: number[],
+      total: number,
+      period: number,
+      deviation: number,
+      bands_shift: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iBearsPower: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
+    iBullsPower: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
     iBWMFI: (symbol: string, timeframe: number, shift: number) => 0,
-    iCCI: (symbol: string, timeframe: number, period: number, applied_price: number, shift: number) => 0,
+    iCCI: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
     iCCIOnArray: (array: number[], total: number, period: number, shift: number) => 0,
     iDeMarker: (symbol: string, timeframe: number, period: number, shift: number) => 0,
-    iEnvelopes: (symbol: string, timeframe: number, ma_period: number, ma_shift: number, ma_method: number, applied_price: number, deviation: number, mode: number, shift: number) => 0,
-    iEnvelopesOnArray: (array: number[], total: number, ma_period: number, ma_shift: number, ma_method: number, deviation: number, mode: number, shift: number) => 0,
-    iForce: (symbol: string, timeframe: number, period: number, ma_method: number, applied_price: number, shift: number) => 0,
+    iEnvelopes: (
+      symbol: string,
+      timeframe: number,
+      ma_period: number,
+      ma_shift: number,
+      ma_method: number,
+      applied_price: number,
+      deviation: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iEnvelopesOnArray: (
+      array: number[],
+      total: number,
+      ma_period: number,
+      ma_shift: number,
+      ma_method: number,
+      deviation: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iForce: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      ma_method: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
     iFractals: (symbol: string, timeframe: number, mode: number, shift: number) => 0,
-    iGator: (symbol: string, timeframe: number, jaw_period: number, jaw_shift: number, teeth_period: number, teeth_shift: number, lips_period: number, lips_shift: number, ma_method: number, applied_price: number, mode: number, shift: number) => 0,
-    iIchimoku: (symbol: string, timeframe: number, tenkan_sen: number, kijun_sen: number, senkou_span_b: number, mode: number, shift: number) => 0,
-    iMAOnArray: (array: number[], total: number, period: number, ma_shift: number, ma_method: number, shift: number) => 0,
-    iMFI: (symbol: string, timeframe: number, period: number, applied_price: number, shift: number) => 0,
-    iMomentum: (symbol: string, timeframe: number, period: number, applied_price: number, shift: number) => 0,
+    iGator: (
+      symbol: string,
+      timeframe: number,
+      jaw_period: number,
+      jaw_shift: number,
+      teeth_period: number,
+      teeth_shift: number,
+      lips_period: number,
+      lips_shift: number,
+      ma_method: number,
+      applied_price: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iIchimoku: (
+      symbol: string,
+      timeframe: number,
+      tenkan_sen: number,
+      kijun_sen: number,
+      senkou_span_b: number,
+      mode: number,
+      shift: number
+    ) => 0,
+    iMAOnArray: (
+      array: number[],
+      total: number,
+      period: number,
+      ma_shift: number,
+      ma_method: number,
+      shift: number
+    ) => 0,
+    iMFI: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
+    iMomentum: (
+      symbol: string,
+      timeframe: number,
+      period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
     iMomentumOnArray: (array: number[], total: number, period: number, shift: number) => 0,
     iOBV: (symbol: string, timeframe: number, applied_price: number, shift: number) => 0,
-    iOsMA: (symbol: string, timeframe: number, fast_ema_period: number, slow_ema_period: number, signal_period: number, applied_price: number, shift: number) => 0,
+    iOsMA: (
+      symbol: string,
+      timeframe: number,
+      fast_ema_period: number,
+      slow_ema_period: number,
+      signal_period: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
     iRSIOnArray: (array: number[], total: number, period: number, shift: number) => 0,
     iRVI: (symbol: string, timeframe: number, period: number, mode: number, shift: number) => 0,
     iSAR: (symbol: string, timeframe: number, step: number, maximum: number, shift: number) => 0,
-    iStdDev: (symbol: string, timeframe: number, ma_period: number, ma_shift: number, ma_method: number, applied_price: number, shift: number) => 0,
-    iStdDevOnArray: (array: number[], total: number, ma_period: number, ma_shift: number, ma_method: number, shift: number) => 0,
-    iStochastic: (symbol: string, timeframe: number, k_period: number, d_period: number, slowing: number, method: number, price_field: number, mode: number, shift: number) => 0,
+    iStdDev: (
+      symbol: string,
+      timeframe: number,
+      ma_period: number,
+      ma_shift: number,
+      ma_method: number,
+      applied_price: number,
+      shift: number
+    ) => 0,
+    iStdDevOnArray: (
+      array: number[],
+      total: number,
+      ma_period: number,
+      ma_shift: number,
+      ma_method: number,
+      shift: number
+    ) => 0,
+    iStochastic: (
+      symbol: string,
+      timeframe: number,
+      k_period: number,
+      d_period: number,
+      slowing: number,
+      method: number,
+      price_field: number,
+      mode: number,
+      shift: number
+    ) => 0,
     iWPR: (symbol: string, timeframe: number, period: number, shift: number) => 0,
   };
 }

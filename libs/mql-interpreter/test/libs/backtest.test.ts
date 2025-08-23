@@ -1,4 +1,4 @@
-import { BacktestRunner } from "../../src/libs/backtestRunner";
+import { BacktestRunner } from "../../src/backtestRunner";
 import { ticksToCandles } from "../../src/libs/domain/marketData";
 import { callFunction } from "../../src/runtime/runtime";
 import { describe, it, expect } from "vitest";

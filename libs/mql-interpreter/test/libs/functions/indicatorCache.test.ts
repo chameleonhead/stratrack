@@ -1,4 +1,4 @@
-import { BacktestRunner } from "../../../src/libs/backtestRunner";
+import { BacktestRunner } from "../../../src/backtestRunner";
 import { callFunction } from "../../../src/runtime/runtime";
 import type { IndicatorKey } from "../../../src/libs/indicatorCache";
 import { describe, it, expect } from "vitest";

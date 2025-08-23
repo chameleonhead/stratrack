@@ -6,7 +6,7 @@ import { program } from "commander";
 import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
 import { builtinSignatures } from "./libs/signatures";
-import { BacktestRunner, parseCsv } from "./libs/backtestRunner";
+import { BacktestRunner, parseCsv } from "./backtestRunner";
 import { InMemoryIndicatorSource } from "./libs/indicatorSource";
 
 export function readTextFile(file: string): string {

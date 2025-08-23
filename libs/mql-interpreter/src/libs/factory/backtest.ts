@@ -17,7 +17,7 @@ import { createObjects } from "../functions/objects";
 import { createSeries } from "../functions/series";
 import { createTrading } from "../functions/trading";
 import { IndicatorCache } from "../indicatorCache";
-import { BacktestRunner } from "../backtestRunner";
+import { BacktestRunner } from "../../backtestRunner";
 import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
 
 export function createBacktestLibs(
