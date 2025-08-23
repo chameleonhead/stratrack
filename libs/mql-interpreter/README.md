@@ -82,8 +82,6 @@ console.log(runner.getRuntime().globalValues.ma); // latest moving average
 - `npm run build` – Compile TypeScript sources, including the CLI at `bin/mql-interpreter.ts`.
 - `npm run build:browser` – Bundle the interpreter core into a browser-friendly file at `dist/index.browser.js`. Provide your own worker if needed.
 
-See [TODO.md](TODO.md) for planned features and tasks.
-
 ## Backtesting
 
 The library provides a small helper to replay historical market data. Use
