@@ -3,7 +3,7 @@ import { BuiltinSignaturesMap } from "./types";
 // https://docs.mql4.com/common
 export const commonBuiltinSignatures: BuiltinSignaturesMap = {
   Alert: {
-    args: [],
+    args: [{ name: "argument", type: "string", optional: false }],
     returnType: "void",
     description: "Displays a message in a separate window",
   },
@@ -65,7 +65,7 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Creates, displays a message box and manages it",
   },
   PeriodSeconds: {
-    args: [],
+    args: [{ name: "period", type: "int", optional: true }],
     returnType: "int",
     description: "Returns the number of seconds in the period",
   },

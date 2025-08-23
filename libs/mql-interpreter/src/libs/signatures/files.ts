@@ -3,7 +3,7 @@ import { BuiltinSignaturesMap } from "./types";
 // https://docs.mql4.com/files
 export const filesBuiltinSignatures: BuiltinSignaturesMap = {
   FileClose: {
-    args: [],
+    args: [{ name: "file_handle", type: "int", optional: false }],
     returnType: "bool",
     description: "Closes a previously opened file",
   },
@@ -13,7 +13,10 @@ export const filesBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Copies the original file from a local or shared folder to another file",
   },
   FileDelete: {
-    args: [],
+    args: [
+      { name: "filename", type: "string", optional: false },
+      { name: "flags", type: "int", optional: true }
+    ],
     returnType: "bool",
     description: "Deletes a specified file",
   },
@@ -64,8 +67,12 @@ export const filesBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Moves or renames a file",
   },
   FileOpen: {
-    args: [],
-    returnType: "bool",
+    args: [
+      { name: "filename", type: "string", optional: false },
+      { name: "mode", type: "int", optional: false },
+      { name: "delimiter", type: "int", optional: true }
+    ],
+    returnType: "int",
     description: "Opens a file with a specified name and flag",
   },
   FileOpenHistory: {
@@ -128,7 +135,11 @@ export const filesBuiltinSignatures: BuiltinSignaturesMap = {
       "Reads the contents from a binary file  into a structure passed as a parameter, from the current position of the file pointer",
   },
   FileSeek: {
-    args: [],
+    args: [
+      { name: "file_handle", type: "int", optional: false },
+      { name: "offset", type: "long", optional: false },
+      { name: "origin", type: "int", optional: false }
+    ],
     returnType: "bool",
     description:
       "Moves the position of the file pointer by a specified number of bytes relative to the specified position",
@@ -144,8 +155,12 @@ export const filesBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns the current position of the file pointer of a corresponding open file",
   },
   FileWrite: {
-    args: [],
-    returnType: "bool",
+    args: [
+      { name: "file_handle", type: "int", optional: false },
+      { name: "value1", type: "any", optional: false },
+      { name: "args", type: "any", variadic: true }
+    ],
+    returnType: "uint",
     description: "Writes data to a file of CSV or TXT type",
   },
   FileWriteArray: {

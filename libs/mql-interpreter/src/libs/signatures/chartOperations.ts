@@ -149,11 +149,18 @@ export const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
     description:
       "Returns the price coordinate of the chart point, the Expert Advisor or script has been dropped to",
   },
-  ChartRedraw: {
-    args: [],
-    returnType: "int",
-    description: "Calls a forced redrawing of a specified chart",
-  },
+  ChartRedraw: [
+    {
+      args: [],
+      returnType: "int",
+      description: "Calls a forced redrawing of the current chart",
+    },
+    {
+      args: [{ name: "chart_id", type: "long", optional: false }],
+      returnType: "int",
+      description: "Calls a forced redrawing of a specified chart",
+    }
+  ],
   ChartSaveTemplate: {
     args: [
       { name: "chart_id", type: "long" },
@@ -332,8 +339,15 @@ export const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Redraws the current chart forcedly",
   },
   WindowScreenShot: {
-    args: [],
-    returnType: "void",
+    args: [
+      { name: "filename", type: "string", optional: false },
+      { name: "size_x", type: "int", optional: true },
+      { name: "size_y", type: "int", optional: true },
+      { name: "start_bar", type: "int", optional: true },
+      { name: "chart_scale", type: "int", optional: true },
+      { name: "chart_mode", type: "int", optional: true }
+    ],
+    returnType: "bool",
     description:
       "Saves current chart screen shot as a GIF, PNG or BMP file depending on specified extension",
   },

@@ -58,14 +58,25 @@ export const stringsBuiltinSignatures: BuiltinSignaturesMap = {
     returnType: "ushort",
     description: "Returns character (code) from the specified position in the string",
   },
-  StringGetCharacter: {
-    args: [
-      { name: "string_value", type: "string" },
-      { name: "pos", type: "int" },
-    ],
-    returnType: "ushort",
-    description: "Returns the value of a number located in the specified string position",
-  },
+  StringGetCharacter: [
+    {
+      args: [
+        { name: "string_value", type: "string" },
+        { name: "pos", type: "int" },
+      ],
+      returnType: "ushort",
+      description: "Returns the value of a number located in the specified string position",
+    },
+    {
+      args: [
+        { name: "string_value", type: "string" },
+        { name: "pos", type: "int" },
+        { name: "mode", type: "int", optional: true },
+      ],
+      returnType: "ushort", 
+      description: "Returns the value of a number located in the specified string position with mode",
+    }
+  ],
   StringInit: {
     args: [
       { name: "string_var", type: "string" },

@@ -3,7 +3,7 @@ import { BuiltinSignaturesMap } from "./types";
 // https://docs.mql4.com/customind
 export const customindBuiltinSignatures: BuiltinSignaturesMap = {
   HideTestIndicators: {
-    args: [],
+    args: [{ name: "hide", type: "bool", optional: true }],
     returnType: "void",
     description: "The function sets a flag hiding indicators called by the Expert Advisor",
   },

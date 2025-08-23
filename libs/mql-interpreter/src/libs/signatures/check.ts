@@ -74,7 +74,7 @@ export const checkBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns an integer value of a corresponding property of a running mql4 program",
   },
   MQLInfoString: {
-    args: [],
+    args: [{ name: "property_id", type: "int", optional: false }],
     returnType: "string",
     description: "Returns a string value of a corresponding property of a running mql4 program",
   },
@@ -109,7 +109,7 @@ export const checkBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns an double value of a corresponding property of a running mql4 program",
   },
   TerminalInfoInteger: {
-    args: [],
+    args: [{ name: "property_id", type: "int", optional: false }],
     returnType: "int",
     description: "Returns an integer value of a corresponding property of a running mql4 program",
   },

@@ -697,6 +697,7 @@ export class BacktestRunner {
       },
       SymbolSelect: (sym: string, enable: boolean) => this.market.select(sym, enable),
       OrdersTotal: () => this.session.broker.getActiveOrders().length,
+      HistoryTotal: () => this.session.broker.getHistory().length,
       OrdersHistoryTotal: () => this.session.broker.getHistory().length,
       OrderSelect: (index: number, select: number, pool = 0) => {
         const byTicket = select === 1;

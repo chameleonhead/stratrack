@@ -34,7 +34,10 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns text string with the specified numerical value converted into a specified precision format",
   },
   DoubleToString: {
-    args: [{ name: "value", type: "double", optional: false }],
+    args: [
+      { name: "value", type: "double", optional: false },
+      { name: "digits", type: "int", optional: true }
+    ],
     returnType: "string",
     description: "Converting a numeric value to a text line with a specified accuracy",
   },
@@ -43,8 +46,22 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
     returnType: "string",
     description: "Converting an enumeration value of any type to string",
   },
-  IntegerToString: {
+  TypeBFLC: {
     args: [{ name: "value", type: "int", optional: false }],
+    returnType: "int", 
+    description: "Cast value to TypeBFLC enum",
+  },
+  FirstPositiontype: {
+    args: [{ name: "value", type: "int", optional: false }],
+    returnType: "int",
+    description: "Cast value to FirstPositiontype enum", 
+  },
+  IntegerToString: {
+    args: [
+      { name: "value", type: "int", optional: false },
+      { name: "str_len", type: "int", optional: true },
+      { name: "fill_char", type: "int", optional: true }
+    ],
     returnType: "string",
     description: "Converting int into a string of preset length",
   },
@@ -67,7 +84,10 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Converting symbol code (unicode) into one-symbol string",
   },
   StringFormat: {
-    args: [{ name: "value", type: "double", optional: false }],
+    args: [
+      { name: "format", type: "string", optional: false },
+      { name: "args", type: "any", variadic: true, optional: true }
+    ],
     returnType: "string",
     description: "Converting number into string according to preset format",
   },
@@ -127,7 +147,10 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
     description: 'Converts value of datetime type into a string of "yyyy.mm.dd hh:mi" format',
   },
   TimeToString: {
-    args: [{ name: "seconds", type: "int", optional: false }],
+    args: [
+      { name: "time", type: "datetime", optional: false },
+      { name: "mode", type: "int", optional: true }
+    ],
     returnType: "string",
     description:
       'Converting a value containing time in seconds elapsed since 01.01.1970 into a string of "yyyy.mm.dd hh:mi" format',

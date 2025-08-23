@@ -123,6 +123,11 @@ export const tradingBuiltinSignatures: BuiltinSignaturesMap = {
     returnType: "int",
     description: "The main function used to open an order or place a pending order",
   },
+  HistoryTotal: {
+    args: [],
+    returnType: "int",
+    description: "Returns the total amount of closed orders in the account history",
+  },
   OrdersHistoryTotal: {
     args: [],
     returnType: "int",

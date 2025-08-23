@@ -55,7 +55,7 @@ export const dateandtimeBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns the last known server time (time of the last quote receipt) in the datetime format",
   },
   TimeDay: {
-    args: [],
+    args: [{ name: "date_time", type: "datetime", optional: true }],
     returnType: "int",
     description: "Returns the day of month of the specified date",
   },
@@ -70,7 +70,7 @@ export const dateandtimeBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Returns the zero-based day of week of the specified date",
   },
   TimeDayOfYear: {
-    args: [],
+    args: [{ name: "date_time", type: "datetime", optional: true }],
     returnType: "int",
     description: "Returns the day of year of the specified date",
   },
@@ -113,8 +113,8 @@ export const dateandtimeBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns the amount of seconds elapsed from the beginning of the minute of the specified time",
   },
   TimeToStruct: {
-    args: [],
-    returnType: "MqlDateTime",
+    args: [{ name: "dt", type: "datetime", optional: false }, { name: "dt_struct", type: "MqlDateTime", optional: false }],
+    returnType: "bool",
     description: "Converts a datetime value into a variable of MqlDateTime structure type",
   },
   TimeYear: {
