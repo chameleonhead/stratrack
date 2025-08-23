@@ -7,7 +7,6 @@ import type { Declaration } from "./parser/ast";
 import { builtinSignatures } from "./libs/signatures";
 import type { ExecutionContext } from "./libs/domain/types";
 import { registerEnvBuiltins } from "./libs/functions";
-import type { BuiltinFunction } from "./libs/functions/types";
 import { InMemoryBroker as Broker, Order } from "./libs/domain/broker";
 import { InMemoryAccount as Account, AccountMetrics } from "./libs/domain/account";
 import { InMemoryMarketData as MarketData } from "./libs/domain/marketData";
@@ -100,7 +99,6 @@ export class BacktestRunner {
   private session: BacktestSession;
   private market: MarketData;
   private terminal: VirtualTerminal;
-  private selectedOrder?: Order;
   private initialized = false;
   private deinitialized = false;
   private pendingTradeEvents: Order[] = [];
@@ -205,6 +203,11 @@ export class BacktestRunner {
       timeframe: period,
       digits: 5,
       lastError: 0,
+      getBid: () => this.runtime.globalValues.Bid,
+      getAsk: () => this.runtime.globalValues.Ask,
+      getTime: () => this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0,
+      getStopFlag: () => this.runtime.globalValues._StopFlag,
+      indicatorSource: this.indicatorSource,
     };
     this.initializeGlobals();
     const libs = createLibs(this.context);
@@ -228,8 +231,7 @@ export class BacktestRunner {
         configurable: true,
       },
     });
-    const builtins = this.buildBuiltins();
-    registerEnvBuiltins({ ...libs, ...builtins });
+    registerEnvBuiltins(libs);
   }
 
   private initializeGlobals(): void {
@@ -254,159 +256,6 @@ export class BacktestRunner {
     rt._Period = period;
   }
 
-  private buildBuiltins(): Record<string, BuiltinFunction> {
-    const metrics = () =>
-      this.session.account.getMetrics(
-        this.session.broker,
-        this.runtime.globalValues.Bid,
-        this.runtime.globalValues.Ask
-      );
-
-    const currentTime = () => this.candles[Math.min(this.index, this.candles.length - 1)].time;
-
-    const marketInfo = (symbol: string, type: number): number => {
-      const tick = this.market.getTick(symbol, currentTime());
-      switch (type) {
-        case 9:
-          return tick?.bid ?? 0;
-        case 10:
-          return tick?.ask ?? 0;
-        case 11:
-          return this.runtime.globalValues.Point;
-        case 12:
-          return this.runtime.globalValues.Digits;
-        case 13:
-          return tick ? Math.round((tick.ask - tick.bid) / this.runtime.globalValues.Point) : 0;
-        default:
-          return 0;
-      }
-    };
-
-    return {
-      MarketInfo: (sym: string, type: number) => marketInfo(sym, type),
-      OrdersTotal: () => this.session.broker.getActiveOrders().length,
-      HistoryTotal: () => this.session.broker.getHistory().length,
-      OrdersHistoryTotal: () => this.session.broker.getHistory().length,
-      OrderSelect: (index: number, select: number, pool = 0) => {
-        const byTicket = select === 1;
-        const arr =
-          pool === 1 ? this.session.broker.getHistory() : this.session.broker.getActiveOrders();
-        this.selectedOrder = byTicket ? this.session.broker.getOrder(index) : arr[index];
-        return this.selectedOrder ? 1 : 0;
-      },
-      OrderType: () => (this.selectedOrder ? (this.selectedOrder.type === "buy" ? 0 : 1) : -1),
-      OrderTicket: () => this.selectedOrder?.ticket ?? -1,
-      OrderSymbol: () => this.selectedOrder?.symbol ?? "",
-      OrderLots: () => this.selectedOrder?.volume ?? 0,
-      OrderOpenPrice: () => this.selectedOrder?.price ?? 0,
-      OrderOpenTime: () => this.selectedOrder?.openTime ?? 0,
-      OrderClosePrice: () => this.selectedOrder?.closePrice ?? 0,
-      OrderCloseTime: () => this.selectedOrder?.closeTime ?? 0,
-      OrderProfit: () => this.selectedOrder?.profit ?? 0,
-      OrderClose: (
-        ticket: number,
-        lots: number,
-        price: number,
-        _slippage?: number,
-        _arrowColor?: number
-      ) => {
-        const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
-        if (t < 0) return 0;
-        const p = price > 0 ? price : this.runtime.globalValues.Bid;
-        const pr = this.session.broker.close(t, p, currentTime());
-        if (pr) this.session.account.applyProfit(pr);
-        return pr ? 1 : 0;
-      },
-      OrderModify: (
-        ticket: number,
-        price: number,
-        sl: number,
-        tp: number,
-        _expiration?: number,
-        _arrowColor?: number
-      ) => {
-        const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
-        if (t < 0) return 0;
-        const ok = this.session.broker.modify(t, price, sl, tp);
-        if (ok && this.selectedOrder && this.selectedOrder.ticket === t) {
-          this.selectedOrder = this.session.broker.getOrder(t);
-        }
-        return ok ? 1 : 0;
-      },
-      OrderSend: (
-        symbol: string,
-        cmd: number,
-        volume: number,
-        price: number,
-        _slippage: number,
-        sl: number,
-        tp: number
-      ) =>
-        this.session.broker.sendOrder({
-          symbol,
-          cmd,
-          volume,
-          price,
-          sl,
-          tp,
-          time: currentTime(),
-          bid: this.runtime.globalValues.Bid,
-          ask: this.runtime.globalValues.Ask,
-        }),
-      IsStopped: () => this.runtime.globalValues._StopFlag,
-      AccountBalance: () => metrics().balance,
-      AccountEquity: () => metrics().equity,
-      AccountProfit: () => metrics().openProfit + metrics().closedProfit,
-      AccountFreeMargin: () => metrics().freeMargin,
-      AccountCredit: () => 0,
-      AccountCompany: () => "Backtest",
-      AccountCurrency: () => this.session.account.getCurrency(),
-      AccountLeverage: () => 1,
-      AccountMargin: () => metrics().margin,
-      AccountName: () => "Backtest",
-      AccountNumber: () => 1,
-      AccountServer: () => "Backtest",
-      AccountFreeMarginCheck: () => metrics().equity,
-      AccountFreeMarginMode: () => 0,
-      AccountStopoutLevel: () => 0,
-      AccountStopoutMode: () => 0,
-      iCustom: (symbol: any, timeframe: any, name: string, ...args: any[]) => {
-        const sym =
-          symbol && String(symbol).length ? String(symbol) : (this.options.symbol ?? "TEST");
-        const tf = Number(timeframe) || this.runtime.globalValues._Period;
-        const arr = this.market.getCandles(sym, tf);
-        const curIdx = arr.length - 1;
-        const mode = Number(args[args.length - 2] ?? 0);
-        const shift = Number(args[args.length - 1] ?? 0);
-        const params = args.slice(0, -2);
-        const source = this.indicatorSource.get(name);
-        if (!source) return 0;
-        const cache = this.context.indicators!;
-        const key = {
-          type: `iCustom:${name}`,
-          symbol: sym,
-          timeframe: tf,
-          params,
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          buffers: [] as number[][],
-          runner: new BacktestRunner(source, arr, {
-            symbol: sym && String(sym).length ? sym : undefined,
-            timeframe: tf,
-            indicatorSource: this.indicatorSource,
-          }),
-        }));
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) ctx.runner.step();
-          ctx.buffers = ctx.runner.getRuntime().globalValues._IndicatorBuffers ?? [];
-          ctx.last = curIdx;
-        }
-        const idx = curIdx - shift;
-        return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
-      },
-    };
-  }
   private callInit(): void {
     if (!this.initialized && this.runtime.functions["OnInit"]) {
       try {
@@ -462,11 +311,11 @@ export class BacktestRunner {
     if (this.runtime.functions["OnTrade"]) {
       while (this.pendingTradeEvents.length > 0) {
         const order = this.pendingTradeEvents.shift()!;
-        const prevSelected = this.selectedOrder;
-        this.selectedOrder = order;
+        const prevSelected = this.context.selectedOrder;
+        this.context.selectedOrder = order;
         (this.runtime as any).tradeContext = { ticket: order.ticket, type: order.type };
         callFunction(this.runtime, "OnTrade");
-        this.selectedOrder = prevSelected;
+        this.context.selectedOrder = prevSelected;
       }
     }
     if (this.runtime.functions["OnChartEvent"]) {

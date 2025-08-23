@@ -1,31 +1,33 @@
 import type { ExecutionContext } from "../domain/types";
-import type { Order } from "../domain/broker";
 import type { BuiltinFunction } from "./types";
 
 export function createTrading(context: ExecutionContext): Record<string, BuiltinFunction> {
   const broker = context.broker!;
   const account = context.account!;
-  let selectedOrder: Order | undefined;
+  const getBid = context.getBid ?? (() => 0);
+  const getAsk = context.getAsk ?? (() => 0);
+  const getTime = context.getTime ?? (() => Date.now() / 1000);
   return {
     OrdersTotal: () => broker.getActiveOrders().length,
     OrdersHistoryTotal: () => broker.getHistory().length,
+    HistoryTotal: () => broker.getHistory().length,
     OrderSelect: (index: number, select: number, pool = 0) => {
       const byTicket = select === 1;
       const arr = pool === 1 ? broker.getHistory() : broker.getActiveOrders();
-      selectedOrder = byTicket ? broker.getOrder(index) : arr[index];
-      return selectedOrder ? 1 : 0;
+      context.selectedOrder = byTicket ? broker.getOrder(index) : arr[index];
+      return context.selectedOrder ? 1 : 0;
     },
-    OrderType: () => (selectedOrder ? (selectedOrder.type === "buy" ? 0 : 1) : -1),
-    OrderTicket: () => selectedOrder?.ticket ?? -1,
-    OrderSymbol: () => selectedOrder?.symbol ?? "",
-    OrderLots: () => selectedOrder?.volume ?? 0,
-    OrderOpenPrice: () => selectedOrder?.price ?? 0,
-    OrderOpenTime: () => selectedOrder?.openTime ?? 0,
-    OrderClosePrice: () => selectedOrder?.closePrice ?? 0,
-    OrderCloseTime: () => selectedOrder?.closeTime ?? 0,
-    OrderStopLoss: () => selectedOrder?.sl ?? 0,
-    OrderTakeProfit: () => selectedOrder?.tp ?? 0,
-    OrderProfit: () => selectedOrder?.profit ?? 0,
+    OrderType: () => (context.selectedOrder ? (context.selectedOrder.type === "buy" ? 0 : 1) : -1),
+    OrderTicket: () => context.selectedOrder?.ticket ?? -1,
+    OrderSymbol: () => context.selectedOrder?.symbol ?? "",
+    OrderLots: () => context.selectedOrder?.volume ?? 0,
+    OrderOpenPrice: () => context.selectedOrder?.price ?? 0,
+    OrderOpenTime: () => context.selectedOrder?.openTime ?? 0,
+    OrderClosePrice: () => context.selectedOrder?.closePrice ?? 0,
+    OrderCloseTime: () => context.selectedOrder?.closeTime ?? 0,
+    OrderStopLoss: () => context.selectedOrder?.sl ?? 0,
+    OrderTakeProfit: () => context.selectedOrder?.tp ?? 0,
+    OrderProfit: () => context.selectedOrder?.profit ?? 0,
     OrderCommission: () => 0,
     OrderSwap: () => 0,
     OrderComment: () => "",
@@ -38,9 +40,10 @@ export function createTrading(context: ExecutionContext): Record<string, Builtin
       _slippage?: number,
       _arrowColor?: number
     ) => {
-      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      const t = ticket >= 0 ? ticket : (context.selectedOrder?.ticket ?? -1);
       if (t < 0) return 0;
-      const pr = broker.close(t, price, Date.now());
+      const p = price > 0 ? price : getBid();
+      const pr = broker.close(t, p, getTime());
       if (pr) account.applyProfit(pr);
       return pr ? 1 : 0;
     },
@@ -52,12 +55,12 @@ export function createTrading(context: ExecutionContext): Record<string, Builtin
       _expiration?: number,
       _arrowColor?: number
     ) => {
-      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      const t = ticket >= 0 ? ticket : (context.selectedOrder?.ticket ?? -1);
       if (t < 0) return 0;
       return broker.modify(t, price, sl, tp) ? 1 : 0;
     },
     OrderDelete: (ticket: number) => {
-      const t = ticket >= 0 ? ticket : (selectedOrder?.ticket ?? -1);
+      const t = ticket >= 0 ? ticket : (context.selectedOrder?.ticket ?? -1);
       if (t < 0) return 0;
       const order = broker.getOrder(t);
       if (!order) return 0;
@@ -80,9 +83,9 @@ export function createTrading(context: ExecutionContext): Record<string, Builtin
         price,
         sl,
         tp,
-        time: Date.now(),
-        bid: price,
-        ask: price,
+        time: getTime(),
+        bid: getBid(),
+        ask: getAsk(),
       }),
   };
 }

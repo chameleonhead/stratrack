@@ -58,8 +58,7 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
     },
 
     IsStopped: () => {
-      // In backtesting, we're not stopped
-      return false;
+      return context.getStopFlag ? context.getStopFlag() : 0;
     },
 
     IsTesting: () => {

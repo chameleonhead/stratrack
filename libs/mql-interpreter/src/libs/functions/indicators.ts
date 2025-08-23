@@ -2,6 +2,7 @@
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
 import type { Candle } from "../domain/marketData";
+import { BacktestRunner } from "../../backtestRunner";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   // ヘルパー関数
@@ -256,29 +257,37 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
 
     // Custom Indicator
     iCustom: (symbol: string, timeframe: number, name: string, ...args: any[]) => {
-      const arr = candlesFor(symbol, timeframe);
+      const sym = symbol && String(symbol).length ? String(symbol) : (context.symbol ?? "");
+      const tf = timeframe || context.timeframe || 0;
+      if (!context.market) return 0;
+      const arr = candlesFor(sym, tf);
       const curIdx = arr.length - 1;
       const mode = Number(args[args.length - 2] ?? 0);
       const shift = Number(args[args.length - 1] ?? 0);
       const params = args.slice(0, -2);
 
-      // indicatorSourceはcontextから取得する必要がありますが、
-      // 現在のExecutionContextには含まれていないため、デフォルト値を返します
-      // TODO: indicatorSourceをExecutionContextに追加するか、別の方法で取得する
-      if (!context.market) return 0;
-
+      const source = context.indicatorSource?.get(name);
       const cache = context.indicators;
-      if (!cache) return 0;
+      if (!source || !cache) return 0;
 
-      const key = {
-        type: `iCustom:${name}`,
-        symbol,
-        timeframe,
-        params,
-      } as const;
+      const key = { type: `iCustom:${name}`, symbol: sym, timeframe: tf, params } as const;
+      const ctx = cache.getOrCreate(key, () => ({
+        last: -1,
+        buffers: [] as number[][],
+        runner: new BacktestRunner(source, arr, {
+          symbol: sym && String(sym).length ? sym : undefined,
+          timeframe: tf,
+          indicatorSource: context.indicatorSource ?? undefined,
+        }),
+      }));
 
-      // 簡易実装：カスタムインジケーターが利用できない場合は0を返す
-      return 0;
+      if (ctx.last < curIdx) {
+        for (let i = ctx.last + 1; i <= curIdx; i++) ctx.runner.step();
+        ctx.buffers = ctx.runner.getRuntime().globalValues._IndicatorBuffers ?? [];
+        ctx.last = curIdx;
+      }
+      const idx = curIdx - shift;
+      return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
     },
 
     // その他のインジケーター関数（簡易実装）
