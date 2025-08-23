@@ -18,15 +18,3 @@ test("reads UTF-16 LE", () => {
   const file = makeTempFile(buf);
   expect(readTextFile(file)).toBe(code);
 });
-
-test("reads UTF-16 BE", () => {
-  const le = Buffer.from(code, "utf16le");
-  for (let i = 0; i < le.length; i += 2) {
-    const a = le[i];
-    le[i] = le[i + 1];
-    le[i + 1] = a;
-  }
-  const buf = Buffer.concat([Buffer.from([0xfe, 0xff]), le]);
-  const file = makeTempFile(buf);
-  expect(readTextFile(file)).toBe(code);
-});
