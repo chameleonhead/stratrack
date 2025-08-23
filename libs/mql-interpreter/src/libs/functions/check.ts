@@ -24,8 +24,7 @@ export function createCheck(context: ExecutionContext): Record<string, BuiltinFu
 
     // Error handling
     GetLastError: () => {
-      // In a real implementation, this would return the last error code
-      return 0;
+      return context.lastError ?? 0;
     },
 
     // Connection and environment checks

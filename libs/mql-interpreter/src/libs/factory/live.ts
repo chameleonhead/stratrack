@@ -26,6 +26,7 @@ export function createLiveLibs(api: BrokerApi): MqlLibrary {
     market: null,
     symbol: "",
     timeframe: 0,
+    lastError: 0,
     // Initialize custom indicator state
     hideTestIndicators: false,
     indicatorBuffers: [],

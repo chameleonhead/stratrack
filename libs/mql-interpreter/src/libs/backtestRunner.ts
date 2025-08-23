@@ -16,6 +16,7 @@ import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "./domain/t
 import { IndicatorCache } from "./indicatorCache";
 import { IndicatorSource, InMemoryIndicatorSource } from "./indicatorSource";
 import { createCommon } from "./functions/common";
+import { createCheck } from "./functions/check";
 import { createGlobals } from "./functions/globals";
 import { createEventFunctions } from "./functions/eventFunctions";
 import { createFiles } from "./functions/files";
@@ -198,6 +199,7 @@ export class BacktestRunner {
       market: this.market,
       symbol,
       timeframe: period,
+      lastError: 0,
       indicators: this.indicators,
     };
     this.initializeGlobals();
@@ -234,6 +236,7 @@ export class BacktestRunner {
   private createContextBuiltins(): Record<string, BuiltinFunction> {
     return {
       ...createCommon(this.context),
+      ...createCheck(this.context),
       ...createGlobals(this.context),
       ...createEventFunctions(this.context),
       ...createFiles(this.context),
@@ -400,10 +403,6 @@ export class BacktestRunner {
         return 0;
       },
       RefreshRates: () => 1,
-      ResetLastError: () => {
-        this.runtime.globalValues._LastError = 0;
-        return 0;
-      },
       IndicatorBuffers: (count: number) => {
         this.runtime.globalValues._IndicatorBuffers = Array(count).fill(null);
         this.runtime.globalValues._IndicatorLabels = Array(count).fill("");
@@ -673,14 +672,7 @@ export class BacktestRunner {
         const idx = curIdx - shift;
         return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
       },
-      GetLastError: () => this.runtime.globalValues._LastError,
       IsStopped: () => this.runtime.globalValues._StopFlag,
-      Symbol: () => this.runtime.globalValues._Symbol,
-      Period: () => this.runtime.globalValues._Period,
-      PeriodSeconds: () => this.runtime.globalValues._Period,
-      IsTesting: () => true,
-      IsOptimization: () => false,
-      IsConnected: () => true,
       TerminalInfoInteger: (prop: number) => {
         // basic subset: TERMINAL_CONNECTED = 7
         if (prop === 7) return 1;

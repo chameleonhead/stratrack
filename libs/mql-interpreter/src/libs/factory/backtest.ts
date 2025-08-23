@@ -27,7 +27,6 @@ export function createBacktestLibs(
   const indicatorBuffers: any[] = [];
   const indicatorLabels: string[] = [];
   const indicatorShifts: number[] = [];
-  let _lastError = 0;
   const broker = new Broker();
   const account = new Account();
   const indicators = new IndicatorCache();
@@ -38,6 +37,7 @@ export function createBacktestLibs(
     market: data,
     symbol: "",
     timeframe: 0,
+    lastError: 0,
     indicators,
     // Initialize custom indicator state
     hideTestIndicators: false,
@@ -82,10 +82,6 @@ export function createBacktestLibs(
   return {
     // --- account helpers ---
     RefreshRates: () => 1,
-    ResetLastError: () => {
-      _lastError = 0;
-      return 0;
-    },
 
     ...createAccount(context),
     ...createCheck(context),
