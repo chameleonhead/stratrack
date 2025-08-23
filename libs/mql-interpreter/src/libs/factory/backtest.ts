@@ -14,6 +14,7 @@ import { createGlobals } from "../functions/globals";
 import { createIndicators } from "../functions/indicators";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createObjects } from "../functions/objects";
+import { createSeries } from "../functions/series";
 import { createTrading } from "../functions/trading";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
@@ -80,139 +81,11 @@ export function createBacktestLibs(
 
   return {
     // --- account helpers ---
-    // --- series access helpers ---
-    Bars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
-    iBars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
-    iBarShift: (symbol: string, timeframe: number, time: number, exact?: boolean) => {
-      const arr = candlesFor(symbol, timeframe);
-      for (let i = 0; i < arr.length; i++) {
-        const c = arr[i];
-        const next = arr[i + 1];
-        if (c.time === time) return i;
-        if (!exact && next && c.time < time && time < next.time) return i;
-      }
-      return -1;
-    },
-    iOpen: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.open ?? 0;
-    },
-    iHigh: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.high ?? 0;
-    },
-    iLow: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.low ?? 0;
-    },
-    iClose: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.close ?? 0;
-    },
-    iTime: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.time ?? 0;
-    },
-    iVolume: (symbol: string, timeframe: number, shift: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      return arr[barIndex(arr, shift)]?.volume ?? 0;
-    },
-
-    CopyRates: (symbol: string, timeframe: number, start: number, count: number, dst: any[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        const c = arr[start + i];
-        dst[i] = {
-          open: c.open,
-          high: c.high,
-          low: c.low,
-          close: c.close,
-          tick_volume: c.volume ?? 0,
-          time: c.time,
-        };
-        copied++;
-      }
-      return copied;
-    },
-    CopyTime: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].time;
-        copied++;
-      }
-      return copied;
-    },
-    CopyOpen: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].open;
-        copied++;
-      }
-      return copied;
-    },
-    CopyHigh: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].high;
-        copied++;
-      }
-      return copied;
-    },
-    CopyLow: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].low;
-        copied++;
-      }
-      return copied;
-    },
-    CopyClose: (symbol: string, timeframe: number, start: number, count: number, dst: number[]) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].close;
-        copied++;
-      }
-      return copied;
-    },
-    CopyTickVolume: (
-      symbol: string,
-      timeframe: number,
-      start: number,
-      count: number,
-      dst: number[]
-    ) => {
-      const arr = candlesFor(symbol, timeframe);
-      let copied = 0;
-      for (let i = 0; i < count && start + i < arr.length; i++) {
-        dst[i] = arr[start + i].volume ?? 0;
-        copied++;
-      }
-      return copied;
-    },
-
-    SeriesInfoInteger: (symbol: string, timeframe: number, prop: number) => {
-      const arr = candlesFor(symbol, timeframe);
-      if (prop === 0) return arr.length;
-      return 0;
-    },
     RefreshRates: () => 1,
     ResetLastError: () => {
       _lastError = 0;
       return 0;
     },
-
-
-
-
-
-
-
 
     ...createAccount(context),
     ...createCheck(context),
@@ -224,6 +97,7 @@ export function createBacktestLibs(
     ...createIndicators(context),
     ...createMarketInformation(context),
     ...createObjects(context),
+    ...createSeries(context),
     ...createTrading(context),
   };
 }
