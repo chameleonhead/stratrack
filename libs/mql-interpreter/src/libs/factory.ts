@@ -12,7 +12,7 @@ import { createMarketInformation } from "./functions/marketInformation";
 import { createObjects } from "./functions/objects";
 import { createSeries } from "./functions/series";
 import { createTrading } from "./functions/trading";
-import { IndicatorCache } from "./indicatorCache";
+import { InMemoryIndicatorEngine } from "./domain/indicator";
 
 export function createLibs(ctx: ExecutionContext): MqlLibrary {
   Object.assign(ctx, {
@@ -29,8 +29,7 @@ export function createLibs(ctx: ExecutionContext): MqlLibrary {
     getTime: ctx.getTime ?? (() => Date.now() / 1000),
     getStopFlag: ctx.getStopFlag ?? (() => 0),
     selectedOrder: ctx.selectedOrder ?? undefined,
-    indicatorSource: ctx.indicatorSource ?? null,
-    indicators: new IndicatorCache(),
+    indicatorEngine: ctx.indicatorEngine ?? new InMemoryIndicatorEngine(),
     hideTestIndicators: false,
     indicatorBuffers: [],
     indicatorCounted: 0,

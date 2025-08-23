@@ -13,7 +13,7 @@ describe("builtins", () => {
       market: null,
       symbol: "TEST",
       timeframe: 60,
-      indicators: null,
+      indicatorEngine: null,
     };
     const commonFuncs = createCommon(context);
     // Add a dummy AccountBalance function

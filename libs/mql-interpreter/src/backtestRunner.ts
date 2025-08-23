@@ -12,7 +12,7 @@ import { InMemoryAccount as Account, AccountMetrics } from "./libs/domain/accoun
 import { InMemoryMarketData as MarketData } from "./libs/domain/marketData";
 import type { Candle, Tick } from "./libs/domain/marketData";
 import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "./libs/domain/terminal";
-import { IndicatorSource, InMemoryIndicatorSource } from "./libs/indicatorSource";
+import { IndicatorEngine, InMemoryIndicatorEngine } from "./libs/domain/indicator";
 import { createLibs } from "./libs/factory";
 
 export interface BacktestSession {
@@ -84,7 +84,7 @@ export interface BacktestOptions {
   /** Default timeframe for the expert advisor in seconds */
   timeframe?: number;
   /** Source provider for custom indicators referenced by iCustom */
-  indicatorSource?: IndicatorSource;
+  indicatorEngine?: IndicatorEngine;
 }
 
 export interface BacktestReport {
@@ -102,7 +102,7 @@ export class BacktestRunner {
   private initialized = false;
   private deinitialized = false;
   private pendingTradeEvents: Order[] = [];
-  private indicatorSource: IndicatorSource;
+  private indicatorEngine: IndicatorEngine;
   private context: ExecutionContext;
   constructor(
     private source: string,
@@ -153,7 +153,7 @@ export class BacktestRunner {
       throw new Error(`Compilation failed:\n${msg}`);
     }
     this.runtime = runtime;
-    this.indicatorSource = this.options.indicatorSource ?? new InMemoryIndicatorSource();
+    this.indicatorEngine = this.options.indicatorEngine ?? new InMemoryIndicatorEngine();
     if (options.inputValues) {
       for (const name in this.runtime.variables) {
         const info = this.runtime.variables[name];
@@ -207,7 +207,7 @@ export class BacktestRunner {
       getAsk: () => this.runtime.globalValues.Ask,
       getTime: () => this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0,
       getStopFlag: () => this.runtime.globalValues._StopFlag,
-      indicatorSource: this.indicatorSource,
+      indicatorEngine: this.indicatorEngine,
     };
     this.initializeGlobals();
     const libs = createLibs(this.context);

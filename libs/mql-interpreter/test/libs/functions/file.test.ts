@@ -15,7 +15,7 @@ describe("file builtins", () => {
       market: null,
       symbol: "TEST",
       timeframe: 60,
-      indicators: undefined,
+      indicatorEngine: undefined,
     };
     fileFuncs = createFiles(context);
   });

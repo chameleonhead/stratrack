@@ -18,7 +18,7 @@ beforeAll(() => {
     market: null,
     symbol: "TEST",
     timeframe: 60,
-    indicators: undefined,
+    indicatorEngine: undefined,
   };
   const commonFuncs = createCommon(context);
   registerEnvBuiltins(commonFuncs);

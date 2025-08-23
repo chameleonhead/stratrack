@@ -6,7 +6,7 @@ import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
 import { builtinSignatures } from "./libs/signatures";
 import { BacktestRunner, parseCsv } from "./backtestRunner";
-import { InMemoryIndicatorSource } from "./libs/indicatorSource";
+import { InMemoryIndicatorEngine } from "./libs/domain/indicator";
 
 export function readTextFile(file: string): string {
   const buf = readFileSync(file);
@@ -71,17 +71,17 @@ program
     const code = readTextFile(file);
     const csv = readTextFile(csvFile);
     const data = parseCsv(csv);
-    const indicatorSource = new InMemoryIndicatorSource();
+    const indicatorEngine = new InMemoryIndicatorEngine();
     for (const ind of opts.indicator as string[]) {
       const name = basename(ind, extname(ind));
-      indicatorSource.set(name, readTextFile(ind));
+      indicatorEngine.set(name, readTextFile(ind));
     }
     const runner = new BacktestRunner(code, data, {
       initialBalance: opts.balance,
       initialMargin: opts.margin,
       accountCurrency: opts.currency,
       timeframe: opts.timeframe,
-      indicatorSource,
+      indicatorEngine,
     });
     runner.run();
     console.log(JSON.stringify(runner.getReport(), null, 2));
