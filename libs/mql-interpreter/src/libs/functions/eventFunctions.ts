@@ -28,11 +28,4 @@ export function createEventFunctions(context: ExecutionContext): Record<string, 
   };
 }
 
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: null, symbol: "", timeframe: 0, indicators: null });
-const eventFuncs = createEventFunctions(createDummyContext() as any);
 
-export const EventSetTimer = eventFuncs.EventSetTimer;
-export const EventSetMillisecondTimer = eventFuncs.EventSetMillisecondTimer;
-export const EventKillTimer = eventFuncs.EventKillTimer;
-export const EventChartCustom = eventFuncs.EventChartCustom;

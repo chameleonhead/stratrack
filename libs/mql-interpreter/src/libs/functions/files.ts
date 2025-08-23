@@ -23,11 +23,4 @@ export function createFiles(context: ExecutionContext): Record<string, BuiltinFu
   }
 }
 
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: null, symbol: "", timeframe: 0, indicators: null });
-const fileFuncs = createFiles(createDummyContext() as any);
 
-export const FileOpen = fileFuncs.FileOpen;
-export const FileReadString = fileFuncs.FileReadString;
-export const FileWriteString = fileFuncs.FileWriteString;
-export const FileClose = fileFuncs.FileClose;

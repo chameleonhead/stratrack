@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
+import { InMemoryTerminal as VirtualTerminal } from "../../../src/libs/domain/terminal";
 import { createFiles } from "../../../src/libs/functions/files";
 import type { ExecutionContext } from "../../../src/libs/functions/types";
 
@@ -15,7 +15,7 @@ describe("file builtins", () => {
       market: null, 
       symbol: "TEST", 
       timeframe: 60, 
-      indicators: null 
+      indicators: undefined 
     };
     fileFuncs = createFiles(context);
   });

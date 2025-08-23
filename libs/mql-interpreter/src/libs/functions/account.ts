@@ -36,34 +36,4 @@ export function createAccountFunctions(context: ExecutionContext): Record<string
   };
 }
 
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ 
-  terminal: null, 
-  broker: null, 
-  account: null, 
-  market: null, 
-  symbol: "", 
-  timeframe: 0, 
-  indicators: null 
-});
-const accountFuncs = createAccountFunctions(createDummyContext() as any);
 
-export const AccountBalance = accountFuncs.AccountBalance;
-export const AccountCompany = accountFuncs.AccountCompany;
-export const AccountCredit = accountFuncs.AccountCredit;
-export const AccountCurrency = accountFuncs.AccountCurrency;
-export const AccountEquity = accountFuncs.AccountEquity;
-export const AccountFreeMargin = accountFuncs.AccountFreeMargin;
-export const AccountFreeMarginCheck = accountFuncs.AccountFreeMarginCheck;
-export const AccountFreeMarginMode = accountFuncs.AccountFreeMarginMode;
-export const AccountInfoDouble = accountFuncs.AccountInfoDouble;
-export const AccountInfoInteger = accountFuncs.AccountInfoInteger;
-export const AccountInfoString = accountFuncs.AccountInfoString;
-export const AccountLeverage = accountFuncs.AccountLeverage;
-export const AccountMargin = accountFuncs.AccountMargin;
-export const AccountName = accountFuncs.AccountName;
-export const AccountNumber = accountFuncs.AccountNumber;
-export const AccountProfit = accountFuncs.AccountProfit;
-export const AccountServer = accountFuncs.AccountServer;
-export const AccountStopoutLevel = accountFuncs.AccountStopoutLevel;
-export const AccountStopoutMode = accountFuncs.AccountStopoutMode;

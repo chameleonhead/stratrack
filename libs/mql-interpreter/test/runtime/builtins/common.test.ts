@@ -4,7 +4,7 @@ import type { ExecutionContext } from "../../../src/libs/functions/types";
 import { StructToTime } from "../../../src/libs/functions/dateandtime";
 import { builtinSignatures } from "../../../src/libs/signatures";
 import { coreBuiltins } from "../../../src/libs/functions/registry";
-import { VirtualTerminal } from "../../../src/libs/virtualTerminal";
+import { InMemoryTerminal as VirtualTerminal } from "../../../src/libs/domain/terminal";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("common builtins", () => {
@@ -21,7 +21,7 @@ describe("common builtins", () => {
       market: null, 
       symbol: "TEST", 
       timeframe: 60, 
-      indicators: null 
+      indicators: undefined
     };
     commonFuncs = createCommon(context);
     globalFuncs = createGlobals(context);

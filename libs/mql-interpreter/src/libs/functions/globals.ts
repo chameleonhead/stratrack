@@ -58,19 +58,3 @@ export function createGlobals(context: ExecutionContext): Record<string, Builtin
     },
   };
 }
-
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: null, symbol: "", timeframe: 0, indicators: null });
-const globalFuncs = createGlobals(createDummyContext() as any);
-
-export const GlobalVariableSet = globalFuncs.GlobalVariableSet;
-export const GlobalVariableGet = globalFuncs.GlobalVariableGet;
-export const GlobalVariableDel = globalFuncs.GlobalVariableDel;
-export const GlobalVariableCheck = globalFuncs.GlobalVariableCheck;
-export const GlobalVariableTime = globalFuncs.GlobalVariableTime;
-export const GlobalVariablesDeleteAll = globalFuncs.GlobalVariablesDeleteAll;
-export const GlobalVariablesTotal = globalFuncs.GlobalVariablesTotal;
-export const GlobalVariableName = globalFuncs.GlobalVariableName;
-export const GlobalVariableTemp = globalFuncs.GlobalVariableTemp;
-export const GlobalVariableSetOnCondition = globalFuncs.GlobalVariableSetOnCondition;
-export const GlobalVariablesFlush = globalFuncs.GlobalVariablesFlush;

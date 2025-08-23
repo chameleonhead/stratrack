@@ -98,36 +98,4 @@ export function createCommon(context: ExecutionContext): Record<string, BuiltinF
   };
 }
 
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: null, symbol: "", timeframe: 0, indicators: null });
-const commonFuncs = createCommon(createDummyContext() as any);
 
-export const Print = commonFuncs.Print;
-export const Alert = commonFuncs.Alert;
-export const Comment = commonFuncs.Comment;
-export const PrintFormat = commonFuncs.PrintFormat;
-export const printf = commonFuncs.printf;
-export const GetTickCount = commonFuncs.GetTickCount;
-export const GetTickCount64 = commonFuncs.GetTickCount64;
-export const GetMicrosecondCount = commonFuncs.GetMicrosecondCount;
-export const Sleep = commonFuncs.Sleep;
-export const PlaySound = commonFuncs.PlaySound;
-export const SendMail = commonFuncs.SendMail;
-export const SendNotification = commonFuncs.SendNotification;
-export const SendFTP = commonFuncs.SendFTP;
-export const TerminalClose = commonFuncs.TerminalClose;
-export const ExpertRemove = commonFuncs.ExpertRemove;
-export const DebugBreak = commonFuncs.DebugBreak;
-export const MessageBox = commonFuncs.MessageBox;
-export const WebRequest = commonFuncs.WebRequest;
-export const TerminalCompany = commonFuncs.TerminalCompany;
-export const TerminalName = commonFuncs.TerminalName;
-export const TerminalPath = commonFuncs.TerminalPath;
-export const IsTesting = commonFuncs.IsTesting;
-export const IsOptimization = commonFuncs.IsOptimization;
-export const IsVisualMode = commonFuncs.IsVisualMode;
-export const IsDemo = commonFuncs.IsDemo;
-export const IsConnected = commonFuncs.IsConnected;
-export const IsTradeAllowed = commonFuncs.IsTradeAllowed;
-export const IsTradeContextBusy = commonFuncs.IsTradeContextBusy;
-export const UninitializeReason = commonFuncs.UninitializeReason;

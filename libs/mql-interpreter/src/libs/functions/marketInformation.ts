@@ -33,14 +33,4 @@ export function createMarketInformation(context: ExecutionContext): Record<strin
   };
 }
 
-// Legacy exports for registry.ts compatibility - these should not be used directly
-const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: { getTick: () => null, getSymbols: () => [], select: () => false }, symbol: "", timeframe: 0, indicators: null });
-const marketFuncs = createMarketInformation(createDummyContext() as any);
 
-export const MarketInfo = marketFuncs.MarketInfo;
-export const SymbolsTotal = marketFuncs.SymbolsTotal;
-export const SymbolName = marketFuncs.SymbolName;
-export const SymbolSelect = marketFuncs.SymbolSelect;
-export const SymbolInfoDouble = marketFuncs.SymbolInfoDouble;
-export const SymbolInfoInteger = marketFuncs.SymbolInfoInteger;
-export const SymbolInfoString = marketFuncs.SymbolInfoString;

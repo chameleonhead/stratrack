@@ -1,21 +1,7 @@
-export interface VirtualFile {
-  name: string;
-  data: string;
-  position: number;
-}
-
-export interface TerminalStorage {
-  /**
-   * Read previously stored global variable data. Should return a JSON string
-   * or `undefined` when no data exists.
-   */
-  read: () => string | undefined;
-  /** Persist global variable data. */
-  write: (data: string) => void;
-}
+import type { ITerminal, VirtualFile, TerminalStorage, ChartEvent } from "./types";
 
 /** Simple in-memory terminal used during backtests. */
-export class VirtualTerminal {
+export class InMemoryTerminal implements ITerminal {
   private files: Record<string, VirtualFile> = {};
   private handles: Record<number, VirtualFile> = {};
   private nextHandle = 1;
@@ -23,13 +9,11 @@ export class VirtualTerminal {
   private storage?: TerminalStorage;
   private timerInterval: number | null = null;
   private nextTimer: number | null = null;
-  private chartEvents: {
-    id: number;
-    lparam: number;
-    dparam: number;
-    sparam: string;
-  }[] = [];
+  private chartEvents: ChartEvent[] = [];
   private logger: (...args: any[]) => void;
+  private currentChartId = 0;
+  private currentSymbol = "GBPUSD";
+  private currentPeriod = 15;
 
   constructor(
     storage?: TerminalStorage,
@@ -212,12 +196,7 @@ export class VirtualTerminal {
     this.chartEvents.push({ id, lparam, dparam, sparam });
   }
 
-  consumeChartEvents(): {
-    id: number;
-    lparam: number;
-    dparam: number;
-    sparam: string;
-  }[] {
+  consumeChartEvents(): ChartEvent[] {
     const events = this.chartEvents;
     this.chartEvents = [];
     return events;
@@ -241,5 +220,55 @@ export class VirtualTerminal {
 
   playSound(_file: string): boolean {
     return true;
+  }
+
+  // ----- chart operations -----
+  getChartId(): number {
+    return this.currentChartId;
+  }
+
+  getChartSymbol(chartId: number = 0): string {
+    if (chartId === 0 || chartId === this.currentChartId) {
+      return this.currentSymbol;
+    }
+    return "GBPUSD"; // Default for other charts
+  }
+
+  getChartPeriod(chartId: number = 0): number {
+    if (chartId === 0 || chartId === this.currentChartId) {
+      return this.currentPeriod;
+    }
+    return 15; // Default for other charts
+  }
+
+  getChartProperty(chartId: number, propId: number, subWindow: number = 0): any {
+    // Basic implementation - return dummy values for common chart properties
+    if (propId === 0) { // CHART_PRICE_MAX
+      return 2.0;
+    } else if (propId === 1) { // CHART_PRICE_MIN
+      return 1.0;
+    }
+    return 0.0;
+  }
+
+  setChartProperty(chartId: number, propId: number, value: any, subWindow: number = 0): boolean {
+    // Basic implementation - just return success
+    return true;
+  }
+
+  redrawChart(chartId?: number): boolean {
+    // Basic implementation - just return success
+    return true;
+  }
+
+  getWindowInfo(subWindow: number = 0): any {
+    // Basic implementation - return dummy values
+    return {
+      height: 600,
+      width: 800,
+      barsPerChart: 100,
+      firstVisibleBar: 0,
+      isVisible: true
+    };
   }
 }

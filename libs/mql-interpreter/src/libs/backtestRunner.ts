@@ -11,7 +11,7 @@ import { InMemoryBroker as Broker, Order } from "./domain/broker";
 import { InMemoryAccount as Account, AccountMetrics } from "./domain/account";
 import { InMemoryMarketData as MarketData } from "./domain/marketData";
 import type { Candle, Tick } from "./domain/marketData";
-import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
+import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "./domain/terminal";
 import type { ExecutionContext } from "./functions/types";
 import { IndicatorCache } from "./indicatorCache";
 import { IndicatorSource, InMemoryIndicatorSource } from "./indicatorSource";
