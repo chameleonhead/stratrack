@@ -9,6 +9,7 @@ import { createCustomInd } from "../functions/customind";
 import { createGlobals } from "../functions/globals";
 import { createIndicators } from "../functions/indicators";
 import { createMarketInformation } from "../functions/marketInformation";
+import { createObjects } from "../functions/objects";
 import { createTrading } from "../functions/trading";
 
 export interface BrokerApi {
@@ -50,6 +51,7 @@ export function createLiveLibs(api: BrokerApi): MqlLibrary {
     ...createGlobals(context),
     ...createIndicators(context),
     ...createMarketInformation(context),
+    ...createObjects(context),
     ...createTrading(context),
   };
 }

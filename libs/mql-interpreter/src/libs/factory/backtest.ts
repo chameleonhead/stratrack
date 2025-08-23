@@ -13,6 +13,7 @@ import { createFiles } from "../functions/files";
 import { createGlobals } from "../functions/globals";
 import { createIndicators } from "../functions/indicators";
 import { createMarketInformation } from "../functions/marketInformation";
+import { createObjects } from "../functions/objects";
 import { createTrading } from "../functions/trading";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
@@ -222,6 +223,7 @@ export function createBacktestLibs(
     ...createGlobals(context),
     ...createIndicators(context),
     ...createMarketInformation(context),
+    ...createObjects(context),
     ...createTrading(context),
   };
 }
