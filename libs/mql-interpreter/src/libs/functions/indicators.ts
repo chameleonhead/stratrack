@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
 import type { Candle } from "../domain/marketData";
-import type { IndicatorSource } from "../indicatorSource";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   // ヘルパー関数
@@ -28,8 +28,6 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
         return candle.close;
     }
   };
-
-  const barIndex = (arr: Candle[], shift: number) => arr.length - 1 - shift;
 
   return {
     // Moving Average

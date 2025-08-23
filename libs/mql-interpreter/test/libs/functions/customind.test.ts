@@ -69,7 +69,7 @@ describe("customind functions", () => {
     });
 
     it("should have default value of 5", () => {
-      const functions = createCustomInd(context);
+      createCustomInd(context);
       expect(context.indicatorDigits).toBe(5);
     });
   });
@@ -118,7 +118,7 @@ describe("customind functions", () => {
     });
 
     it("should have default empty string", () => {
-      const functions = createCustomInd(context);
+      createCustomInd(context);
       expect(context.indicatorShortName).toBe("");
     });
   });
@@ -229,7 +229,7 @@ describe("customind functions", () => {
       const functions = createCustomInd(context);
       context.indicatorDigits = 3;
       context.indicatorShortName = "Test";
-      
+
       const state = functions._getInternalState();
       expect(state.indicatorDigits).toBe(3);
       expect(state.indicatorShortName).toBe("Test");
@@ -242,7 +242,7 @@ describe("customind functions", () => {
         indicatorShortName: "New Name",
         hideTestIndicators: true,
       };
-      
+
       functions._setInternalState(newState);
       expect(context.indicatorDigits).toBe(4);
       expect(context.indicatorShortName).toBe("New Name");
@@ -258,9 +258,9 @@ describe("customind functions", () => {
         account: null,
         market: null,
       };
-      
-      const functions = createCustomInd(emptyContext);
-      
+
+      createCustomInd(emptyContext);
+
       expect(emptyContext.hideTestIndicators).toBe(false);
       expect(emptyContext.indicatorBuffers).toEqual([]);
       expect(emptyContext.indicatorCounted).toBe(0);
@@ -285,9 +285,9 @@ describe("customind functions", () => {
         indicatorDigits: 8,
         indicatorShortName: "Existing",
       };
-      
-      const functions = createCustomInd(existingContext);
-      
+
+      createCustomInd(existingContext);
+
       expect(existingContext.indicatorDigits).toBe(8);
       expect(existingContext.indicatorShortName).toBe("Existing");
     });

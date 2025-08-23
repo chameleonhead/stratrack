@@ -1,4 +1,3 @@
-import type { Candle } from "../domain/marketData";
 import type { ExecutionContext } from "../domain/types";
 import { InMemoryMarketData as MarketData } from "../domain/marketData";
 import { InMemoryBroker as Broker } from "../domain/broker";
@@ -17,16 +16,8 @@ import { createObjects } from "../functions/objects";
 import { createSeries } from "../functions/series";
 import { createTrading } from "../functions/trading";
 import { IndicatorCache } from "../indicatorCache";
-import { BacktestRunner } from "../../backtestRunner";
-import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
 
-export function createBacktestLibs(
-  data: MarketData,
-  indicatorSource: IndicatorSource = new InMemoryIndicatorSource()
-): MqlLibrary {
-  const indicatorBuffers: any[] = [];
-  const indicatorLabels: string[] = [];
-  const indicatorShifts: number[] = [];
+export function createBacktestLibs(data: MarketData): MqlLibrary {
   const broker = new Broker();
   const account = new Account();
   const indicators = new IndicatorCache();
@@ -55,30 +46,6 @@ export function createBacktestLibs(
     levelStyles: {},
     levelValues: {},
   };
-
-  const candlesFor = (symbol: string, timeframe: number): Candle[] =>
-    data.getCandles(symbol, timeframe);
-
-  const priceVal = (candle: Candle, applied: number): number => {
-    switch (applied) {
-      case 1:
-        return candle.open;
-      case 2:
-        return candle.high;
-      case 3:
-        return candle.low;
-      case 4:
-        return (candle.high + candle.low) / 2;
-      case 5:
-        return (candle.high + candle.low + candle.close) / 3;
-      case 6:
-        return (candle.high + candle.low + 2 * candle.close) / 4;
-      default:
-        return candle.close;
-    }
-  };
-
-  const barIndex = (arr: Candle[], shift: number) => arr.length - 1 - shift;
 
   return {
     // --- account helpers ---

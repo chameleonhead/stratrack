@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
 
