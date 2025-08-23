@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { basename, extname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { program } from "commander";
 import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
@@ -89,9 +88,7 @@ program
   });
 
 const isDirectRun =
-  typeof require !== "undefined" && typeof module !== "undefined"
-    ? require.main === module
-    : process.argv[1] === fileURLToPath(import.meta.url);
+  typeof require !== "undefined" && typeof module !== "undefined" ? require.main === module : true;
 
 if (isDirectRun) {
   program.parse();
