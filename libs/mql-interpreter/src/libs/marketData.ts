@@ -33,6 +33,15 @@ export class MarketData {
     return true;
   }
 
+  getIndex(symbol: string, timeframe: number, time: number): number {
+    const arr = this.ticks[symbol];
+    if (!arr || !arr.length) return -1;
+    let pos = this.positions[symbol] ?? 0;
+    while (pos + 1 < arr.length && arr[pos + 1].time <= time) pos++;
+    this.positions[symbol] = pos;
+    return pos;
+  }
+
   /** Return latest tick at or before the given time */
   getTick(symbol: string, time: number): Tick | undefined {
     const arr = this.ticks[symbol];
@@ -41,6 +50,12 @@ export class MarketData {
     while (pos + 1 < arr.length && arr[pos + 1].time <= time) pos++;
     this.positions[symbol] = pos;
     return arr[pos];
+  }
+  getCandle(symbol: string, timeframe:number, time: number) {
+    const index = this.getIndex(symbol, timeframe, time);
+    const candle = this.candles[symbol][timeframe][index];
+    if (!candle) return undefined;
+    return candle;
   }
 
   /** Aggregate ticks into candles of the given timeframe */

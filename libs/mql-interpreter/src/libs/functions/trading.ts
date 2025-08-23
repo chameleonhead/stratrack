@@ -1,11 +1,10 @@
-import type { BuiltinFunction } from "../types";
-import { Order } from "../../broker";
-import { getContext } from "../context";
+import type { BuiltinFunction } from "./types";
+import { Order } from "../broker";
+import { ExecutionContext } from "./types";
 
-export function createTrading(): Record<string, BuiltinFunction> {
-  const ctx = getContext();
-  const broker = ctx.broker!;
-  const account = ctx.account!;
+export function createTrading(context: ExecutionContext): Record<string, BuiltinFunction> {
+  const broker = context.broker!;
+  const account = context.account!;
   let selectedOrder: Order | undefined;
   return {
     OrdersTotal: () => broker.getActiveOrders().length,

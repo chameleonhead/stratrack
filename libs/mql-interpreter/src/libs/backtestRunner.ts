@@ -12,9 +12,13 @@ import { Account, AccountMetrics } from "./account";
 import { MarketData } from "./marketData";
 import type { Candle, Tick } from "./market.types";
 import { VirtualTerminal, TerminalStorage } from "./virtualTerminal";
-import { setContext, getContext } from "./functions/context";
+import type { ExecutionContext } from "./functions/types";
 import { IndicatorCache } from "./indicatorCache";
 import { IndicatorSource, InMemoryIndicatorSource } from "./indicatorSource";
+import { createCommon } from "./functions/common";
+import { createGlobals } from "./functions/globals";
+import { createEventFunctions } from "./functions/eventFunctions";
+import { createFiles } from "./functions/files";
 
 export interface BacktestSession {
   broker: Broker;
@@ -106,6 +110,7 @@ export class BacktestRunner {
   private pendingTradeEvents: Order[] = [];
   private indicators = new IndicatorCache();
   private indicatorSource: IndicatorSource;
+  private context: ExecutionContext;
   constructor(
     private source: string,
     private candles: Candle[],
@@ -186,7 +191,7 @@ export class BacktestRunner {
     this.market = new MarketData(ticks, candleData);
     const period =
       options.timeframe ?? (candles.length > 1 ? candles[1].time - candles[0].time : 0);
-    setContext({
+    this.context = {
       terminal: this.terminal,
       broker,
       account,
@@ -194,10 +199,14 @@ export class BacktestRunner {
       symbol,
       timeframe: period,
       indicators: this.indicators,
-    });
+    };
     this.initializeGlobals();
     const builtins = this.buildBuiltins();
-    registerEnvBuiltins(builtins);
+    // Add factory-created functions to builtins
+    const contextBuiltins = {
+      ...this.createContextBuiltins(),
+    };
+    registerEnvBuiltins({ ...contextBuiltins, ...builtins });
   }
 
   private initializeGlobals(): void {
@@ -220,6 +229,15 @@ export class BacktestRunner {
       this.options.timeframe ??
       (this.candles.length > 1 ? this.candles[1].time - this.candles[0].time : 0);
     rt._Period = period;
+  }
+
+  private createContextBuiltins(): Record<string, BuiltinFunction> {
+    return {
+      ...createCommon(this.context),
+      ...createGlobals(this.context),
+      ...createEventFunctions(this.context),
+      ...createFiles(this.context),
+    };
   }
 
   private buildBuiltins(): Record<string, BuiltinFunction> {
@@ -442,7 +460,7 @@ export class BacktestRunner {
       ) => {
         const arr = candlesFor(sym, tf);
         const curIdx = findIndex(arr, currentTime());
-        const cache = getContext().indicators!;
+        const cache = this.context.indicators!;
         const key = {
           type: "iMA",
           symbol: sym,
@@ -478,7 +496,7 @@ export class BacktestRunner {
       ) => {
         const arr = candlesFor(sym, tf);
         const curIdx = findIndex(arr, currentTime());
-        const cache = getContext().indicators!;
+        const cache = this.context.indicators!;
         const key = {
           type: "iMACD",
           symbol: sym,
@@ -530,7 +548,7 @@ export class BacktestRunner {
       iATR: (sym: any, tf: any, period: number, shift: number) => {
         const arr = candlesFor(sym, tf);
         const curIdx = findIndex(arr, currentTime());
-        const cache = getContext().indicators!;
+        const cache = this.context.indicators!;
         const key = {
           type: "iATR",
           symbol: sym,
@@ -573,7 +591,7 @@ export class BacktestRunner {
       iRSI: (sym: any, tf: any, period: number, applied: number, shift: number) => {
         const arr = candlesFor(sym, tf);
         const curIdx = findIndex(arr, currentTime());
-        const cache = getContext().indicators!;
+        const cache = this.context.indicators!;
         const key = {
           type: "iRSI",
           symbol: sym,
@@ -631,7 +649,7 @@ export class BacktestRunner {
         const params = args.slice(0, -2);
         const source = this.indicatorSource.get(name);
         if (!source) return 0;
-        const cache = getContext().indicators!;
+        const cache = this.context.indicators!;
         const key = {
           type: `iCustom:${name}`,
           symbol: sym,
@@ -866,6 +884,10 @@ export class BacktestRunner {
 
   getTerminal(): VirtualTerminal {
     return this.terminal;
+  }
+
+  getContext(): ExecutionContext {
+    return this.context;
   }
 
   getReport(): BacktestReport {

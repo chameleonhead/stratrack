@@ -1,7 +1,28 @@
 import { getBuiltin, registerEnvBuiltins } from "../../src/libs/functions";
-import { describe, it, expect } from "vitest";
+import { createCommon } from "../../src/libs/functions/common";
+import type { ExecutionContext } from "../../src/libs/functions/types";
+import { describe, it, expect, beforeEach } from "vitest";
 
 describe("builtins", () => {
+  beforeEach(() => {
+    // Register necessary functions for tests
+    const context: ExecutionContext = {
+      terminal: null,
+      broker: null,
+      account: null,
+      market: null,
+      symbol: "TEST",
+      timeframe: 60,
+      indicators: null,
+    };
+    const commonFuncs = createCommon(context);
+    // Add a dummy AccountBalance function
+    registerEnvBuiltins({
+      ...commonFuncs,
+      AccountBalance: () => 10000,
+    });
+  });
+  
   it("provides Print function", () => {
     const fn = getBuiltin("Print");
     expect(fn).toBeTypeOf("function");

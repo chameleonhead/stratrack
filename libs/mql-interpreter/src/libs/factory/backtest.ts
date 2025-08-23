@@ -3,12 +3,16 @@ import { MarketData } from "../marketData";
 import { Broker } from "../broker";
 import { Account } from "../account";
 import { MqlLibrary } from "../types";
-import { createMarketInformation } from "../functions/marketInformation/backtest";
-import { createTrading } from "../functions/trading/backtest";
-import { setContext, getContext } from "../functions/context";
+import { createMarketInformation } from "../functions/marketInformation";
+import { createTrading } from "../functions/trading";
+import { ExecutionContext } from "../functions/types";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
 import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
+import { createFiles } from "../functions/files";
+import { createCommon } from "../functions/common";
+import { createGlobals } from "../functions/globals";
+import { createEventFunctions } from "../functions/eventFunctions";
 
 export function createBacktestLibs(
   data: MarketData,
@@ -21,7 +25,7 @@ export function createBacktestLibs(
   const broker = new Broker();
   const account = new Account();
   const indicators = new IndicatorCache();
-  setContext({
+  const context: ExecutionContext = {
     terminal: null,
     broker,
     account,
@@ -29,7 +33,7 @@ export function createBacktestLibs(
     symbol: "",
     timeframe: 0,
     indicators,
-  });
+  }
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
     data.getCandles(symbol, timeframe);
@@ -244,7 +248,7 @@ export function createBacktestLibs(
     ) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = getContext().indicators!;
+      const cache = context.indicators!;
       const key = {
         type: "iMA",
         symbol,
@@ -280,7 +284,7 @@ export function createBacktestLibs(
     ) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = getContext().indicators!;
+      const cache = context.indicators!;
       const key = {
         type: "iMACD",
         symbol,
@@ -332,7 +336,7 @@ export function createBacktestLibs(
     iATR: (symbol: string, timeframe: number, period: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = getContext().indicators!;
+      const cache = context.indicators!;
       const key = {
         type: "iATR",
         symbol,
@@ -375,7 +379,7 @@ export function createBacktestLibs(
     iRSI: (symbol: string, timeframe: number, period: number, applied: number, shift: number) => {
       const arr = candlesFor(symbol, timeframe);
       const curIdx = arr.length - 1;
-      const cache = getContext().indicators!;
+      const cache = context.indicators!;
       const key = {
         type: "iRSI",
         symbol,
@@ -433,7 +437,7 @@ export function createBacktestLibs(
       const params = args.slice(0, -2);
       const source = indicatorSource.get(name);
       if (!source) return 0;
-      const cache = getContext().indicators!;
+      const cache = context.indicators!;
       const key = {
         type: `iCustom:${name}`,
         symbol,
@@ -457,7 +461,11 @@ export function createBacktestLibs(
       const idx = curIdx - shift;
       return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
     },
-    ...createMarketInformation(),
-    ...createTrading(),
+    ...createFiles(context),
+    ...createMarketInformation(context),
+    ...createTrading(context),
+    ...createCommon(context),
+    ...createGlobals(context),
+    ...createEventFunctions(context),
   };
 }

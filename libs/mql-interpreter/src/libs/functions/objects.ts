@@ -9,10 +9,10 @@ export const ObjectCreate: BuiltinFunction = (
   chartIdOrName: number | string,
   objectNameOrType?: string,
   typeOrParam1?: number,
-  param1?: any,
-  param2?: any,
-  param3?: any,
-  param4?: any
+  _param1?: any,
+  _param2?: any,
+  _param3?: any,
+  _param4?: any
 ) => {
   // Handle overloaded parameters
   let chartId: number, objectName: string, type: number;
@@ -21,7 +21,7 @@ export const ObjectCreate: BuiltinFunction = (
     // First parameter is object name
     chartId = 0;
     objectName = chartIdOrName;
-    type = objectNameOrType as number;
+    type = Number(objectNameOrType) || 0;
   } else {
     // First parameter is chart ID
     chartId = chartIdOrName;
@@ -226,12 +226,12 @@ export const ObjectSetString: BuiltinFunction = (
   return true;
 };
 
-export const ObjectsTotal: BuiltinFunction = (chartId = 0, subWindow = -1, type = -1) => {
+export const ObjectsTotal: BuiltinFunction = (chartId = 0, _subWindow = -1, _type = -1) => {
   // Basic implementation - return number of objects for the chart
   return Object.keys(chartObjects).filter(key => key.startsWith(`${chartId}:`)).length;
 };
 
-export const ObjectName: BuiltinFunction = (chartId = 0, index: number, subWindow = -1, type = -1) => {
+export const ObjectName: BuiltinFunction = (chartId = 0, index: number, _subWindow = -1, _type = -1) => {
   // Basic implementation - return object name by index
   const objects = Object.keys(chartObjects).filter(key => key.startsWith(`${chartId}:`));
   if (index >= 0 && index < objects.length) {
@@ -258,3 +258,4 @@ export const ObjectType: BuiltinFunction = (
   const obj = chartObjects[key];
   return obj?.type || -1;
 };
+

@@ -13,18 +13,3 @@ export interface ExecutionContext {
   timeframe?: number;
   indicators?: IndicatorCache;
 }
-
-let ctx: ExecutionContext = {
-  terminal: null,
-  broker: null,
-  account: null,
-  market: null,
-};
-
-export function setContext(context: ExecutionContext): void {
-  ctx = context;
-}
-
-export function getContext(): ExecutionContext {
-  return ctx;
-}

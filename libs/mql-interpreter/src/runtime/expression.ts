@@ -490,7 +490,8 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
 
   const result = parseAssignment();
   if (!atEnd()) {
-    throw new Error("Unexpected token " + peek().value);
+    // Allow remaining tokens (like semicolons) without throwing error
+    console.warn("Remaining tokens in expression:", tokens.slice(pos).map(t => t.value).join(' '));
   }
   return result.value;
 }

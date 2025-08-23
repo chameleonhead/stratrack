@@ -2,9 +2,27 @@ import { lex } from "../../src/parser/lexer";
 import { parse } from "../../src/parser/parser";
 import { execute, callFunction, instantiate, callMethod } from "../../src/runtime/runtime";
 import { executeStatements } from "../../src/runtime/statements";
-import { describe, it, expect, vi } from "vitest";
+import { registerEnvBuiltins } from "../../src/libs/functions";
+import { createCommon } from "../../src/libs/functions/common";
+import type { ExecutionContext } from "../../src/libs/functions/types";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 describe("execute", () => {
+  beforeEach(() => {
+    // Register Print function for tests that need it
+    const context: ExecutionContext = {
+      terminal: null,
+      broker: null,
+      account: null,
+      market: null,
+      symbol: "TEST",
+      timeframe: 60,
+      indicators: null,
+    };
+    const commonFuncs = createCommon(context);
+    registerEnvBuiltins(commonFuncs);
+  });
+  
   it("evaluates enums", () => {
     const { tokens } = lex("enum Color { Red=1, Green, Blue };");
     const ast = parse(tokens);

@@ -1,12 +1,12 @@
 import { BuiltinFunction } from "./types";
 
-export const ChartRedraw: BuiltinFunction = (chartId?: number) => {
+export const ChartRedraw: BuiltinFunction = (_chartId?: number) => {
   // Basic implementation - just return success
   // In a real implementation, this would trigger chart redraw
   return true;
 };
 
-export const ChartGetDouble: BuiltinFunction = (chartId: number, propId: number, subWindow = 0) => {
+export const ChartGetDouble: BuiltinFunction = (_chartId: number, propId: number, _subWindow = 0) => {
   // Basic implementation - return dummy values for common chart properties
   switch (propId) {
     case 0: // CHART_PRICE_MAX
@@ -18,7 +18,7 @@ export const ChartGetDouble: BuiltinFunction = (chartId: number, propId: number,
   }
 };
 
-export const ChartGetInteger: BuiltinFunction = (chartId: number, propId: number, subWindow = 0) => {
+export const ChartGetInteger: BuiltinFunction = (_chartId: number, propId: number, _subWindow = 0) => {
   // Basic implementation - return dummy values for common chart properties
   switch (propId) {
     case 0: // CHART_BRING_TO_TOP
@@ -34,7 +34,7 @@ export const ChartGetInteger: BuiltinFunction = (chartId: number, propId: number
   }
 };
 
-export const ChartGetString: BuiltinFunction = (chartId: number, propId: number, subWindow = 0) => {
+export const ChartGetString: BuiltinFunction = (_chartId: number, propId: number, _subWindow = 0) => {
   // Basic implementation - return dummy values
   switch (propId) {
     case 0: // CHART_COMMENT
@@ -44,17 +44,17 @@ export const ChartGetString: BuiltinFunction = (chartId: number, propId: number,
   }
 };
 
-export const ChartSetDouble: BuiltinFunction = (chartId: number, propId: number, value: number) => {
+export const ChartSetDouble: BuiltinFunction = (_chartId: number, _propId: number, _value: number) => {
   // Basic implementation - just return success
   return true;
 };
 
-export const ChartSetInteger: BuiltinFunction = (chartId: number, propId: number, value: number) => {
+export const ChartSetInteger: BuiltinFunction = (_chartId: number, _propId: number, _value: number) => {
   // Basic implementation - just return success
   return true;
 };
 
-export const ChartSetString: BuiltinFunction = (chartId: number, propId: number, value: string) => {
+export const ChartSetString: BuiltinFunction = (_chartId: number, _propId: number, _value: string) => {
   // Basic implementation - just return success
   return true;
 };
@@ -64,12 +64,12 @@ export const ChartID: BuiltinFunction = () => {
   return 0;
 };
 
-export const ChartPeriod: BuiltinFunction = (chartId = 0) => {
+export const ChartPeriod: BuiltinFunction = (_chartId = 0) => {
   // Return M15 period (15 minutes)
   return 15;
 };
 
-export const ChartSymbol: BuiltinFunction = (chartId = 0) => {
+export const ChartSymbol: BuiltinFunction = (_chartId = 0) => {
   // Return default symbol
   return "GBPUSD";
 };
@@ -80,13 +80,18 @@ export const WindowRedraw: BuiltinFunction = () => {
 };
 
 export const WindowScreenShot: BuiltinFunction = (
-  filename: string,
-  sizeX = 800,
-  sizeY = 600,
-  startBar = -1,
-  chartScale = -1,
-  chartMode = -1
+  _filename: string,
+  _sizeX = 800,
+  _sizeY = 600,
+  _startBar = -1,
+  _chartScale = -1,
+  _chartMode = -1
 ) => {
   // Basic implementation - just return success
   return true;
+};
+
+export const Symbol: BuiltinFunction = () => {
+  // Return default symbol
+  return "GBPUSD";
 };

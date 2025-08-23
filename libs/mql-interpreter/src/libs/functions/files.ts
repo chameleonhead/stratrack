@@ -1,24 +1,33 @@
-import type { BuiltinFunction } from "./types";
-import { getContext } from "./context";
+import type { BuiltinFunction, ExecutionContext } from "./types";
 
-export const FileOpen: BuiltinFunction = (name: string, mode: string) => {
-  const term = getContext().terminal;
-  if (!term) return -1;
-  return term.open(name, mode);
-};
+export function createFiles(context: ExecutionContext): Record<string, BuiltinFunction> {
+  return {
+    FileOpen: (name: string, mode: string) => {
+      const term = context.terminal;
+      if (!term) return -1;
+      return term.open(name, mode);
+    },
+    FileReadString: (handle: number) => {
+      const term = context.terminal;
+      return term?.read(handle) ?? "";
+    },
+    FileWriteString: (handle: number, text: string) => {
+      const term = context.terminal;
+      term?.write(handle, text);
+      return text.length;
+    },
+    FileClose: (handle: number) => {
+      context.terminal?.close(handle);
+      return 0;
+    }
+  }
+}
 
-export const FileReadString: BuiltinFunction = (handle: number) => {
-  const term = getContext().terminal;
-  return term?.read(handle) ?? "";
-};
+// Legacy exports for registry.ts compatibility - these should not be used directly
+const createDummyContext = () => ({ terminal: null, broker: null, account: null, market: null, symbol: "", timeframe: 0, indicators: null });
+const fileFuncs = createFiles(createDummyContext() as any);
 
-export const FileWriteString: BuiltinFunction = (handle: number, text: string) => {
-  const term = getContext().terminal;
-  term?.write(handle, text);
-  return text.length;
-};
-
-export const FileClose: BuiltinFunction = (handle: number) => {
-  getContext().terminal?.close(handle);
-  return 0;
-};
+export const FileOpen = fileFuncs.FileOpen;
+export const FileReadString = fileFuncs.FileReadString;
+export const FileWriteString = fileFuncs.FileWriteString;
+export const FileClose = fileFuncs.FileClose;

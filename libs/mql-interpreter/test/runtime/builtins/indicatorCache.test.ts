@@ -1,6 +1,5 @@
 import { BacktestRunner } from "../../../src/libs/backtestRunner";
 import { callFunction } from "../../../src/runtime/runtime";
-import { getContext } from "../../../src/libs/functions/context";
 import type { IndicatorKey } from "../../../src/libs/indicatorCache";
 import { describe, it, expect } from "vitest";
 
@@ -16,7 +15,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = getContext().indicators!;
+    const cache = runner.getContext().indicators!;
     const key: IndicatorKey = {
       type: "iMA",
       symbol: "TEST",
@@ -42,7 +41,7 @@ describe("indicator cache", () => {
     const runner = new BacktestRunner(code, candles);
     for (let i = 0; i < 4; i++) runner.step();
     const rt = runner.getRuntime();
-    const cache = getContext().indicators!;
+    const cache = runner.getContext().indicators!;
     const key: IndicatorKey = {
       type: "iMACD",
       symbol: "TEST",
@@ -67,7 +66,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = getContext().indicators!;
+    const cache = runner.getContext().indicators!;
     const key: IndicatorKey = {
       type: "iATR",
       symbol: "TEST",
@@ -94,7 +93,7 @@ describe("indicator cache", () => {
     runner.step();
     runner.step();
     const rt = runner.getRuntime();
-    const cache = getContext().indicators!;
+    const cache = runner.getContext().indicators!;
     const key: IndicatorKey = {
       type: "iRSI",
       symbol: "TEST",
