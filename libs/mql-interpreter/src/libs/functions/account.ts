@@ -1,6 +1,6 @@
 import type { BuiltinFunction, ExecutionContext } from "./types";
 
-export function createAccountFunctions(context: ExecutionContext): Record<string, BuiltinFunction> {
+export function createAccount(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
     AccountBalance: () => context.account?.getBalance() ?? 0,
     AccountCompany: () => "",

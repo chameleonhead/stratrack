@@ -83,19 +83,5 @@ export function createCommon(context: ExecutionContext): Record<string, BuiltinF
       if (result) result.value = "";
       return -1;
     },
-
-    TerminalCompany: () => "MetaQuotes Software Corp.",
-    TerminalName: () => "MetaTrader",
-    TerminalPath: () => "",
-    IsTesting: () => false,
-    IsOptimization: () => false,
-    IsVisualMode: () => false,
-    IsDemo: () => false,
-    IsConnected: () => true,
-    IsTradeAllowed: () => true,
-    IsTradeContextBusy: () => false,
-    UninitializeReason: () => 0,
   };
 }
-
-

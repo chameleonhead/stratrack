@@ -5,17 +5,17 @@ import type { ExecutionContext } from "../../../src/libs/functions/types";
 
 describe("file builtins", () => {
   let fileFuncs: ReturnType<typeof createFiles>;
-  
+
   beforeEach(() => {
     const term = new VirtualTerminal();
-    const context: ExecutionContext = { 
-      terminal: term, 
-      broker: null, 
-      account: null, 
-      market: null, 
-      symbol: "TEST", 
-      timeframe: 60, 
-      indicators: undefined 
+    const context: ExecutionContext = {
+      terminal: term,
+      broker: null,
+      account: null,
+      market: null,
+      symbol: "TEST",
+      timeframe: 60,
+      indicators: undefined
     };
     fileFuncs = createFiles(context);
   });

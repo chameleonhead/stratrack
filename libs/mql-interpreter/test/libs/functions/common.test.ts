@@ -1,4 +1,5 @@
 import { createCommon } from "../../../src/libs/functions/common";
+import { createCheck } from "../../../src/libs/functions/check";
 import { createGlobals } from "../../../src/libs/functions/globals";
 import type { ExecutionContext } from "../../../src/libs/functions/types";
 import { StructToTime } from "../../../src/libs/functions/dateandtime";
@@ -10,20 +11,22 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 describe("common builtins", () => {
   let context: ExecutionContext;
   let commonFuncs: ReturnType<typeof createCommon>;
+  let checkFuncs: ReturnType<typeof createCheck>;
   let globalFuncs: ReturnType<typeof createGlobals>;
-  
+
   beforeEach(() => {
     const term = new VirtualTerminal();
-    context = { 
-      terminal: term, 
-      broker: null, 
-      account: null, 
-      market: null, 
-      symbol: "TEST", 
-      timeframe: 60, 
+    context = {
+      terminal: term,
+      broker: null,
+      account: null,
+      market: null,
+      symbol: "TEST",
+      timeframe: 60,
       indicators: undefined
     };
     commonFuncs = createCommon(context);
+    checkFuncs = createCheck(context);
     globalFuncs = createGlobals(context);
   });
   it("Print and Comment output and return 0", () => {
@@ -32,7 +35,7 @@ describe("common builtins", () => {
   });
 
   it("Print formats datetime values", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const spy = vi.spyOn(console, "log").mockImplementation(() => { });
     const t = StructToTime({ year: 2000, mon: 1, day: 2, hour: 3, min: 4, sec: 5 });
     commonFuncs.Print(t);
     expect(spy).toHaveBeenCalledWith("2000.01.02 03:04:05");
@@ -74,17 +77,17 @@ describe("common builtins", () => {
   });
 
   it("terminal info helpers return defaults", () => {
-    expect(commonFuncs.TerminalCompany()).toBe("MetaQuotes Software Corp.");
-    expect(commonFuncs.TerminalName()).toBe("MetaTrader");
-    expect(commonFuncs.TerminalPath()).toBe("");
-    expect(commonFuncs.IsConnected()).toBe(true);
-    expect(commonFuncs.IsTesting()).toBe(false);
-    expect(commonFuncs.IsOptimization()).toBe(false);
-    expect(commonFuncs.IsVisualMode()).toBe(false);
-    expect(commonFuncs.IsDemo()).toBe(false);
-    expect(commonFuncs.IsTradeAllowed()).toBe(true);
-    expect(commonFuncs.IsTradeContextBusy()).toBe(false);
-    expect(commonFuncs.UninitializeReason()).toBe(0);
+    expect(checkFuncs.TerminalCompany()).toBe("MetaQuotes Software Corp.");
+    expect(checkFuncs.TerminalName()).toBe("MetaTrader");
+    expect(checkFuncs.TerminalPath()).toBe("");
+    expect(checkFuncs.IsConnected()).toBe(true);
+    expect(checkFuncs.IsTesting()).toBe(true);
+    expect(checkFuncs.IsOptimization()).toBe(false);
+    expect(checkFuncs.IsVisualMode()).toBe(false);
+    expect(checkFuncs.IsDemo()).toBe(true);
+    expect(checkFuncs.IsTradeAllowed()).toBe(true);
+    expect(checkFuncs.IsTradeContextBusy()).toBe(false);
+    expect(checkFuncs.UninitializeReason()).toBe(0);
   });
 
   it("manages global variables", () => {

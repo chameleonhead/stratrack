@@ -3,13 +3,18 @@ import { InMemoryMarketData as MarketData } from "../domain/marketData";
 import { InMemoryBroker as Broker } from "../domain/broker";
 import { InMemoryAccount as Account } from "../domain/account";
 import { MqlLibrary } from "../types";
+import { createAccount } from "../functions/account";
+import { createCheck } from "../functions/check";
+import { createCommon } from "../functions/common";
+import { createEventFunctions } from "../functions/eventFunctions";
+import { createFiles } from "../functions/files";
+import { createGlobals } from "../functions/globals";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
 import { ExecutionContext } from "../functions/context";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
 import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
-import { createFiles } from "../functions/files";
 
 export function createBacktestLibs(
   data: MarketData,
@@ -58,27 +63,6 @@ export function createBacktestLibs(
 
   return {
     // --- account helpers ---
-    AccountBalance: () => account.getMetrics(broker, 0, 0).balance,
-    AccountCompany: () => "Backtest",
-    AccountCredit: () => 0,
-    AccountCurrency: () => account.getCurrency(),
-    AccountEquity: () => account.getMetrics(broker, 0, 0).equity,
-    AccountFreeMargin: () => account.getMetrics(broker, 0, 0).freeMargin,
-    AccountFreeMarginCheck: () => account.getMetrics(broker, 0, 0).equity,
-    AccountFreeMarginMode: () => 0,
-    AccountInfoDouble: () => 0,
-    AccountInfoInteger: () => 0,
-    AccountInfoString: () => "",
-    AccountLeverage: () => 1,
-    AccountMargin: () => account.getMetrics(broker, 0, 0).margin,
-    AccountName: () => "Backtest",
-    AccountNumber: () => 1,
-    AccountProfit: () =>
-      account.getMetrics(broker, 0, 0).openProfit + account.getMetrics(broker, 0, 0).closedProfit,
-    AccountServer: () => "Backtest",
-    AccountStopoutLevel: () => 0,
-    AccountStopoutMode: () => 0,
-
     // --- series access helpers ---
     Bars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
     iBars: (symbol: string, timeframe: number) => candlesFor(symbol, timeframe).length,
@@ -458,7 +442,12 @@ export function createBacktestLibs(
       const idx = curIdx - shift;
       return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
     },
+    ...createAccount(context),
+    ...createCheck(context),
+    ...createCommon(context),
+    ...createEventFunctions(context),
     ...createFiles(context),
+    ...createGlobals(context),
     ...createMarketInformation(context),
     ...createTrading(context),
   };
