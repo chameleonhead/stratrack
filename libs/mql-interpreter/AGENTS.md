@@ -17,5 +17,4 @@ Before committing changes under this folder, run the following:
 
 ## Additional Notes
 
-- Refer to [TODO.md](TODO.md) for upcoming features and tasks.
 - Avoid using `any` when possible. The ESLint rule is disabled but try to keep the code typed.
