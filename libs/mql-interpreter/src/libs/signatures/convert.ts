@@ -49,7 +49,10 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
     description: "Converting int into a string of preset length",
   },
   NormalizeDouble: {
-    args: [{ name: "value", type: "double", optional: false }],
+    args: [
+      { name: "value", type: "double", optional: false },
+      { name: "digits", type: "int", optional: false },
+    ],
     returnType: "double",
     description: "Rounding of a floating point number to a specified accuracy",
   },
