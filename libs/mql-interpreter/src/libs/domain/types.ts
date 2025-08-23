@@ -13,4 +13,18 @@ export interface ExecutionContext {
   account: IAccount | null;
   market: IMarketData | null;
   indicators?: IndicatorCache;
+  // Custom indicator state
+  hideTestIndicators?: boolean;
+  indicatorBuffers?: number[][];
+  indicatorCounted?: number;
+  indicatorDigits?: number;
+  indicatorShortName?: string;
+  indexArrows?: Record<number, number>;
+  indexDrawBegins?: Record<number, number>;
+  indexEmptyValues?: Record<number, number>;
+  indexLabels?: Record<number, string>;
+  indexShifts?: Record<number, number>;
+  indexStyles?: Record<number, { style: number; width: number; color: number }>;
+  levelStyles?: Record<number, { style: number; width: number; color: number }>;
+  levelValues?: Record<number, number>;
 }

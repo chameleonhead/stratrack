@@ -5,6 +5,7 @@ import { createCheck } from "../functions/check";
 import { createCommon } from "../functions/common";
 import { createEventFunctions } from "../functions/eventFunctions";
 import { createFiles } from "../functions/files";
+import { createCustomInd } from "../functions/customind";
 import { createGlobals } from "../functions/globals";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
@@ -22,12 +23,27 @@ export function createLiveLibs(api: BrokerApi): MqlLibrary {
     market: null,
     symbol: "",
     timeframe: 0,
+    // Initialize custom indicator state
+    hideTestIndicators: false,
+    indicatorBuffers: [],
+    indicatorCounted: 0,
+    indicatorDigits: 5,
+    indicatorShortName: "",
+    indexArrows: {},
+    indexDrawBegins: {},
+    indexEmptyValues: {},
+    indexLabels: {},
+    indexShifts: {},
+    indexStyles: {},
+    levelStyles: {},
+    levelValues: {},
   };
   return {
     iMA: api.getMA.bind(api),
     ...createAccount(context),
     ...createCheck(context),
     ...createCommon(context),
+    ...createCustomInd(context),
     ...createEventFunctions(context),
     ...createFiles(context),
     ...createGlobals(context),

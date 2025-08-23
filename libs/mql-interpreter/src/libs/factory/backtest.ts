@@ -7,6 +7,7 @@ import { MqlLibrary } from "../types";
 import { createAccount } from "../functions/account";
 import { createCheck } from "../functions/check";
 import { createCommon } from "../functions/common";
+import { createCustomInd } from "../functions/customind";
 import { createEventFunctions } from "../functions/eventFunctions";
 import { createFiles } from "../functions/files";
 import { createGlobals } from "../functions/globals";
@@ -35,6 +36,20 @@ export function createBacktestLibs(
     symbol: "",
     timeframe: 0,
     indicators,
+    // Initialize custom indicator state
+    hideTestIndicators: false,
+    indicatorBuffers: [],
+    indicatorCounted: 0,
+    indicatorDigits: 5,
+    indicatorShortName: "",
+    indexArrows: {},
+    indexDrawBegins: {},
+    indexEmptyValues: {},
+    indexLabels: {},
+    indexShifts: {},
+    indexStyles: {},
+    levelStyles: {},
+    levelValues: {},
   };
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
@@ -190,33 +205,7 @@ export function createBacktestLibs(
       return 0;
     },
 
-    IndicatorBuffers: (count: number) => {
-      indicatorBuffers.length = count;
-      indicatorLabels.length = count;
-      indicatorShifts.length = count;
-      return 0;
-    },
-    SetIndexBuffer: (index: number, arr: number[]) => {
-      if (index < 0 || index >= indicatorBuffers.length) return false;
-      indicatorBuffers[index] = arr;
-      return true;
-    },
-    SetIndexLabel: (index: number, text: string) => {
-      if (index < 0 || index >= indicatorLabels.length) return false;
-      indicatorLabels[index] = text;
-      return true;
-    },
-    SetIndexShift: (index: number, shift: number) => {
-      if (index < 0 || index >= indicatorShifts.length) return false;
-      indicatorShifts[index] = shift;
-      return true;
-    },
-    IndicatorCounted: () => 0,
-    IndicatorDigits: () => 0,
-    IndicatorSetDouble: (_prop: number, _val: number) => 0,
-    IndicatorSetInteger: (_prop: number, _val: number) => 0,
-    IndicatorSetString: (_prop: number, _val: string) => 0,
-    IndicatorShortName: (_name: string) => 0,
+
 
     iMA: (
       symbol: string,
@@ -445,6 +434,7 @@ export function createBacktestLibs(
     ...createAccount(context),
     ...createCheck(context),
     ...createCommon(context),
+    ...createCustomInd(context),
     ...createEventFunctions(context),
     ...createFiles(context),
     ...createGlobals(context),
