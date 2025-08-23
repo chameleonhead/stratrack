@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
-import type { Candle } from "../domain/marketData";
+import type { Candle, InMemoryMarketData as MarketData } from "../domain/marketData";
+import type { InMemoryTerminal as VirtualTerminal } from "../domain/terminal";
 import { BacktestRunner } from "../../backtestRunner";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
@@ -278,6 +279,9 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
           symbol: sym && String(sym).length ? sym : undefined,
           timeframe: tf,
           indicatorEngine: engine,
+          market: context.market as MarketData,
+          indicatorCache: engine.getCache(),
+          terminal: context.terminal as VirtualTerminal,
         }),
       }));
 
