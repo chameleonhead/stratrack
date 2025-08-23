@@ -1,6 +1,6 @@
-import type { Candle, Tick } from "./market.types";
+import type { IMarketData, Candle, Tick } from "./types";
 
-export class MarketData {
+export class InMemoryMarketData implements IMarketData {
   private ticks: Record<string, Tick[]> = {};
   private positions: Record<string, number> = {};
   private selected: Set<string> = new Set();
@@ -51,9 +51,10 @@ export class MarketData {
     this.positions[symbol] = pos;
     return arr[pos];
   }
-  getCandle(symbol: string, timeframe:number, time: number) {
+
+  getCandle(symbol: string, timeframe: number, time: number): Candle | undefined {
     const index = this.getIndex(symbol, timeframe, time);
-    const candle = this.candles[symbol][timeframe][index];
+    const candle = this.candles[symbol]?.[timeframe]?.[index];
     if (!candle) return undefined;
     return candle;
   }

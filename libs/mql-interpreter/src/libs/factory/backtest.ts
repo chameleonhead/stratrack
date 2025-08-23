@@ -1,18 +1,15 @@
-import type { Candle } from "../market.types";
-import { MarketData } from "../marketData";
-import { Broker } from "../broker";
-import { Account } from "../account";
+import type { Candle } from "../domain/marketData";
+import { InMemoryMarketData as MarketData } from "../domain/marketData";
+import { InMemoryBroker as Broker } from "../domain/broker";
+import { InMemoryAccount as Account } from "../domain/account";
 import { MqlLibrary } from "../types";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
-import { ExecutionContext } from "../functions/types";
+import { ExecutionContext } from "../functions/context";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
 import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
 import { createFiles } from "../functions/files";
-import { createCommon } from "../functions/common";
-import { createGlobals } from "../functions/globals";
-import { createEventFunctions } from "../functions/eventFunctions";
 
 export function createBacktestLibs(
   data: MarketData,
@@ -464,8 +461,5 @@ export function createBacktestLibs(
     ...createFiles(context),
     ...createMarketInformation(context),
     ...createTrading(context),
-    ...createCommon(context),
-    ...createGlobals(context),
-    ...createEventFunctions(context),
   };
 }

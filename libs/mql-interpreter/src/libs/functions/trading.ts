@@ -1,5 +1,5 @@
 import type { BuiltinFunction } from "./types";
-import { Order } from "../broker";
+import type { Order } from "../domain/broker";
 import { ExecutionContext } from "./types";
 
 export function createTrading(context: ExecutionContext): Record<string, BuiltinFunction> {

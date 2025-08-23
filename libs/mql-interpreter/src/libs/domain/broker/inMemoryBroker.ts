@@ -1,29 +1,6 @@
-export type OrderState = "pending" | "open" | "closed";
+import type { IBroker, Order } from "./types";
 
-export interface Order {
-  /** Ticket number (index) */
-  ticket: number;
-  type: "buy" | "sell";
-  symbol: string;
-  volume: number;
-  /**
-   * Price requested when placing the order. For market orders this becomes the
-   * actual open price. Pending orders retain the requested price until they are
-   * triggered.
-   */
-  price: number;
-  sl?: number;
-  tp?: number;
-  /** Timestamp when the order was opened. Undefined for pending orders */
-  openTime?: number;
-  /** Current state of the order */
-  state: OrderState;
-  closeTime?: number;
-  closePrice?: number;
-  profit?: number;
-}
-
-export class Broker {
+export class InMemoryBroker implements IBroker {
   private orders: Order[] = [];
   private tradeListeners: ((order: Order) => void)[] = [];
 

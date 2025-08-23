@@ -1,13 +1,6 @@
-export interface AccountMetrics {
-  balance: number;
-  equity: number;
-  closedProfit: number;
-  openProfit: number;
-  margin: number;
-  freeMargin: number;
-}
+import type { IAccount, AccountMetrics } from "./types";
 
-export class Account {
+export class InMemoryAccount implements IAccount {
   private balance: number;
   private margin: number;
   private currency: string;
