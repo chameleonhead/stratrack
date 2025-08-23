@@ -1,12 +1,28 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { basename, extname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { program } from "commander";
 import { Parser } from "./parser/parser";
 import { semanticCheck } from "./semantic/checker";
 import { builtinSignatures } from "./libs/signatures";
 import { BacktestRunner, parseCsv } from "./libs/backtestRunner";
 import { InMemoryIndicatorSource } from "./libs/indicatorSource";
+
+export function readTextFile(file: string): string {
+  const buf = readFileSync(file);
+  if (buf.length >= 2) {
+    const b0 = buf[0];
+    const b1 = buf[1];
+    if (b0 === 0xff && b1 === 0xfe) {
+      return buf.toString("utf16le", 2);
+    }
+    if (buf.length >= 3 && b0 === 0xef && b1 === 0xbb && buf[2] === 0xbf) {
+      return buf.toString("utf8", 3);
+    }
+  }
+  return buf.toString("utf8");
+}
 
 program.name("mqli").description("MQL interpreter CLI").version("0.1.0");
 
@@ -15,7 +31,7 @@ program
   .description("コンパイルチェック")
   .action((file: string) => {
     console.log("Checking:", file);
-    const code = readFileSync(file, "utf8");
+    const code = readTextFile(file);
     const ast = Parser.parse(code);
     const errors = semanticCheck(ast, builtinSignatures);
     if (errors.length > 0) {
@@ -50,13 +66,13 @@ program
       console.error("ローソク足のCSVファイルを指定してください");
       process.exit(1);
     }
-    const code = readFileSync(file, "utf8");
-    const csv = readFileSync(csvFile, "utf8");
+    const code = readTextFile(file);
+    const csv = readTextFile(csvFile);
     const data = parseCsv(csv);
     const indicatorSource = new InMemoryIndicatorSource();
     for (const ind of opts.indicator as string[]) {
       const name = basename(ind, extname(ind));
-      indicatorSource.set(name, readFileSync(ind, "utf8"));
+      indicatorSource.set(name, readTextFile(ind));
     }
     const runner = new BacktestRunner(code, data, {
       initialBalance: opts.balance,
@@ -69,4 +85,11 @@ program
     console.log(JSON.stringify(runner.getReport(), null, 2));
   });
 
-program.parse();
+const isDirectRun =
+  typeof require !== "undefined" && typeof module !== "undefined"
+    ? require.main === module
+    : process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  program.parse();
+}
