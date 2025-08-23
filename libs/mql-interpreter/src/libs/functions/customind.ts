@@ -27,6 +27,9 @@ export function createCustomInd(context: ExecutionContext): Record<string, Built
     // インジケーターバッファーのメモリ割り当て
     IndicatorBuffers: (count: number) => {
       context.indicatorBuffers = new Array(count).fill(null).map(() => []);
+      if (context.runtime) {
+        context.runtime.globalValues._IndicatorBuffers = context.indicatorBuffers;
+      }
       return;
     },
 
@@ -102,6 +105,9 @@ export function createCustomInd(context: ExecutionContext): Record<string, Built
     SetIndexBuffer: (index: number, buffer: number[]) => {
       if (index >= 0 && index < context.indicatorBuffers!.length) {
         context.indicatorBuffers![index] = buffer;
+        if (context.runtime) {
+          context.runtime.globalValues._IndicatorBuffers = context.indicatorBuffers;
+        }
       }
       return;
     },

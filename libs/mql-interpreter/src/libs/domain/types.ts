@@ -33,4 +33,6 @@ export interface ExecutionContext {
   indexStyles?: Record<number, { style: number; width: number; color: number }>;
   levelStyles?: Record<number, { style: number; width: number; color: number }>;
   levelValues?: Record<number, number>;
+  /** Runtime reference for syncing global indicator buffers */
+  runtime?: { globalValues: Record<string, any> };
 }
