@@ -1,6 +1,6 @@
-import type { BuiltinFunction } from "./types";
+import type { ExecutionContext } from "../domain/types";
 import type { Order } from "../domain/broker";
-import { ExecutionContext } from "./types";
+import type { BuiltinFunction } from "./types";
 
 export function createTrading(context: ExecutionContext): Record<string, BuiltinFunction> {
   const broker = context.broker!;

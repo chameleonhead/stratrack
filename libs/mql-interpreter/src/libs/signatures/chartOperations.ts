@@ -159,7 +159,7 @@ export const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
       args: [{ name: "chart_id", type: "long", optional: false }],
       returnType: "int",
       description: "Calls a forced redrawing of a specified chart",
-    }
+    },
   ],
   ChartSaveTemplate: {
     args: [
@@ -345,7 +345,7 @@ export const chartOperationsBuiltinSignatures: BuiltinSignaturesMap = {
       { name: "size_y", type: "int", optional: true },
       { name: "start_bar", type: "int", optional: true },
       { name: "chart_scale", type: "int", optional: true },
-      { name: "chart_mode", type: "int", optional: true }
+      { name: "chart_mode", type: "int", optional: true },
     ],
     returnType: "bool",
     description:

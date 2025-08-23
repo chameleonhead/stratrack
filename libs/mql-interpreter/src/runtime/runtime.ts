@@ -70,7 +70,8 @@ function checkPrimitive(value: any, type: string): boolean {
   if (value === undefined) return true;
   if (numericTypes.has(type)) return typeof value === "number" || value instanceof DateTimeValue;
   if (type === "bool") return typeof value === "boolean" || typeof value === "number";
-  if (type === "string") return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+  if (type === "string")
+    return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
   return true;
 }
 

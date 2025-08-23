@@ -73,9 +73,10 @@ export const stringsBuiltinSignatures: BuiltinSignaturesMap = {
         { name: "pos", type: "int" },
         { name: "mode", type: "int", optional: true },
       ],
-      returnType: "ushort", 
-      description: "Returns the value of a number located in the specified string position with mode",
-    }
+      returnType: "ushort",
+      description:
+        "Returns the value of a number located in the specified string position with mode",
+    },
   ],
   StringInit: {
     args: [

@@ -1,4 +1,5 @@
-import type { BuiltinFunction, ExecutionContext } from "./types";
+import type { ExecutionContext } from "../domain/types";
+import type { BuiltinFunction } from "./types";
 
 export function createFiles(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -19,8 +20,6 @@ export function createFiles(context: ExecutionContext): Record<string, BuiltinFu
     FileClose: (handle: number) => {
       context.terminal?.close(handle);
       return 0;
-    }
-  }
+    },
+  };
 }
-
-

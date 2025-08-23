@@ -1,8 +1,9 @@
-import type { BuiltinFunction, ExecutionContext } from "./types";
+import type { ExecutionContext } from "../domain/types";
+import type { BuiltinFunction } from "./types";
 
 export function createChartOperations(context: ExecutionContext): Record<string, BuiltinFunction> {
   const terminal = context.terminal;
-  
+
   return {
     // Chart operations
     ChartRedraw: (chartId?: number) => {
@@ -135,7 +136,13 @@ export function createChartOperations(context: ExecutionContext): Record<string,
       return true;
     },
 
-    ChartScreenShot: (chartId: number, filename: string, width: number, height: number, alignMode?: number) => {
+    ChartScreenShot: (
+      chartId: number,
+      filename: string,
+      width: number,
+      height: number,
+      alignMode?: number
+    ) => {
       // Basic implementation - just return success
       return true;
     },
@@ -150,7 +157,14 @@ export function createChartOperations(context: ExecutionContext): Record<string,
       return Math.floor(Date.now() / 1000);
     },
 
-    ChartTimePriceToXY: (chartId: number, subWindow: number, time: number, price: number, x: number, y: number) => {
+    ChartTimePriceToXY: (
+      chartId: number,
+      subWindow: number,
+      time: number,
+      price: number,
+      x: number,
+      y: number
+    ) => {
       // Basic implementation - just return success
       return true;
     },
@@ -170,7 +184,14 @@ export function createChartOperations(context: ExecutionContext): Record<string,
       return 0;
     },
 
-    ChartXYToTimePrice: (chartId: number, subWindow: number, x: number, y: number, time: number, price: number) => {
+    ChartXYToTimePrice: (
+      chartId: number,
+      subWindow: number,
+      x: number,
+      y: number,
+      time: number,
+      price: number
+    ) => {
       // Basic implementation - just return success
       return true;
     },

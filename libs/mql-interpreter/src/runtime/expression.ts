@@ -65,10 +65,13 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     if (type && t.type !== type) throw new Error(`Expected ${type} but got ${t.type}`);
     if (value && t.value !== value) {
       // Debug info
-      const context = tokens.slice(Math.max(0, pos - 3), Math.min(tokens.length, pos + 4))
+      const context = tokens
+        .slice(Math.max(0, pos - 3), Math.min(tokens.length, pos + 4))
         .map((tk, i) => (i === 3 ? `[${tk.value}:${tk.type}]` : `${tk.value}:${tk.type}`))
-        .join(' ');
-      throw new Error(`Expected ${value} but got ${t.value}. Context: ${context}. At position ${pos}`);
+        .join(" ");
+      throw new Error(
+        `Expected ${value} but got ${t.value}. Context: ${context}. At position ${pos}`
+      );
     }
     pos++;
     return t;
@@ -153,7 +156,25 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       return { value: instantiate(runtime, cls) };
     }
     // Handle type casting: int(value), double(value), string(value), etc.
-    if (t.type === TokenType.Keyword && ["int", "double", "float", "string", "bool", "datetime", "color", "long", "short", "char", "uchar", "uint", "ulong", "ushort"].includes(t.value)) {
+    if (
+      t.type === TokenType.Keyword &&
+      [
+        "int",
+        "double",
+        "float",
+        "string",
+        "bool",
+        "datetime",
+        "color",
+        "long",
+        "short",
+        "char",
+        "uchar",
+        "uint",
+        "ulong",
+        "ushort",
+      ].includes(t.value)
+    ) {
       // Look ahead to see if this is actually a type cast (type followed by opening parenthesis)
       if (!atEnd() && pos + 1 < tokens.length && tokens[pos + 1].value === "(") {
         const castType = consume(TokenType.Keyword).value;
@@ -213,9 +234,14 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         if (typeof result.ref === "string") {
           refObj = { name: result.ref, indices: [idx] };
         } else if (result.ref && typeof result.ref === "object" && "name" in result.ref) {
-          refObj = { name: (result.ref as IndexRef).name, indices: [...(result.ref as IndexRef).indices, idx] };
+          refObj = {
+            name: (result.ref as IndexRef).name,
+            indices: [...(result.ref as IndexRef).indices, idx],
+          };
         }
-        const baseVal = getRefValue(refObj ?? (typeof result.ref === "string" ? result.ref : undefined)) ?? result.value;
+        const baseVal =
+          getRefValue(refObj ?? (typeof result.ref === "string" ? result.ref : undefined)) ??
+          result.value;
         const value = Array.isArray(baseVal) ? baseVal[idx] : undefined;
         result = { value, type: result.type, ref: refObj ?? result.ref };
         continue;
@@ -491,7 +517,13 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
   const result = parseAssignment();
   if (!atEnd()) {
     // Allow remaining tokens (like semicolons) without throwing error
-    console.warn("Remaining tokens in expression:", tokens.slice(pos).map(t => t.value).join(' '));
+    console.warn(
+      "Remaining tokens in expression:",
+      tokens
+        .slice(pos)
+        .map((t) => t.value)
+        .join(" ")
+    );
   }
   return result.value;
 }

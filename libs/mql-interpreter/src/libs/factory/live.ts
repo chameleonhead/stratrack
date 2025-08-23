@@ -1,11 +1,13 @@
 import { MqlLibrary } from "../types";
-import { ExecutionContext } from "../functions/types";
+import { ExecutionContext } from "../domain/types";
+import { createAccount } from "../functions/account";
+import { createCheck } from "../functions/check";
+import { createCommon } from "../functions/common";
+import { createEventFunctions } from "../functions/eventFunctions";
+import { createFiles } from "../functions/files";
+import { createGlobals } from "../functions/globals";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
-import { createFiles } from "../functions/files";
-import { createCommon } from "../functions/common";
-import { createGlobals } from "../functions/globals";
-import { createEventFunctions } from "../functions/eventFunctions";
 
 export interface BrokerApi {
   sendOrder: (request: any) => any;
@@ -20,14 +22,16 @@ export function createLiveLibs(api: BrokerApi): MqlLibrary {
     market: null,
     symbol: "",
     timeframe: 0,
-  }
+  };
   return {
     iMA: api.getMA.bind(api),
+    ...createAccount(context),
+    ...createCheck(context),
+    ...createCommon(context),
+    ...createEventFunctions(context),
     ...createFiles(context),
+    ...createGlobals(context),
     ...createMarketInformation(context),
     ...createTrading(context),
-    ...createCommon(context),
-    ...createGlobals(context),
-    ...createEventFunctions(context),
   };
 }

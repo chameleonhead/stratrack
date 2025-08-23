@@ -243,9 +243,11 @@ export class InMemoryTerminal implements ITerminal {
 
   getChartProperty(chartId: number, propId: number, subWindow: number = 0): any {
     // Basic implementation - return dummy values for common chart properties
-    if (propId === 0) { // CHART_PRICE_MAX
+    if (propId === 0) {
+      // CHART_PRICE_MAX
       return 2.0;
-    } else if (propId === 1) { // CHART_PRICE_MIN
+    } else if (propId === 1) {
+      // CHART_PRICE_MIN
       return 1.0;
     }
     return 0.0;
@@ -268,7 +270,7 @@ export class InMemoryTerminal implements ITerminal {
       width: 800,
       barsPerChart: 100,
       firstVisibleBar: 0,
-      isVisible: true
+      isVisible: true,
     };
   }
 }

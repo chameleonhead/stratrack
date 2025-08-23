@@ -106,9 +106,6 @@ import {
   TimeYear,
 } from "./dateandtime";
 
-
-
-
 export const coreBuiltins: Record<string, BuiltinFunction> = {
   ArrayResize,
   ArrayCopy,
@@ -207,5 +204,3 @@ export const coreBuiltins: Record<string, BuiltinFunction> = {
   TimeSeconds,
   TimeYear,
 };
-
-

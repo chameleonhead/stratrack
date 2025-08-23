@@ -1,4 +1,5 @@
-import type { BuiltinFunction, ExecutionContext } from "./types";
+import type { ExecutionContext } from "../domain/types";
+import type { BuiltinFunction } from "./types";
 
 export function createCheck(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {

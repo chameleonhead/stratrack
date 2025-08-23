@@ -23,7 +23,7 @@ describe("common builtins", () => {
       market: null,
       symbol: "TEST",
       timeframe: 60,
-      indicators: undefined
+      indicators: undefined,
     };
     commonFuncs = createCommon(context);
     checkFuncs = createCheck(context);
@@ -35,7 +35,7 @@ describe("common builtins", () => {
   });
 
   it("Print formats datetime values", () => {
-    const spy = vi.spyOn(console, "log").mockImplementation(() => { });
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
     const t = StructToTime({ year: 2000, mon: 1, day: 2, hour: 3, min: 4, sec: 5 });
     commonFuncs.Print(t);
     expect(spy).toHaveBeenCalledWith("2000.01.02 03:04:05");

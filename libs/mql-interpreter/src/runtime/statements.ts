@@ -52,10 +52,13 @@ export function executeStatements(
   const consume = (type?: TokenType, value?: string): Token => {
     const t = tokens[pos];
     if (!t) {
-      const context = tokens.slice(Math.max(0, pos - 5), pos)
-        .map(tk => `${tk.value}:${tk.type}`)
-        .join(' ');
-      throw new Error(`Unexpected end of input. Last tokens: ${context}. Position: ${pos}/${tokens.length}`);
+      const context = tokens
+        .slice(Math.max(0, pos - 5), pos)
+        .map((tk) => `${tk.value}:${tk.type}`)
+        .join(" ");
+      throw new Error(
+        `Unexpected end of input. Last tokens: ${context}. Position: ${pos}/${tokens.length}`
+      );
     }
     if (type && t.type !== type) throw new Error(`Expected ${type} but found ${t.type}`);
     if (value && t.value !== value) throw new Error(`Expected ${value} but found ${t.value}`);
@@ -224,7 +227,7 @@ export function executeStatements(
           const post = readExpression(")");
           consume(TokenType.Punctuation, ")");
           const body = captureStatementSource();
-          
+
           // Handle for loop initialization (may include variable declaration)
           if (init.trim()) {
             try {
@@ -236,7 +239,7 @@ export function executeStatements(
               evaluateExpression(init, env, runtime);
             }
           }
-          
+
           while (true) {
             if (cond.trim() && !evaluateExpression(cond, env, runtime)) break;
             const r = executeStatements(body, env, runtime);

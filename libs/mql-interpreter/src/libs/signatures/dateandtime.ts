@@ -113,7 +113,10 @@ export const dateandtimeBuiltinSignatures: BuiltinSignaturesMap = {
       "Returns the amount of seconds elapsed from the beginning of the minute of the specified time",
   },
   TimeToStruct: {
-    args: [{ name: "dt", type: "datetime", optional: false }, { name: "dt_struct", type: "MqlDateTime", optional: false }],
+    args: [
+      { name: "dt", type: "datetime", optional: false },
+      { name: "dt_struct", type: "MqlDateTime", optional: false },
+    ],
     returnType: "bool",
     description: "Converts a datetime value into a variable of MqlDateTime structure type",
   },

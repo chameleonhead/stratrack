@@ -1,7 +1,9 @@
+import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
-import { ExecutionContext } from "./types";
 
-export function createMarketInformation(context: ExecutionContext): Record<string, BuiltinFunction> {
+export function createMarketInformation(
+  context: ExecutionContext
+): Record<string, BuiltinFunction> {
   const market = context.market!;
   return {
     MarketInfo: (symbol: string, type: number) => {
@@ -32,5 +34,3 @@ export function createMarketInformation(context: ExecutionContext): Record<strin
     SymbolInfoString: (_symbol: string, _prop: number) => "",
   };
 }
-
-

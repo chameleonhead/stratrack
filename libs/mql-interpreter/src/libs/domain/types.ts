@@ -5,11 +5,12 @@ import type { IMarketData } from "../domain/marketData";
 import type { IndicatorCache } from "../indicatorCache";
 
 export interface ExecutionContext {
+  symbol?: string;
+  timeframe?: number;
+  lastError?: number;
   terminal: ITerminal | null;
   broker: IBroker | null;
   account: IAccount | null;
   market: IMarketData | null;
-  symbol?: string;
-  timeframe?: number;
   indicators?: IndicatorCache;
 }

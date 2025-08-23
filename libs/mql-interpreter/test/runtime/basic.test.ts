@@ -19,7 +19,7 @@ describe("runtime", () => {
     const commonFuncs = createCommon(context);
     registerEnvBuiltins(commonFuncs);
   });
-  
+
   it("runs without throwing", () => {
     expect(() => runProgram("")).not.toThrow();
   });

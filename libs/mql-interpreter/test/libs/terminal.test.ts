@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "../../src/libs/domain/terminal";
+import {
+  InMemoryTerminal as VirtualTerminal,
+  TerminalStorage,
+} from "../../src/libs/domain/terminal";
 import { unlinkSync, readFileSync, writeFileSync } from "fs";
 
 describe("VirtualTerminal", () => {

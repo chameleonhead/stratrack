@@ -35,7 +35,7 @@ export interface IBroker {
     bid: number;
     ask: number;
   }): number;
-  
+
   update(candle: { time: number; high: number; low: number; close: number }): number;
   close(ticket: number, price: number, time: number): number;
   modify(ticket: number, price: number, sl: number, tp: number): boolean;

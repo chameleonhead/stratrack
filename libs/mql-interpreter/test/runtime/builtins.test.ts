@@ -22,7 +22,7 @@ describe("builtins", () => {
       AccountBalance: () => 10000,
     });
   });
-  
+
   it("provides Print function", () => {
     const fn = getBuiltin("Print");
     expect(fn).toBeTypeOf("function");

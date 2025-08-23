@@ -22,7 +22,7 @@ describe("execute", () => {
     const commonFuncs = createCommon(context);
     registerEnvBuiltins(commonFuncs);
   });
-  
+
   it("evaluates enums", () => {
     const { tokens } = lex("enum Color { Red=1, Green, Blue };");
     const ast = parse(tokens);

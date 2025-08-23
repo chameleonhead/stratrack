@@ -16,7 +16,7 @@ export const ObjectCreate: BuiltinFunction = (
 ) => {
   // Handle overloaded parameters
   let chartId: number, objectName: string, type: number;
-  
+
   if (typeof chartIdOrName === "string") {
     // First parameter is object name
     chartId = 0;
@@ -28,14 +28,14 @@ export const ObjectCreate: BuiltinFunction = (
     objectName = objectNameOrType as string;
     type = typeOrParam1 as number;
   }
-  
+
   const key = getObjectKey(chartId, objectName);
   chartObjects[key] = {
     type,
     properties: {},
-    created: true
+    created: true,
   };
-  
+
   return true;
 };
 
@@ -44,7 +44,7 @@ export const ObjectDelete: BuiltinFunction = (
   objectName?: string
 ) => {
   let chartId: number, objName: string;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -52,7 +52,7 @@ export const ObjectDelete: BuiltinFunction = (
     chartId = chartIdOrName;
     objName = objectName as string;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   delete chartObjects[key];
   return true;
@@ -63,7 +63,7 @@ export const ObjectFind: BuiltinFunction = (
   objectName?: string
 ) => {
   let chartId: number, objName: string;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -71,7 +71,7 @@ export const ObjectFind: BuiltinFunction = (
     chartId = chartIdOrName;
     objName = objectName as string;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   return chartObjects[key] ? 0 : -1;
 };
@@ -82,7 +82,7 @@ export const ObjectGetDouble: BuiltinFunction = (
   propId?: number
 ) => {
   let chartId: number, objName: string, prop: number;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -92,7 +92,7 @@ export const ObjectGetDouble: BuiltinFunction = (
     objName = objectNameOrProp as string;
     prop = propId as number;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   const obj = chartObjects[key];
   return obj?.properties[prop] || 0.0;
@@ -104,7 +104,7 @@ export const ObjectGetInteger: BuiltinFunction = (
   propId?: number
 ) => {
   let chartId: number, objName: string, prop: number;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -114,7 +114,7 @@ export const ObjectGetInteger: BuiltinFunction = (
     objName = objectNameOrProp as string;
     prop = propId as number;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   const obj = chartObjects[key];
   return obj?.properties[prop] || 0;
@@ -126,7 +126,7 @@ export const ObjectGetString: BuiltinFunction = (
   propId?: number
 ) => {
   let chartId: number, objName: string, prop: number;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -136,7 +136,7 @@ export const ObjectGetString: BuiltinFunction = (
     objName = objectNameOrProp as string;
     prop = propId as number;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   const obj = chartObjects[key];
   return obj?.properties[prop] || "";
@@ -149,7 +149,7 @@ export const ObjectSetDouble: BuiltinFunction = (
   value?: number
 ) => {
   let chartId: number, objName: string, prop: number, val: number;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -161,7 +161,7 @@ export const ObjectSetDouble: BuiltinFunction = (
     prop = propIdOrValue as number;
     val = value as number;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   if (!chartObjects[key]) {
     chartObjects[key] = { type: 0, properties: {}, created: false };
@@ -177,7 +177,7 @@ export const ObjectSetInteger: BuiltinFunction = (
   value?: number
 ) => {
   let chartId: number, objName: string, prop: number, val: number;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -189,7 +189,7 @@ export const ObjectSetInteger: BuiltinFunction = (
     prop = propIdOrValue as number;
     val = value as number;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   if (!chartObjects[key]) {
     chartObjects[key] = { type: 0, properties: {}, created: false };
@@ -205,7 +205,7 @@ export const ObjectSetString: BuiltinFunction = (
   value?: string
 ) => {
   let chartId: number, objName: string, prop: number, val: string;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -217,7 +217,7 @@ export const ObjectSetString: BuiltinFunction = (
     prop = propIdOrValue as number;
     val = value as string;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   if (!chartObjects[key]) {
     chartObjects[key] = { type: 0, properties: {}, created: false };
@@ -228,14 +228,19 @@ export const ObjectSetString: BuiltinFunction = (
 
 export const ObjectsTotal: BuiltinFunction = (chartId = 0, _subWindow = -1, _type = -1) => {
   // Basic implementation - return number of objects for the chart
-  return Object.keys(chartObjects).filter(key => key.startsWith(`${chartId}:`)).length;
+  return Object.keys(chartObjects).filter((key) => key.startsWith(`${chartId}:`)).length;
 };
 
-export const ObjectName: BuiltinFunction = (chartId = 0, index: number, _subWindow = -1, _type = -1) => {
+export const ObjectName: BuiltinFunction = (
+  chartId = 0,
+  index: number,
+  _subWindow = -1,
+  _type = -1
+) => {
   // Basic implementation - return object name by index
-  const objects = Object.keys(chartObjects).filter(key => key.startsWith(`${chartId}:`));
+  const objects = Object.keys(chartObjects).filter((key) => key.startsWith(`${chartId}:`));
   if (index >= 0 && index < objects.length) {
-    return objects[index].split(':')[1];
+    return objects[index].split(":")[1];
   }
   return "";
 };
@@ -245,7 +250,7 @@ export const ObjectType: BuiltinFunction = (
   objectName?: string
 ) => {
   let chartId: number, objName: string;
-  
+
   if (typeof chartIdOrName === "string") {
     chartId = 0;
     objName = chartIdOrName;
@@ -253,9 +258,8 @@ export const ObjectType: BuiltinFunction = (
     chartId = chartIdOrName;
     objName = objectName as string;
   }
-  
+
   const key = getObjectKey(chartId, objName);
   const obj = chartObjects[key];
   return obj?.type || -1;
 };
-

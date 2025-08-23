@@ -11,15 +11,15 @@ const runtime = execute(parse(lex(code).tokens));
 
 // Set up Print function for tests
 beforeAll(() => {
-      const context: ExecutionContext = {
-      terminal: null,
-      broker: null,
-      account: null,
-      market: null,
-      symbol: "TEST",
-      timeframe: 60,
-      indicators: undefined,
-    };
+  const context: ExecutionContext = {
+    terminal: null,
+    broker: null,
+    account: null,
+    market: null,
+    symbol: "TEST",
+    timeframe: 60,
+    indicators: undefined,
+  };
   const commonFuncs = createCommon(context);
   registerEnvBuiltins(commonFuncs);
 });
@@ -42,7 +42,9 @@ describe("callFunction", () => {
   });
 
   it("handles overloaded functions", () => {
-    const r = execute(parse(lex("void foo() { return; } void foo(int a, int b=1) { return; }").tokens));
+    const r = execute(
+      parse(lex("void foo() { return; } void foo(int a, int b=1) { return; }").tokens)
+    );
     expect(() => callFunction(r, "foo")).not.toThrow();
     expect(() => callFunction(r, "foo", [1])).not.toThrow();
     expect(() => callFunction(r, "foo", [1, 2, 3])).toThrow("Too many arguments");

@@ -36,7 +36,7 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
   DoubleToString: {
     args: [
       { name: "value", type: "double", optional: false },
-      { name: "digits", type: "int", optional: true }
+      { name: "digits", type: "int", optional: true },
     ],
     returnType: "string",
     description: "Converting a numeric value to a text line with a specified accuracy",
@@ -48,19 +48,19 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
   },
   TypeBFLC: {
     args: [{ name: "value", type: "int", optional: false }],
-    returnType: "int", 
+    returnType: "int",
     description: "Cast value to TypeBFLC enum",
   },
   FirstPositiontype: {
     args: [{ name: "value", type: "int", optional: false }],
     returnType: "int",
-    description: "Cast value to FirstPositiontype enum", 
+    description: "Cast value to FirstPositiontype enum",
   },
   IntegerToString: {
     args: [
       { name: "value", type: "int", optional: false },
       { name: "str_len", type: "int", optional: true },
-      { name: "fill_char", type: "int", optional: true }
+      { name: "fill_char", type: "int", optional: true },
     ],
     returnType: "string",
     description: "Converting int into a string of preset length",
@@ -86,7 +86,7 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
   StringFormat: {
     args: [
       { name: "format", type: "string", optional: false },
-      { name: "args", type: "any", variadic: true, optional: true }
+      { name: "args", type: "any", variadic: true, optional: true },
     ],
     returnType: "string",
     description: "Converting number into string according to preset format",
@@ -149,7 +149,7 @@ export const convertBuiltinSignatures: BuiltinSignaturesMap = {
   TimeToString: {
     args: [
       { name: "time", type: "datetime", optional: false },
-      { name: "mode", type: "int", optional: true }
+      { name: "mode", type: "int", optional: true },
     ],
     returnType: "string",
     description:

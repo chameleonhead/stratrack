@@ -140,10 +140,7 @@ export function validateFunctionCalls(
   builtinSignatures: BuiltinSignaturesMap
 ): SemanticError[] {
   const errors: SemanticError[] = [];
-  const builtinSet = new Set([
-    ...Object.keys(builtinSignatures),
-    ...Object.keys(coreBuiltins),
-  ]);
+  const builtinSet = new Set([...Object.keys(builtinSignatures), ...Object.keys(coreBuiltins)]);
 
   const functionMap = new Map<string, { required: number; max: number }[]>();
   for (const decl of ast) {

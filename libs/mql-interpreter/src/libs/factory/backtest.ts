@@ -1,4 +1,5 @@
 import type { Candle } from "../domain/marketData";
+import type { ExecutionContext } from "../domain/types";
 import { InMemoryMarketData as MarketData } from "../domain/marketData";
 import { InMemoryBroker as Broker } from "../domain/broker";
 import { InMemoryAccount as Account } from "../domain/account";
@@ -11,7 +12,6 @@ import { createFiles } from "../functions/files";
 import { createGlobals } from "../functions/globals";
 import { createMarketInformation } from "../functions/marketInformation";
 import { createTrading } from "../functions/trading";
-import { ExecutionContext } from "../functions/context";
 import { IndicatorCache } from "../indicatorCache";
 import { BacktestRunner } from "../backtestRunner";
 import { IndicatorSource, InMemoryIndicatorSource } from "../indicatorSource";
@@ -35,7 +35,7 @@ export function createBacktestLibs(
     symbol: "",
     timeframe: 0,
     indicators,
-  }
+  };
 
   const candlesFor = (symbol: string, timeframe: number): Candle[] =>
     data.getCandles(symbol, timeframe);

@@ -1,5 +1,6 @@
 // Import paths omit extensions for bundler compatibility.
-import type { BuiltinFunction, ExecutionContext } from "./types";
+import type { ExecutionContext } from "../domain/types";
+import type { BuiltinFunction } from "./types";
 import { formatString } from "./format";
 import { DateTimeValue } from "../../runtime/datetimeValue";
 
