@@ -120,10 +120,23 @@ describe("indicators functions", () => {
   });
 
   describe("iCustom", () => {
-    it("should return 0 for custom indicators", () => {
+    it("returns 0 when indicator is not found", () => {
+      const functions = createIndicators(context);
+      const result = functions.iCustom("GBPUSD", 15, "Missing", 0, 0);
+      expect(result).toBe(0);
+    });
+
+    it("retrieves values from custom indicator", () => {
+      context.indicatorEngine!.set(
+        "TestIndicator",
+        `
+int OnInit(){IndicatorBuffers(1);SetIndexBuffer(0,Close);return 0;}
+int OnCalculate(){return Bars;}
+`
+      );
       const functions = createIndicators(context);
       const result = functions.iCustom("GBPUSD", 15, "TestIndicator", 0, 0);
-      expect(result).toBe(0);
+      expect(result).toBeCloseTo(1.25, 4);
     });
   });
 

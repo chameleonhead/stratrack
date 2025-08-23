@@ -209,6 +209,7 @@ export class BacktestRunner {
       getStopFlag: () => this.runtime.globalValues._StopFlag,
       indicatorEngine: this.indicatorEngine,
     };
+    this.context.runtime = this.runtime;
     this.initializeGlobals();
     const libs = createLibs(this.context);
     Object.defineProperties(this.context, {
@@ -287,6 +288,7 @@ export class BacktestRunner {
       callFunction(this.runtime, entry);
       this.index = this.candles.length;
       this.callDeinit();
+      this.runtime.globalValues._IndicatorBuffers = this.context.indicatorBuffers;
       return;
     }
     if (this.index >= this.candles.length) return;
@@ -325,6 +327,7 @@ export class BacktestRunner {
     }
     this.index++;
     if (this.index >= this.candles.length) this.callDeinit();
+    this.runtime.globalValues._IndicatorBuffers = this.context.indicatorBuffers;
   }
 
   run(): void {
