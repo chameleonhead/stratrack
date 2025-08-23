@@ -199,10 +199,31 @@ export class BacktestRunner {
       market: this.market,
       symbol,
       timeframe: period,
+      digits: 5,
       lastError: 0,
       indicators: this.indicators,
     };
     this.initializeGlobals();
+    Object.defineProperties(this.context, {
+      lastError: {
+        get: () => this.runtime.globalValues._LastError,
+        set: (v: number) => {
+          this.runtime.globalValues._LastError = v;
+        },
+        configurable: true,
+      },
+      digits: {
+        get: () => this.runtime.globalValues.Digits,
+        set: (v: number) => {
+          this.runtime.globalValues.Digits = v;
+          this.runtime.globalValues._Digits = v;
+          const p = Math.pow(10, -v);
+          this.runtime.globalValues.Point = p;
+          this.runtime.globalValues._Point = p;
+        },
+        configurable: true,
+      },
+    });
     const builtins = this.buildBuiltins();
     // Add factory-created functions to builtins
     const contextBuiltins = {

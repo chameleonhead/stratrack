@@ -37,6 +37,7 @@ export function createBacktestLibs(
     market: data,
     symbol: "",
     timeframe: 0,
+    digits: 5,
     lastError: 0,
     indicators,
     // Initialize custom indicator state

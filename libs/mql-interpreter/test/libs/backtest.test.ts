@@ -211,9 +211,16 @@ describe("BacktestRunner", () => {
     const rt = runner.getRuntime();
     const ctx = runner.getContext();
     expect(rt.globalValues._Digits).toBe(5);
+    expect(ctx.digits).toBe(5);
+    ctx.digits = 6;
+    expect(rt.globalValues._Digits).toBe(6);
+    expect(rt.globalValues.Digits).toBe(6);
+    expect(callFunction(rt, "Digits")).toBe(6);
     ctx.lastError = 5;
+    expect(rt.globalValues._LastError).toBe(5);
     callFunction(rt, "ResetLastError");
     expect(ctx.lastError).toBe(0);
+    expect(rt.globalValues._LastError).toBe(0);
   });
 
   it("exposes GetLastError and IsStopped", () => {
@@ -223,6 +230,7 @@ describe("BacktestRunner", () => {
     const rt = runner.getRuntime();
     const ctx = runner.getContext();
     ctx.lastError = 7;
+    expect(rt.globalValues._LastError).toBe(7);
     expect(callFunction(rt, "GetLastError", [])).toBe(7);
     rt.globalValues._StopFlag = 1;
     expect(callFunction(rt, "IsStopped", [])).toBe(1);

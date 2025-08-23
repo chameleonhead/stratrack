@@ -7,6 +7,7 @@ import type { IndicatorCache } from "../indicatorCache";
 export interface ExecutionContext {
   symbol?: string;
   timeframe?: number;
+  digits?: number;
   lastError?: number;
   terminal: ITerminal | null;
   broker: IBroker | null;
