@@ -82,7 +82,7 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
   PrintFormat: {
     args: [
       { name: "format", type: "string" },
-      { name: "args", type: "any", variadic: true },
+      { name: "args", type: "any", variadic: true, optional: true },
     ],
     returnType: "void",
     description:
@@ -91,7 +91,7 @@ export const commonBuiltinSignatures: BuiltinSignaturesMap = {
   printf: {
     args: [
       { name: "format", type: "string" },
-      { name: "args", type: "any", variadic: true },
+      { name: "args", type: "any", variadic: true, optional: true },
     ],
     returnType: "void",
     description:

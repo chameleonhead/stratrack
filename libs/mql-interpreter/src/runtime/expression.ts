@@ -6,9 +6,14 @@ import { lex, Token, TokenType } from "../parser/lexer";
 import { cast } from "./casting";
 import { intBinaryOp } from "./intMath";
 
+interface IndexRef {
+  name: string;
+  indices: number[];
+}
+
 interface EvalResult {
   value: any;
-  ref?: string;
+  ref?: string | IndexRef;
   type?: string;
 }
 
@@ -61,6 +66,30 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
     if (value && t.value !== value) throw new Error(`Expected ${value} but got ${t.value}`);
     pos++;
     return t;
+  };
+
+  const getRefValue = (ref: string | IndexRef | undefined): any => {
+    if (!ref) return undefined;
+    if (typeof ref === "string") return env[ref];
+    let cur = env[ref.name];
+    for (const idx of ref.indices) cur = cur?.[idx];
+    return cur;
+  };
+
+  const setRefValue = (ref: string | IndexRef | undefined, value: any): void => {
+    if (!ref) throw new Error("Invalid assignment target");
+    if (typeof ref === "string") {
+      env[ref] = value;
+      return;
+    }
+    let container = env[ref.name];
+    if (!Array.isArray(container)) container = env[ref.name] = [];
+    for (let i = 0; i < ref.indices.length - 1; i++) {
+      const idx = ref.indices[i];
+      if (!Array.isArray(container[idx])) container[idx] = [];
+      container = container[idx];
+    }
+    container[ref.indices[ref.indices.length - 1]] = value;
   };
 
   function parsePrimary(): EvalResult {
@@ -126,22 +155,44 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
 
   function parsePostfix(): EvalResult {
     let result = parsePrimary();
-    while (!atEnd() && (peek().value === "++" || peek().value === "--")) {
-      const op = consume(TokenType.Operator).value;
-      if (!result.ref) throw new Error("Invalid operand for " + op);
-      const name = result.ref;
-      const old = env[name] ?? 0;
-      const varType = runtime?.variables[name]?.type;
-      if (varType && intTypes.has(varType)) {
-        const info = getIntInfo({ value: old, type: varType })!;
-        const step = op === "++" ? 1 : -1;
-        const val = intBinaryOp("+", old, step, info.bits, info.unsigned);
-        env[name] = cast(val, varType as any);
-      } else {
-        const step = op === "++" ? 1 : -1;
-        env[name] = varType ? cast(old + step, varType as any) : old + step;
+    while (!atEnd()) {
+      const t = peek();
+      if (t.value === "[") {
+        consume(TokenType.Punctuation, "[");
+        const idxExpr = parseAssignment();
+        consume(TokenType.Punctuation, "]");
+        const idx = Number(idxExpr.value) | 0;
+        let refObj: IndexRef | undefined;
+        if (typeof result.ref === "string") {
+          refObj = { name: result.ref, indices: [idx] };
+        } else if (result.ref && typeof result.ref === "object" && "name" in result.ref) {
+          refObj = { name: (result.ref as IndexRef).name, indices: [...(result.ref as IndexRef).indices, idx] };
+        }
+        const baseVal = getRefValue(refObj ?? (typeof result.ref === "string" ? result.ref : undefined)) ?? result.value;
+        const value = Array.isArray(baseVal) ? baseVal[idx] : undefined;
+        result = { value, type: result.type, ref: refObj ?? result.ref };
+        continue;
       }
-      result = { value: old, type: varType, ref: name };
+      if (t.value === "++" || t.value === "--") {
+        const op = consume(TokenType.Operator).value;
+        if (!result.ref) throw new Error("Invalid operand for " + op);
+        const name = typeof result.ref === "string" ? result.ref : (result.ref as IndexRef).name;
+        const old = getRefValue(result.ref) ?? 0;
+        const varType = runtime?.variables[name]?.type;
+        if (varType && intTypes.has(varType)) {
+          const info = getIntInfo({ value: old, type: varType })!;
+          const step = op === "++" ? 1 : -1;
+          const val = intBinaryOp("+", old, step, info.bits, info.unsigned);
+          setRefValue(result.ref, cast(val, varType as any));
+        } else {
+          const step = op === "++" ? 1 : -1;
+          const v = varType ? cast(old + step, varType as any) : old + step;
+          setRefValue(result.ref, v);
+        }
+        result = { value: old, type: varType, ref: result.ref };
+        continue;
+      }
+      break;
     }
     return result;
   }
@@ -153,19 +204,20 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
         const op = consume(TokenType.Operator).value;
         const res = parseUnary();
         if (!res.ref) throw new Error("Invalid operand for " + op);
-        const name = res.ref;
-        const val = env[name] ?? 0;
+        const name = typeof res.ref === "string" ? res.ref : (res.ref as IndexRef).name;
+        const val = getRefValue(res.ref) ?? 0;
         const varType = runtime?.variables[name]?.type;
         if (varType && intTypes.has(varType)) {
           const info = getIntInfo({ value: val, type: varType })!;
           const step = op === "++" ? 1 : -1;
           const v = intBinaryOp("+", val, step, info.bits, info.unsigned);
-          env[name] = cast(v, varType as any);
+          setRefValue(res.ref, cast(v, varType as any));
         } else {
           const step = op === "++" ? 1 : -1;
-          env[name] = varType ? cast(val + step, varType as any) : val + step;
+          const nv = varType ? cast(val + step, varType as any) : val + step;
+          setRefValue(res.ref, nv);
         }
-        return { value: env[name], type: varType };
+        return { value: getRefValue(res.ref), type: varType };
       }
       if (
         t.type === TokenType.Operator &&
@@ -337,8 +389,9 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
       const op = consume(TokenType.Operator).value;
       if (!left.ref) throw new Error("Invalid assignment target");
       const right = parseAssignment();
-      const oldVal = env[left.ref] ?? 0;
-      const varType = runtime?.variables[left.ref]?.type as string | undefined;
+      const oldVal = getRefValue(left.ref) ?? 0;
+      const name = typeof left.ref === "string" ? left.ref : (left.ref as IndexRef).name;
+      const varType = runtime?.variables[name]?.type as string | undefined;
       let newVal;
       if (op === "=") {
         newVal = right.value;
@@ -381,8 +434,9 @@ export function evaluateExpression(expr: string, env: EvalEnv = {}, runtime?: Ru
             break;
         }
       }
-      env[left.ref] = varType ? cast(newVal, varType as any) : newVal;
-      left = { value: env[left.ref], type: varType };
+      const finalVal = varType ? cast(newVal, varType as any) : newVal;
+      setRefValue(left.ref, finalVal);
+      left = { value: getRefValue(left.ref), type: varType, ref: left.ref };
     }
     return left;
   }

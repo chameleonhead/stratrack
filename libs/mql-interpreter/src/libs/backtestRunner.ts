@@ -130,6 +130,17 @@ export class BacktestRunner {
       }
     }
     const runtime = execute(ast);
+    // Map legacy MQL4 event handlers (init/start/deinit) to MQL5-style names
+    // so the runtime/backtest loop can invoke them uniformly.
+    if (!runtime.functions["OnInit"] && runtime.functions["init"]) {
+      runtime.functions["OnInit"] = runtime.functions["init"];
+    }
+    if (!runtime.functions["OnDeinit"] && runtime.functions["deinit"]) {
+      runtime.functions["OnDeinit"] = runtime.functions["deinit"];
+    }
+    if (!runtime.functions["OnTick"] && runtime.functions["start"]) {
+      runtime.functions["OnTick"] = runtime.functions["start"];
+    }
     runtime.properties = properties;
     let programType: ProgramType = "script";
     if (runtime.functions["OnCalculate"]) programType = "indicator";
