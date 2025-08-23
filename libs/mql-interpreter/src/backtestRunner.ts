@@ -13,13 +13,8 @@ import { InMemoryAccount as Account, AccountMetrics } from "./libs/domain/accoun
 import { InMemoryMarketData as MarketData } from "./libs/domain/marketData";
 import type { Candle, Tick } from "./libs/domain/marketData";
 import { InMemoryTerminal as VirtualTerminal, TerminalStorage } from "./libs/domain/terminal";
-import { IndicatorCache } from "./libs/indicatorCache";
 import { IndicatorSource, InMemoryIndicatorSource } from "./libs/indicatorSource";
-import { createCommon } from "./libs/functions/common";
-import { createCheck } from "./libs/functions/check";
-import { createGlobals } from "./libs/functions/globals";
-import { createEventFunctions } from "./libs/functions/eventFunctions";
-import { createFiles } from "./libs/functions/files";
+import { createLibs } from "./libs/factory";
 
 export interface BacktestSession {
   broker: Broker;
@@ -109,7 +104,6 @@ export class BacktestRunner {
   private initialized = false;
   private deinitialized = false;
   private pendingTradeEvents: Order[] = [];
-  private indicators = new IndicatorCache();
   private indicatorSource: IndicatorSource;
   private context: ExecutionContext;
   constructor(
@@ -190,6 +184,16 @@ export class BacktestRunner {
       Record<number, Candle[]>
     >;
     this.market = new MarketData(ticks, candleData);
+    const baseGetCandles = this.market.getCandles.bind(this.market);
+    (this.market as any).getCandles = (symbol: string, timeframe: number): Candle[] => {
+      const sym = symbol && String(symbol).length ? symbol : (this.options.symbol ?? "TEST");
+      const tf = timeframe || this.runtime.globalValues._Period;
+      const arr = baseGetCandles(sym, tf);
+      const time = this.candles[Math.min(this.index, this.candles.length - 1)]?.time ?? 0;
+      let i = arr.length - 1;
+      while (i >= 0 && arr[i].time > time) i--;
+      return arr.slice(0, i + 1);
+    };
     const period =
       options.timeframe ?? (candles.length > 1 ? candles[1].time - candles[0].time : 0);
     this.context = {
@@ -201,9 +205,9 @@ export class BacktestRunner {
       timeframe: period,
       digits: 5,
       lastError: 0,
-      indicators: this.indicators,
     };
     this.initializeGlobals();
+    const libs = createLibs(this.context);
     Object.defineProperties(this.context, {
       lastError: {
         get: () => this.runtime.globalValues._LastError,
@@ -225,11 +229,7 @@ export class BacktestRunner {
       },
     });
     const builtins = this.buildBuiltins();
-    // Add factory-created functions to builtins
-    const contextBuiltins = {
-      ...this.createContextBuiltins(),
-    };
-    registerEnvBuiltins({ ...contextBuiltins, ...builtins });
+    registerEnvBuiltins({ ...libs, ...builtins });
   }
 
   private initializeGlobals(): void {
@@ -254,16 +254,6 @@ export class BacktestRunner {
     rt._Period = period;
   }
 
-  private createContextBuiltins(): Record<string, BuiltinFunction> {
-    return {
-      ...createCommon(this.context),
-      ...createCheck(this.context),
-      ...createGlobals(this.context),
-      ...createEventFunctions(this.context),
-      ...createFiles(this.context),
-    };
-  }
-
   private buildBuiltins(): Record<string, BuiltinFunction> {
     const metrics = () =>
       this.session.account.getMetrics(
@@ -274,55 +264,18 @@ export class BacktestRunner {
 
     const currentTime = () => this.candles[Math.min(this.index, this.candles.length - 1)].time;
 
-    const candlesFor = (sym: any, tf: any): Candle[] => {
-      const symbol = sym && String(sym).length ? String(sym) : (this.options.symbol ?? "TEST");
-      const timeframe = Number(tf) || this.runtime.globalValues._Period;
-      return this.market.getCandles(symbol, timeframe);
-    };
-
-    const findIndex = (candles: Candle[], time: number): number => {
-      let lo = 0,
-        hi = candles.length - 1;
-      while (lo <= hi) {
-        const mid = (lo + hi) >> 1;
-        if (candles[mid].time <= time) lo = mid + 1;
-        else hi = mid - 1;
-      }
-      return hi;
-    };
-
-    const priceVal = (c: Candle, applied: number): number => {
-      switch (applied) {
-        case 1:
-          return c.open;
-        case 2:
-          return c.high;
-        case 3:
-          return c.low;
-        case 4:
-          return (c.high + c.low) / 2;
-        case 5:
-          return (c.high + c.low + c.close) / 3;
-        case 6:
-          return (c.high + c.low + 2 * c.close) / 4;
-        default:
-          return c.close;
-      }
-    };
-
     const marketInfo = (symbol: string, type: number): number => {
-      const time = currentTime();
-      const tick = this.market.getTick(symbol, time);
+      const tick = this.market.getTick(symbol, currentTime());
       switch (type) {
-        case 9: // MODE_BID
+        case 9:
           return tick?.bid ?? 0;
-        case 10: // MODE_ASK
+        case 10:
           return tick?.ask ?? 0;
-        case 11: // MODE_POINT
+        case 11:
           return this.runtime.globalValues.Point;
-        case 12: // MODE_DIGITS
+        case 12:
           return this.runtime.globalValues.Digits;
-        case 13: // MODE_SPREAD
+        case 13:
           return tick ? Math.round((tick.ask - tick.bid) / this.runtime.globalValues.Point) : 0;
         default:
           return 0;
@@ -330,403 +283,7 @@ export class BacktestRunner {
     };
 
     return {
-      Bars: (sym: any, tf: any) => candlesFor(sym, tf).length,
-      iBars: (sym: any, tf: any) => candlesFor(sym, tf).length,
-      iBarShift: (sym: any, tf: any, time: number, exact?: boolean) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < arr.length; i++) {
-          const c = arr[i];
-          const next = arr[i + 1];
-          if (c.time === time) return i;
-          if (!exact && next && c.time < time && time < next.time) return i;
-        }
-        return -1;
-      },
-      iOpen: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.open ?? 0;
-      },
-      iHigh: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.high ?? 0;
-      },
-      iLow: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.low ?? 0;
-      },
-      iClose: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.close ?? 0;
-      },
-      iTime: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.time ?? 0;
-      },
-      iVolume: (sym: any, tf: any, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const idx = findIndex(arr, currentTime()) - (shift ?? 0);
-        return arr[idx]?.volume ?? 0;
-      },
-      CopyTime: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].time;
-        return Math.min(count, arr.length - start);
-      },
-      CopyOpen: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].open;
-        return Math.min(count, arr.length - start);
-      },
-      CopyHigh: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].high;
-        return Math.min(count, arr.length - start);
-      },
-      CopyLow: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].low;
-        return Math.min(count, arr.length - start);
-      },
-      CopyClose: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) dst[i] = arr[start + i].close;
-        return Math.min(count, arr.length - start);
-      },
-      CopyTickVolume: (sym: any, tf: any, start: number, count: number, dst: number[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++)
-          dst[i] = arr[start + i].volume ?? 0;
-        return Math.min(count, arr.length - start);
-      },
-      CopyRates: (sym: any, tf: any, start: number, count: number, dst: any[]) => {
-        const arr = candlesFor(sym, tf);
-        for (let i = 0; i < count && start + i < arr.length; i++) {
-          const c = arr[start + i];
-          dst[i] = {
-            open: c.open,
-            high: c.high,
-            low: c.low,
-            close: c.close,
-            tick_volume: c.volume ?? 0,
-            time: c.time,
-          };
-        }
-        return Math.min(count, arr.length - start);
-      },
-      SeriesInfoInteger: (sym: any, tf: any, prop: number) => {
-        const arr = candlesFor(sym, tf);
-        if (prop === 0) return arr.length;
-        return 0;
-      },
-      RefreshRates: () => 1,
-      IndicatorBuffers: (count: number) => {
-        this.runtime.globalValues._IndicatorBuffers = Array(count).fill(null);
-        this.runtime.globalValues._IndicatorLabels = Array(count).fill("");
-        this.runtime.globalValues._IndicatorShifts = Array(count).fill(0);
-        return 0;
-      },
-      SetIndexBuffer: (index: number, arr: number[]) => {
-        const buffs = this.runtime.globalValues._IndicatorBuffers;
-        if (!Array.isArray(buffs) || index < 0 || index >= buffs.length) return false;
-        buffs[index] = arr;
-        return true;
-      },
-      SetIndexLabel: (index: number, text: string) => {
-        const labels = this.runtime.globalValues._IndicatorLabels;
-        if (!Array.isArray(labels) || index < 0 || index >= labels.length) return false;
-        labels[index] = text;
-        return true;
-      },
-      SetIndexShift: (index: number, shift: number) => {
-        const shifts = this.runtime.globalValues._IndicatorShifts;
-        if (!Array.isArray(shifts) || index < 0 || index >= shifts.length) return false;
-        shifts[index] = shift;
-        return true;
-      },
-      IndicatorCounted: () => this.runtime.globalValues._IndicatorCounted ?? 0,
-      IndicatorDigits: () => this.runtime.globalValues.Digits,
-      IndicatorSetDouble: (_prop: number, value: number) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
-        props[_prop] = value;
-        return 0;
-      },
-      IndicatorSetInteger: (_prop: number, value: number) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
-        props[_prop] = value;
-        return 0;
-      },
-      IndicatorSetString: (_prop: number, value: string) => {
-        const props = (this.runtime.globalValues._IndicatorProps ??= {} as Record<number, unknown>);
-        props[_prop] = value;
-        return 0;
-      },
-      IndicatorShortName: (name: string) => {
-        this.runtime.globalValues._IndicatorShortName = name;
-        return 0;
-      },
-      iMA: (
-        sym: any,
-        tf: any,
-        period: number,
-        maShift: number,
-        _maMethod: number,
-        applied: number,
-        shift: number
-      ) => {
-        const arr = candlesFor(sym, tf);
-        const curIdx = findIndex(arr, currentTime());
-        const cache = this.context.indicators!;
-        const key = {
-          type: "iMA",
-          symbol: sym,
-          timeframe: tf,
-          params: { period, maMethod: _maMethod, applied },
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          values: [] as number[],
-          sum: 0,
-        }));
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) {
-            const price = priceVal(arr[i], applied);
-            ctx.sum += price;
-            if (i >= period) ctx.sum -= priceVal(arr[i - period], applied);
-            ctx.values[i] = i >= period - 1 ? ctx.sum / period : 0;
-            ctx.last = i;
-          }
-        }
-        const idx = curIdx - (shift ?? 0) - maShift;
-        return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
-      },
-      iMACD: (
-        sym: any,
-        tf: any,
-        fast: number,
-        slow: number,
-        signal: number,
-        applied: number,
-        mode: number,
-        shift: number
-      ) => {
-        const arr = candlesFor(sym, tf);
-        const curIdx = findIndex(arr, currentTime());
-        const cache = this.context.indicators!;
-        const key = {
-          type: "iMACD",
-          symbol: sym,
-          timeframe: tf,
-          params: { fast, slow, signal, applied },
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          macd: [] as number[],
-          signal: [] as number[],
-          hist: [] as number[],
-          emaFast: 0,
-          emaSlow: 0,
-          sig: 0,
-        }));
-        const kFast = 2 / (fast + 1);
-        const kSlow = 2 / (slow + 1);
-        const kSig = 2 / (signal + 1);
-        if (ctx.last < 0 && curIdx >= 0) {
-          const price0 = priceVal(arr[0], applied);
-          ctx.emaFast = price0;
-          ctx.emaSlow = price0;
-          ctx.sig = 0;
-          ctx.macd[0] = 0;
-          ctx.signal[0] = 0;
-          ctx.hist[0] = 0;
-          ctx.last = 0;
-        }
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) {
-            const price = priceVal(arr[i], applied);
-            ctx.emaFast = price * kFast + ctx.emaFast * (1 - kFast);
-            ctx.emaSlow = price * kSlow + ctx.emaSlow * (1 - kSlow);
-            const macd = ctx.emaFast - ctx.emaSlow;
-            ctx.sig = macd * kSig + ctx.sig * (1 - kSig);
-            const ready = i >= Math.max(fast, slow);
-            ctx.macd[i] = ready ? macd : 0;
-            ctx.signal[i] = ready ? ctx.sig : 0;
-            ctx.hist[i] = ready ? macd - ctx.sig : 0;
-            ctx.last = i;
-          }
-        }
-        const idx = curIdx - (shift ?? 0);
-        if (idx < 0) return 0;
-        if (mode === 1) return ctx.signal[idx] ?? 0;
-        if (mode === 2) return ctx.hist[idx] ?? 0;
-        return ctx.macd[idx] ?? 0;
-      },
-      iATR: (sym: any, tf: any, period: number, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const curIdx = findIndex(arr, currentTime());
-        const cache = this.context.indicators!;
-        const key = {
-          type: "iATR",
-          symbol: sym,
-          timeframe: tf,
-          params: { period },
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          values: [] as number[],
-          atr: 0,
-          prevClose: 0,
-        }));
-        if (ctx.last < 0 && curIdx >= 0) {
-          const first = arr[0];
-          ctx.prevClose = first.close;
-          ctx.values[0] = 0;
-          ctx.last = 0;
-        }
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) {
-            const cur = arr[i];
-            const tr = Math.max(
-              cur.high - cur.low,
-              Math.abs(cur.high - ctx.prevClose),
-              Math.abs(cur.low - ctx.prevClose)
-            );
-            if (i <= period) {
-              ctx.atr = (ctx.atr * (i - 1) + tr) / i;
-            } else {
-              ctx.atr = (ctx.atr * (period - 1) + tr) / period;
-            }
-            ctx.values[i] = ctx.atr;
-            ctx.prevClose = cur.close;
-            ctx.last = i;
-          }
-        }
-        const idx = curIdx - (shift ?? 0);
-        return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
-      },
-      iRSI: (sym: any, tf: any, period: number, applied: number, shift: number) => {
-        const arr = candlesFor(sym, tf);
-        const curIdx = findIndex(arr, currentTime());
-        const cache = this.context.indicators!;
-        const key = {
-          type: "iRSI",
-          symbol: sym,
-          timeframe: tf,
-          params: { period, applied },
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          values: [] as number[],
-          gains: [] as number[],
-          losses: [] as number[],
-        }));
-        if (ctx.last < 0 && curIdx >= 0) {
-          ctx.values[0] = 0;
-          ctx.gains[0] = 0;
-          ctx.losses[0] = 0;
-          ctx.last = 0;
-        }
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) {
-            const price = priceVal(arr[i], applied);
-            const prev = priceVal(arr[i - 1], applied);
-            const diff = price - prev;
-            ctx.gains[i] = diff > 0 ? diff : 0;
-            ctx.losses[i] = diff < 0 ? -diff : 0;
-            if (i < period) {
-              ctx.values[i] = 0;
-            } else {
-              let gains = 0;
-              let losses = 0;
-              for (let j = i - period + 1; j <= i; j++) {
-                gains += ctx.gains[j];
-                losses += ctx.losses[j];
-              }
-              const avgGain = gains / period;
-              const avgLoss = losses / period;
-              if (avgLoss === 0) ctx.values[i] = 100;
-              else if (avgGain === 0) ctx.values[i] = 0;
-              else {
-                const rs = avgGain / avgLoss;
-                ctx.values[i] = 100 - 100 / (1 + rs);
-              }
-            }
-            ctx.last = i;
-          }
-        }
-        const idx = curIdx - (shift ?? 0);
-        return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
-      },
-      iCustom: (sym: any, tf: any, name: string, ...args: any[]) => {
-        const arr = candlesFor(sym, tf);
-        const curIdx = findIndex(arr, currentTime());
-        const mode = Number(args[args.length - 2] ?? 0);
-        const shift = Number(args[args.length - 1] ?? 0);
-        const params = args.slice(0, -2);
-        const source = this.indicatorSource.get(name);
-        if (!source) return 0;
-        const cache = this.context.indicators!;
-        const key = {
-          type: `iCustom:${name}`,
-          symbol: sym,
-          timeframe: tf,
-          params,
-        } as const;
-        const ctx = cache.getOrCreate(key, () => ({
-          last: -1,
-          buffers: [] as number[][],
-          runner: new BacktestRunner(source, arr, {
-            symbol: sym && String(sym).length ? String(sym) : undefined,
-            timeframe: tf,
-            indicatorSource: this.indicatorSource,
-          }),
-        }));
-        if (ctx.last < curIdx) {
-          for (let i = ctx.last + 1; i <= curIdx; i++) ctx.runner.step();
-          ctx.buffers = ctx.runner.getRuntime().globalValues._IndicatorBuffers ?? [];
-          ctx.last = curIdx;
-        }
-        const idx = curIdx - shift;
-        return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
-      },
-      IsStopped: () => this.runtime.globalValues._StopFlag,
-      TerminalInfoInteger: (prop: number) => {
-        // basic subset: TERMINAL_CONNECTED = 7
-        if (prop === 7) return 1;
-        return 0;
-      },
-      OrderSend: (
-        symbol: string,
-        cmd: number,
-        volume: number,
-        price: number,
-        slippage: number,
-        sl: number,
-        tp: number
-      ) => {
-        return this.session.broker.sendOrder({
-          symbol,
-          cmd,
-          volume,
-          price,
-          sl,
-          tp,
-          time: this.candles[this.index].time,
-          bid: this.runtime.globalValues.Bid,
-          ask: this.runtime.globalValues.Ask,
-        });
-      },
       MarketInfo: (sym: string, type: number) => marketInfo(sym, type),
-      SymbolsTotal: (selected = false) => this.market.getSymbols(Boolean(selected)).length,
-      SymbolName: (index: number, selected = false) => {
-        const list = this.market.getSymbols(Boolean(selected));
-        return list[index] ?? "";
-      },
-      SymbolSelect: (sym: string, enable: boolean) => this.market.select(sym, enable),
       OrdersTotal: () => this.session.broker.getActiveOrders().length,
       HistoryTotal: () => this.session.broker.getHistory().length,
       OrdersHistoryTotal: () => this.session.broker.getHistory().length,
@@ -738,7 +295,7 @@ export class BacktestRunner {
         return this.selectedOrder ? 1 : 0;
       },
       OrderType: () => (this.selectedOrder ? (this.selectedOrder.type === "buy" ? 0 : 1) : -1),
-      OrderTicket: () => (this.selectedOrder ? this.selectedOrder.ticket : -1),
+      OrderTicket: () => this.selectedOrder?.ticket ?? -1,
       OrderSymbol: () => this.selectedOrder?.symbol ?? "",
       OrderLots: () => this.selectedOrder?.volume ?? 0,
       OrderOpenPrice: () => this.selectedOrder?.price ?? 0,
@@ -756,7 +313,7 @@ export class BacktestRunner {
         const t = ticket >= 0 ? ticket : (this.selectedOrder?.ticket ?? -1);
         if (t < 0) return 0;
         const p = price > 0 ? price : this.runtime.globalValues.Bid;
-        const pr = this.session.broker.close(t, p, this.candles[this.index].time);
+        const pr = this.session.broker.close(t, p, currentTime());
         if (pr) this.session.account.applyProfit(pr);
         return pr ? 1 : 0;
       },
@@ -776,6 +333,27 @@ export class BacktestRunner {
         }
         return ok ? 1 : 0;
       },
+      OrderSend: (
+        symbol: string,
+        cmd: number,
+        volume: number,
+        price: number,
+        _slippage: number,
+        sl: number,
+        tp: number
+      ) =>
+        this.session.broker.sendOrder({
+          symbol,
+          cmd,
+          volume,
+          price,
+          sl,
+          tp,
+          time: currentTime(),
+          bid: this.runtime.globalValues.Bid,
+          ask: this.runtime.globalValues.Ask,
+        }),
+      IsStopped: () => this.runtime.globalValues._StopFlag,
       AccountBalance: () => metrics().balance,
       AccountEquity: () => metrics().equity,
       AccountProfit: () => metrics().openProfit + metrics().closedProfit,
@@ -792,6 +370,41 @@ export class BacktestRunner {
       AccountFreeMarginMode: () => 0,
       AccountStopoutLevel: () => 0,
       AccountStopoutMode: () => 0,
+      iCustom: (symbol: any, timeframe: any, name: string, ...args: any[]) => {
+        const sym =
+          symbol && String(symbol).length ? String(symbol) : (this.options.symbol ?? "TEST");
+        const tf = Number(timeframe) || this.runtime.globalValues._Period;
+        const arr = this.market.getCandles(sym, tf);
+        const curIdx = arr.length - 1;
+        const mode = Number(args[args.length - 2] ?? 0);
+        const shift = Number(args[args.length - 1] ?? 0);
+        const params = args.slice(0, -2);
+        const source = this.indicatorSource.get(name);
+        if (!source) return 0;
+        const cache = this.context.indicators!;
+        const key = {
+          type: `iCustom:${name}`,
+          symbol: sym,
+          timeframe: tf,
+          params,
+        } as const;
+        const ctx = cache.getOrCreate(key, () => ({
+          last: -1,
+          buffers: [] as number[][],
+          runner: new BacktestRunner(source, arr, {
+            symbol: sym && String(sym).length ? sym : undefined,
+            timeframe: tf,
+            indicatorSource: this.indicatorSource,
+          }),
+        }));
+        if (ctx.last < curIdx) {
+          for (let i = ctx.last + 1; i <= curIdx; i++) ctx.runner.step();
+          ctx.buffers = ctx.runner.getRuntime().globalValues._IndicatorBuffers ?? [];
+          ctx.last = curIdx;
+        }
+        const idx = curIdx - shift;
+        return idx < 0 ? 0 : (ctx.buffers[mode]?.[idx] ?? 0);
+      },
     };
   }
   private callInit(): void {
