@@ -51,7 +51,12 @@ export function executeStatements(
   const atEnd = () => pos >= tokens.length;
   const consume = (type?: TokenType, value?: string): Token => {
     const t = tokens[pos];
-    if (!t) throw new Error("Unexpected end of input");
+    if (!t) {
+      const context = tokens.slice(Math.max(0, pos - 5), pos)
+        .map(tk => `${tk.value}:${tk.type}`)
+        .join(' ');
+      throw new Error(`Unexpected end of input. Last tokens: ${context}. Position: ${pos}/${tokens.length}`);
+    }
     if (type && t.type !== type) throw new Error(`Expected ${type} but found ${t.type}`);
     if (value && t.value !== value) throw new Error(`Expected ${value} but found ${t.value}`);
     pos++;
@@ -323,7 +328,9 @@ export function executeStatements(
 
     // expression statement
     const expr = readExpression(";");
-    consume(TokenType.Punctuation, ";");
+    if (!atEnd()) {
+      consume(TokenType.Punctuation, ";");
+    }
     evaluateExpression(expr, env, runtime);
     return {};
   };
