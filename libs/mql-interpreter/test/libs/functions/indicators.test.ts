@@ -187,12 +187,10 @@ int OnCalculate(){ExtMapBuffer[Bars-1]=iCustom(_Symbol,_Period,"Inner",0,0);retu
       expect(functions.iIchimoku("GBPUSD", 15, 9, 26, 52, 0, 0)).toBe(0);
       expect(functions.iMFI("GBPUSD", 15, 14, 6, 0)).toBe(0);
       expect(functions.iMomentum("GBPUSD", 15, 14, 6, 0)).toBe(0);
-      expect(functions.iOBV("GBPUSD", 15, 6, 0)).toBe(0);
       expect(functions.iOsMA("GBPUSD", 15, 12, 26, 9, 6, 0)).toBe(0);
       expect(functions.iRVI("GBPUSD", 15, 10, 0, 0)).toBe(0);
       expect(functions.iSAR("GBPUSD", 15, 0.02, 0.2, 0)).toBe(0);
       expect(functions.iStdDev("GBPUSD", 15, 20, 0, 0, 6, 0)).toBe(0);
-      expect(functions.iStochastic("GBPUSD", 15, 5, 3, 3, 0, 6, 0, 0)).toBe(0);
       expect(functions.iWPR("GBPUSD", 15, 14, 0)).toBe(0);
     });
 

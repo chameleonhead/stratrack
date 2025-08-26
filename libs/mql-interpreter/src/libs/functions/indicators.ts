@@ -10,6 +10,8 @@ import { iMomentum, iMomentumOnArray as momentumOnArray } from "../../ta/momentu
 import { iStdDev, iStdDevOnArray as stdDevOnArray } from "../../ta/stddev";
 import { iBands, iBandsOnArray } from "../../ta/bands";
 import { iCCI, iCCIOnArray as cciOnArray } from "../../ta/cci";
+import { iOBV } from "../../ta/obv";
+import { iStochastic } from "../../ta/stochastic";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -201,7 +203,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     ) => iMomentum(context, symbol, timeframe, period, applied_price, shift),
     iMomentumOnArray: (array: number[], total: number, period: number, shift: number) =>
       momentumOnArray(array, total, period, shift),
-    iOBV: (symbol: string, timeframe: number, applied_price: number, shift: number) => 0,
+    iOBV: (symbol: string, timeframe: number, applied_price: number, shift: number) =>
+      iOBV(context, symbol, timeframe, applied_price, shift),
     iOsMA: (
       symbol: string,
       timeframe: number,
@@ -242,7 +245,19 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       price_field: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) =>
+      iStochastic(
+        context,
+        symbol,
+        timeframe,
+        k_period,
+        d_period,
+        slowing,
+        method,
+        price_field,
+        mode,
+        shift
+      ),
     iWPR: (symbol: string, timeframe: number, period: number, shift: number) => 0,
   };
 }
