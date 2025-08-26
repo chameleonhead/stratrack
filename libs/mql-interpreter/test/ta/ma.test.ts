@@ -33,6 +33,21 @@ describe("iMA", () => {
     expect(res).toBeCloseTo(1.1875, 4);
   });
 
+  it("calculates exponential moving average", () => {
+    const res = iMA(context, "GBPUSD", 15, 3, 0, 1, 6, 0);
+    expect(res).toBeCloseTo(1.18984375, 8);
+  });
+
+  it("calculates smoothed moving average", () => {
+    const res = iMA(context, "GBPUSD", 15, 3, 0, 2, 6, 0);
+    expect(res).toBeCloseTo(1.15787037, 8);
+  });
+
+  it("calculates linear weighted moving average", () => {
+    const res = iMA(context, "GBPUSD", 15, 3, 0, 3, 6, 0);
+    expect(res).toBeCloseTo(1.20416667, 8);
+  });
+
   it("uses indicator cache", () => {
     const engine = context.indicatorEngine! as InMemoryIndicatorEngine;
     const key = {
@@ -55,5 +70,23 @@ describe("iMA", () => {
     const arr = [1, 2, 3, 4, 5];
     const res = iMAOnArray(arr, arr.length, 3, 0, 0, 0);
     expect(res).toBe(4);
+  });
+
+  it("calculates EMA on array", () => {
+    const arr = [1, 2, 3, 4, 5];
+    const res = iMAOnArray(arr, arr.length, 3, 0, 1, 0);
+    expect(res).toBeCloseTo(4.0625, 8);
+  });
+
+  it("calculates SMMA on array", () => {
+    const arr = [1, 2, 3, 4, 5];
+    const res = iMAOnArray(arr, arr.length, 3, 0, 2, 0);
+    expect(res).toBeCloseTo(3.44444444, 8);
+  });
+
+  it("calculates LWMA on array", () => {
+    const arr = [1, 2, 3, 4, 5];
+    const res = iMAOnArray(arr, arr.length, 3, 0, 3, 0);
+    expect(res).toBeCloseTo(4.33333333, 8);
   });
 });

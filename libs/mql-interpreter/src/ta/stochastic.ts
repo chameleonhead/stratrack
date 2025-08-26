@@ -1,6 +1,7 @@
 import type { ExecutionContext } from "../libs/domain/types";
 import type { IndicatorEngine } from "../libs/domain/indicator";
 import { candlesFor } from "./utils";
+import { iMAOnArray } from "./ma";
 
 export function iStochastic(
   context: ExecutionContext,
@@ -14,7 +15,6 @@ export function iStochastic(
   mode: number,
   shift: number
 ): number {
-  if (method !== 0) return 0; // only simple moving averages supported
   const candles = candlesFor(context, symbol, timeframe);
   const curIdx = candles.length - 1;
   const engine: IndicatorEngine | undefined = context.indicatorEngine ?? undefined;
@@ -24,7 +24,7 @@ export function iStochastic(
     type: "iStochastic",
     symbol,
     timeframe,
-    params: { k_period, d_period, slowing, price_field },
+    params: { k_period, d_period, slowing, method, price_field },
   } as const;
 
   const ctx = engine.getOrCreate(key, () => ({
@@ -49,17 +49,11 @@ export function iStochastic(
       const close = candles[i].close;
       ctx.rawK[i] = highest === lowest ? 0 : ((close - lowest) / (highest - lowest)) * 100;
 
-      // slowing
-      let sumK = 0;
-      const slowStart = Math.max(0, i - slowing + 1);
-      for (let j = slowStart; j <= i; j++) sumK += ctx.rawK[j] ?? 0;
-      ctx.k[i] = sumK / Math.min(slowing, i + 1);
+      // slowing using selected MA method
+      ctx.k[i] = iMAOnArray(ctx.rawK, i + 1, slowing, 0, method, 0);
 
       // %D
-      let sumD = 0;
-      const dStart = Math.max(0, i - d_period + 1);
-      for (let j = dStart; j <= i; j++) sumD += ctx.k[j] ?? 0;
-      ctx.d[i] = sumD / Math.min(d_period, i + 1);
+      ctx.d[i] = iMAOnArray(ctx.k, i + 1, d_period, 0, method, 0);
 
       ctx.last = i;
     }

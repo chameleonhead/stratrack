@@ -38,13 +38,20 @@ describe("iStochastic", () => {
     expect(res).toBeCloseTo(81.1111, 4);
   });
 
+  it("supports EMA smoothing", () => {
+    const k = iStochastic(context, "GBPUSD", 15, 3, 3, 3, 1, 0, 0, 0);
+    const d = iStochastic(context, "GBPUSD", 15, 3, 3, 3, 1, 0, 1, 0);
+    expect(k).toBeCloseTo(80.10416667, 8);
+    expect(d).toBeCloseTo(79.6875, 8);
+  });
+
   it("uses indicator cache", () => {
     const engine = context.indicatorEngine! as InMemoryIndicatorEngine;
     const key = {
       type: "iStochastic",
       symbol: "GBPUSD",
       timeframe: 15,
-      params: { k_period: 3, d_period: 3, slowing: 1, price_field: 0 },
+      params: { k_period: 3, d_period: 3, slowing: 1, method: 0, price_field: 0 },
     } as const;
     iStochastic(context, "GBPUSD", 15, 3, 3, 1, 0, 0, 0, 0);
     const state = engine.peek<any>(key)!;
