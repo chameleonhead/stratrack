@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
 import { iMA, iMAOnArray as maOnArray } from "../../ta/ma";
@@ -27,6 +26,10 @@ import { iBullsPower } from "../../ta/bulls";
 import { iFractals } from "../../ta/fractals";
 import { iRVI } from "../../ta/rvi";
 import { iSAR } from "../../ta/sar";
+import { iEnvelopes, iEnvelopesOnArray } from "../../ta/envelopes";
+import { iAlligator } from "../../ta/alligator";
+import { iGator } from "../../ta/gator";
+import { iIchimoku } from "../../ta/ichimoku";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -86,7 +89,22 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) =>
+      iAlligator(
+        context,
+        symbol,
+        timeframe,
+        jaw_period,
+        jaw_shift,
+        teeth_period,
+        teeth_shift,
+        lips_period,
+        lips_shift,
+        ma_method,
+        applied_price,
+        mode,
+        shift
+      ),
     iAO: (symbol: string, timeframe: number, shift: number) =>
       iAO(context, symbol, timeframe, shift),
     iBands: (
@@ -156,7 +174,19 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       deviation: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) =>
+      iEnvelopes(
+        context,
+        symbol,
+        timeframe,
+        ma_period,
+        ma_shift,
+        ma_method,
+        applied_price,
+        deviation,
+        mode,
+        shift
+      ),
     iEnvelopesOnArray: (
       array: number[],
       total: number,
@@ -166,7 +196,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       deviation: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) => iEnvelopesOnArray(array, total, ma_period, ma_shift, ma_method, deviation, mode, shift),
     iForce: (
       symbol: string,
       timeframe: number,
@@ -190,7 +220,22 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) =>
+      iGator(
+        context,
+        symbol,
+        timeframe,
+        jaw_period,
+        jaw_shift,
+        teeth_period,
+        teeth_shift,
+        lips_period,
+        lips_shift,
+        ma_method,
+        applied_price,
+        mode,
+        shift
+      ),
     iIchimoku: (
       symbol: string,
       timeframe: number,
@@ -199,7 +244,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       senkou_span_b: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) => iIchimoku(context, symbol, timeframe, tenkan_sen, kijun_sen, senkou_span_b, mode, shift),
     iMAOnArray: (
       array: number[],
       total: number,
