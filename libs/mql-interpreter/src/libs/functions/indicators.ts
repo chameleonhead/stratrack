@@ -6,6 +6,8 @@ import { iMACD } from "../../ta/macd";
 import { iATR } from "../../ta/atr";
 import { iRSI } from "../../ta/rsi";
 import { iCustom } from "../../ta/custom";
+import { iMomentum, iMomentumOnArray as momentumOnArray } from "../../ta/momentum";
+import { iStdDev, iStdDevOnArray as stdDevOnArray } from "../../ta/stddev";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -182,8 +184,9 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       period: number,
       applied_price: number,
       shift: number
-    ) => 0,
-    iMomentumOnArray: (array: number[], total: number, period: number, shift: number) => 0,
+    ) => iMomentum(context, symbol, timeframe, period, applied_price, shift),
+    iMomentumOnArray: (array: number[], total: number, period: number, shift: number) =>
+      momentumOnArray(array, total, period, shift),
     iOBV: (symbol: string, timeframe: number, applied_price: number, shift: number) => 0,
     iOsMA: (
       symbol: string,
@@ -205,7 +208,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       ma_method: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) => iStdDev(context, symbol, timeframe, ma_period, ma_shift, ma_method, applied_price, shift),
     iStdDevOnArray: (
       array: number[],
       total: number,
@@ -213,7 +216,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       ma_shift: number,
       ma_method: number,
       shift: number
-    ) => 0,
+    ) => stdDevOnArray(array, total, ma_period, ma_shift, ma_method, shift),
     iStochastic: (
       symbol: string,
       timeframe: number,
