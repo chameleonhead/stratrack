@@ -16,6 +16,11 @@ import { iAD } from "../../ta/ad";
 import { iWPR } from "../../ta/wpr";
 import { iAO } from "../../ta/ao";
 import { iAC } from "../../ta/ac";
+import { iForce } from "../../ta/force";
+import { iMFI } from "../../ta/mfi";
+import { iBWMFI } from "../../ta/bwmfi";
+import { iDeMarker } from "../../ta/demarker";
+import { iOsMA } from "../../ta/osma";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -122,7 +127,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       shift: number
     ) => 0,
-    iBWMFI: (symbol: string, timeframe: number, shift: number) => 0,
+    iBWMFI: (symbol: string, timeframe: number, shift: number) =>
+      iBWMFI(context, symbol, timeframe, shift),
     iCCI: (
       symbol: string,
       timeframe: number,
@@ -132,7 +138,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
     ) => iCCI(context, symbol, timeframe, period, applied_price, shift),
     iCCIOnArray: (array: number[], total: number, period: number, shift: number) =>
       cciOnArray(array, total, period, shift),
-    iDeMarker: (symbol: string, timeframe: number, period: number, shift: number) => 0,
+    iDeMarker: (symbol: string, timeframe: number, period: number, shift: number) =>
+      iDeMarker(context, symbol, timeframe, period, shift),
     iEnvelopes: (
       symbol: string,
       timeframe: number,
@@ -161,7 +168,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       ma_method: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) => iForce(context, symbol, timeframe, period, ma_method, applied_price, shift),
     iFractals: (symbol: string, timeframe: number, mode: number, shift: number) => 0,
     iGator: (
       symbol: string,
@@ -200,7 +207,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       period: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) => iMFI(context, symbol, timeframe, period, applied_price, shift),
     iMomentum: (
       symbol: string,
       timeframe: number,
@@ -220,7 +227,17 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       signal_period: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) =>
+      iOsMA(
+        context,
+        symbol,
+        timeframe,
+        fast_ema_period,
+        slow_ema_period,
+        signal_period,
+        applied_price,
+        shift
+      ),
     iRSIOnArray: (array: number[], total: number, period: number, shift: number) =>
       rsiOnArray(array, total, period, shift),
     iRVI: (symbol: string, timeframe: number, period: number, mode: number, shift: number) => 0,
