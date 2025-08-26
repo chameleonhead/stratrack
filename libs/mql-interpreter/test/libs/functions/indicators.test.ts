@@ -176,10 +176,7 @@ int OnCalculate(){ExtMapBuffer[Bars-1]=iCustom(_Symbol,_Period,"Inner",0,0);retu
 
       // 基本的なインジケーター関数
       expect(functions.iEnvelopes("GBPUSD", 15, 20, 0, 0, 6, 0.1, 0, 0)).toBe(0);
-      expect(functions.iFractals("GBPUSD", 15, 0, 0)).toBe(0);
       expect(functions.iIchimoku("GBPUSD", 15, 9, 26, 52, 0, 0)).toBe(0);
-      expect(functions.iRVI("GBPUSD", 15, 10, 0, 0)).toBe(0);
-      expect(functions.iSAR("GBPUSD", 15, 0.02, 0.2, 0)).toBe(0);
     });
 
     it("should handle array-based indicators", () => {
@@ -198,10 +195,7 @@ int OnCalculate(){ExtMapBuffer[Bars-1]=iCustom(_Symbol,_Period,"Inner",0,0);retu
     it("should handle complex indicators", () => {
       const functions = createIndicators(context);
 
-      expect(functions.iADX("GBPUSD", 15, 14, 6, 0, 0)).toBe(0);
       expect(functions.iAlligator("GBPUSD", 15, 13, 8, 8, 5, 5, 3, 3, 0, 6, 0, 0)).toBe(0);
-      expect(functions.iBearsPower("GBPUSD", 15, 13, 6, 0)).toBe(0);
-      expect(functions.iBullsPower("GBPUSD", 15, 13, 6, 0)).toBe(0);
       expect(functions.iGator("GBPUSD", 15, 13, 8, 8, 5, 5, 3, 3, 0, 6, 0, 0)).toBe(0);
     });
   });

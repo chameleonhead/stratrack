@@ -21,6 +21,12 @@ import { iMFI } from "../../ta/mfi";
 import { iBWMFI } from "../../ta/bwmfi";
 import { iDeMarker } from "../../ta/demarker";
 import { iOsMA } from "../../ta/osma";
+import { iADX } from "../../ta/adx";
+import { iBearsPower } from "../../ta/bears";
+import { iBullsPower } from "../../ta/bulls";
+import { iFractals } from "../../ta/fractals";
+import { iRVI } from "../../ta/rvi";
+import { iSAR } from "../../ta/sar";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -66,7 +72,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) => iADX(context, symbol, timeframe, period, applied_price, mode, shift),
     iAlligator: (
       symbol: string,
       timeframe: number,
@@ -119,14 +125,14 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       period: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) => iBearsPower(context, symbol, timeframe, period, applied_price, shift),
     iBullsPower: (
       symbol: string,
       timeframe: number,
       period: number,
       applied_price: number,
       shift: number
-    ) => 0,
+    ) => iBullsPower(context, symbol, timeframe, period, applied_price, shift),
     iBWMFI: (symbol: string, timeframe: number, shift: number) =>
       iBWMFI(context, symbol, timeframe, shift),
     iCCI: (
@@ -169,7 +175,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       shift: number
     ) => iForce(context, symbol, timeframe, period, ma_method, applied_price, shift),
-    iFractals: (symbol: string, timeframe: number, mode: number, shift: number) => 0,
+    iFractals: (symbol: string, timeframe: number, mode: number, shift: number) =>
+      iFractals(context, symbol, timeframe, mode, shift),
     iGator: (
       symbol: string,
       timeframe: number,
@@ -240,8 +247,10 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       ),
     iRSIOnArray: (array: number[], total: number, period: number, shift: number) =>
       rsiOnArray(array, total, period, shift),
-    iRVI: (symbol: string, timeframe: number, period: number, mode: number, shift: number) => 0,
-    iSAR: (symbol: string, timeframe: number, step: number, maximum: number, shift: number) => 0,
+    iRVI: (symbol: string, timeframe: number, period: number, mode: number, shift: number) =>
+      iRVI(context, symbol, timeframe, period, mode, shift),
+    iSAR: (symbol: string, timeframe: number, step: number, maximum: number, shift: number) =>
+      iSAR(context, symbol, timeframe, step, maximum, shift),
     iStdDev: (
       symbol: string,
       timeframe: number,
