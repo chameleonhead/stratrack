@@ -176,7 +176,6 @@ int OnCalculate(){ExtMapBuffer[Bars-1]=iCustom(_Symbol,_Period,"Inner",0,0);retu
 
       // 基本的なインジケーター関数
       expect(functions.iAC("GBPUSD", 15, 0)).toBe(0);
-      expect(functions.iAD("GBPUSD", 15, 0)).toBe(0);
       expect(functions.iAO("GBPUSD", 15, 0)).toBe(0);
       expect(functions.iBands("GBPUSD", 15, 20, 2, 0, 6, 0, 0)).toBe(0);
       expect(functions.iCCI("GBPUSD", 15, 14, 6, 0)).toBe(0);
