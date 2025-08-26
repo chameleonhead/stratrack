@@ -14,6 +14,8 @@ import { iOBV } from "../../ta/obv";
 import { iStochastic } from "../../ta/stochastic";
 import { iAD } from "../../ta/ad";
 import { iWPR } from "../../ta/wpr";
+import { iAO } from "../../ta/ao";
+import { iAC } from "../../ta/ac";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -48,7 +50,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       iCustom(context, symbol, timeframe, name, ...args),
 
     // その他のインジケーター関数（簡易実装）
-    iAC: (symbol: string, timeframe: number, shift: number) => 0,
+    iAC: (symbol: string, timeframe: number, shift: number) =>
+      iAC(context, symbol, timeframe, shift),
     iAD: (symbol: string, timeframe: number, shift: number) =>
       iAD(context, symbol, timeframe, shift),
     iADX: (
@@ -73,7 +76,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       mode: number,
       shift: number
     ) => 0,
-    iAO: (symbol: string, timeframe: number, shift: number) => 0,
+    iAO: (symbol: string, timeframe: number, shift: number) =>
+      iAO(context, symbol, timeframe, shift),
     iBands: (
       symbol: string,
       timeframe: number,
