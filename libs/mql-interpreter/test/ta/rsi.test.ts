@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { iRSI } from "../../src/ta/rsi";
+import { iRSI, iRSIOnArray } from "../../src/ta/rsi";
 import { InMemoryIndicatorEngine } from "../../src/libs/domain/indicator";
 import { InMemoryMarketData } from "../../src/libs/domain/marketData";
 import type { ExecutionContext } from "../../src/libs/domain/types";
@@ -47,5 +47,11 @@ describe("iRSI", () => {
     iRSI(context, "GBPUSD", 15, 3, 6, 1);
     const again = engine.peek<any>(key)!;
     expect(again).toBe(state);
+  });
+
+  it("calculates RSI on array", () => {
+    const arr = [1, 2, 3, 2, 3, 4];
+    const res = iRSIOnArray(arr, arr.length, 3, 0);
+    expect(res).toBeCloseTo(66.6666667, 6);
   });
 });

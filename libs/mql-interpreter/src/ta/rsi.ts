@@ -68,3 +68,21 @@ export function iRSI(
   const idx = arr.length - 1 - shift;
   return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
 }
+
+export function iRSIOnArray(array: number[], total: number, period: number, shift: number): number {
+  const idx = total - 1 - shift;
+  if (idx - period < 0) return 0;
+  let gains = 0;
+  let losses = 0;
+  for (let j = idx - period + 1; j <= idx; j++) {
+    const diff = array[j] - array[j - 1];
+    if (diff > 0) gains += diff;
+    else losses -= diff;
+  }
+  const avgGain = gains / period;
+  const avgLoss = losses / period;
+  if (avgLoss === 0) return 100;
+  if (avgGain === 0) return 0;
+  const rs = avgGain / avgLoss;
+  return 100 - 100 / (1 + rs);
+}

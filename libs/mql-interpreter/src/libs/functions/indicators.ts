@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ExecutionContext } from "../domain/types";
 import type { BuiltinFunction } from "./types";
-import { iMA } from "../../ta/ma";
+import { iMA, iMAOnArray as maOnArray } from "../../ta/ma";
 import { iMACD } from "../../ta/macd";
 import { iATR } from "../../ta/atr";
-import { iRSI } from "../../ta/rsi";
+import { iRSI, iRSIOnArray as rsiOnArray } from "../../ta/rsi";
 import { iCustom } from "../../ta/custom";
 import { iMomentum, iMomentumOnArray as momentumOnArray } from "../../ta/momentum";
 import { iStdDev, iStdDevOnArray as stdDevOnArray } from "../../ta/stddev";
+import { iBands, iBandsOnArray } from "../../ta/bands";
+import { iCCI, iCCIOnArray as cciOnArray } from "../../ta/cci";
 
 export function createIndicators(context: ExecutionContext): Record<string, BuiltinFunction> {
   return {
@@ -76,7 +78,18 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) =>
+      iBands(
+        context,
+        symbol,
+        timeframe,
+        period,
+        deviation,
+        bands_shift,
+        applied_price,
+        mode,
+        shift
+      ),
     iBandsOnArray: (
       array: number[],
       total: number,
@@ -85,7 +98,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       bands_shift: number,
       mode: number,
       shift: number
-    ) => 0,
+    ) => iBandsOnArray(array, total, period, deviation, bands_shift, mode, shift),
     iBearsPower: (
       symbol: string,
       timeframe: number,
@@ -107,8 +120,9 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       period: number,
       applied_price: number,
       shift: number
-    ) => 0,
-    iCCIOnArray: (array: number[], total: number, period: number, shift: number) => 0,
+    ) => iCCI(context, symbol, timeframe, period, applied_price, shift),
+    iCCIOnArray: (array: number[], total: number, period: number, shift: number) =>
+      cciOnArray(array, total, period, shift),
     iDeMarker: (symbol: string, timeframe: number, period: number, shift: number) => 0,
     iEnvelopes: (
       symbol: string,
@@ -170,7 +184,7 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       ma_shift: number,
       ma_method: number,
       shift: number
-    ) => 0,
+    ) => maOnArray(array, total, period, ma_shift, ma_method, shift),
     iMFI: (
       symbol: string,
       timeframe: number,
@@ -197,7 +211,8 @@ export function createIndicators(context: ExecutionContext): Record<string, Buil
       applied_price: number,
       shift: number
     ) => 0,
-    iRSIOnArray: (array: number[], total: number, period: number, shift: number) => 0,
+    iRSIOnArray: (array: number[], total: number, period: number, shift: number) =>
+      rsiOnArray(array, total, period, shift),
     iRVI: (symbol: string, timeframe: number, period: number, mode: number, shift: number) => 0,
     iSAR: (symbol: string, timeframe: number, step: number, maximum: number, shift: number) => 0,
     iStdDev: (

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { iMA, iMAOnArray } from "../../src/ta/ma";
+import { iCCI, iCCIOnArray } from "../../src/ta/cci";
 import { InMemoryIndicatorEngine } from "../../src/libs/domain/indicator";
 import { InMemoryMarketData } from "../../src/libs/domain/marketData";
 import type { ExecutionContext } from "../../src/libs/domain/types";
 import type { Candle } from "../../src/libs/domain/marketData";
 
-describe("iMA", () => {
+describe("iCCI", () => {
   let context: ExecutionContext;
   let candles: Candle[];
   beforeEach(() => {
@@ -28,32 +28,30 @@ describe("iMA", () => {
     };
   });
 
-  it("calculates simple moving average", () => {
-    const res = iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
-    expect(res).toBeCloseTo(1.1875, 4);
+  it("calculates commodity channel index", () => {
+    const res = iCCI(context, "GBPUSD", 15, 3, 5, 0);
+    expect(res).toBeCloseTo(100, 6);
   });
 
   it("uses indicator cache", () => {
     const engine = context.indicatorEngine! as InMemoryIndicatorEngine;
     const key = {
-      type: "iMA",
+      type: "iCCI",
       symbol: "GBPUSD",
       timeframe: 15,
-      params: { period: 3, maMethod: 0, applied: 6 },
+      params: { period: 3, applied: 5 },
     } as const;
-    iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
+    iCCI(context, "GBPUSD", 15, 3, 5, 0);
     const state = engine.peek<any>(key)!;
     expect(state.last).toBe(candles.length - 1);
-    const before = state.values[state.last];
-    iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
-    const after = engine.peek<any>(key)!;
-    expect(after).toBe(state);
-    expect(after.values[after.last]).toBe(before);
+    iCCI(context, "GBPUSD", 15, 3, 5, 1);
+    const again = engine.peek<any>(key)!;
+    expect(again).toBe(state);
   });
 
-  it("calculates moving average on array", () => {
-    const arr = [1, 2, 3, 4, 5];
-    const res = iMAOnArray(arr, arr.length, 3, 0, 0, 0);
-    expect(res).toBe(4);
+  it("calculates CCI on array", () => {
+    const arr = candles.map((c) => (c.high + c.low + c.close) / 3);
+    const res = iCCIOnArray(arr, arr.length, 3, 0);
+    expect(res).toBeCloseTo(100, 6);
   });
 });

@@ -43,3 +43,18 @@ export function iMA(
   const idx = arr.length - 1 - (shift + maShift);
   return idx < 0 ? 0 : (ctx.values[idx] ?? 0);
 }
+
+export function iMAOnArray(
+  array: number[],
+  total: number,
+  period: number,
+  maShift: number,
+  maMethod: number,
+  shift: number
+): number {
+  const idx = total - 1 - (shift + maShift);
+  if (idx - period + 1 < 0) return 0;
+  let sum = 0;
+  for (let i = idx - period + 1; i <= idx; i++) sum += array[i];
+  return sum / period;
+}

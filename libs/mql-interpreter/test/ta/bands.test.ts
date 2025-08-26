@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { iMA, iMAOnArray } from "../../src/ta/ma";
+import { iBands, iBandsOnArray } from "../../src/ta/bands";
 import { InMemoryIndicatorEngine } from "../../src/libs/domain/indicator";
 import { InMemoryMarketData } from "../../src/libs/domain/marketData";
 import type { ExecutionContext } from "../../src/libs/domain/types";
 import type { Candle } from "../../src/libs/domain/marketData";
 
-describe("iMA", () => {
+describe("iBands", () => {
   let context: ExecutionContext;
   let candles: Candle[];
   beforeEach(() => {
@@ -28,32 +28,22 @@ describe("iMA", () => {
     };
   });
 
-  it("calculates simple moving average", () => {
-    const res = iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
-    expect(res).toBeCloseTo(1.1875, 4);
+  it("calculates Bollinger Bands", () => {
+    const upper = iBands(context, "GBPUSD", 15, 3, 2, 0, 0, 0, 0);
+    const lower = iBands(context, "GBPUSD", 15, 3, 2, 0, 0, 1, 0);
+    const middle = iBands(context, "GBPUSD", 15, 3, 2, 0, 0, 2, 0);
+    expect(upper).toBeCloseTo(1.281649658, 6);
+    expect(lower).toBeCloseTo(1.118350342, 6);
+    expect(middle).toBeCloseTo(1.2, 6);
   });
 
-  it("uses indicator cache", () => {
-    const engine = context.indicatorEngine! as InMemoryIndicatorEngine;
-    const key = {
-      type: "iMA",
-      symbol: "GBPUSD",
-      timeframe: 15,
-      params: { period: 3, maMethod: 0, applied: 6 },
-    } as const;
-    iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
-    const state = engine.peek<any>(key)!;
-    expect(state.last).toBe(candles.length - 1);
-    const before = state.values[state.last];
-    iMA(context, "GBPUSD", 15, 3, 0, 0, 6, 0);
-    const after = engine.peek<any>(key)!;
-    expect(after).toBe(state);
-    expect(after.values[after.last]).toBe(before);
-  });
-
-  it("calculates moving average on array", () => {
-    const arr = [1, 2, 3, 4, 5];
-    const res = iMAOnArray(arr, arr.length, 3, 0, 0, 0);
-    expect(res).toBe(4);
+  it("calculates Bollinger Bands on array", () => {
+    const arr = candles.map((c) => c.close);
+    const upper = iBandsOnArray(arr, arr.length, 3, 2, 0, 0, 0);
+    const lower = iBandsOnArray(arr, arr.length, 3, 2, 0, 1, 0);
+    const middle = iBandsOnArray(arr, arr.length, 3, 2, 0, 2, 0);
+    expect(upper).toBeCloseTo(1.281649658, 6);
+    expect(lower).toBeCloseTo(1.118350342, 6);
+    expect(middle).toBeCloseTo(1.2, 6);
   });
 });
