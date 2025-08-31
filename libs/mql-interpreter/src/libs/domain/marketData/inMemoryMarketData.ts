@@ -33,7 +33,7 @@ export class InMemoryMarketData implements IMarketData {
     return true;
   }
 
-  getIndex(symbol: string, timeframe: number, time: number): number {
+  getIndex(symbol: string, _timeframe: number, time: number): number {
     const arr = this.ticks[symbol];
     if (!arr || !arr.length) return -1;
     let pos = this.positions[symbol] ?? 0;
