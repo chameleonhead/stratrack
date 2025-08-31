@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createRoot } from "react-dom/client";
-import { act } from "react-dom/test-utils";
-import { ChartDataProvider, useChartData, type ChartDataContextValue } from "./ChartDataProvider";
+import { ChartDataProvider, useChartData } from "./ChartDataProvider";
 import * as apiDs from "../../api/datasources";
 import type { DataSourceDetail } from "../../api/datasources";
 import * as apiData from "../../api/data";
@@ -27,11 +26,9 @@ const dsDetail: DataSourceDetail = {
   endTime: new Date(baseTime + 86400000).toISOString(),
 };
 
-function Consumer({ onValue }: { onValue: (v: ChartDataContextValue) => void }) {
-  const value = useChartData();
-  onValue(value);
-  return null;
-}
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <ChartDataProvider dataSourceId="ds">{children}</ChartDataProvider>
+);
 
 describe("ChartDataProvider", () => {
   beforeEach(() => {
@@ -50,23 +47,13 @@ describe("ChartDataProvider", () => {
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
     vi.mocked(idb.saveCandles).mockResolvedValue();
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
+    const { result } = renderHook(() => useChartData(), { wrapper });
 
-    expect(apiDs.getDataSource).toHaveBeenCalledWith("ds");
+    await waitFor(() => {
+      expect(apiDs.getDataSource).toHaveBeenCalledWith("ds");
+    });
     expect(apiData.getDataHistory).toHaveBeenCalled();
-    expect(ctx?.candleData.length).toBe(1);
+    expect(result.current.candleData.length).toBe(1);
   });
 
   it("uses cached data when available", async () => {
@@ -84,22 +71,12 @@ describe("ChartDataProvider", () => {
       },
     ]);
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
+    const { result } = renderHook(() => useChartData(), { wrapper });
 
+    await waitFor(() => {
+      expect(result.current.candleData[0].open).toBe(1);
+    });
     expect(apiData.getDataHistory).not.toHaveBeenCalled();
-    expect(ctx?.candleData[0].open).toBe(1);
   });
 
   it("sets error when data fetch fails", async () => {
@@ -108,21 +85,11 @@ describe("ChartDataProvider", () => {
     vi.mocked(idb.loadCandles).mockResolvedValue([]);
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
+    const { result } = renderHook(() => useChartData(), { wrapper });
 
-    expect(ctx?.error).toBe("fail");
+    await waitFor(() => {
+      expect(result.current.error).toBe("fail");
+    });
   });
 
   it("clears data when timeframe changes", async () => {
@@ -140,30 +107,19 @@ describe("ChartDataProvider", () => {
       },
     ]);
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
+    const { result } = renderHook(() => useChartData(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.candleData.length).toBe(1);
     });
 
-    expect(ctx?.candleData.length).toBe(1);
-
     await act(async () => {
-      ctx?.setTimeframe("1h");
-    });
-    await act(async () => {
-      await Promise.resolve();
+      result.current.setTimeframe("1h");
     });
 
-    expect(ctx?.candleData.length).toBe(0);
+    await waitFor(() => {
+      expect(result.current.candleData.length).toBe(0);
+    });
   });
 
   it("loads additional data when range moves outside the loaded area", async () => {
@@ -181,34 +137,23 @@ describe("ChartDataProvider", () => {
     vi.mocked(idb.hasCandles).mockResolvedValue(false);
     vi.mocked(idb.saveCandles).mockResolvedValue();
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
+    const { result } = renderHook(() => useChartData(), { wrapper });
 
-    expect(apiData.getDataHistory).toHaveBeenCalledTimes(1);
-    const initialRange = ctx!.range!;
+    await waitFor(() => {
+      expect(apiData.getDataHistory).toHaveBeenCalledTimes(1);
+    });
+    const initialRange = result.current.range!;
 
     await act(async () => {
-      await ctx!.handleRangeChange({
+      await result.current.handleRangeChange({
         from: initialRange.from - 3600000,
         to: initialRange.to - 3600000,
       });
     });
-    await act(async () => {
-      await Promise.resolve();
-    });
 
-    expect(apiData.getDataHistory).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(apiData.getDataHistory).toHaveBeenCalledTimes(2);
+    });
   });
 
   it("recalculates indicators when timeframe or source changes", async () => {
@@ -226,38 +171,26 @@ describe("ChartDataProvider", () => {
       },
     ]);
 
-    let ctx: ChartDataContextValue | undefined;
-    const div = document.createElement("div");
-    await act(async () => {
-      const root = createRoot(div);
-      root.render(
-        <ChartDataProvider dataSourceId="ds">
-          <Consumer onValue={(v) => (ctx = v)} />
-        </ChartDataProvider>
-      );
-    });
-    await act(async () => {
-      await Promise.resolve();
+    const { result } = renderHook(() => useChartData(), { wrapper });
+
+    await waitFor(() => {
+      expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(1);
     });
 
-    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(1);
-
     await act(async () => {
-      ctx!.setTimeframe("1h");
-    });
-    await act(async () => {
-      await Promise.resolve();
+      result.current.setTimeframe("1h");
     });
 
-    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(2);
+    });
 
     await act(async () => {
       indicatorSvc.setIndicatorSource({ foo: "bar" });
     });
-    await act(async () => {
-      await Promise.resolve();
-    });
 
-    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(3);
+    await waitFor(() => {
+      expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(3);
+    });
   });
 });
