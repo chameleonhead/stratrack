@@ -1,7 +1,6 @@
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import type { Meta, StoryObj } from "@storybook/react";
-import { within, expect } from "storybook/test";
-import { vi } from "vitest";
+import { within, expect, fn } from "storybook/test";
 import DukascopyLogs from "./dukascopy-logs";
 
 const router = createMemoryRouter([{ path: "/", element: <DukascopyLogs /> }]);
@@ -9,7 +8,7 @@ const router = createMemoryRouter([{ path: "/", element: <DukascopyLogs /> }]);
 const meta = {
   component: DukascopyLogs,
   render: () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = fn().mockResolvedValue({
       ok: true,
       json: async () => [],
     }) as unknown as typeof fetch;

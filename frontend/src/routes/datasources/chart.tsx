@@ -2,7 +2,8 @@ import { useParams } from "react-router-dom";
 import CandlestickChart from "../../components/CandlestickChart";
 import Select from "../../components/Select";
 import { TIMEFRAME_OPTIONS } from "../../timeframes";
-import { ChartDataProvider, useChartData } from "../../features/datasources/ChartDataProvider";
+import ChartDataProvider from "../../features/datasources/ChartDataProvider";
+import { useChartData } from "../../features/datasources/useChartData";
 
 const ChartContent = () => {
   const {

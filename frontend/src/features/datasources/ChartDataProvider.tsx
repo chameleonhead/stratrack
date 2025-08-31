@@ -1,32 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getDataSource } from "../../api/datasources";
 import { getDataHistory } from "../../api/data";
 import { loadCandles, saveCandles, hasCandles } from "../../idb";
 import { Candle, Indicator } from "../../components/CandlestickChart";
 import { calculateIndicators, subscribeIndicatorSource } from "../../services/indicatorEngine";
-
-export type Range = { from: number; to: number };
-export type ChartDataContextValue = {
-  candleData: Candle[];
-  range: Range | null;
-  dsRange: Range | null;
-  timeframe: string;
-  setTimeframe: (tf: string) => void;
-  isLoading: boolean;
-  error: string | null;
-  handleRangeChange: (range: Range) => Promise<void>;
-  symbol: string;
-  indicators: Indicator[];
-  setIndicators: React.Dispatch<React.SetStateAction<Indicator[]>>;
-};
-
-const ChartDataContext = createContext<ChartDataContextValue | null>(null);
-
-export const useChartData = () => {
-  const ctx = useContext(ChartDataContext);
-  if (!ctx) throw new Error("useChartData must be used within ChartDataProvider");
-  return ctx;
-};
+import { Range, ChartDataContext } from "./useChartData";
 
 function timeframeToMinutes(tf: string): number {
   const m = tf.match(/^(\d+)([mhd])$/);
@@ -44,7 +22,7 @@ function timeframeToMinutes(tf: string): number {
   }
 }
 
-export const ChartDataProvider = ({
+const ChartDataProvider = ({
   dataSourceId,
   children,
 }: {
@@ -216,3 +194,5 @@ export const ChartDataProvider = ({
     </ChartDataContext.Provider>
   );
 };
+
+export default ChartDataProvider;

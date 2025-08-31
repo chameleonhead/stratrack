@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import DukascopyJobCard, { JobState } from "./DukascopyJobCard";
+import DukascopyJobCard, { JobState } from "../../features/settings/DukascopyJobCard";
 import { toDateTimeLocalString } from "../../utils";
 import {
   createDukascopyJob,

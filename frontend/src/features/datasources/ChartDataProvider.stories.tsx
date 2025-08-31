@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChartDataProvider } from "./ChartDataProvider";
+import ChartDataProvider from "./ChartDataProvider";
 
 const meta = {
   component: ChartDataProvider,
