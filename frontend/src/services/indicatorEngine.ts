@@ -27,8 +27,19 @@ let baseTimeframe = 0;
 let indicatorSource = new InMemoryIndicatorSource();
 const sourceSubscribers = new Set<() => void>();
 
+export const indicatorEngine = {
+  set(name: string, src: string): void {
+    indicatorSource.set(name, src);
+    engine?.set(name, src);
+    for (const cb of sourceSubscribers) cb();
+  },
+};
+
 export function setIndicatorSource(source: Record<string, string>): void {
   indicatorSource = new InMemoryIndicatorSource(source);
+  if (engine) {
+    engine = new InMemoryIndicatorEngine(indicatorSource);
+  }
   for (const cb of sourceSubscribers) cb();
 }
 
