@@ -144,13 +144,13 @@ const ChartDataProvider = ({
     calculateIndicators(symbol, tfNum, indicatorDefs).then((res) => {
       const colors = ["#0ea5e9", "#22c55e", "#9333ea", "#f97316"];
       const mapped: Indicator[] = indicatorDefs.map((def, idx) => {
-        const values = res[def.name] ?? [];
+        const values = res[idx] ?? [];
         const start = values.length - candleData.length;
         const data = candleData.map((c, i) => ({
           date: c.date,
           value: values[start + i] ?? 0,
         }));
-        return { name: def.name, color: colors[idx % colors.length], data };
+        return { name: def.name, color: colors[idx % colors.length], data, pane: def.pane };
       });
       setIndicators(mapped);
     });
