@@ -82,3 +82,17 @@ export const VariablesOperandWithDescription: Story = {
     ),
   ],
 };
+
+export const IndicatorOperand: Story = {
+  args: {
+    value: { type: "indicator", name: "", params: [], lineName: "" },
+  } satisfies { value: ConditionOperand },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "インジケーター選択" }));
+    await userEvent.selectOptions(canvas.getByLabelText("インジケーター"), "rsi");
+    await userEvent.click(canvas.getByRole("button", { name: "次へ" }));
+    await userEvent.click(canvas.getByRole("button", { name: "完了" }));
+    await expect(args.onChange).toHaveBeenCalled();
+  },
+};

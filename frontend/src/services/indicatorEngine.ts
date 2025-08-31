@@ -6,7 +6,7 @@ import { ApiMarketData } from "./stratrackMarketData.ts";
 import type { ExecutionContext } from "../../../libs/mql-interpreter/src/libs/domain/types.ts";
 import { iMA } from "../../../libs/mql-interpreter/src/ta/ma.ts";
 
-interface IndicatorDefinition {
+export interface IndicatorDefinition {
   name: string;
   args: number[];
   symbol?: string;

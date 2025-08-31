@@ -1,7 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Select from "../../../components/Select";
 import NumberInput from "../../../components/NumberInput";
 import ShiftBarsEditor from "./ShiftBarsEditor";
+import Button from "../../../components/Button";
+import IndicatorWizard from "../../../components/IndicatorWizard";
+import type { Indicator } from "../../../codegen/dsl/indicator";
+import type { AggregationType, IndicatorParamValue } from "../../../codegen/dsl/common";
 import { StrategyVariableExpression, StrategyCondition } from "../../../codegen/dsl/strategy";
 import { useLocalValue } from "../../../hooks/useLocalValue";
 import { useVariables } from "./useVariables";
@@ -58,6 +62,7 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
     value,
     onChange
   );
+  const [showWizard, setShowWizard] = useState(false);
 
   const indicatorName = expr.type === "indicator" ? expr.name : "";
   const lineOptions = useMemo(() => {
@@ -67,6 +72,35 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
       label: l.label,
     }));
   }, [indicators, indicatorName]);
+
+  const handleIndicatorSubmit = (indicator: Indicator, params: Record<string, unknown>) => {
+    const mappedParams: IndicatorParamValue[] = indicator.params.map((p) => {
+      const val = params[p.name];
+      switch (p.type) {
+        case "number":
+          return { name: p.name, type: "number", value: Number(val ?? 0) };
+        case "source":
+          return {
+            name: p.name,
+            type: "source",
+            ref: { type: "variable", name: String(val ?? "") },
+          };
+        case "aggregationType":
+          return {
+            name: p.name,
+            type: "aggregationType",
+            method: String(val ?? "") as AggregationType,
+          };
+      }
+    });
+    setExpr({
+      type: "indicator",
+      name: indicator.name,
+      params: mappedParams,
+      lineName: indicator.defaultLineName || "",
+    });
+    setShowWizard(false);
+  };
 
   const handleTypeChange = (t: StrategyVariableExpression["type"]) => {
     switch (t) {
@@ -189,20 +223,24 @@ const VariableExpressionEditor: React.FC<VariableExpressionEditorProps> = ({
 
       {expr.type === "indicator" && (
         <div className="space-y-2">
-          <Select
-            fullWidth
-            label="インジケーター"
-            value={expr.name}
-            onChange={(val) => setExpr({ ...expr, name: val })}
-            options={indicators.map((i) => ({ value: i.name, label: i.label }))}
-          />
-          <Select
-            fullWidth
-            label="ライン"
-            value={expr.lineName}
-            onChange={(val) => setExpr({ ...expr, lineName: val })}
-            options={lineOptions}
-          />
+          {expr.name && (
+            <>
+              <Select
+                fullWidth
+                label="ライン"
+                value={expr.lineName}
+                onChange={(val) => setExpr({ ...expr, lineName: val })}
+                options={lineOptions}
+              />
+              <p>選択中: {indicators.find((i) => i.name === expr.name)?.label}</p>
+            </>
+          )}
+          <Button onClick={() => setShowWizard(true)}>
+            {expr.name ? "インジケーターを再設定" : "インジケーター選択"}
+          </Button>
+          {showWizard && (
+            <IndicatorWizard indicators={indicators} onSubmit={handleIndicatorSubmit} />
+          )}
         </div>
       )}
 
