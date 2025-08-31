@@ -7,6 +7,7 @@ import * as apiDs from "../../api/datasources";
 import type { DataSourceDetail } from "../../api/datasources";
 import * as apiData from "../../api/data";
 import * as idb from "../../idb";
+import * as indicatorSvc from "../../services/indicatorEngine";
 
 vi.mock("../../api/datasources");
 vi.mock("../../api/data");
@@ -35,6 +36,7 @@ function Consumer({ onValue }: { onValue: (v: ChartDataContextValue) => void }) 
 describe("ChartDataProvider", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.spyOn(indicatorSvc, "calculateIndicators").mockResolvedValue({});
   });
 
   it("loads data on mount", async () => {
@@ -207,5 +209,55 @@ describe("ChartDataProvider", () => {
     });
 
     expect(apiData.getDataHistory).toHaveBeenCalledTimes(2);
+  });
+
+  it("recalculates indicators when timeframe or source changes", async () => {
+    vi.mocked(apiDs.getDataSource).mockResolvedValue(dsDetail);
+    vi.mocked(idb.hasCandles).mockResolvedValue(true);
+    vi.mocked(idb.loadCandles).mockResolvedValue([
+      {
+        dataSourceId: "ds",
+        timeframe: "5m",
+        time: baseTime,
+        open: 1,
+        high: 2,
+        low: 0,
+        close: 1,
+      },
+    ]);
+
+    let ctx: ChartDataContextValue | undefined;
+    const div = document.createElement("div");
+    await act(async () => {
+      const root = createRoot(div);
+      root.render(
+        <ChartDataProvider dataSourceId="ds">
+          <Consumer onValue={(v) => (ctx = v)} />
+        </ChartDataProvider>
+      );
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      ctx!.setTimeframe("1h");
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      indicatorSvc.setIndicatorSource({ foo: "bar" });
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(3);
   });
 });

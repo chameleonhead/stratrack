@@ -1,4 +1,7 @@
-import { InMemoryIndicatorEngine } from "../../../libs/mql-interpreter/src/libs/domain/indicator/indicatorEngine.ts";
+import {
+  InMemoryIndicatorEngine,
+  InMemoryIndicatorSource,
+} from "../../../libs/mql-interpreter/src/libs/domain/indicator";
 import { ApiMarketData } from "./stratrackMarketData.ts";
 import type { ExecutionContext } from "../../../libs/mql-interpreter/src/libs/domain/types.ts";
 import { iMA } from "../../../libs/mql-interpreter/src/ta/ma.ts";
@@ -21,6 +24,20 @@ let context: ExecutionContext;
 let currentIndicators: IndicatorDefinition[] = [];
 let baseSymbol = "";
 let baseTimeframe = 0;
+let indicatorSource = new InMemoryIndicatorSource();
+const sourceSubscribers = new Set<() => void>();
+
+export function setIndicatorSource(source: Record<string, string>): void {
+  indicatorSource = new InMemoryIndicatorSource(source);
+  for (const cb of sourceSubscribers) cb();
+}
+
+export function subscribeIndicatorSource(cb: () => void): () => void {
+  sourceSubscribers.add(cb);
+  return () => {
+    sourceSubscribers.delete(cb);
+  };
+}
 
 function getMaKey(symbol: string, timeframe: number, args: number[]) {
   const [period, , maMethod, applied] = args;
@@ -37,7 +54,7 @@ export async function calculateIndicators(
   timeframe: number,
   indicators: IndicatorDefinition[]
 ): Promise<Record<string, number[]>> {
-  engine = new InMemoryIndicatorEngine();
+  engine = new InMemoryIndicatorEngine(indicatorSource);
   market = new ApiMarketData();
   baseSymbol = symbol;
   baseTimeframe = timeframe;

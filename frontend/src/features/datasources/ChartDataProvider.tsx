@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { getDataSource } from "../../api/datasources";
 import { getDataHistory } from "../../api/data";
 import { loadCandles, saveCandles, hasCandles } from "../../idb";
-import { Candle } from "../../components/CandlestickChart";
+import { Candle, Indicator } from "../../components/CandlestickChart";
+import { calculateIndicators, subscribeIndicatorSource } from "../../services/indicatorEngine";
 
 export type Range = { from: number; to: number };
 export type ChartDataContextValue = {
@@ -15,6 +16,8 @@ export type ChartDataContextValue = {
   error: string | null;
   handleRangeChange: (range: Range) => Promise<void>;
   symbol: string;
+  indicators: Indicator[];
+  setIndicators: React.Dispatch<React.SetStateAction<Indicator[]>>;
 };
 
 const ChartDataContext = createContext<ChartDataContextValue | null>(null);
@@ -24,6 +27,22 @@ export const useChartData = () => {
   if (!ctx) throw new Error("useChartData must be used within ChartDataProvider");
   return ctx;
 };
+
+function timeframeToMinutes(tf: string): number {
+  const m = tf.match(/^(\d+)([mhd])$/);
+  if (!m) return 0;
+  const v = Number(m[1]);
+  switch (m[2]) {
+    case "m":
+      return v;
+    case "h":
+      return v * 60;
+    case "d":
+      return v * 1440;
+    default:
+      return 0;
+  }
+}
 
 export const ChartDataProvider = ({
   dataSourceId,
@@ -40,6 +59,12 @@ export const ChartDataProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [symbol, setSymbol] = useState("");
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [sourceVersion, setSourceVersion] = useState(0);
+
+  useEffect(() => {
+    return subscribeIndicatorSource(() => setSourceVersion((v) => v + 1));
+  }, []);
 
   const loadData = useCallback(
     async (fromMs: number, toMs: number): Promise<Candle[]> => {
@@ -127,6 +152,23 @@ export const ChartDataProvider = ({
     setCandleData([]);
   }, [dataSourceId, timeframe]);
 
+  useEffect(() => {
+    if (!symbol || candleData.length === 0) {
+      setIndicators([]);
+      return;
+    }
+    const tfNum = timeframeToMinutes(timeframe);
+    calculateIndicators(symbol, tfNum, [{ name: "iMA", args: [20, 0, 0, 0, 0] }]).then((res) => {
+      const values = res["iMA"] ?? [];
+      const start = values.length - candleData.length;
+      const data = candleData.map((c, i) => ({
+        date: c.date,
+        value: values[start + i] ?? 0,
+      }));
+      setIndicators([{ name: "iMA", color: "#0ea5e9", data }]);
+    });
+  }, [symbol, timeframe, candleData, sourceVersion]);
+
   const handleRangeChange = async (newRange: Range) => {
     setRange(newRange);
     if (!loadedRange) {
@@ -166,6 +208,8 @@ export const ChartDataProvider = ({
         error,
         handleRangeChange,
         symbol,
+        indicators,
+        setIndicators,
       }}
     >
       {children}
