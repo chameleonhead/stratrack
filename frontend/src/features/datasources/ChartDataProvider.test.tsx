@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ChartDataProvider, useChartData } from "./ChartDataProvider";
+import ChartDataProvider from "./ChartDataProvider";
+import { useChartData } from "./useChartData";
 import * as apiDs from "../../api/datasources";
 import type { DataSourceDetail } from "../../api/datasources";
 import * as apiData from "../../api/data";

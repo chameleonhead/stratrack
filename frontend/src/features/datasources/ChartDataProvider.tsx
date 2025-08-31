@@ -3,7 +3,11 @@ import { getDataSource } from "../../api/datasources";
 import { getDataHistory } from "../../api/data";
 import { loadCandles, saveCandles, hasCandles } from "../../idb";
 import { Candle, Indicator } from "../../components/CandlestickChart";
-import { calculateIndicators, subscribeIndicatorSource } from "../../services/indicatorEngine";
+import {
+  calculateIndicators,
+  subscribeIndicatorSource,
+  type IndicatorDefinition,
+} from "../../services/indicatorEngine";
 import { Range, ChartDataContext } from "./useChartData";
 
 function timeframeToMinutes(tf: string): number {
@@ -38,6 +42,7 @@ const ChartDataProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const [symbol, setSymbol] = useState("");
   const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [indicatorDefs, setIndicatorDefs] = useState<IndicatorDefinition[]>([]);
   const [sourceVersion, setSourceVersion] = useState(0);
 
   useEffect(() => {
@@ -131,21 +136,25 @@ const ChartDataProvider = ({
   }, [dataSourceId, timeframe]);
 
   useEffect(() => {
-    if (!symbol || candleData.length === 0) {
+    if (!symbol || candleData.length === 0 || indicatorDefs.length === 0) {
       setIndicators([]);
       return;
     }
     const tfNum = timeframeToMinutes(timeframe);
-    calculateIndicators(symbol, tfNum, [{ name: "iMA", args: [20, 0, 0, 0, 0] }]).then((res) => {
-      const values = res["iMA"] ?? [];
-      const start = values.length - candleData.length;
-      const data = candleData.map((c, i) => ({
-        date: c.date,
-        value: values[start + i] ?? 0,
-      }));
-      setIndicators([{ name: "iMA", color: "#0ea5e9", data }]);
+    calculateIndicators(symbol, tfNum, indicatorDefs).then((res) => {
+      const colors = ["#0ea5e9", "#22c55e", "#9333ea", "#f97316"];
+      const mapped: Indicator[] = indicatorDefs.map((def, idx) => {
+        const values = res[def.name] ?? [];
+        const start = values.length - candleData.length;
+        const data = candleData.map((c, i) => ({
+          date: c.date,
+          value: values[start + i] ?? 0,
+        }));
+        return { name: def.name, color: colors[idx % colors.length], data };
+      });
+      setIndicators(mapped);
     });
-  }, [symbol, timeframe, candleData, sourceVersion]);
+  }, [symbol, timeframe, candleData, sourceVersion, indicatorDefs]);
 
   const handleRangeChange = async (newRange: Range) => {
     setRange(newRange);
@@ -188,6 +197,7 @@ const ChartDataProvider = ({
         symbol,
         indicators,
         setIndicators,
+        setIndicatorDefs,
       }}
     >
       {children}
