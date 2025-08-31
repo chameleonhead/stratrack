@@ -186,7 +186,7 @@ describe("ChartDataProvider", () => {
     });
 
     await act(async () => {
-      indicatorSvc.setIndicatorSource({ foo: "bar" });
+      indicatorSvc.indicatorEngine.set("foo", "bar");
     });
 
     await waitFor(() => {
