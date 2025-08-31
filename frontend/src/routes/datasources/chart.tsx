@@ -22,7 +22,7 @@ const ChartContent = () => {
   } = useChartData();
   const indicatorList = useIndicatorList().filter((i) => i.name === "moving_average");
 
-  const handleIndicatorSubmit = (ind: Indicator, params: Record<string, unknown>) => {
+  const handleIndicatorSubmit = (ind: Indicator, params: Record<string, unknown>, pane = 0) => {
     if (ind.name !== "moving_average") return;
     const method = params.method as string;
     const source = params.source as string;
@@ -39,7 +39,10 @@ const ChartContent = () => {
     };
     const maMethod = maMethodMap[method] ?? 0;
     const applied = appliedMap[source] ?? 0;
-    setIndicatorDefs([{ name: "iMA", args: [period, 0, maMethod, applied, 0] }]);
+    setIndicatorDefs((prev) => [
+      ...prev,
+      { name: "iMA", args: [period, 0, maMethod, applied, 0], pane },
+    ]);
   };
   return (
     <div className="p-6 space-y-4">
@@ -52,7 +55,11 @@ const ChartContent = () => {
         onChange={setTimeframe}
         options={TIMEFRAME_OPTIONS.filter((o) => o.value !== "tick")}
       />
-      <IndicatorWizard indicators={indicatorList} onSubmit={handleIndicatorSubmit} />
+      <IndicatorWizard
+        indicators={indicatorList}
+        onSubmit={handleIndicatorSubmit}
+        enablePaneSelection
+      />
       <CandlestickChart
         data={candleData}
         range={range ?? undefined}

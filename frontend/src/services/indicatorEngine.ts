@@ -11,6 +11,7 @@ export interface IndicatorDefinition {
   args: number[];
   symbol?: string;
   timeframe?: number;
+  pane?: number;
 }
 
 interface MaState {
@@ -64,7 +65,7 @@ export async function calculateIndicators(
   symbol: string,
   timeframe: number,
   indicators: IndicatorDefinition[]
-): Promise<Record<string, number[]>> {
+): Promise<number[][]> {
   engine = new InMemoryIndicatorEngine(indicatorSource);
   market = new ApiMarketData();
   baseSymbol = symbol;
@@ -86,7 +87,7 @@ export async function calculateIndicators(
   };
   currentIndicators = indicators;
 
-  const results: Record<string, number[]> = {};
+  const results: number[][] = [];
   for (const ind of indicators) {
     switch (ind.name) {
       case "iMA": {
@@ -95,17 +96,17 @@ export async function calculateIndicators(
         iMA(context, s, tf, ...(ind.args as [number, number, number, number, number]));
         const key = getMaKey(s, tf, ind.args);
         const state = engine.peek<MaState>(key);
-        results[ind.name] = state ? [...state.values] : [];
+        results.push(state ? [...state.values] : []);
         break;
       }
       default:
-        results[ind.name] = [];
+        results.push([]);
     }
   }
   return results;
 }
 
-export async function updateIndicators(): Promise<Record<string, number[]>> {
+export async function updateIndicators(): Promise<number[][]> {
   if (!context) throw new Error("calculateIndicators must be called first");
 
   const unique = new Set<string>();
@@ -123,7 +124,7 @@ export async function updateIndicators(): Promise<Record<string, number[]>> {
     await market.update(p.symbol, p.timeframe);
   }
 
-  const results: Record<string, number[]> = {};
+  const results: number[][] = [];
 
   for (const ind of currentIndicators) {
     switch (ind.name) {
@@ -137,11 +138,11 @@ export async function updateIndicators(): Promise<Record<string, number[]>> {
         const state = engine.peek<MaState>(key);
         const start = prevLast + 1;
         const end = state ? state.last + 1 : start;
-        results[ind.name] = state ? state.values.slice(start, end) : [];
+        results.push(state ? state.values.slice(start, end) : []);
         break;
       }
       default:
-        results[ind.name] = [];
+        results.push([]);
     }
   }
   return results;

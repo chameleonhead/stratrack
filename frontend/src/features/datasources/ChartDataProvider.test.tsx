@@ -34,7 +34,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe("ChartDataProvider", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.spyOn(indicatorSvc, "calculateIndicators").mockResolvedValue({});
+    vi.spyOn(indicatorSvc, "calculateIndicators").mockResolvedValue([]);
   });
 
   it("loads data on mount", async () => {
@@ -173,6 +173,10 @@ describe("ChartDataProvider", () => {
     ]);
 
     const { result } = renderHook(() => useChartData(), { wrapper });
+
+    await act(async () => {
+      result.current.setIndicatorDefs([{ name: "iMA", args: [] }]);
+    });
 
     await waitFor(() => {
       expect(indicatorSvc.calculateIndicators).toHaveBeenCalledTimes(1);

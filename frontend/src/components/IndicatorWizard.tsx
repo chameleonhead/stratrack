@@ -7,7 +7,8 @@ import Button from "./Button";
 
 export type IndicatorWizardProps = {
   indicators: Indicator[];
-  onSubmit?: (indicator: Indicator, params: Record<string, unknown>) => void;
+  onSubmit?: (indicator: Indicator, params: Record<string, unknown>, pane?: number) => void;
+  enablePaneSelection?: boolean;
 };
 
 const SOURCE_OPTIONS = [
@@ -20,10 +21,15 @@ const SOURCE_OPTIONS = [
   { value: "weighted", label: "加重" },
 ];
 
-function IndicatorWizard({ indicators, onSubmit }: IndicatorWizardProps) {
+function IndicatorWizard({
+  indicators,
+  onSubmit,
+  enablePaneSelection = false,
+}: IndicatorWizardProps) {
   const [step, setStep] = useState(0);
   const [selectedName, setSelectedName] = useState("");
   const [params, setParams] = useState<Record<string, unknown>>({});
+  const [pane, setPane] = useState(0);
 
   const selected = indicators.find((i) => i.name === selectedName);
 
@@ -34,6 +40,7 @@ function IndicatorWizard({ indicators, onSubmit }: IndicatorWizardProps) {
       if (p.default !== undefined) defaults[p.name] = p.default;
     }
     setParams(defaults);
+    setPane(0);
   }, [selected]);
 
   const handleParamChange = (name: string, value: unknown) => {
@@ -96,11 +103,12 @@ function IndicatorWizard({ indicators, onSubmit }: IndicatorWizardProps) {
 
   const handleSubmit = () => {
     if (selected && onSubmit) {
-      onSubmit(selected, params);
+      onSubmit(selected, params, pane);
     }
     setStep(0);
     setSelectedName("");
     setParams({});
+    setPane(0);
   };
 
   return (
@@ -121,6 +129,19 @@ function IndicatorWizard({ indicators, onSubmit }: IndicatorWizardProps) {
       {step === 1 && selected && (
         <div className="space-y-2">
           {selected.params.map((p) => renderParamField(p))}
+          {enablePaneSelection && (
+            <Select
+              label="表示先"
+              value={String(pane)}
+              onChange={(v) => setPane(Number(v))}
+              options={[
+                { value: "0", label: "メインチャート" },
+                { value: "1", label: "サブウィンドウ1" },
+                { value: "2", label: "サブウィンドウ2" },
+                { value: "3", label: "サブウィンドウ3" },
+              ]}
+            />
+          )}
           <div className="flex gap-2">
             <Button variant="secondary" onClick={handleBack}>
               戻る
