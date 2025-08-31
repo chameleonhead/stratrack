@@ -14,6 +14,7 @@ export type ChartDataContextValue = {
   isLoading: boolean;
   error: string | null;
   handleRangeChange: (range: Range) => Promise<void>;
+  symbol: string;
 };
 
 const ChartDataContext = createContext<ChartDataContextValue | null>(null);
@@ -38,6 +39,7 @@ export const ChartDataProvider = ({
   const [dsRange, setDsRange] = useState<Range | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [symbol, setSymbol] = useState("");
 
   const loadData = useCallback(
     async (fromMs: number, toMs: number): Promise<Candle[]> => {
@@ -103,6 +105,7 @@ export const ChartDataProvider = ({
     setIsLoading(true);
     getDataSource(dataSourceId)
       .then(async (ds) => {
+        setSymbol(ds.symbol);
         if (ds.startTime && ds.endTime) {
           const end = new Date(ds.endTime).getTime();
           const start = ds.startTime ? new Date(ds.startTime).getTime() : end;
@@ -162,6 +165,7 @@ export const ChartDataProvider = ({
         isLoading,
         error,
         handleRangeChange,
+        symbol,
       }}
     >
       {children}

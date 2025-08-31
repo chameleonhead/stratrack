@@ -1,0 +1,120 @@
+import { InMemoryIndicatorEngine } from "../../../libs/mql-interpreter/src/libs/domain/indicator/indicatorEngine.ts";
+import { ApiMarketData } from "./stratrackMarketData.ts";
+import type { ExecutionContext } from "../../../libs/mql-interpreter/src/libs/domain/types.ts";
+import { iMA } from "../../../libs/mql-interpreter/src/ta/ma.ts";
+
+interface IndicatorDefinition {
+  name: string;
+  args: number[];
+  symbol?: string;
+  timeframe?: number;
+}
+
+interface MaState {
+  last: number;
+  values: number[];
+}
+
+let engine: InMemoryIndicatorEngine;
+let market: ApiMarketData;
+let context: ExecutionContext;
+let currentIndicators: IndicatorDefinition[] = [];
+let baseSymbol = "";
+let baseTimeframe = 0;
+
+function getMaKey(symbol: string, timeframe: number, args: number[]) {
+  const [period, , maMethod, applied] = args;
+  return {
+    type: "iMA" as const,
+    symbol,
+    timeframe,
+    params: { period, maMethod, applied },
+  };
+}
+
+export async function calculateIndicators(
+  symbol: string,
+  timeframe: number,
+  indicators: IndicatorDefinition[]
+): Promise<Record<string, number[]>> {
+  engine = new InMemoryIndicatorEngine();
+  market = new ApiMarketData();
+  baseSymbol = symbol;
+  baseTimeframe = timeframe;
+  await market.load(symbol, timeframe);
+  for (const ind of indicators) {
+    const s = ind.symbol ?? symbol;
+    const tf = ind.timeframe ?? timeframe;
+    await market.load(s, tf);
+  }
+  context = {
+    terminal: null,
+    broker: null,
+    account: null,
+    market,
+    symbol,
+    timeframe,
+    indicatorEngine: engine,
+  };
+  currentIndicators = indicators;
+
+  const results: Record<string, number[]> = {};
+  for (const ind of indicators) {
+    switch (ind.name) {
+      case "iMA": {
+        const s = ind.symbol ?? symbol;
+        const tf = ind.timeframe ?? timeframe;
+        iMA(context, s, tf, ...(ind.args as [number, number, number, number, number]));
+        const key = getMaKey(s, tf, ind.args);
+        const state = engine.peek<MaState>(key);
+        results[ind.name] = state ? [...state.values] : [];
+        break;
+      }
+      default:
+        results[ind.name] = [];
+    }
+  }
+  return results;
+}
+
+export async function updateIndicators(): Promise<Record<string, number[]>> {
+  if (!context) throw new Error("calculateIndicators must be called first");
+
+  const unique = new Set<string>();
+  const pairs = [
+    { symbol: baseSymbol, timeframe: baseTimeframe },
+    ...currentIndicators.map((i) => ({
+      symbol: i.symbol ?? baseSymbol,
+      timeframe: i.timeframe ?? baseTimeframe,
+    })),
+  ];
+  for (const p of pairs) {
+    const key = `${p.symbol}-${p.timeframe}`;
+    if (unique.has(key)) continue;
+    unique.add(key);
+    await market.update(p.symbol, p.timeframe);
+  }
+
+  const results: Record<string, number[]> = {};
+
+  for (const ind of currentIndicators) {
+    switch (ind.name) {
+      case "iMA": {
+        const s = ind.symbol ?? baseSymbol;
+        const tf = ind.timeframe ?? baseTimeframe;
+        const key = getMaKey(s, tf, ind.args);
+        const prev = engine.peek<MaState>(key);
+        const prevLast = prev?.last ?? -1;
+        iMA(context, s, tf, ...(ind.args as [number, number, number, number, number]));
+        const state = engine.peek<MaState>(key);
+        const start = prevLast + 1;
+        const end = state ? state.last + 1 : start;
+        results[ind.name] = state ? state.values.slice(start, end) : [];
+        break;
+      }
+      default:
+        results[ind.name] = [];
+    }
+  }
+  return results;
+}
