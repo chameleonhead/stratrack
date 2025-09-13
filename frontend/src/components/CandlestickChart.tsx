@@ -216,8 +216,15 @@ const CandlestickChart = ({
   const chartHeight = Math.max(0, size.height - AXIS_HEIGHT);
 
   const xScale = scaleTime().domain([from, to]).range([LEFT_MARGIN, size.width]);
-  const minLow = Math.min(...filtered.map((d) => d.low));
-  const maxHigh = Math.max(...filtered.map((d) => d.high));
+  const overlayIndicators = indicators?.filter((ind) => ind.pane === undefined || ind.pane === 0);
+  const overlayValues =
+    overlayIndicators?.flatMap((ind) =>
+      ind.data.filter((p) => p.date.getTime() >= from && p.date.getTime() <= to).map((p) => p.value)
+    ) ?? [];
+  const lows = filtered.map((d) => d.low).concat(overlayValues);
+  const highs = filtered.map((d) => d.high).concat(overlayValues);
+  const minLow = Math.min(...lows);
+  const maxHigh = Math.max(...highs);
   const yScale = scaleLinear().domain([minLow, maxHigh]).range([chartHeight, 0]).nice();
   const candleW =
     filtered.length > 0 ? Math.max(1, (size.width - LEFT_MARGIN) / filtered.length / 1.5) : 1;
@@ -233,15 +240,20 @@ const CandlestickChart = ({
   );
   const yTicks = yScale.ticks(5);
 
-  const overlayIndicators = indicators?.filter((ind) => ind.pane === undefined || ind.pane === 0);
-  const indLines = overlayIndicators?.map((ind) => ({
-    color: ind.color || "#0ea5e9",
-    path:
-      d3Line<{ date: Date; value: number }>()
-        .x((d) => xScale(d.date.getTime()))
-        .y((d) => yScale(d.value))(ind.data) ?? "",
-  }));
-  const subIndicators = indicators?.filter((ind) => (ind.pane ?? 0) > 0) ?? [];
+  const indLines = overlayIndicators?.map((ind) => {
+    const filteredData = ind.data.filter((p) => p.date.getTime() >= from && p.date.getTime() <= to);
+    return {
+      color: ind.color || "#0ea5e9",
+      path:
+        d3Line<{ date: Date; value: number }>()
+          .x((d) => xScale(d.date.getTime()))
+          .y((d) => yScale(d.value))(filteredData) ?? "",
+    };
+  });
+  const subIndicators = React.useMemo(
+    () => indicators?.filter((ind) => (ind.pane ?? 0) > 0) ?? [],
+    [indicators]
+  );
   const subPaneMap = React.useMemo(() => {
     const m = new Map<number, Indicator[]>();
     subIndicators.forEach((ind) => {
