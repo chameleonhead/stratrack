@@ -41,6 +41,8 @@ export const Default: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const svg = canvasElement.querySelector("svg") as SVGSVGElement;
+    const paths = svg.querySelectorAll("path");
+    await expect(paths.length).toBeGreaterThan(0);
     fireEvent.wheel(svg, { deltaY: 100 });
     await expect(args.onRangeChange).toHaveBeenCalled();
   },
