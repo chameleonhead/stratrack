@@ -145,10 +145,13 @@ const ChartDataProvider = ({
       const colors = ["#0ea5e9", "#22c55e", "#9333ea", "#f97316"];
       const mapped: Indicator[] = indicatorDefs.map((def, idx) => {
         const values = res[idx] ?? [];
-        const start = values.length - candleData.length;
+        const slice = values.slice(-candleData.length);
+        const padded = Array.from({ length: candleData.length - slice.length }, () => 0).concat(
+          slice
+        );
         const data = candleData.map((c, i) => ({
           date: c.date,
-          value: values[start + i] ?? 0,
+          value: padded[i] ?? 0,
         }));
         return { name: def.name, color: colors[idx % colors.length], data, pane: def.pane };
       });
